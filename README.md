@@ -10,7 +10,10 @@
     <a href="https://packagist.org/packages/onelegstudios/laravel-shape"><img src="https://img.shields.io/packagist/dt/onelegstudios/laravel-shape.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
-foobar
+A Blade component library for Livewire applications. Components are anonymous
+Blade files, styled with Tailwind, and annotated so that
+[Blaze](https://github.com/livewire/blaze) folds them into their parent
+templates at compile time.
 
 ## Installation
 
@@ -59,9 +62,86 @@ php artisan vendor:publish --tag="laravel-shape-lang"
 php artisan vendor:publish --tag="laravel-shape-assets"
 ```
 
+### Publishing the Components
+
+Ejects every component into `resources/views/shape`, where they resolve ahead of
+the packaged ones:
+
+```bash
+php artisan vendor:publish --tag="laravel-shape-components"
+```
+
 ## Usage
 
-<!-- Add a basic usage example here. -->
+Import the design tokens after Tailwind in your application stylesheet:
+
+```css
+@import "tailwindcss";
+@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+```
+
+The token file declares `@source "../views"`, so your Tailwind build scans the
+package's components without further configuration. Shape ships no compiled CSS.
+
+```blade
+<x-shape::button variant="primary" icon="check">Save changes</x-shape::button>
+
+<x-shape::button variant="subtle" color="danger" icon="trash">Delete</x-shape::button>
+
+<x-shape::button as="a" href="/settings" icon-trailing="arrow-right">Settings</x-shape::button>
+
+<x-shape::icon.check-circle variant="mini" />
+```
+
+`variant` is hierarchy — where an action sits in the pyramid of importance.
+`color` is semantics. They are separate props so that a destructive action can
+stay quiet until the moment it matters.
+
+Every default Shape sets carries zero specificity, so your own classes win
+without `!important`:
+
+```blade
+<x-shape::button class="rounded-full w-full">Continue</x-shape::button>
+```
+
+### Performance
+
+```bash
+composer require livewire/blaze
+```
+
+That is the whole setup. Shape registers its own views with Blaze and every
+component already declares the strategy it is safe to use. Without Blaze
+installed the components render normally and the annotations compile away.
+
+One rule applies at the call site: a prop that drives a `match` inside a
+component has to be static for that component to fold.
+
+```blade
+{{-- Folds. --}}
+<x-shape::button variant="primary">Save</x-shape::button>
+
+{{-- Falls back to the compiled path — still fast, just not folded. --}}
+<x-shape::button :variant="$isPrimary ? 'primary' : 'outline'">Save</x-shape::button>
+```
+
+See [docs/folding.md](docs/folding.md) for the full explanation.
+
+## Documentation
+
+Documentation lives in [docs/](docs) as markdown, committed alongside the code it
+describes.
+
+## Previewing components
+
+```bash
+npm install && npm run preview
+composer serve
+```
+
+The workbench serves a gallery of every component at `/`. `npm run preview`
+compiles the Tailwind stylesheet the gallery inlines; the package itself ships
+no CSS.
 
 ## Changelog
 

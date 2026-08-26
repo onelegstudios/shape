@@ -1,0 +1,13 @@
+{
+    "name": "laravel-shape",
+    "private": true,
+    "description": "Build tooling for the Shape workbench preview. The package itself ships no compiled CSS.",
+    "scripts": {
+        "preview": "tailwindcss -i workbench/resources/css/preview.src.css -o workbench/resources/css/preview.css --minify",
+        "preview:watch": "tailwindcss -i workbench/resources/css/preview.src.css -o workbench/resources/css/preview.css --watch"
+    },
+    "devDependencies": {
+        "@tailwindcss/cli": "^4.3.0",
+        "tailwindcss": "^4.3.0"
+    }
+}

@@ -4,15 +4,54 @@ declare(strict_types=1);
 
 namespace Onelegstudios\Shape\Tests;
 
+use Onelegstudios\Shape\Facades\Shape as ShapeFacade;
 use Onelegstudios\Shape\ShapeServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
 {
+    /**
+     * Overrides `shape.components_path` for the tests in one file.
+     *
+     * The path has to be in place before the application boots, so tests set
+     * this from `beforeAll` rather than reaching for the config at run time.
+     */
+    public static ?string $componentsPath = null;
+
+    protected function defineEnvironment($app): void
+    {
+        if (static::$componentsPath !== null) {
+            $app['config']->set('shape.components_path', static::$componentsPath);
+        }
+
+        // Every worker compiles views into a directory it owns.
+        //
+        // The suite runs in parallel, components are compiled on demand, and
+        // `x-dynamic-component` writes temporary compiled views of its own. All
+        // of that shares one directory by default, so workers truncate files
+        // that other workers are midway through including — which surfaces as a
+        // component rendering as an empty string, in whichever test happened to
+        // be running at the time.
+        $compiled = sys_get_temp_dir().'/shape-compiled-views-'.getmypid();
+
+        if (! is_dir($compiled)) {
+            mkdir($compiled, 0777, true);
+        }
+
+        $app['config']->set('view.compiled', $compiled);
+    }
+
     protected function getPackageProviders($app): array
     {
         return [
             ShapeServiceProvider::class,
+        ];
+    }
+
+    protected function getPackageAliases($app): array
+    {
+        return [
+            'Shape' => ShapeFacade::class,
         ];
     }
 }

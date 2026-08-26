@@ -1,0 +1,12 @@
+/*
+| Stylesheet for the workbench preview page only.
+|
+| The package itself ships no compiled CSS — consuming applications import
+| resources/css/shape.css into their own Tailwind build. This file exists so
+| `composer serve` has something to render, and so the package's own class
+| strings get compiled by real Tailwind on every rebuild.
+*/
+@import "tailwindcss";
+@import "../../../resources/css/shape.css";
+
+@source "../views";

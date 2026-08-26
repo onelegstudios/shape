@@ -1,0 +1,219 @@
+/*
+| Shape design tokens
+|
+| Import this from your application stylesheet, after Tailwind:
+|
+|   @import "tailwindcss";
+|   @import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+|
+| Refactoring UI's spacing and type scales are already Tailwind's defaults —
+| same authors, same scales — so this file deliberately does not redefine them.
+| It adds only what Tailwind does not ship an opinion about: a neutral ramp with
+| a temperature, a fixed set of elevations, one radius decision, and the
+| per-surface foreground contract.
+*/
+
+/* Let the host application's Tailwind build scan the package's components. */
+@source "../views";
+
+@theme {
+    /*
+    | Greys don't have to be grey. The neutral ramp carries a slight cool cast
+    | toward the accent hue, so neutrals and accent read as one family.
+    | Nine steps, defined up front, chosen by eye rather than by formula.
+    */
+    --color-shape-50: oklch(98.4% 0.003 195);
+    --color-shape-100: oklch(96.4% 0.005 195);
+    --color-shape-200: oklch(92.2% 0.007 193);
+    --color-shape-300: oklch(86.4% 0.009 192);
+    --color-shape-400: oklch(70.6% 0.013 190);
+    --color-shape-500: oklch(58.4% 0.015 189);
+    --color-shape-600: oklch(48.2% 0.016 188);
+    --color-shape-700: oklch(39.4% 0.017 187);
+    --color-shape-800: oklch(28.8% 0.016 186);
+    --color-shape-900: oklch(20.6% 0.014 185);
+    --color-shape-950: oklch(14.6% 0.012 185);
+
+    /* The accent. One hue, five usable steps — a base that works as a button
+       background, edges for text and tint, and the gaps filled in. */
+    --color-shape-accent-50: oklch(97.6% 0.018 181);
+    --color-shape-accent-100: oklch(94.4% 0.038 181);
+    --color-shape-accent-200: oklch(88.2% 0.065 181);
+    --color-shape-accent-500: oklch(62.4% 0.101 180);
+    --color-shape-accent-600: oklch(54.6% 0.104 180);
+    --color-shape-accent-700: oklch(46.2% 0.094 181);
+    --color-shape-accent-800: oklch(38.4% 0.079 182);
+
+    /* State colours. Never the only signal — components pair them with an icon. */
+    --color-shape-danger-50: oklch(97.2% 0.014 25);
+    --color-shape-danger-100: oklch(93.6% 0.032 25);
+    --color-shape-danger-200: oklch(88.5% 0.062 25);
+    --color-shape-danger-500: oklch(63.7% 0.208 26);
+    --color-shape-danger-600: oklch(57.7% 0.213 27);
+    --color-shape-danger-700: oklch(50.5% 0.188 27);
+
+    --color-shape-success-50: oklch(97.4% 0.018 152);
+    --color-shape-success-100: oklch(94.2% 0.044 152);
+    --color-shape-success-200: oklch(88.4% 0.082 152);
+    --color-shape-success-500: oklch(64.6% 0.148 151);
+    --color-shape-success-600: oklch(57.4% 0.136 151);
+    --color-shape-success-700: oklch(48.8% 0.115 152);
+
+    --color-shape-warning-50: oklch(97.8% 0.022 85);
+    --color-shape-warning-100: oklch(95.2% 0.055 88);
+    --color-shape-warning-200: oklch(90.4% 0.098 88);
+    --color-shape-warning-500: oklch(72.4% 0.158 74);
+    --color-shape-warning-600: oklch(66.2% 0.148 68);
+    --color-shape-warning-700: oklch(55.4% 0.126 62);
+
+    /*
+    | Elevation is deliberately absent.
+    |
+    | Tailwind's own shadow scale is already two-part — a soft cast plus a tight
+    | contact edge — and already increases the way "Use shadows to convey
+    | elevation" prescribes. Redefining it here would duplicate it for a tint no
+    | one can see: at the alphas these shadows use, a hue-matched shadow differs
+    | from black by under two values out of 255.
+    |
+    | Components use `shadow-sm` through `shadow-xl` directly, and consumers who
+    | retheme those tokens restyle Shape along with the rest of their interface.
+    | Which elevation belongs to which component is in docs/elevation.md.
+    |
+    | Note that Tailwind resolves shadow values at build time rather than
+    | referencing the custom property, so a dark-mode elevation treatment has to
+    | come from a `dark:` variant on the component, not from a token override.
+    */
+
+    /* Border radius is a personality decision. It is made once, here. */
+    --radius-shape: 0.5rem;
+    --radius-shape-lg: 0.75rem;
+}
+
+@layer base {
+    /*
+    | The surface contract.
+    |
+    | Every surface exports the foreground colours that belong on it. Components
+    | read `--shape-fg-muted` instead of reaching for a global grey, which is what
+    | makes "don't use grey text on coloured backgrounds" structurally impossible
+    | rather than merely documented: on a tinted surface the muted foreground is
+    | the same hue with the saturation and lightness dialled down, not grey.
+    */
+    :root {
+        --shape-fg: var(--color-shape-900);
+        --shape-fg-muted: var(--color-shape-600);
+        --shape-ring: var(--color-shape-accent-600);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --shape-fg: var(--color-shape-50);
+            --shape-fg-muted: var(--color-shape-400);
+            --shape-ring: var(--color-shape-accent-500);
+        }
+    }
+
+    [data-shape-surface='accent'] {
+        --shape-fg: oklch(99% 0.01 181);
+        --shape-fg-muted: oklch(88.6% 0.048 181);
+    }
+
+    [data-shape-surface='danger'] {
+        --shape-fg: oklch(99% 0.008 25);
+        --shape-fg-muted: oklch(89.2% 0.052 25);
+    }
+}
+
+@layer components {
+    /*
+    | Tones.
+    |
+    | `variant` decides where an action sits in the hierarchy; `color` decides
+    | what it means. Keeping the two apart in the markup would normally multiply
+    | into a variant × colour class matrix, so the colour half lives here instead:
+    | a tone sets the variables, every variant reads them.
+    |
+    | This is also what keeps the button foldable. Because `color` only ever gets
+    | interpolated into an attribute — never branched on — it stays a pass-through
+    | prop, so `:color="$destructive ? 'danger' : null"` still folds.
+    */
+    [data-shape-tone] {
+        --shape-btn: var(--color-shape-900);
+        --shape-btn-hover: var(--color-shape-800);
+        --shape-btn-fg: var(--color-shape-50);
+        --shape-btn-ink: var(--color-shape-800);
+        --shape-btn-tint: var(--color-shape-100);
+        --shape-btn-tint-hover: var(--color-shape-200);
+        --shape-btn-surface: white;
+        --shape-btn-surface-hover: var(--color-shape-50);
+        --shape-btn-border: var(--color-shape-200);
+    }
+
+    [data-shape-tone='accent'] {
+        --shape-btn: var(--color-shape-accent-600);
+        --shape-btn-hover: var(--color-shape-accent-700);
+        --shape-btn-fg: white;
+        --shape-btn-ink: var(--color-shape-accent-700);
+        --shape-btn-tint: var(--color-shape-accent-100);
+        --shape-btn-tint-hover: var(--color-shape-accent-200);
+    }
+
+    [data-shape-tone='danger'] {
+        --shape-btn: var(--color-shape-danger-600);
+        --shape-btn-hover: var(--color-shape-danger-700);
+        --shape-btn-fg: white;
+        --shape-btn-ink: var(--color-shape-danger-700);
+        --shape-btn-tint: var(--color-shape-danger-100);
+        --shape-btn-tint-hover: var(--color-shape-danger-200);
+    }
+
+    [data-shape-tone='success'] {
+        --shape-btn: var(--color-shape-success-600);
+        --shape-btn-hover: var(--color-shape-success-700);
+        --shape-btn-fg: white;
+        --shape-btn-ink: var(--color-shape-success-700);
+        --shape-btn-tint: var(--color-shape-success-100);
+        --shape-btn-tint-hover: var(--color-shape-success-200);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        [data-shape-tone] {
+            --shape-btn: var(--color-shape-100);
+            --shape-btn-hover: white;
+            --shape-btn-fg: var(--color-shape-900);
+            --shape-btn-ink: var(--color-shape-200);
+            --shape-btn-tint: var(--color-shape-800);
+            --shape-btn-tint-hover: var(--color-shape-700);
+            --shape-btn-surface: var(--color-shape-900);
+            --shape-btn-surface-hover: var(--color-shape-800);
+            --shape-btn-border: var(--color-shape-800);
+        }
+
+        [data-shape-tone='accent'] {
+            --shape-btn: var(--color-shape-accent-500);
+            --shape-btn-hover: var(--color-shape-accent-600);
+            --shape-btn-fg: var(--color-shape-950);
+            --shape-btn-ink: var(--color-shape-accent-200);
+            --shape-btn-tint: var(--color-shape-accent-800);
+            --shape-btn-tint-hover: var(--color-shape-accent-700);
+        }
+
+        [data-shape-tone='danger'] {
+            --shape-btn: var(--color-shape-danger-500);
+            --shape-btn-hover: var(--color-shape-danger-600);
+            --shape-btn-fg: var(--color-shape-950);
+            --shape-btn-ink: var(--color-shape-danger-200);
+            --shape-btn-tint: oklch(31% 0.09 27);
+            --shape-btn-tint-hover: oklch(37% 0.11 27);
+        }
+
+        [data-shape-tone='success'] {
+            --shape-btn: var(--color-shape-success-500);
+            --shape-btn-hover: var(--color-shape-success-600);
+            --shape-btn-fg: var(--color-shape-950);
+            --shape-btn-ink: var(--color-shape-success-200);
+            --shape-btn-tint: oklch(31% 0.07 152);
+            --shape-btn-tint-hover: oklch(37% 0.085 152);
+        }
+    }
+}

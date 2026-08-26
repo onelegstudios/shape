@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ServiceProvider;
+use Onelegstudios\Shape\ShapeServiceProvider;
+
+it('publishes each resource group under its own tag', function (string $tag) {
+    expect(ServiceProvider::pathsToPublish(ShapeServiceProvider::class, $tag))->not->toBeEmpty();
+})->with([
+    'laravel-shape',
+    'laravel-shape-config',
+    'laravel-shape-views',
+    'laravel-shape-components',
+    'laravel-shape-css',
+    'laravel-shape-lang',
+    'laravel-shape-assets',
+    'laravel-shape-migrations',
+]);
+
+it('ships the stylesheet it promises to publish', function () {
+    $published = ServiceProvider::pathsToPublish(ShapeServiceProvider::class, 'laravel-shape-css');
+
+    expect(array_key_first($published))->toBeFile();
+});
+
+describe('without blaze installed', function () {
+    it('compiles the blaze directive away', function () {
+        expect(Blade::compileString('@blaze(fold: true, safe: [\'color\'])'))->toBe('');
+    });
+
+    it('renders unblaze blocks inline and binds their scope', function () {
+        $html = Blade::render(<<<'BLADE'
+        @unblaze(scope: ['name' => $name])
+            [{{ $scope['name'] }}]
+        @endunblaze
+        BLADE, ['name' => 'email']);
+
+        expect(trim($html))->toBe('[email]');
+    });
+
+    it('restores an outer scope after an unblaze block', function () {
+        $html = Blade::render(<<<'BLADE'
+        @php $scope = ['name' => 'outer']; @endphp
+        @unblaze(scope: ['name' => 'inner'])
+            [{{ $scope['name'] }}]
+        @endunblaze
+        [{{ $scope['name'] }}]
+        BLADE);
+
+        expect(preg_replace('/\s+/', '', $html))->toBe('[inner][outer]');
+    });
+
+    it('still renders components that are annotated for folding', function () {
+        expect(Blade::render('<x-shape::button variant="primary">Save</x-shape::button>'))
+            ->toContain('data-shape-button')
+            ->toContain('Save');
+    });
+});

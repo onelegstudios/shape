@@ -1,0 +1,1 @@
+<x-shape::icon />
