@@ -57,6 +57,10 @@ class ShapeServiceProvider extends ServiceProvider
         ], ['laravel-shape', 'laravel-shape-css']);
 
         $this->publishes([
+            __DIR__.'/../resources/js/shape.js' => resource_path('js/shape.js'),
+        ], ['laravel-shape', 'laravel-shape-js']);
+
+        $this->publishes([
             __DIR__.'/../lang' => $this->app->langPath('vendor/shape'),
         ], ['laravel-shape', 'laravel-shape-lang']);
 

@@ -50,6 +50,12 @@ php artisan migrate
 php artisan vendor:publish --tag="laravel-shape-views"
 ```
 
+### Publishing the JavaScript
+
+```bash
+php artisan vendor:publish --tag="laravel-shape-js"
+```
+
 ### Publishing the Translations
 
 ```bash
@@ -126,6 +132,31 @@ component has to be static for that component to fold.
 ```
 
 See [docs/folding.md](docs/folding.md) for the full explanation.
+
+### JavaScript
+
+One file, and only the overlays need it:
+
+```js
+import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
+
+shape()   // or, if your application uses Alpine: Alpine.plugin(shape)
+```
+
+It imports nothing and depends on nothing. Modal and drawer are a `<dialog>`;
+dropdown, popover and tooltip use the `popover` attribute. The focus trap, the
+top layer, Escape, light dismiss and the scrim are the platform's, so what is
+left for a script is small. See [docs/overlays.md](docs/overlays.md).
+
+```blade
+<x-shape::overlay.trigger for="delete-project" color="danger" variant="subtle">
+    Delete project
+</x-shape::overlay.trigger>
+
+<x-shape::modal name="delete-project" heading="Delete project">
+    <x-shape::text size="sm">This cannot be undone.</x-shape::text>
+</x-shape::modal>
+```
 
 ## Documentation
 

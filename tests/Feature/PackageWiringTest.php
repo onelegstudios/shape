@@ -14,6 +14,7 @@ it('publishes each resource group under its own tag', function (string $tag) {
     'laravel-shape-views',
     'laravel-shape-components',
     'laravel-shape-css',
+    'laravel-shape-js',
     'laravel-shape-lang',
     'laravel-shape-assets',
     'laravel-shape-migrations',
@@ -23,6 +24,26 @@ it('ships the stylesheet it promises to publish', function () {
     $published = ServiceProvider::pathsToPublish(ShapeServiceProvider::class, 'laravel-shape-css');
 
     expect(array_key_first($published))->toBeFile();
+});
+
+it('ships the script it promises to publish', function () {
+    $published = ServiceProvider::pathsToPublish(ShapeServiceProvider::class, 'laravel-shape-js');
+
+    expect(array_key_first($published))->toBeFile();
+});
+
+it('ships a script that depends on nothing', function () {
+    // It installs as an Alpine plugin because that is where consumers expect to
+    // register it, but it neither imports Alpine nor uses the argument Alpine
+    // hands it. An application without Alpine calls `shape()` and gets the same
+    // behaviour — which is only true while this stays dependency-free.
+    $source = (string) file_get_contents(__DIR__.'/../../resources/js/shape.js');
+
+    // Matched at the start of a line: the file's own header shows a consumer how
+    // to import it, and that sentence is not a dependency.
+    expect(preg_match('/^import\s/m', $source))->toBe(0)
+        ->and(preg_match('/\brequire\(/', $source))->toBe(0)
+        ->and($source)->toContain('export default function shape');
 });
 
 describe('without blaze installed', function () {

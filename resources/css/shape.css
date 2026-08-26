@@ -270,3 +270,232 @@
         }
     }
 }
+
+@layer components {
+    /*
+    | Overlays.
+    |
+    | Modal, drawer, dropdown, popover and tooltip are all built on the two
+    | primitives the platform now ships: `<dialog>` and the `popover` attribute.
+    | Both put an element in the top layer, above every stacking context on the
+    | page, which is why nothing here sets a z-index — there is no stack to sit
+    | in and nothing to out-number.
+    |
+    | These rules live in CSS rather than in the components' class strings for
+    | one non-negotiable reason: `display` on a dialog or a popover has to be
+    | gated on the open state. Both are `display: none` when closed, and a
+    | utility class that sets `display: flex` unconditionally makes a closed
+    | overlay permanently visible. `[open]` and `:popover-open` are the gates.
+    */
+
+    [data-shape-modal],
+    [data-shape-drawer] {
+        /* The scrim. A pseudo-element, so there is no backdrop component to
+           compose and nothing for a caller to forget. */
+        &::backdrop {
+            background: oklch(20.6% 0.014 185 / 55%);
+            backdrop-filter: blur(2px);
+        }
+
+        &[open] {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    [data-shape-modal] {
+        max-height: calc(100dvh - 2rem);
+        /* Centred by the UA's `margin: auto` on a modal dialog. Stated here so
+           that a drawer can override it without either fighting a utility. */
+        margin: auto;
+    }
+
+    [data-shape-drawer] {
+        max-block-size: 100dvh;
+        block-size: 100dvh;
+        margin-block: 0;
+
+        &[data-shape-side='right'] {
+            margin-inline: auto 0;
+        }
+
+        &[data-shape-side='left'] {
+            margin-inline: 0 auto;
+        }
+
+        &[data-shape-side='bottom'] {
+            block-size: auto;
+            max-block-size: calc(100dvh - 3rem);
+            inline-size: 100%;
+            max-inline-size: 100%;
+            margin-block: auto 0;
+        }
+    }
+
+    [data-shape-popover] {
+        &:popover-open {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* A popover has a UA border and padding of its own, and it is positioned
+           against the viewport until an anchor says otherwise. */
+        position: absolute;
+        border: 0;
+        padding: 0;
+        overflow: visible;
+    }
+
+    /*
+    | Anchored placement.
+    |
+    | The trigger declares an `anchor-name`; the content declares the same name
+    | as its `position-anchor` and picks a `position-area` from its placement.
+    | `position-try-fallbacks` is what keeps a menu opened near the bottom of the
+    | window from rendering off-screen.
+    |
+    | Where anchor positioning is unsupported, shape.js positions these elements
+    | from the same `data-shape-placement` value. The two paths agree because
+    | they read the same attribute, not because anyone kept them in sync.
+    */
+    @supports (anchor-name: --shape-anchor) {
+        [data-shape-popover][data-shape-placement='bottom-start'] {
+            position-area: block-end span-inline-end;
+            position-try-fallbacks: block-start span-inline-end, block-end span-inline-start;
+        }
+
+        [data-shape-popover][data-shape-placement='bottom-end'] {
+            position-area: block-end span-inline-start;
+            position-try-fallbacks: block-start span-inline-start, block-end span-inline-end;
+        }
+
+        [data-shape-popover][data-shape-placement='top-start'] {
+            position-area: block-start span-inline-end;
+            position-try-fallbacks: block-end span-inline-end;
+        }
+
+        [data-shape-popover][data-shape-placement='top-end'] {
+            position-area: block-start span-inline-start;
+            position-try-fallbacks: block-end span-inline-start;
+        }
+
+        [data-shape-popover][data-shape-placement='top'] {
+            position-area: block-start center;
+            position-try-fallbacks: block-end center;
+        }
+
+        [data-shape-popover][data-shape-placement='bottom'] {
+            position-area: block-end center;
+            position-try-fallbacks: block-start center;
+        }
+
+        [data-shape-popover] {
+            margin: var(--shape-overlay-offset, 0.375rem);
+            /* Never taller than the space it was given. */
+            max-block-size: var(--shape-overlay-available, none);
+        }
+    }
+
+    /*
+    | Motion.
+    |
+    | `allow-discrete` is what makes a transition out of `display: none` and out
+    | of the top layer possible at all; `@starting-style` supplies the state to
+    | transition *from* on the way in. Without both, an overlay can only be
+    | animated on the way out.
+    */
+    @media (prefers-reduced-motion: no-preference) {
+        [data-shape-modal],
+        [data-shape-drawer],
+        [data-shape-popover] {
+            transition:
+                opacity 150ms ease,
+                translate 150ms ease,
+                scale 150ms ease,
+                overlay 150ms allow-discrete,
+                display 150ms allow-discrete;
+        }
+
+        [data-shape-modal]:not([open]),
+        [data-shape-popover]:not(:popover-open) {
+            opacity: 0;
+            scale: 0.97;
+        }
+
+        @starting-style {
+            [data-shape-modal][open],
+            [data-shape-popover]:popover-open {
+                opacity: 0;
+                scale: 0.97;
+            }
+        }
+
+        [data-shape-modal]::backdrop,
+        [data-shape-drawer]::backdrop {
+            transition:
+                opacity 150ms ease,
+                overlay 150ms allow-discrete,
+                display 150ms allow-discrete;
+        }
+
+        [data-shape-modal]:not([open])::backdrop,
+        [data-shape-drawer]:not([open])::backdrop {
+            opacity: 0;
+        }
+
+        @starting-style {
+            [data-shape-modal][open]::backdrop,
+            [data-shape-drawer][open]::backdrop {
+                opacity: 0;
+            }
+        }
+
+        [data-shape-drawer]:not([open]) {
+            opacity: 0;
+        }
+
+        [data-shape-drawer][data-shape-side='right']:not([open]) {
+            translate: 100% 0;
+        }
+
+        [data-shape-drawer][data-shape-side='left']:not([open]) {
+            translate: -100% 0;
+        }
+
+        [data-shape-drawer][data-shape-side='bottom']:not([open]) {
+            translate: 0 100%;
+        }
+
+        @starting-style {
+            [data-shape-drawer][data-shape-side='right'][open] {
+                translate: 100% 0;
+                opacity: 0;
+            }
+
+            [data-shape-drawer][data-shape-side='left'][open] {
+                translate: -100% 0;
+                opacity: 0;
+            }
+
+            [data-shape-drawer][data-shape-side='bottom'][open] {
+                translate: 0 100%;
+                opacity: 0;
+            }
+        }
+    }
+
+    /*
+    | Scroll lock, in CSS.
+    |
+    | A modal dialog makes the page inert but not unscrollable. `:has()` answers
+    | "is one of these open" without anyone counting them in JavaScript, which is
+    | the whole of the scroll-lock problem two overlays deep.
+    |
+    | `scrollbar-gutter` reserves the scrollbar's width up front so that locking
+    | the page doesn't shift the layout under the overlay.
+    */
+    html:has([data-shape-modal][open], [data-shape-drawer][open]) {
+        overflow: hidden;
+        scrollbar-gutter: stable;
+    }
+}

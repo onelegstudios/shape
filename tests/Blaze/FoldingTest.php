@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\View\Component;
 use Livewire\Blaze\Blaze;
 use Livewire\Blaze\Events\ComponentFolded;
 
@@ -13,11 +16,31 @@ use Livewire\Blaze\Events\ComponentFolded;
  * without ever going through the Blaze pipeline.
  */
 beforeEach(function () {
-    Artisan::call('view:clear');
+    clearCompiledViews();
 
     // Surface fold failures instead of silently falling back to the compiled path.
     Blaze::throw();
 });
+
+/**
+ * Clear the view cache, and the one cache that outlives it.
+ *
+ * A component rendered from a string — which is what `x-dynamic-component`
+ * produces, and Shape's icon dispatcher is one — has its source written into the
+ * compiled-view directory and its name remembered in a static on `Component`.
+ * `view:clear` deletes the file; the static still names it. The next render of
+ * an icon then fails with "File does not exist at path" naming a hash, several
+ * views deep, with nothing in the message naming a component.
+ *
+ * Any test that clears views between two renders needs this. It is one line, and
+ * it is invisible until a fixture happens to contain a dynamic icon.
+ */
+function clearCompiledViews(): void
+{
+    Artisan::call('view:clear');
+
+    Component::flushCache();
+}
 
 /**
  * @return list<string>
@@ -74,11 +97,11 @@ it('keeps folding when a pass-through prop is bound dynamically', function () {
 });
 
 it('renders identical markup whether or not the component folded', function () {
-    Artisan::call('view:clear');
+    clearCompiledViews();
     $folded = view('dynamic-color-button', ['color' => 'danger'])->render();
 
     Blaze::disable();
-    Artisan::call('view:clear');
+    clearCompiledViews();
     $unfolded = view('dynamic-color-button', ['color' => 'danger'])->render();
     Blaze::enable();
 
@@ -243,11 +266,11 @@ it('abandons folding for every aware child when the field name is dynamic', func
 });
 
 it('renders identical form markup whether or not the components folded', function () {
-    Artisan::call('view:clear');
+    clearCompiledViews();
     $folded = view('static-form')->render();
 
     Blaze::disable();
-    Artisan::call('view:clear');
+    clearCompiledViews();
     $unfolded = view('static-form')->render();
     Blaze::enable();
 
@@ -263,4 +286,82 @@ it('renders identical form markup whether or not the components folded', functio
     };
 
     expect($normalise($folded))->toBe($normalise($unfolded));
+});
+
+it('folds every call site in the overlay set', function () {
+    // The correction this step earned. The plan filed `modal` and `dropdown`
+    // under compile-only, on the reasoning that an overlay has to inspect its
+    // slots to know whether it has a header, a footer, a heading. Built on
+    // `<dialog>` and the `popover` attribute it inspects nothing: the heading is
+    // a prop, the footer is a component, and open state is the platform's. So
+    // the whole set folds, including the two that were supposed not to.
+    $folded = array_count_values(foldedComponentsWhileRendering('static-overlays'));
+
+    expect($folded)->toBe([
+        'shape::overlay.trigger' => 2,
+        'shape::text' => 3,
+        'shape::overlay.close' => 1,
+        'shape::button' => 2,
+        'shape::overlay.footer' => 1,
+        'shape::modal' => 1,
+        'shape::drawer' => 1,
+        'shape::dropdown.trigger' => 1,
+        'shape::dropdown.item' => 3,
+        'shape::dropdown' => 1,
+        'shape::popover.trigger' => 1,
+        'shape::popover' => 1,
+        'shape::tooltip' => 1,
+    ]);
+});
+
+it('leaves nothing in the overlay fixture to resolve at runtime', function () {
+    $fixture = __DIR__.'/../fixtures/views/static-overlays.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('<dialog')
+        ->toContain('data-shape-popover');
+});
+
+it('renders identical overlay markup whether or not the components folded', function () {
+    clearCompiledViews();
+    $folded = view('static-overlays')->render();
+
+    Blaze::disable();
+    clearCompiledViews();
+    $unfolded = view('static-overlays')->render();
+    Blaze::enable();
+
+    $normalise = function (string $html): string {
+        $html = (string) preg_replace('/\s+/', ' ', $html);
+
+        return trim((string) preg_replace('/>\s+</', '><', $html));
+    };
+
+    expect($normalise($folded))->toBe($normalise($unfolded));
+});
+
+it('bakes a translation into a folded component, which is why none of them call one', function () {
+    // Not a test of Blaze so much as the reason for a rule. A folded component
+    // is pre-rendered at compile time, so `__()` inside one resolves once and
+    // serves that locale to every visitor afterwards — the same failure the
+    // error component's `@unblaze` hole exists to prevent, in a place nobody
+    // thinks to look for request state.
+    //
+    // `ComponentConventionsTest` enforces the rule; this records what it costs.
+    clearCompiledViews();
+
+    Lang::addLines(['probe.hello' => 'Hello'], 'en');
+    Lang::addLines(['probe.hello' => 'Hej'], 'sv');
+
+    $english = Blade::render('<x-localised />');
+
+    app()->setLocale('sv');
+
+    $swedish = Blade::render('<x-localised />');
+
+    expect(trim($english))->toBe('<span data-probe>Hello</span>')
+        ->and(trim($swedish))->toBe(trim($english));
 });
