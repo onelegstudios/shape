@@ -35,7 +35,7 @@ component already declares the strategy it is safe to use. Without Blaze
 installed the components render normally; the `@blaze` annotations compile away.
 
 Folding is not free of obligations at the call site. See
-[Folding](folding.md) for the one rule that matters.
+[Folding](folding.md) for the rules that matter.
 
 ## Components
 
@@ -49,9 +49,17 @@ Folding is not free of obligations at the call site. See
 | [`separator`](components/separator.md) | fold + memo | Reach for it after spacing |
 | [`badge`](components/badge.md) | fold + memo | Prop-first, so it memoizes |
 | [`empty`](components/empty.md) | fold | The state most applications forget |
+| [`field`](components/field.md) | fold | Label, description and error; the name stated once |
+| [`input`](components/input.md) | fold | Composed primitives, and a shorthand for them |
+| [`textarea`](components/textarea.md) | fold | The input's chrome, resizing vertically only |
+| [`select`](components/select.md) | fold | Native, restyled; options are children |
+| [`checkbox`](components/checkbox.md) | fold | Wrapped in its own label |
+| [`radio`](components/radio.md) | fold | Grouped by a real fieldset |
+| [`switch`](components/switch.md) | fold | A checkbox with `role="switch"`, and no JS |
 
 Every page states the component's Blaze tier and the call sites that keep it on
-the fold path.
+the fold path. [Forms](forms.md) covers what is true across all of them: name
+resolution, groups, and the one hole cut in the fold for validation messages.
 
 ## Customising
 

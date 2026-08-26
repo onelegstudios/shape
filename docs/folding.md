@@ -78,3 +78,56 @@ loops and tables.
 Icons nested inside a component that folds are baked in with it, so
 `<x-shape::button icon="check">` and `<x-shape::badge color="success">` both
 end up as literal SVG in the compiled template.
+
+## Inherited props are unsafe
+
+A component that reads a value from its parent with `@aware` folds only while the
+parent passed that value statically. Blaze treats every `@aware` prop as unsafe,
+and the check looks at the *parent's* attribute:
+
+```blade
+{{-- Folds. Label, description, control and error are all inlined. --}}
+<x-shape::field name="email"> … </x-shape::field>
+
+{{-- Does not fold — and not just the one component that reads the name.
+     Every child of this field drops to the compiled path. --}}
+<x-shape::field :name="$field->name"> … </x-shape::field>
+```
+
+That is the cost of stating a field's name once instead of four times. Field
+names are literals in almost every real form, so it is rarely the case you are
+in; when you are, you lose a fold, not correctness.
+
+## Cutting a hole for request state
+
+Validation messages, the authenticated user, the CSRF token and the current URL
+all change per request. Folding bakes markup in at compile time, so a component
+that reads any of them cannot fold — unless it isolates the part that does.
+
+Shape's `error` component is the worked example, and the pattern generalises:
+
+```blade
+@blaze(fold: true)
+
+@unblaze(scope: ['name' => $target, 'bag' => $bag, 'class' => $classes])
+    {{-- runs per render; everything outside this block is still inlined --}}
+@endunblaze
+```
+
+Three rules come with it:
+
+- **Nothing crosses the boundary implicitly.** Variables have to be listed in
+  `scope` and read back off `$scope`. This is the most common mistake when
+  retrofitting fold onto an existing component.
+- **`$attributes` cannot cross it at all**, and it fails asymmetrically: outside
+  a fold the block compiles inline and the bag resolves, inside one it is
+  extracted and compiled on its own, where it does not. Build what the block
+  needs outside it and hand it in through `scope`.
+- **`scope` is written out with `var_export`**, so its values must be plain
+  scalars and must be known at compile time.
+
+One more thing worth knowing, because it costs an afternoon otherwise: Blaze
+validates the whole component file for request-scoped patterns *after* stripping
+the block, and the strip is a non-greedy match on the directive names. Naming
+those directives in a doc comment above the code moves where the strip begins,
+and the component fails to fold for a sentence.

@@ -13,8 +13,8 @@
         <header class="space-y-2">
             <h1 class="text-3xl font-semibold tracking-tight">Shape</h1>
             <p class="text-shape-600 dark:text-shape-400">
-                Typography and surfaces — headings, body copy, cards, separators, badges and
-                empty states, on top of the tokens and the two components from step one.
+                Forms — fields, labels, descriptions, error messages and every control — on top
+                of the typography, surfaces, tokens and components from the first two steps.
             </p>
         </header>
 
@@ -226,6 +226,119 @@
                     <x-shape::button variant="ghost">Import</x-shape::button>
                 </x-shape::empty>
             </x-shape::card>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Fields</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                The name is stated once, on the field. The label takes its <code class="text-xs">for</code>
+                from it, the control its <code class="text-xs">id</code> and <code class="text-xs">name</code>,
+                the description the id it is referenced by, and the error the key it looks up.
+            </p>
+            <div class="max-w-md space-y-5">
+                <x-shape::field name="full_name">
+                    <x-shape::label>Full name</x-shape::label>
+                    <x-shape::input placeholder="Ada Lovelace" />
+                </x-shape::field>
+
+                <x-shape::field name="account_email">
+                    <x-shape::label>Email</x-shape::label>
+                    <x-shape::description>We'll only use this for receipts.</x-shape::description>
+                    <x-shape::input type="email" aria-describedby="account_email-description" placeholder="you@example.com" />
+                </x-shape::field>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">The shorthand</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                The same primitives, assembled inside the control. Identical output — and it
+                claims <code class="text-xs">aria-describedby</code> for you, because here the
+                control did render the description itself.
+            </p>
+            <div class="max-w-md space-y-5">
+                <x-shape::input
+                    type="email"
+                    label="Billing email"
+                    description="Invoices and receipts go here."
+                    wire:model="billing_email"
+                />
+                <x-shape::textarea label="Notes" rows="3" placeholder="Anything the accounts team should know" wire:model="notes" />
+                <x-shape::select label="Plan" placeholder="Choose a plan" wire:model="plan">
+                    <x-shape::select.option value="monthly" label="Monthly" />
+                    <option value="yearly">Yearly &mdash; two months free</option>
+                </x-shape::select>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Invalid</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                There is no <code class="text-xs">invalid</code> prop. Styling keys off
+                <code class="text-xs">aria-invalid</code>, so what a screen reader announces and
+                what you can see cannot drift apart. The message itself is the one region cut
+                out of the fold.
+            </p>
+            <div class="max-w-md">
+                <x-shape::field name="billing_email">
+                    <x-shape::label>Billing email</x-shape::label>
+                    <x-shape::input type="email" value="ada@example.com" aria-invalid="true" />
+                    <x-shape::error />
+                </x-shape::field>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Sizes and disabled</h2>
+            <div class="max-w-md space-y-3">
+                <x-shape::input size="sm" placeholder="Small" />
+                <x-shape::input placeholder="Base" />
+                <x-shape::input size="lg" placeholder="Large" />
+                <x-shape::field name="locked">
+                    <x-shape::label>Disabled</x-shape::label>
+                    <x-shape::description>The label and this copy dim with the control.</x-shape::description>
+                    <x-shape::input value="Not editable" disabled />
+                </x-shape::field>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Groups</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                A real <code class="text-xs">&lt;fieldset&gt;</code> with a
+                <code class="text-xs">&lt;legend&gt;</code>, which is the part hand-rolled radio
+                groups almost always miss. Every radio inherits the group's name.
+            </p>
+            <div class="grid gap-8 sm:grid-cols-2">
+                <x-shape::field as="fieldset" name="billing_period" class="gap-3">
+                    <x-shape::label as="legend">Billing period</x-shape::label>
+                    <x-shape::radio value="monthly" label="Monthly" checked />
+                    <x-shape::radio value="yearly" label="Yearly" description="Two months free." />
+                    <x-shape::radio value="never" label="Invoice me" disabled />
+                </x-shape::field>
+
+                <x-shape::field as="fieldset" name="reminders" class="gap-3">
+                    <x-shape::label as="legend">Send reminders on</x-shape::label>
+                    <x-shape::checkbox value="mon" label="Monday" checked />
+                    <x-shape::checkbox value="thu" label="Thursday" description="The day most invoices fall due." />
+                    <x-shape::checkbox value="sun" label="Sunday" disabled />
+                </x-shape::field>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Switches</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                A native checkbox with <code class="text-xs">role="switch"</code>, moving on
+                <code class="text-xs">:checked</code>. No JavaScript, and it holds still for
+                anyone who asked for reduced motion.
+            </p>
+            <div class="max-w-md space-y-3">
+                <x-shape::switch name="notify" label="Email me about new invoices" checked />
+                <x-shape::switch name="digest" label="Weekly digest" description="Sent Monday morning." />
+                <x-shape::switch name="sms" label="Text me too" color="success" checked />
+                <x-shape::switch name="beta" label="Unavailable on your plan" disabled />
+            </div>
         </section>
 
         <section class="space-y-4">

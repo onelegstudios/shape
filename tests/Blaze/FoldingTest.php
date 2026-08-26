@@ -171,3 +171,96 @@ it('renders a self closing component that has been folded', function () {
     // existed. Self-closing calls have to keep working.
     expect(view('self-closing-button')->render())->toContain('data-shape-button');
 });
+
+it('folds every call site in the forms set', function () {
+    // Counted rather than merely present, for the same reason the typography
+    // assertion above is: `toContain` would pass while one of two call sites had
+    // quietly stopped folding.
+    $folded = array_count_values(foldedComponentsWhileRendering('static-form'));
+
+    expect($folded)->toBe([
+        'shape::label' => 2,
+        'shape::description' => 1,
+        'shape::input' => 2,
+        'shape::error' => 2,
+        'shape::field' => 2,
+        'shape::textarea' => 1,
+        'shape::select.option' => 1,
+        'shape::select' => 1,
+        'shape::radio' => 2,
+        'shape::checkbox' => 1,
+        'shape::switch' => 1,
+    ]);
+});
+
+it('leaves nothing in the form fixture to resolve at runtime', function () {
+    $fixture = __DIR__.'/../fixtures/views/static-form.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('data-shape-field')
+        ->toContain('data-shape-control');
+});
+
+it('does not bake one request\'s validation errors into the compiled template', function () {
+    // The single failure the unblaze hole exists to prevent. A folded component
+    // is pre-rendered once at compile time, so without that hole the first
+    // visitor to fail validation would have their message compiled into the
+    // template and served to everyone after them.
+    //
+    // The view cache is deliberately *not* cleared between these two renders:
+    // the point is that one compiled template produces two different results.
+    $first = view('static-error-field')->withErrors(['email' => 'That address is already taken.'])->render();
+    $second = view('static-error-field')->withErrors(['email' => 'That address is not valid.'])->render();
+    $clean = view('static-error-field')->render();
+
+    expect($first)->toContain('That address is already taken.')
+        ->and($second)->toContain('That address is not valid.')
+        ->and($second)->not->toContain('That address is already taken.')
+        ->and($clean)->not->toContain('data-shape-error');
+});
+
+it('keeps the surrounding field folded even though the error is cut out of it', function () {
+    // The hole is the error region, not the component around it.
+    expect(foldedComponentsWhileRendering('static-error-field'))
+        ->toContain('shape::field')
+        ->toContain('shape::error')
+        ->toContain('shape::input');
+});
+
+it('abandons folding for every aware child when the field name is dynamic', function () {
+    // This is the cost of stating the name once. `@aware` props are treated as
+    // unsafe, so a dynamic `:name` on the field takes the label, the control and
+    // the error off the fold path — not just the one component that reads it.
+    $folded = foldedComponentsWhileRendering('dynamic-field-name', ['name' => 'email']);
+
+    expect($folded)
+        ->not->toContain('shape::label')
+        ->not->toContain('shape::input')
+        ->not->toContain('shape::error');
+});
+
+it('renders identical form markup whether or not the components folded', function () {
+    Artisan::call('view:clear');
+    $folded = view('static-form')->render();
+
+    Blaze::disable();
+    Artisan::call('view:clear');
+    $unfolded = view('static-form')->render();
+    Blaze::enable();
+
+    // Compared with whitespace collapsed, unlike the button assertion above.
+    // Folding trims the blank lines an error that rendered nothing leaves
+    // behind, so the two paths differ by insignificant whitespace and by
+    // nothing else. How Blaze trims is Blaze's business; what this package
+    // promises is that the elements, attributes and content are the same.
+    $normalise = function (string $html): string {
+        $html = (string) preg_replace('/\s+/', ' ', $html);
+
+        return trim((string) preg_replace('/>\s+</', '><', $html));
+    };
+
+    expect($normalise($folded))->toBe($normalise($unfolded));
+});
