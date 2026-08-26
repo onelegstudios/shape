@@ -51,6 +51,17 @@ it('ships the icons the button demo needs', function (string $icon) {
     expect(Blade::render("<x-shape::icon.{$icon} />"))->toContain('<svg');
 })->with(['check', 'check-circle', 'x-mark', 'exclamation-triangle', 'arrow-right', 'plus', 'trash', 'chevron-down']);
 
+it('ships a distinct glyph for every badge state', function (string $icon) {
+    expect(Blade::render("<x-shape::icon.{$icon} />"))->toContain('<svg');
+})->with(['check-circle', 'x-circle', 'exclamation-triangle', 'information-circle']);
+
+it('draws the new state icons at all four sizes', function (string $icon) {
+    expect(Blade::render("<x-shape::icon.{$icon} variant=\"micro\" />"))->toContain('viewBox="0 0 16 16"')
+        ->and(Blade::render("<x-shape::icon.{$icon} variant=\"mini\" />"))->toContain('viewBox="0 0 20 20"')
+        ->and(Blade::render("<x-shape::icon.{$icon} variant=\"solid\" />"))->toContain('fill="currentColor"')
+        ->and(Blade::render("<x-shape::icon.{$icon} />"))->toContain('stroke="currentColor"');
+})->with(['x-circle', 'information-circle']);
+
 it('renders nothing rather than recursing when no name is given', function () {
     // Without a guard, `shape::icon.` resolves back to the dispatcher itself.
     expect(trim(Blade::render('<x-shape::icon />')))->toBe('');

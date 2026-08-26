@@ -85,6 +85,86 @@ it('renders identical markup whether or not the component folded', function () {
     expect($folded)->toBe($unfolded);
 });
 
+it('folds every call site in the typography and surfaces set', function () {
+    // Counted rather than merely present. The fixture calls `heading` and
+    // `text` more than once, so asserting that the set *contains* each name
+    // would pass while one of the two call sites had quietly stopped folding.
+    $folded = array_count_values(foldedComponentsWhileRendering('static-typography'));
+
+    expect($folded)->toBe([
+        'shape::heading' => 2,
+        'shape::text' => 2,
+        'shape::card.header' => 1,
+        'shape::separator' => 1,
+        'shape::badge' => 1,
+        'shape::button' => 2,
+        'shape::card.footer' => 1,
+        'shape::card' => 1,
+        'shape::empty' => 1,
+    ]);
+});
+
+it('leaves nothing in the typography fixture to resolve at runtime', function () {
+    // The collective failure this guards against: one unsafe call added to a
+    // shared partial drops everything below it off the fold path, and nothing
+    // else in the suite notices. A component that did not fold leaves a
+    // `$__blaze->compile(` call behind; a fully folded template is just markup.
+    $fixture = __DIR__.'/../fixtures/views/static-typography.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('data-shape-card')
+        ->toContain('data-shape-icon');
+});
+
+it('keeps folding a heading whose level is bound dynamically', function () {
+    // `level` only ever reaches the tag name, which is what `safe: ['level']`
+    // declares — and what lets document hierarchy be computed at the call site
+    // without costing the fold.
+    expect(foldedComponentsWhileRendering('dynamic-heading-level', ['level' => 3]))
+        ->toContain('shape::heading');
+});
+
+it('keeps folding a badge whose label is bound dynamically', function () {
+    // `label` is interpolated and nothing more, so it is safe. This is the call
+    // site that matters most: a badge in a table almost always has a dynamic
+    // label, and without this it would drop to the memo path and miss on every
+    // row whose label was unique.
+    expect(foldedComponentsWhileRendering('dynamic-badge-label', ['label' => 'Invoice #1042']))
+        ->toContain('shape::badge');
+});
+
+it('abandons folding a badge whose colour is bound dynamically', function () {
+    // Unlike the button, the badge branches on `color` to resolve its state
+    // icon, so colour cannot be declared safe here. This is the documented
+    // cost of the "never rely on colour alone" rule.
+    expect(foldedComponentsWhileRendering('dynamic-badge-color', ['color' => 'danger']))
+        ->not->toContain('shape::badge');
+});
+
+it('memoizes the slotless components when they cannot fold', function () {
+    // Fold and memo are alternatives, not a stack: a folded component is
+    // already inlined and has nothing left to cache. Memo is what catches the
+    // badge and separator on the call sites where folding gives up.
+    $fixture = __DIR__.'/../fixtures/views/dynamic-badge-color.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)->toContain('Memo::key("shape::badge"');
+});
+
+it('bakes a state icon into a folded badge', function () {
+    $fixture = __DIR__.'/../fixtures/views/static-badge.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->toContain('<svg')
+        ->toContain('data-shape-icon');
+});
+
 it('renders a self closing component that has been folded', function () {
     // Folding inlines the component's body into its parent, which is where an
     // unguarded `{{ $slot }}` would go looking for a variable that never

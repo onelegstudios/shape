@@ -37,6 +37,22 @@ installed the components render normally; the `@blaze` annotations compile away.
 Folding is not free of obligations at the call site. See
 [Folding](folding.md) for the one rule that matters.
 
+## Components
+
+| Component | Tier | |
+| --- | --- | --- |
+| [`button`](components/button.md) | fold | Hierarchy and semantics as separate props |
+| [`icon`](components/icon.md) | fold + memo | One drawing per size, never scaled |
+| [`heading`](components/heading.md) | fold | Document hierarchy separate from visual hierarchy |
+| [`text`](components/text.md) | fold | Muted reads the surface, not a global grey |
+| [`card`](components/card.md) | fold | A surface, with no border by default |
+| [`separator`](components/separator.md) | fold + memo | Reach for it after spacing |
+| [`badge`](components/badge.md) | fold + memo | Prop-first, so it memoizes |
+| [`empty`](components/empty.md) | fold | The state most applications forget |
+
+Every page states the component's Blaze tier and the call sites that keep it on
+the fold path.
+
 ## Customising
 
 Customisation escalates in three steps:

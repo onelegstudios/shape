@@ -42,8 +42,8 @@ it('reads its colours through tone variables rather than a variant colour matrix
 
     // Same classes either way — only the tone attribute differs, which is what
     // keeps `color` a pass-through prop and the component foldable.
-    expect($primary)->toContain('bg-[var(--shape-btn)]')
-        ->and($neutral)->toContain('bg-[var(--shape-btn)]');
+    expect($primary)->toContain('bg-[var(--shape-tone)]')
+        ->and($neutral)->toContain('bg-[var(--shape-tone)]');
 });
 
 it('gives its own defaults zero specificity so caller classes win', function () {

@@ -84,6 +84,17 @@
     | come from a `dark:` variant on the component, not from a token override.
     */
 
+    /*
+    | The one type-scale step Tailwind doesn't ship.
+    |
+    | The rest of the scale is Tailwind's, unchanged — same authors as the book,
+    | same numbers, nothing to improve on. But the scale stops at `text-xs`, and
+    | small badges and captions genuinely need a step below it. Adding the one
+    | missing value is not the same as redefining the scale.
+    */
+    --text-2xs: 0.6875rem;
+    --text-2xs--line-height: calc(1 / 0.6875);
+
     /* Border radius is a personality decision. It is made once, here. */
     --radius-shape: 0.5rem;
     --radius-shape-lg: 0.75rem;
@@ -122,6 +133,21 @@
         --shape-fg: oklch(99% 0.008 25);
         --shape-fg-muted: oklch(89.2% 0.052 25);
     }
+
+    [data-shape-surface='success'] {
+        --shape-fg: oklch(99% 0.01 152);
+        --shape-fg-muted: oklch(89% 0.05 152);
+    }
+
+    /*
+    | Warning is the one filled surface that stays light, because a saturated
+    | yellow is far too bright to carry white text. Its foregrounds are dark ends
+    | of the same hue rather than light ones.
+    */
+    [data-shape-surface='warning'] {
+        --shape-fg: oklch(28% 0.062 62);
+        --shape-fg-muted: oklch(41% 0.078 64);
+    }
 }
 
 @layer components {
@@ -136,84 +162,111 @@
     | This is also what keeps the button foldable. Because `color` only ever gets
     | interpolated into an attribute — never branched on — it stays a pass-through
     | prop, so `:color="$destructive ? 'danger' : null"` still folds.
+    |
+    | The variables are named for the tone rather than for any one component, so
+    | every component that carries semantics reads the same set. Only the button
+    | uses the `-hover` and `-surface` halves; a badge is not interactive.
     */
     [data-shape-tone] {
-        --shape-btn: var(--color-shape-900);
-        --shape-btn-hover: var(--color-shape-800);
-        --shape-btn-fg: var(--color-shape-50);
-        --shape-btn-ink: var(--color-shape-800);
-        --shape-btn-tint: var(--color-shape-100);
-        --shape-btn-tint-hover: var(--color-shape-200);
-        --shape-btn-surface: white;
-        --shape-btn-surface-hover: var(--color-shape-50);
-        --shape-btn-border: var(--color-shape-200);
+        --shape-tone: var(--color-shape-900);
+        --shape-tone-hover: var(--color-shape-800);
+        --shape-tone-fg: var(--color-shape-50);
+        --shape-tone-ink: var(--color-shape-800);
+        --shape-tone-tint: var(--color-shape-100);
+        --shape-tone-tint-hover: var(--color-shape-200);
+        --shape-tone-surface: white;
+        --shape-tone-surface-hover: var(--color-shape-50);
+        --shape-tone-border: var(--color-shape-200);
     }
 
     [data-shape-tone='accent'] {
-        --shape-btn: var(--color-shape-accent-600);
-        --shape-btn-hover: var(--color-shape-accent-700);
-        --shape-btn-fg: white;
-        --shape-btn-ink: var(--color-shape-accent-700);
-        --shape-btn-tint: var(--color-shape-accent-100);
-        --shape-btn-tint-hover: var(--color-shape-accent-200);
+        --shape-tone: var(--color-shape-accent-600);
+        --shape-tone-hover: var(--color-shape-accent-700);
+        --shape-tone-fg: white;
+        --shape-tone-ink: var(--color-shape-accent-700);
+        --shape-tone-tint: var(--color-shape-accent-100);
+        --shape-tone-tint-hover: var(--color-shape-accent-200);
     }
 
     [data-shape-tone='danger'] {
-        --shape-btn: var(--color-shape-danger-600);
-        --shape-btn-hover: var(--color-shape-danger-700);
-        --shape-btn-fg: white;
-        --shape-btn-ink: var(--color-shape-danger-700);
-        --shape-btn-tint: var(--color-shape-danger-100);
-        --shape-btn-tint-hover: var(--color-shape-danger-200);
+        --shape-tone: var(--color-shape-danger-600);
+        --shape-tone-hover: var(--color-shape-danger-700);
+        --shape-tone-fg: white;
+        --shape-tone-ink: var(--color-shape-danger-700);
+        --shape-tone-tint: var(--color-shape-danger-100);
+        --shape-tone-tint-hover: var(--color-shape-danger-200);
     }
 
     [data-shape-tone='success'] {
-        --shape-btn: var(--color-shape-success-600);
-        --shape-btn-hover: var(--color-shape-success-700);
-        --shape-btn-fg: white;
-        --shape-btn-ink: var(--color-shape-success-700);
-        --shape-btn-tint: var(--color-shape-success-100);
-        --shape-btn-tint-hover: var(--color-shape-success-200);
+        --shape-tone: var(--color-shape-success-600);
+        --shape-tone-hover: var(--color-shape-success-700);
+        --shape-tone-fg: white;
+        --shape-tone-ink: var(--color-shape-success-700);
+        --shape-tone-tint: var(--color-shape-success-100);
+        --shape-tone-tint-hover: var(--color-shape-success-200);
+    }
+
+    /*
+    | Warning is the exception to the pattern above. Every other tone fills with
+    | its 600 step and puts white on top; at this hue that combination fails
+    | contrast badly, so the solid fill uses the bright 500 and takes dark text.
+    */
+    [data-shape-tone='warning'] {
+        --shape-tone: var(--color-shape-warning-500);
+        --shape-tone-hover: var(--color-shape-warning-600);
+        --shape-tone-fg: oklch(28% 0.062 62);
+        --shape-tone-ink: var(--color-shape-warning-700);
+        --shape-tone-tint: var(--color-shape-warning-100);
+        --shape-tone-tint-hover: var(--color-shape-warning-200);
     }
 
     @media (prefers-color-scheme: dark) {
         [data-shape-tone] {
-            --shape-btn: var(--color-shape-100);
-            --shape-btn-hover: white;
-            --shape-btn-fg: var(--color-shape-900);
-            --shape-btn-ink: var(--color-shape-200);
-            --shape-btn-tint: var(--color-shape-800);
-            --shape-btn-tint-hover: var(--color-shape-700);
-            --shape-btn-surface: var(--color-shape-900);
-            --shape-btn-surface-hover: var(--color-shape-800);
-            --shape-btn-border: var(--color-shape-800);
+            --shape-tone: var(--color-shape-100);
+            --shape-tone-hover: white;
+            --shape-tone-fg: var(--color-shape-900);
+            --shape-tone-ink: var(--color-shape-200);
+            --shape-tone-tint: var(--color-shape-800);
+            --shape-tone-tint-hover: var(--color-shape-700);
+            --shape-tone-surface: var(--color-shape-900);
+            --shape-tone-surface-hover: var(--color-shape-800);
+            --shape-tone-border: var(--color-shape-800);
         }
 
         [data-shape-tone='accent'] {
-            --shape-btn: var(--color-shape-accent-500);
-            --shape-btn-hover: var(--color-shape-accent-600);
-            --shape-btn-fg: var(--color-shape-950);
-            --shape-btn-ink: var(--color-shape-accent-200);
-            --shape-btn-tint: var(--color-shape-accent-800);
-            --shape-btn-tint-hover: var(--color-shape-accent-700);
+            --shape-tone: var(--color-shape-accent-500);
+            --shape-tone-hover: var(--color-shape-accent-600);
+            --shape-tone-fg: var(--color-shape-950);
+            --shape-tone-ink: var(--color-shape-accent-200);
+            --shape-tone-tint: var(--color-shape-accent-800);
+            --shape-tone-tint-hover: var(--color-shape-accent-700);
         }
 
         [data-shape-tone='danger'] {
-            --shape-btn: var(--color-shape-danger-500);
-            --shape-btn-hover: var(--color-shape-danger-600);
-            --shape-btn-fg: var(--color-shape-950);
-            --shape-btn-ink: var(--color-shape-danger-200);
-            --shape-btn-tint: oklch(31% 0.09 27);
-            --shape-btn-tint-hover: oklch(37% 0.11 27);
+            --shape-tone: var(--color-shape-danger-500);
+            --shape-tone-hover: var(--color-shape-danger-600);
+            --shape-tone-fg: var(--color-shape-950);
+            --shape-tone-ink: var(--color-shape-danger-200);
+            --shape-tone-tint: oklch(31% 0.09 27);
+            --shape-tone-tint-hover: oklch(37% 0.11 27);
         }
 
         [data-shape-tone='success'] {
-            --shape-btn: var(--color-shape-success-500);
-            --shape-btn-hover: var(--color-shape-success-600);
-            --shape-btn-fg: var(--color-shape-950);
-            --shape-btn-ink: var(--color-shape-success-200);
-            --shape-btn-tint: oklch(31% 0.07 152);
-            --shape-btn-tint-hover: oklch(37% 0.085 152);
+            --shape-tone: var(--color-shape-success-500);
+            --shape-tone-hover: var(--color-shape-success-600);
+            --shape-tone-fg: var(--color-shape-950);
+            --shape-tone-ink: var(--color-shape-success-200);
+            --shape-tone-tint: oklch(31% 0.07 152);
+            --shape-tone-tint-hover: oklch(37% 0.085 152);
+        }
+
+        [data-shape-tone='warning'] {
+            --shape-tone: var(--color-shape-warning-500);
+            --shape-tone-hover: var(--color-shape-warning-600);
+            --shape-tone-fg: var(--color-shape-950);
+            --shape-tone-ink: var(--color-shape-warning-200);
+            --shape-tone-tint: oklch(31% 0.075 68);
+            --shape-tone-tint-hover: oklch(37% 0.09 68);
         }
     }
 }

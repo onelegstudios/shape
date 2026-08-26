@@ -43,10 +43,10 @@ $classes = Shape::classes()
     // Colour is semantics, and it is applied through `data-shape-tone` instead of
     // a second match arm, so the two concerns never multiply into a class matrix.
     ->add(match ($variant) {
-        'primary' => 'bg-[var(--shape-btn)] text-[var(--shape-btn-fg)] [:where(&)]:shadow-sm hover:bg-[var(--shape-btn-hover)]',
-        'subtle' => 'bg-[var(--shape-btn-tint)] text-[var(--shape-btn-ink)] hover:bg-[var(--shape-btn-tint-hover)]',
-        'ghost' => 'text-[var(--shape-btn-ink)] hover:bg-[var(--shape-btn-tint)]',
-        default => 'border border-[var(--shape-btn-border)] bg-[var(--shape-btn-surface)] text-[var(--shape-btn-ink)] [:where(&)]:shadow-sm hover:bg-[var(--shape-btn-surface-hover)]',
+        'primary' => 'bg-[var(--shape-tone)] text-[var(--shape-tone-fg)] [:where(&)]:shadow-sm hover:bg-[var(--shape-tone-hover)]',
+        'subtle' => 'bg-[var(--shape-tone-tint)] text-[var(--shape-tone-ink)] hover:bg-[var(--shape-tone-tint-hover)]',
+        'ghost' => 'text-[var(--shape-tone-ink)] hover:bg-[var(--shape-tone-tint)]',
+        default => 'border border-[var(--shape-tone-border)] bg-[var(--shape-tone-surface)] text-[var(--shape-tone-ink)] [:where(&)]:shadow-sm hover:bg-[var(--shape-tone-surface-hover)]',
     });
 @endphp
 

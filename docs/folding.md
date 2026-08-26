@@ -41,8 +41,40 @@ are declared `safe`, and they fold even when bound dynamically:
 This is why `variant` and `color` are separate props on the button rather than
 one combined appearance prop: hierarchy has to branch, semantics doesn't.
 
+`safe` is declared per component, not per prop name. The badge branches on
+`color` to resolve its state icon, so `color` is *not* safe there — the same
+prop name, a different answer, for a reason the component's own page explains.
+Check the page rather than assuming.
+
+## Fold and memo are alternatives, not a stack
+
+A component annotated `@blaze(fold: true, memo: true)` does not do both at once.
+Folding wins where it applies: the component is inlined into the parent and
+there is nothing left to cache. Memoization is the safety net underneath — it
+catches the call sites where folding gave up, caching the rendered output per
+prop set.
+
+```blade
+{{-- Folds. The span and its SVG are inlined into the parent template. --}}
+<x-shape::badge label="Paid" color="success" />
+
+{{-- Doesn't fold. Memoizes instead: a table of two hundred rows with five
+     distinct states renders five badges and reuses them. --}}
+@foreach ($invoices as $invoice)
+    <x-shape::badge :label="$invoice->state" :color="$invoice->tone" />
+@endforeach
+```
+
+Memo requires a component to have **no slots** and to be called self-closing.
+That is why `badge` takes `label` as a prop rather than as children — the slot
+would cost it the safety net on exactly the call sites that need one.
+
 ## Icons
 
 `<x-shape::icon.check />` folds and memoizes. `<x-shape::icon name="check" />`
 resolves the component at runtime and cannot fold — reach for the direct form in
 loops and tables.
+
+Icons nested inside a component that folds are baked in with it, so
+`<x-shape::button icon="check">` and `<x-shape::badge color="success">` both
+end up as literal SVG in the compiled template.
