@@ -26,19 +26,16 @@ error message looks up.
 | `description` | — | supporting copy, wired to `aria-describedby` |
 | `id` | the resolved name | the element id |
 
-## The shorthand
+## Breaking it apart
 
-Passing a `label` makes this component render the field around itself:
+Passing a `label` makes this component render the whole field around itself,
+which is how you should write almost every field. When you need something that
+shape cannot express, the [primitives](field.md) are underneath it — identical
+output either way, because the shorthand renders them.
 
-```blade
-<x-shape::input type="email" label="Email" description="For receipts." wire:model="email" />
-```
-
-That is the [composed primitives](field.md) assembled, not a second
-implementation — identical output either way. The `@if` that chooses between them
-asks about a prop, and a question about a prop is answered when the template
-compiles; asking the same of a slot would be a runtime question and would cost
-this component its fold.
+The `@if` that chooses between the two asks about a prop, and a question about a
+prop is answered when the template compiles; asking the same of a slot would be a
+runtime question and would cost this component its fold.
 
 ## Invalid state
 

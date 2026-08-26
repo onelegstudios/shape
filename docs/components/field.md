@@ -1,16 +1,24 @@
 # Field
 
-The wrapper that makes a label, a control and a message one thing — plus the
-three components that live inside it.
+What every control assembles when you give it a `label`. Reach for these
+directly only when the shorthand cannot express what you need.
 
 ```blade
+{{-- This… --}}
+<x-shape::input type="email" label="Email" description="For receipts." wire:model="email" />
+
+{{-- …renders this. --}}
 <x-shape::field name="email">
     <x-shape::label>Email</x-shape::label>
-    <x-shape::description>We'll only use this for receipts.</x-shape::description>
-    <x-shape::input type="email" wire:model="email" />
+    <x-shape::description>For receipts.</x-shape::description>
+    <x-shape::input type="email" aria-describedby="email-description" wire:model="email" />
     <x-shape::error />
 </x-shape::field>
 ```
+
+Compose by hand when you need a control between the label and the description,
+two controls in one field, or markup of your own between the pieces. Groups are
+the other case — there is no single control for a shorthand to live on.
 
 ## The name is stated once
 

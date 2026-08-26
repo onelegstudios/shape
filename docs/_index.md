@@ -49,7 +49,7 @@ Folding is not free of obligations at the call site. See
 | [`separator`](components/separator.md) | fold + memo | Reach for it after spacing |
 | [`badge`](components/badge.md) | fold + memo | Prop-first, so it memoizes |
 | [`empty`](components/empty.md) | fold | The state most applications forget |
-| [`field`](components/field.md) | fold | Label, description and error; the name stated once |
+| [`field`](components/field.md) | fold | What a control assembles when given a `label` |
 | [`input`](components/input.md) | fold | Composed primitives, and a shorthand for them |
 | [`textarea`](components/textarea.md) | fold | The input's chrome, resizing vertically only |
 | [`select`](components/select.md) | fold | Native, restyled; options are children |
@@ -58,8 +58,9 @@ Folding is not free of obligations at the call site. See
 | [`switch`](components/switch.md) | fold | A checkbox with `role="switch"`, and no JS |
 
 Every page states the component's Blaze tier and the call sites that keep it on
-the fold path. [Forms](forms.md) covers what is true across all of them: name
-resolution, groups, and the one hole cut in the fold for validation messages.
+the fold path. [Forms](forms.md) starts with the one call site that writes a
+whole field, then covers groups, name resolution, and the single hole cut in the
+fold for validation messages.
 
 ## Customising
 

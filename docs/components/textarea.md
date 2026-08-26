@@ -4,9 +4,9 @@
 <x-shape::textarea label="Notes" rows="5" wire:model="notes" />
 ```
 
-The input's chrome without the fixed height. Name resolution, the shorthand and
-the `aria-describedby` rule all work exactly as they do on
-[input](input.md).
+The input's chrome without the fixed height. The shorthand, name resolution and
+the `aria-describedby` rule all work exactly as they do on [input](input.md) —
+including the fact that passing a `label` assembles the whole field for you.
 
 | Prop | Default | Values |
 | --- | --- | --- |

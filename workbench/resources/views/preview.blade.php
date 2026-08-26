@@ -231,32 +231,12 @@
         <section class="space-y-4">
             <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Fields</h2>
             <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
-                The name is stated once, on the field. The label takes its <code class="text-xs">for</code>
-                from it, the control its <code class="text-xs">id</code> and <code class="text-xs">name</code>,
-                the description the id it is referenced by, and the error the key it looks up.
+                One call site writes the whole field: the label wired to the control, the
+                description it points at, the control, and the message for when it fails
+                validation. This is the shape of almost every field you will write.
             </p>
             <div class="max-w-md space-y-5">
-                <x-shape::field name="full_name">
-                    <x-shape::label>Full name</x-shape::label>
-                    <x-shape::input placeholder="Ada Lovelace" />
-                </x-shape::field>
-
-                <x-shape::field name="account_email">
-                    <x-shape::label>Email</x-shape::label>
-                    <x-shape::description>We'll only use this for receipts.</x-shape::description>
-                    <x-shape::input type="email" aria-describedby="account_email-description" placeholder="you@example.com" />
-                </x-shape::field>
-            </div>
-        </section>
-
-        <section class="space-y-4">
-            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">The shorthand</h2>
-            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
-                The same primitives, assembled inside the control. Identical output — and it
-                claims <code class="text-xs">aria-describedby</code> for you, because here the
-                control did render the description itself.
-            </p>
-            <div class="max-w-md space-y-5">
+                <x-shape::input label="Full name" placeholder="Ada Lovelace" wire:model="full_name" />
                 <x-shape::input
                     type="email"
                     label="Billing email"
@@ -268,6 +248,24 @@
                     <x-shape::select.option value="monthly" label="Monthly" />
                     <option value="yearly">Yearly &mdash; two months free</option>
                 </x-shape::select>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Breaking it apart</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                The same primitives the shorthand assembles, written out. Reach for these when
+                you need a control between the label and the description, two controls in one
+                field, or markup of your own between the pieces — and note the one thing you
+                take on, <code class="text-xs">aria-describedby</code>, which the shorthand set
+                for you.
+            </p>
+            <div class="max-w-md space-y-5">
+                <x-shape::field name="account_email">
+                    <x-shape::label>Email</x-shape::label>
+                    <x-shape::description>We'll only use this for receipts.</x-shape::description>
+                    <x-shape::input type="email" aria-describedby="account_email-description" placeholder="you@example.com" />
+                </x-shape::field>
             </div>
         </section>
 

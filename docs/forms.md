@@ -7,20 +7,11 @@ validation errors are request state, and folding bakes markup in at compile time
 Both problems have the same answer: state the name once, and cut exactly one hole
 in the fold.
 
-## Two layers, one call site
+## Start with the shorthand
 
-The primitives are the real API. The shorthand is those primitives assembled.
+One call site does the whole field:
 
 ```blade
-{{-- Composed. Full control over order and markup. --}}
-<x-shape::field name="email">
-    <x-shape::label>Email</x-shape::label>
-    <x-shape::description>We'll only use this for receipts.</x-shape::description>
-    <x-shape::input type="email" wire:model="email" />
-    <x-shape::error />
-</x-shape::field>
-
-{{-- Shorthand. The same field, assembled inside the control. --}}
 <x-shape::input
     type="email"
     label="Email"
@@ -29,7 +20,33 @@ The primitives are the real API. The shorthand is those primitives assembled.
 />
 ```
 
-They are not two implementations. The shorthand renders the primitives.
+That renders a field, a label wired to the control, a description the control
+points at with `aria-describedby`, the control itself, and the error message for
+`email`. Every control takes `label` and `description`, so this is the shape of
+almost every field you will write.
+
+It is also the form that folds most reliably, because everything it needs is
+known at the call site. Reaching for the primitives is a choice with a cost, and
+it is worth knowing which cost before you pay it.
+
+## Breaking it apart
+
+The shorthand is not a separate implementation. It renders these:
+
+```blade
+<x-shape::field name="email">
+    <x-shape::label>Email</x-shape::label>
+    <x-shape::description>We'll only use this for receipts.</x-shape::description>
+    <x-shape::input type="email" aria-describedby="email-description" wire:model="email" />
+    <x-shape::error />
+</x-shape::field>
+```
+
+Compose by hand when you need something the shorthand cannot express: a control
+between the label and the description, two controls in one field, markup of your
+own between the pieces. Note the one thing you take on by doing it —
+`aria-describedby`, which the shorthand set for you. See
+[below](#aria-describedby-in-the-composed-form).
 
 ## The name is stated once
 
@@ -60,8 +77,9 @@ So the shortest working call site states nothing at all:
 
 ## Groups are real fieldsets
 
-A radio group with no accessible name is a set of unrelated radios. `field` and
-`label` both take an `as`, which is all a group needs:
+Groups are the one case with no shorthand, because there is no single control to
+hang it on. A radio group with no accessible name is a set of unrelated radios,
+and `field` and `label` both take an `as`, which is all a group needs:
 
 ```blade
 <x-shape::field as="fieldset" name="billing">
