@@ -18,11 +18,11 @@
 ])
 
 @aware([
-    'name' => null,
+    'fieldName' => null,
 ])
 
 @php
-$field = $attributes->get('name') ?? $name ?? $attributes->whereStartsWith('wire:model')->first();
+$field = $attributes->get('name') ?? $fieldName ?? $attributes->whereStartsWith('wire:model')->first();
 $controlId = $id ?? $field;
 $describedBy = filled($description) && filled($controlId) ? $controlId.'-description' : null;
 
@@ -60,7 +60,7 @@ $classes = Shape::classes()
 @endphp
 
 @if (filled($label))
-    <x-shape::field :name="$controlId">
+    <x-shape::field :field-name="$controlId">
         <x-shape::label>{{ $label }}</x-shape::label>
 
         @if (filled($description))

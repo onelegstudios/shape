@@ -15,7 +15,7 @@ it('takes the shared group name from the fieldset it sits in', function () {
     // A radio only means anything as part of a group, and no call site should
     // have to repeat the name that defines the group.
     $html = Blade::render(<<<'BLADE'
-        <x-shape::field as="fieldset" name="billing">
+        <x-shape::field as="fieldset" field-name="billing">
             <x-shape::label as="legend">Billing period</x-shape::label>
             <x-shape::radio value="monthly" label="Monthly" />
             <x-shape::radio value="yearly" label="Yearly" />
@@ -50,7 +50,7 @@ it('describes itself when it renders a description', function () {
 
 it('dims only its own label when disabled', function () {
     $html = Blade::render(<<<'BLADE'
-        <x-shape::field as="fieldset" name="billing">
+        <x-shape::field as="fieldset" field-name="billing">
             <x-shape::radio value="monthly" label="Monthly" disabled />
             <x-shape::radio value="yearly" label="Yearly" />
         </x-shape::field>

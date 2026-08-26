@@ -24,7 +24,7 @@ One name, many values. Put them in a fieldset so the group has an accessible
 name, and the shared name is stated once:
 
 ```blade
-<x-shape::field as="fieldset" name="days">
+<x-shape::field as="fieldset" field-name="days">
     <x-shape::label as="legend">Send reminders on</x-shape::label>
     <x-shape::checkbox value="mon" label="Monday" />
     <x-shape::checkbox value="tue" label="Tuesday" />

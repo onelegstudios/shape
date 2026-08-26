@@ -41,7 +41,7 @@ it('infers through a modified binding', function () {
 
 it('prefers an explicit name over the field it sits in', function () {
     $html = Blade::render(<<<'BLADE'
-        <x-shape::field name="from-the-field">
+        <x-shape::field field-name="from-the-field">
             <x-shape::input name="explicit" />
         </x-shape::field>
     BLADE);
@@ -51,7 +51,7 @@ it('prefers an explicit name over the field it sits in', function () {
 
 it('prefers the field it sits in over the livewire binding', function () {
     $html = Blade::render(<<<'BLADE'
-        <x-shape::field name="from-the-field">
+        <x-shape::field field-name="from-the-field">
             <x-shape::input wire:model="from-the-binding" />
         </x-shape::field>
     BLADE);

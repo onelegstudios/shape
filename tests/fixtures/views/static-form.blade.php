@@ -1,4 +1,4 @@
-<x-shape::field name="email">
+<x-shape::field field-name="email">
     <x-shape::label>Email</x-shape::label>
     <x-shape::description>We'll only use this for receipts.</x-shape::description>
     <x-shape::input type="email" aria-describedby="email-description" wire:model="email" />
@@ -14,7 +14,7 @@
     <option value="yearly">Yearly</option>
 </x-shape::select>
 
-<x-shape::field as="fieldset" name="billing">
+<x-shape::field as="fieldset" field-name="billing">
     <x-shape::label as="legend">Billing period</x-shape::label>
     <x-shape::radio value="monthly" label="Monthly" />
     <x-shape::radio value="yearly" label="Yearly" description="Two months free." />

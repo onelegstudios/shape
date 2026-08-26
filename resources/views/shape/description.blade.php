@@ -16,11 +16,11 @@
 ])
 
 @aware([
-    'name' => null,
+    'fieldName' => null,
 ])
 
 @php
-$target = $for ?? $name;
+$target = $for ?? $fieldName;
 @endphp
 
 <p

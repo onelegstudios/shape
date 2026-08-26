@@ -22,7 +22,7 @@ afterEach(function () {
 it('renders the message for the field it sits in', function () {
     shareErrors(['email' => 'That address is already taken.']);
 
-    expect(Blade::render('<x-shape::field name="email"><x-shape::error /></x-shape::field>'))
+    expect(Blade::render('<x-shape::field field-name="email"><x-shape::error /></x-shape::field>'))
         ->toContain('That address is already taken.')
         ->toContain('data-shape-error');
 });
@@ -30,7 +30,7 @@ it('renders the message for the field it sits in', function () {
 it('renders nothing when the field is valid', function () {
     shareErrors(['name' => 'Required.']);
 
-    expect(Blade::render('<x-shape::field name="email"><x-shape::error /></x-shape::field>'))
+    expect(Blade::render('<x-shape::field field-name="email"><x-shape::error /></x-shape::field>'))
         ->not->toContain('data-shape-error');
 });
 
@@ -38,7 +38,7 @@ it('renders nothing at all when no error bag was shared', function () {
     // A mailable, a queued render, a component rendered outside the session
     // middleware. Reading the bag defensively is the difference between "this
     // field has no message" and a fatal.
-    expect(Blade::render('<x-shape::field name="email"><x-shape::error /></x-shape::field>'))
+    expect(Blade::render('<x-shape::field field-name="email"><x-shape::error /></x-shape::field>'))
         ->not->toContain('data-shape-error');
 });
 

@@ -8,7 +8,7 @@ directly only when the shorthand cannot express what you need.
 <x-shape::input type="email" label="Email" description="For receipts." wire:model="email" />
 
 {{-- …renders this. --}}
-<x-shape::field name="email">
+<x-shape::field field-name="email">
     <x-shape::label>Email</x-shape::label>
     <x-shape::description>For receipts.</x-shape::description>
     <x-shape::input type="email" aria-describedby="email-description" wire:model="email" />
@@ -44,7 +44,7 @@ A group of radios or checkboxes is only a group if it is a `<fieldset>` with a
 `<legend>` naming it:
 
 ```blade
-<x-shape::field as="fieldset" name="billing">
+<x-shape::field as="fieldset" field-name="billing">
     <x-shape::label as="legend">Billing period</x-shape::label>
     <x-shape::radio value="monthly" label="Monthly" />
     <x-shape::radio value="yearly" label="Yearly" />
@@ -100,8 +100,12 @@ inside a tinted card stays legible instead of turning to mud.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `for` | the field's `name` | the key to look up |
+| `name` | the field's `field-name` | the key to look up |
 | `bag` | `default` | the error bag to read |
+
+`name` here, where the label and the description take `for`. Those point at an
+element; this names a validation key, which is a different thing that happens to
+share a value.
 
 Renders nothing when the field is valid, when no bag was shared, and when it has
 no name to look up — an empty key would otherwise make it display any error in

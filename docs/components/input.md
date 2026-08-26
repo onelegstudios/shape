@@ -14,7 +14,7 @@ error message looks up.
 ```blade
 {{-- All three of these produce name="email" id="email" --}}
 <x-shape::input name="email" />
-<x-shape::field name="email"><x-shape::input /></x-shape::field>
+<x-shape::field field-name="email"><x-shape::input /></x-shape::field>
 <x-shape::input wire:model="email" />
 ```
 

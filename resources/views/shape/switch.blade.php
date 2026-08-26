@@ -25,11 +25,11 @@
 ])
 
 @aware([
-    'name' => null,
+    'fieldName' => null,
 ])
 
 @php
-$field = $attributes->get('name') ?? $name ?? $attributes->whereStartsWith('wire:model')->first();
+$field = $attributes->get('name') ?? $fieldName ?? $attributes->whereStartsWith('wire:model')->first();
 $controlId = $id ?? (filled($field) && filled($value) ? $field.'-'.$value : $field);
 $describedBy = filled($description) && filled($controlId) ? $controlId.'-description' : null;
 

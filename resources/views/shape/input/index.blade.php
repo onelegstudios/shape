@@ -31,13 +31,13 @@
 ])
 
 @aware([
-    'name' => null,
+    'fieldName' => null,
 ])
 
 @php
 // Most specific wins. Reading the bag is interpolation, not a branch, so it
 // costs nothing at fold time.
-$field = $attributes->get('name') ?? $name ?? $attributes->whereStartsWith('wire:model')->first();
+$field = $attributes->get('name') ?? $fieldName ?? $attributes->whereStartsWith('wire:model')->first();
 $controlId = $id ?? $field;
 
 // Only claimed when this component renders the description itself. In the
@@ -86,7 +86,7 @@ $classes = Shape::classes()
 @endphp
 
 @if (filled($label))
-    <x-shape::field :name="$controlId">
+    <x-shape::field :field-name="$controlId">
         <x-shape::label>{{ $label }}</x-shape::label>
 
         @if (filled($description))

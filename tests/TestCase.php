@@ -39,6 +39,11 @@ abstract class TestCase extends Orchestra
         }
 
         $app['config']->set('view.compiled', $compiled);
+
+        $app['config']->set('view.paths', [
+            ...(array) $app['config']->get('view.paths'),
+            __DIR__.'/fixtures/views',
+        ]);
     }
 
     protected function getPackageProviders($app): array

@@ -19,7 +19,7 @@
 ])
 
 @aware([
-    'name' => null,
+    'fieldName' => null,
 ])
 
 @php
@@ -27,7 +27,7 @@ $classes = Shape::classes()
     ->add('[:where(&)]:text-sm [:where(&)]:font-medium')
     ->add('[:where(&)]:text-[color:var(--shape-fg)]');
 
-$target = $for ?? $name;
+$target = $for ?? $fieldName;
 @endphp
 
 <?php switch ($as): case ('legend'): ?>

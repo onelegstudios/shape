@@ -1,4 +1,4 @@
-@blaze(fold: true, safe: ['name', 'as'])
+@blaze(fold: true, safe: ['fieldName', 'as'])
 
 {{--
     The wrapper that makes a label, a control and an error message one thing.
@@ -8,6 +8,13 @@
     description for the id it is referenced by, the error for the key it looks
     up. Passing it down as props instead would mean stating it four times and
     getting it wrong once.
+
+    The attribute is `field-name` rather than `name`, and that is not fussiness.
+    `@aware` walks the entire ancestor stack, so a child reading `name` would
+    accept one from any ancestor that happened to have one — an application's own
+    `<x-panel name="Billing">` around a form would silently name every control
+    inside it "Billing", beating even an explicit `wire:model`. Nothing else in a
+    template is called `field-name`, so nothing else can answer for it.
 
     The field owns the space between its children, the way the card does. Nothing
     inside sets its own outer margin, so there is never a question about which
@@ -26,7 +33,7 @@
 --}}
 
 @props([
-    'name' => null,
+    'fieldName' => null,
     'as' => 'div',
 ])
 

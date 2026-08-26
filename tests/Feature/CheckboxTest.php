@@ -26,7 +26,7 @@ it('separates a group of checkboxes by value', function () {
 
 it('takes its name from the field it sits in', function () {
     $html = Blade::render(<<<'BLADE'
-        <x-shape::field as="fieldset" name="days">
+        <x-shape::field as="fieldset" field-name="days">
             <x-shape::checkbox value="mon" label="Monday" />
         </x-shape::field>
     BLADE);

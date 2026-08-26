@@ -87,11 +87,11 @@ and the check looks at the *parent's* attribute:
 
 ```blade
 {{-- Folds. Label, description, control and error are all inlined. --}}
-<x-shape::field name="email"> … </x-shape::field>
+<x-shape::field field-name="email"> … </x-shape::field>
 
 {{-- Does not fold — and not just the one component that reads the name.
      Every child of this field drops to the compiled path. --}}
-<x-shape::field :name="$field->name"> … </x-shape::field>
+<x-shape::field :field-name="$field->name"> … </x-shape::field>
 ```
 
 That is the cost of stating a field's name once instead of four times. Field

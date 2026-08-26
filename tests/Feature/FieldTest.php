@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Blade;
 it('states the field name once and wires the label to the control', function () {
     // The point of the field: `name` is written here and nowhere else.
     $html = Blade::render(<<<'BLADE'
-        <x-shape::field name="email">
+        <x-shape::field field-name="email">
             <x-shape::label>Email</x-shape::label>
             <x-shape::input type="email" />
         </x-shape::field>
@@ -21,7 +21,7 @@ it('states the field name once and wires the label to the control', function () 
 
 it('gives the description an id the control can point at', function () {
     $html = Blade::render(<<<'BLADE'
-        <x-shape::field name="email">
+        <x-shape::field field-name="email">
             <x-shape::description>For receipts.</x-shape::description>
         </x-shape::field>
     BLADE);
@@ -31,7 +31,7 @@ it('gives the description an id the control can point at', function () {
 
 it('lets an explicit target override the field it sits in', function () {
     $html = Blade::render(<<<'BLADE'
-        <x-shape::field name="email">
+        <x-shape::field field-name="email">
             <x-shape::label for="something-else">Email</x-shape::label>
         </x-shape::field>
     BLADE);
@@ -47,7 +47,7 @@ it('renders a label with no target rather than an empty for', function () {
 
 it('becomes a real fieldset with a legend for a group', function () {
     $html = Blade::render(<<<'BLADE'
-        <x-shape::field as="fieldset" name="billing">
+        <x-shape::field as="fieldset" field-name="billing">
             <x-shape::label as="legend">Billing period</x-shape::label>
         </x-shape::field>
     BLADE);
@@ -70,16 +70,35 @@ it('resets the fieldset styling the browser supplies', function () {
 it('dims only its own direct children when a control is disabled', function () {
     // A checkbox carries its own label inside itself. Matching descendants would
     // mean one disabled radio dimming the labels of every sibling in the group.
-    expect(Blade::render('<x-shape::field name="email" />'))
+    expect(Blade::render('<x-shape::field field-name="email" />'))
         ->toContain('[&amp;:has(&gt;[data-shape-control]:disabled)&gt;[data-shape-label]]:opacity-50');
 });
 
 it('owns the space between its children rather than leaving it to them', function () {
-    expect(Blade::render('<x-shape::field name="email" />'))->toContain('gap-1.5');
+    expect(Blade::render('<x-shape::field field-name="email" />'))->toContain('gap-1.5');
+});
+
+it('refuses a name from an ancestor that is not a field', function () {
+    // `@aware` walks the whole ancestor stack, so a child reading `name` would
+    // take one from anything that had it. An application's own component with a
+    // `name` would then rename every control inside it — beating even an
+    // explicit `wire:model`, which is the resolution order working exactly as
+    // designed on a value it should never have been offered.
+    //
+    // The context travels as `field-name` for that reason alone.
+    $html = Blade::render(<<<'BLADE'
+        <x-panel name="Billing">
+            <x-shape::input wire:model="email" />
+        </x-panel>
+    BLADE);
+
+    expect($html)
+        ->toContain('name="email"')
+        ->not->toContain('name="Billing"');
 });
 
 it('passes attributes straight through', function () {
-    expect(Blade::render('<x-shape::field name="email" wire:key="f" class="max-w-sm" />'))
+    expect(Blade::render('<x-shape::field field-name="email" wire:key="f" class="max-w-sm" />'))
         ->toContain('wire:key="f"')
         ->toContain('max-w-sm');
 });

@@ -34,7 +34,7 @@ it is worth knowing which cost before you pay it.
 The shorthand is not a separate implementation. It renders these:
 
 ```blade
-<x-shape::field name="email">
+<x-shape::field field-name="email">
     <x-shape::label>Email</x-shape::label>
     <x-shape::description>We'll only use this for receipts.</x-shape::description>
     <x-shape::input type="email" aria-describedby="email-description" wire:model="email" />
@@ -50,7 +50,7 @@ own between the pieces. Note the one thing you take on by doing it —
 
 ## The name is stated once
 
-`<x-shape::field name="email">` is the only place the name appears. Everything
+`<x-shape::field field-name="email">` is the only place the name appears. Everything
 inside reads it back:
 
 | Component | What it does with the name |
@@ -60,6 +60,20 @@ inside reads it back:
 | `input` / `textarea` / `select` | its `id` and its `name` |
 | `checkbox` / `radio` / `switch` | its `name`; the `value` separates the group |
 | `error` | the key it looks up |
+
+### Why `field-name` and not `name`
+
+Because `@aware` walks the whole ancestor stack, not just the nearest field. A
+child reading `name` would accept one from anything that had it — your own
+`<x-panel name="Billing">` wrapped around a form would rename every control
+inside it to `Billing`, beating even an explicit `wire:model`. Nothing else in a
+template is called `field-name`, so nothing else can answer for it.
+
+It also keeps `name` free to mean what it usually means: `<x-shape::error
+name="email" />` and `<x-shape::input name="email" />` are ordinary props, not
+values competing with an inherited one.
+
+## Resolving a control's name
 
 A control resolves its name from three places, most specific first:
 
@@ -82,7 +96,7 @@ hang it on. A radio group with no accessible name is a set of unrelated radios,
 and `field` and `label` both take an `as`, which is all a group needs:
 
 ```blade
-<x-shape::field as="fieldset" name="billing">
+<x-shape::field as="fieldset" field-name="billing">
     <x-shape::label as="legend">Billing period</x-shape::label>
 
     <x-shape::radio value="monthly" label="Monthly" />
@@ -145,7 +159,7 @@ that might not exist. A dangling reference is worse than an absent one.
 If you compose by hand and want the link, say so:
 
 ```blade
-<x-shape::field name="email">
+<x-shape::field field-name="email">
     <x-shape::label>Email</x-shape::label>
     <x-shape::description>We'll only use this for receipts.</x-shape::description>
     <x-shape::input type="email" aria-describedby="email-description" wire:model="email" />
@@ -164,10 +178,10 @@ the one that reads it:
 
 ```blade
 {{-- Folds: label, description, control and error are all inlined. --}}
-<x-shape::field name="email"> … </x-shape::field>
+<x-shape::field field-name="email"> … </x-shape::field>
 
 {{-- Does not fold. Renders correctly, through the compiled path. --}}
-<x-shape::field :name="$field->name"> … </x-shape::field>
+<x-shape::field :field-name="$field->name"> … </x-shape::field>
 ```
 
 Field names are literals in almost every real form, so this is rarely the case

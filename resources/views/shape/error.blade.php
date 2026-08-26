@@ -33,20 +33,26 @@
     move where that strip starts and fail the component for a sentence. Hence the
     circumlocution.
 
+    The prop is `name` rather than `for`, unlike the label and the description
+    beside it. Those two point at an element; this one names a validation key,
+    which is a different thing that happens to share a value. That the key can be
+    a prop at all is a consequence of the field's context travelling as
+    `field-name` — with both called `name`, one would quietly overwrite the other.
+
     No outer margin. The field owns the space between its children.
 --}}
 
 @props([
-    'for' => null,
+    'name' => null,
     'bag' => 'default',
 ])
 
 @aware([
-    'name' => null,
+    'fieldName' => null,
 ])
 
 @php
-$target = $for ?? $name;
+$target = $name ?? $fieldName;
 
 // Interpolated into the scope, never branched on, so reading the bag here costs
 // nothing. Other attributes are deliberately dropped: an error message is not a

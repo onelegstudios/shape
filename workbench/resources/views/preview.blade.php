@@ -261,7 +261,7 @@
                 for you.
             </p>
             <div class="max-w-md space-y-5">
-                <x-shape::field name="account_email">
+                <x-shape::field field-name="account_email">
                     <x-shape::label>Email</x-shape::label>
                     <x-shape::description>We'll only use this for receipts.</x-shape::description>
                     <x-shape::input type="email" aria-describedby="account_email-description" placeholder="you@example.com" />
@@ -278,7 +278,7 @@
                 out of the fold.
             </p>
             <div class="max-w-md">
-                <x-shape::field name="billing_email">
+                <x-shape::field field-name="billing_email">
                     <x-shape::label>Billing email</x-shape::label>
                     <x-shape::input type="email" value="ada@example.com" aria-invalid="true" />
                     <x-shape::error />
@@ -292,7 +292,7 @@
                 <x-shape::input size="sm" placeholder="Small" />
                 <x-shape::input placeholder="Base" />
                 <x-shape::input size="lg" placeholder="Large" />
-                <x-shape::field name="locked">
+                <x-shape::field field-name="locked">
                     <x-shape::label>Disabled</x-shape::label>
                     <x-shape::description>The label and this copy dim with the control.</x-shape::description>
                     <x-shape::input value="Not editable" disabled />
@@ -308,14 +308,14 @@
                 groups almost always miss. Every radio inherits the group's name.
             </p>
             <div class="grid gap-8 sm:grid-cols-2">
-                <x-shape::field as="fieldset" name="billing_period" class="gap-3">
+                <x-shape::field as="fieldset" field-name="billing_period" class="gap-3">
                     <x-shape::label as="legend">Billing period</x-shape::label>
                     <x-shape::radio value="monthly" label="Monthly" checked />
                     <x-shape::radio value="yearly" label="Yearly" description="Two months free." />
                     <x-shape::radio value="never" label="Invoice me" disabled />
                 </x-shape::field>
 
-                <x-shape::field as="fieldset" name="reminders" class="gap-3">
+                <x-shape::field as="fieldset" field-name="reminders" class="gap-3">
                     <x-shape::label as="legend">Send reminders on</x-shape::label>
                     <x-shape::checkbox value="mon" label="Monday" checked />
                     <x-shape::checkbox value="thu" label="Thursday" description="The day most invoices fall due." />
