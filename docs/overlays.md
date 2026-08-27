@@ -89,6 +89,34 @@ $this->dispatch('shape:close', name: 'confirm-delete');
 Browser events rather than a Livewire dependency, so the package keeps working in
 an application that has no Livewire in it.
 
+## A parent's spacing outranks a component library
+
+`space-y-*` on a parent sets `margin-block-end` on its children. A modal written
+inside a spaced section is a child like any other, so it gets that margin — and a
+dialog centres itself with auto margins, so it stops being centred:
+
+```blade
+<section class="space-y-4">
+    <x-shape::button>Delete</x-shape::button>
+
+    {{-- Gets `margin-block-end: 1rem`, and is no longer centred. --}}
+    <x-shape::modal name="confirm"> … </x-shape::modal>
+</section>
+```
+
+Specificity cannot fix this. Cascade layers are ordered *before* specificity is
+consulted, so anything in `@layer utilities` beats everything in
+`@layer components` no matter how the selector is written. Shape's placement
+rules therefore live in a `shape-overlay` layer declared after Tailwind's, which
+sorts last and wins.
+
+Only placement lives there. Colour, padding, radius and max-width stay in the
+class strings with their `[:where(&)]:` prefixes, where your utilities still win —
+that part of the arrangement is unchanged.
+
+If you eject an overlay and write your own placement, put it in that layer too,
+or expect the same bug.
+
 ## Browser support, stated plainly
 
 - `<dialog>`, `popover` and `::backdrop` are supported everywhere the rest of
