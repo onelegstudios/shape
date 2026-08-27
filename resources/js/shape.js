@@ -10,10 +10,11 @@
 | rather than as per-element state:
 |
 |   1. a fallback for `command` / `commandfor`, for browsers that predate them
-|   2. holding a non-dismissible dialog open when Escape is pressed
-|   3. keeping `aria-expanded` on a popover's trigger honest
-|   4. arrow-key movement between menu items
-|   5. showing and hiding tooltips, which are the one overlay a pointer opens
+|   2. a fallback for `closedby`, so a click outside a dialog closes it
+|   3. holding a non-dismissible dialog open when Escape is pressed
+|   4. keeping `aria-expanded` on a popover's trigger honest
+|   5. arrow-key movement between menu items
+|   6. showing and hiding tooltips, which are the one overlay a pointer opens
 |
 | plus a positioner used only where CSS anchor positioning is unsupported, and a
 | pair of window events so a Livewire component can open an overlay by name.
@@ -39,6 +40,7 @@ export default function shape() {
     installed = true
 
     invokerFallback()
+    lightDismiss()
     persistentDialogs()
     expandedState()
     menuKeys()
@@ -126,11 +128,54 @@ function invokerFallback() {
     })
 }
 
-/* ---------------------------------------------------------- 2. persistence */
+/* -------------------------------------------------------- 2. light dismiss */
 
 /*
-| `dismissible: false` has to be enforced here because `cancel` is a native
-| event: Escape closes a dialog unless something calls preventDefault on it.
+| Clicking outside a modal closes it — which a `<dialog>` does not do on its own.
+|
+| `closedby="any"` is the platform's answer and the components declare it, so
+| where it is supported this function does nothing at all. It is recent enough
+| that a fallback is still worth twenty lines.
+|
+| The fallback cannot simply ask whether the click landed on the dialog.
+| `::backdrop` is painted by the dialog rather than being an element of its own,
+| so a click there targets the dialog — and in this design the dialog *is* the
+| panel, so a click on its own padding targets it too. Comparing the pointer
+| against the dialog's box is what separates the two.
+*/
+function lightDismiss() {
+    if ('closedBy' in HTMLDialogElement.prototype) return
+
+    document.addEventListener('click', (event) => {
+        const dialog = event.target
+
+        if (!isDialog(dialog)) return
+        if (!dialog.hasAttribute('data-shape-modal') && !dialog.hasAttribute('data-shape-drawer')) return
+        if (dialog.hasAttribute('data-shape-persistent')) return
+
+        // A click produced by the keyboard — Enter on a button inside the
+        // dialog — carries no coordinates, and (0, 0) is outside the box for
+        // every centred modal there has ever been.
+        if (event.detail === 0) return
+
+        const rect = dialog.getBoundingClientRect()
+
+        const inside =
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom
+
+        if (!inside) dialog.close()
+    })
+}
+
+/* ---------------------------------------------------------- 3. persistence */
+
+/*
+| `dismissible: false` is declared as `closedby="none"`, and this covers the
+| browsers that do not read that attribute yet: `cancel` is a native event, and
+| Escape closes a dialog unless something calls preventDefault on it.
 |
 | `cancel` does not bubble, so the listener is registered for the capture phase —
 | which still runs for events that don't bubble, and is what lets one listener
@@ -148,7 +193,7 @@ function persistentDialogs() {
     )
 }
 
-/* -------------------------------------------------------- 3. aria-expanded */
+/* -------------------------------------------------------- 4. aria-expanded */
 
 /*
 | A popover's trigger has to say whether the thing it controls is open. Browsers
@@ -180,7 +225,7 @@ function expandedState() {
     )
 }
 
-/* ------------------------------------------------------------ 4. menu keys */
+/* ------------------------------------------------------------ 5. menu keys */
 
 /*
 | A menu is a single tab stop that arrow keys move within. Items keep their
@@ -235,7 +280,7 @@ function menuKeys() {
     })
 }
 
-/* ------------------------------------------------------------- 5. tooltips */
+/* ------------------------------------------------------------- 6. tooltips */
 
 /*
 | The one overlay opened by a pointer rather than by a click, which is why it is

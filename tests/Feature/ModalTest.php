@@ -34,6 +34,28 @@ it('describes itself with its description, and stays quiet without one', functio
         ->not->toContain('aria-describedby');
 });
 
+it('closes on a click outside, which a dialog does not do on its own', function () {
+    // `closedby="any"` is the platform's light dismiss. Without it a modal
+    // `<dialog>` closes on Escape and on an explicit close and nothing else —
+    // clicking the backdrop does nothing, because `::backdrop` is painted by the
+    // dialog rather than being an element that can be clicked.
+    expect(Blade::render('<x-shape::modal name="c">Body</x-shape::modal>'))
+        ->toContain('closedby="any"');
+
+    expect(Blade::render('<x-shape::drawer name="c">Body</x-shape::drawer>'))
+        ->toContain('closedby="any"');
+});
+
+it('declares itself unclosable when it must be answered', function () {
+    // `closedby="none"` turns off Escape and the outside click together, which
+    // is the whole of `dismissible: false` on a browser that reads it.
+    expect(Blade::render('<x-shape::modal name="c" :dismissible="false">Body</x-shape::modal>'))
+        ->toContain('closedby="none"');
+
+    expect(Blade::render('<x-shape::drawer name="c" :dismissible="false">Body</x-shape::drawer>'))
+        ->toContain('closedby="none"');
+});
+
 it('renders a close button only when it can be dismissed', function () {
     expect(Blade::render('<x-shape::modal name="c" heading="H">Body</x-shape::modal>'))
         ->toContain('data-shape-overlay-close')

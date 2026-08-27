@@ -60,6 +60,7 @@ $classes = Shape::classes()
 <dialog
     id="{{ $name }}"
     {{ $attributes->class($classes) }}
+    closedby="{{ $dismissible ? 'any' : 'none' }}"
     data-shape-drawer
     data-shape-side="{{ $side }}"
     data-shape-size="{{ $size }}"

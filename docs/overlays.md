@@ -68,15 +68,15 @@ ancestor stack, which is a hazard worth having exactly once in a library.
 | --- | --- | --- | --- |
 | Top layer | `<dialog>` | `popover` | `popover` |
 | Focus trap | `showModal()` | not applicable | not applicable |
-| Escape | native `cancel` | native | `shape.js` |
-| Dismiss on outside click | — | native light dismiss | `shape.js` |
+| Escape | native, `closedby` | native | `shape.js` |
+| Dismiss on outside click | native, `closedby` | native light dismiss | `shape.js` |
 | Scrim | `::backdrop` | — | — |
 | Scroll lock | CSS `:has()` | — | — |
 | Placement | CSS | CSS anchor positioning | CSS anchor positioning |
 | Return focus to trigger | native | native | not applicable |
 
-`shape.js` covers what is left: the invoker fallback, holding Escape off a
-non-dismissible dialog, `aria-expanded`, arrow keys in menus, tooltips, the
+`shape.js` covers what is left: the invoker and `closedby` fallbacks, holding
+Escape off a non-dismissible dialog, `aria-expanded`, arrow keys in menus, tooltips, the
 anchor-positioning fallback, and the two window events below.
 
 ## Opening from the server
@@ -124,6 +124,11 @@ or expect the same bug.
 - `command` / `commandfor` are recent. `shape.js` falls back for them; a page
   without the script and without invoker support has modal triggers that do
   nothing.
+- `closedby` is recent too, and is what makes a click outside a dialog close it —
+  a `<dialog>` does not light-dismiss on its own. `shape.js` falls back by
+  comparing the click against the dialog's box, which is the part worth stating:
+  the dialog is also the panel here, so "did the click hit the dialog" cannot
+  answer it.
 - CSS anchor positioning is not universal yet. `shape.js` positions overlays
   itself where it is missing, reading the same `data-shape-placement` attribute
   the stylesheet reads.

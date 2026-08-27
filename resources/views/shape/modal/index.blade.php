@@ -56,6 +56,7 @@ $classes = Shape::classes()
 <dialog
     id="{{ $name }}"
     {{ $attributes->class($classes) }}
+    closedby="{{ $dismissible ? 'any' : 'none' }}"
     data-shape-modal
     data-shape-size="{{ $size }}"
     @unless ($dismissible) data-shape-persistent @endunless

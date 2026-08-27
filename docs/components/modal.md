@@ -65,6 +65,22 @@ From the server, when the decision genuinely lives there:
 $this->dispatch('shape:open', name: 'delete-project');
 ```
 
+## Clicking outside
+
+Closes it. That is `closedby="any"`, the platform's own light dismiss — worth
+knowing about because a `<dialog>` does **not** do it by default: without that
+attribute a modal closes on Escape and on an explicit close and nothing else. A
+click on the backdrop does nothing, because `::backdrop` is painted by the dialog
+rather than being an element that can be clicked.
+
+`closedby` is recent, so `shape.js` carries a fallback for browsers that ignore
+it. The fallback cannot just ask whether the click landed on the dialog — in this
+design the dialog *is* the panel, so a click on its own padding targets it too —
+so it compares the pointer against the dialog's box.
+
+`:dismissible="false"` renders `closedby="none"`, which turns off the outside
+click and Escape together.
+
 ## Heading and description are props
 
 Not slots. A question about a prop is answered when the template compiles; the
