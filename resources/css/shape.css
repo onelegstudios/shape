@@ -270,3 +270,237 @@
         }
     }
 }
+
+@layer components {
+    /*
+    | Overlays.
+    |
+    | Modal, drawer, dropdown, popover and tooltip are all built on the two
+    | primitives the platform now ships: `<dialog>` and the `popover` attribute.
+    | Both put an element in the top layer, above every stacking context on the
+    | page, which is why nothing here sets a z-index — there is no stack to sit
+    | in and nothing to out-number.
+    |
+    | These rules live in CSS rather than in the components' class strings for
+    | one non-negotiable reason: `display` on a dialog or a popover has to be
+    | gated on the open state. Both are `display: none` when closed, and a
+    | utility class that sets `display: flex` unconditionally makes a closed
+    | overlay permanently visible. `[open]` and `:popover-open` are the gates.
+    */
+
+    [data-shape-modal],
+    [data-shape-drawer] {
+        /* The scrim. A pseudo-element, so there is no backdrop component to
+           compose and nothing for a caller to forget. */
+        &::backdrop {
+            background: oklch(20.6% 0.014 185 / 55%);
+            backdrop-filter: blur(2px);
+        }
+
+        &[open] {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    [data-shape-modal] {
+        max-height: calc(100dvh - 2rem);
+    }
+
+    [data-shape-drawer] {
+        max-block-size: 100dvh;
+        block-size: 100dvh;
+
+        &[data-shape-side='bottom'] {
+            block-size: auto;
+            max-block-size: calc(100dvh - 3rem);
+            inline-size: 100%;
+            max-inline-size: 100%;
+        }
+    }
+
+    [data-shape-popover] {
+        &:popover-open {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* A popover arrives with a UA border and padding of its own. Position is
+           left to the UA's `fixed`, which is what shape.js then writes into. */
+        border: 0;
+        padding: 0;
+        overflow: visible;
+    }
+
+    /*
+    | Anchored placement is JavaScript's, all of it.
+    |
+    | This started as CSS anchor positioning with a JS fallback, and the split
+    | was the bug. Anchor positioning ships in pieces: a browser can support
+    | `anchor-name` without `position-area`, and `position-try-fallbacks` takes
+    | try-tactics and `@position-try` names — not the bare position-area values
+    | that read so naturally — so the fallbacks were being dropped as invalid
+    | wherever the rest did work. Two paths, each gating itself on a different
+    | half of a feature, is how a menu ends up opening upwards in one browser and
+    | nowhere in another.
+    |
+    | So there is one path. shape.js measures the trigger and writes `top` and
+    | `left` on every open, scroll and resize, in every browser. It is what runs,
+    | it is what the tests exercise, and it behaves the same everywhere.
+    |
+    | Worth revisiting when anchor positioning is uniform: it is the better
+    | mechanism, and it costs no script at all. It is not there yet.
+    */
+
+    /*
+    | Motion.
+    |
+    | `allow-discrete` is what makes a transition out of `display: none` and out
+    | of the top layer possible at all; `@starting-style` supplies the state to
+    | transition *from* on the way in. Without both, an overlay can only be
+    | animated on the way out.
+    */
+    @media (prefers-reduced-motion: no-preference) {
+        [data-shape-modal],
+        [data-shape-drawer],
+        [data-shape-popover] {
+            transition:
+                opacity 150ms ease,
+                translate 150ms ease,
+                scale 150ms ease,
+                overlay 150ms allow-discrete,
+                display 150ms allow-discrete;
+        }
+
+        [data-shape-modal]:not([open]),
+        [data-shape-popover]:not(:popover-open) {
+            opacity: 0;
+            scale: 0.97;
+        }
+
+        @starting-style {
+            [data-shape-modal][open],
+            [data-shape-popover]:popover-open {
+                opacity: 0;
+                scale: 0.97;
+            }
+        }
+
+        [data-shape-modal]::backdrop,
+        [data-shape-drawer]::backdrop {
+            transition:
+                opacity 150ms ease,
+                overlay 150ms allow-discrete,
+                display 150ms allow-discrete;
+        }
+
+        [data-shape-modal]:not([open])::backdrop,
+        [data-shape-drawer]:not([open])::backdrop {
+            opacity: 0;
+        }
+
+        @starting-style {
+            [data-shape-modal][open]::backdrop,
+            [data-shape-drawer][open]::backdrop {
+                opacity: 0;
+            }
+        }
+
+        [data-shape-drawer]:not([open]) {
+            opacity: 0;
+        }
+
+        [data-shape-drawer][data-shape-side='right']:not([open]) {
+            translate: 100% 0;
+        }
+
+        [data-shape-drawer][data-shape-side='left']:not([open]) {
+            translate: -100% 0;
+        }
+
+        [data-shape-drawer][data-shape-side='bottom']:not([open]) {
+            translate: 0 100%;
+        }
+
+        @starting-style {
+            [data-shape-drawer][data-shape-side='right'][open] {
+                translate: 100% 0;
+                opacity: 0;
+            }
+
+            [data-shape-drawer][data-shape-side='left'][open] {
+                translate: -100% 0;
+                opacity: 0;
+            }
+
+            [data-shape-drawer][data-shape-side='bottom'][open] {
+                translate: 0 100%;
+                opacity: 0;
+            }
+        }
+    }
+
+    /*
+    | Scroll lock, in CSS.
+    |
+    | A modal dialog makes the page inert but not unscrollable. `:has()` answers
+    | "is one of these open" without anyone counting them in JavaScript, which is
+    | the whole of the scroll-lock problem two overlays deep.
+    |
+    | `scrollbar-gutter` reserves the scrollbar's width up front so that locking
+    | the page doesn't shift the layout under the overlay.
+    */
+    html:has([data-shape-modal][open], [data-shape-drawer][open]) {
+        overflow: hidden;
+        scrollbar-gutter: stable;
+    }
+}
+
+/*
+| Placement, in a layer of its own — and the layer is the point.
+|
+| A dialog centres itself with the UA's `inset: 0` and auto margins, and a drawer
+| pins itself to an edge the same way. Both are defeated by something extremely
+| ordinary: `space-y-*` on the parent sets `margin-block-end` on its children,
+| `divide-y` does something similar, and an overlay written inside a spaced
+| section — which is most overlays — is pushed off centre by however much that
+| parent happened to be spacing by.
+|
+| Specificity cannot fix it. Cascade layers are ordered before specificity is
+| consulted, so `@layer utilities` beats every rule in `@layer components` no
+| matter how it is written. The fix is a layer declared after Tailwind's, which
+| this is: shape.css is imported after `tailwindcss`, so `shape-overlay` sorts
+| last and these declarations outrank the utility.
+|
+| Only placement mechanics live here. Colour, padding, radius and max-width stay
+| in the components' class strings, where a caller's utility still wins — which
+| is the whole arrangement `[:where(&)]:` exists to protect.
+*/
+@layer shape-overlay {
+    [data-shape-modal] {
+        margin: auto;
+    }
+
+    /* An anchored overlay is placed by shape.js writing coordinates, so any
+       margin an ancestor's spacing gave it is an offset from where it was put. */
+    [data-shape-popover] {
+        margin: 0;
+    }
+
+    [data-shape-drawer] {
+        margin-block: 0;
+
+        &[data-shape-side='right'] {
+            margin-inline: auto 0;
+        }
+
+        &[data-shape-side='left'] {
+            margin-inline: 0 auto;
+        }
+
+        &[data-shape-side='bottom'] {
+            margin-block: auto 0;
+            margin-inline: auto;
+        }
+    }
+}

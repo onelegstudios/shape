@@ -7,6 +7,11 @@ nothing to render, no matter how many times it appears on the page.
 Shape annotates every component with the strategy it can safely use. What Shape
 cannot decide on your behalf is how you call them.
 
+Every component in the library folds, overlays included. Nothing here inspects a
+slot, and open state belongs to `<dialog>` and the `popover` attribute rather
+than to a variable a template has to read — so there is no runtime question left
+for a modal or a menu to ask.
+
 ## The rule
 
 **A prop that drives a `match` inside a component has to be static at the call
@@ -97,6 +102,31 @@ and the check looks at the *parent's* attribute:
 That is the cost of stating a field's name once instead of four times. Field
 names are literals in almost every real form, so it is rarely the case you are
 in; when you are, you lose a fold, not correctness.
+
+## Translations bake too
+
+`__()` is not on Blaze's list of things a folded component must not touch, and it
+belongs there. A folded component is pre-rendered once, at compile time, so a
+translation inside one resolves once — and every visitor afterwards is served
+whichever locale happened to compile the view:
+
+```blade
+{{-- Compiles to the literal string. Switching locale does nothing. --}}
+@blaze(fold: true)
+<span>{{ __('Close') }}</span>
+```
+
+No Shape component calls a translation helper, and a test fails the build if one
+starts. Translate at the call site instead, where the value is still resolved per
+request and reaches the component as an attribute:
+
+```blade
+<x-shape::overlay.close for="terms" :label="__('Cancel')" />
+```
+
+The same reasoning covers anything else resolved once and used everywhere: a
+formatted date, a currency symbol taken from config, a URL built from the current
+route.
 
 ## Cutting a hole for request state
 

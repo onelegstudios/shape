@@ -56,11 +56,31 @@ Folding is not free of obligations at the call site. See
 | [`checkbox`](components/checkbox.md) | fold | Wrapped in its own label |
 | [`radio`](components/radio.md) | fold | Grouped by a real fieldset |
 | [`switch`](components/switch.md) | fold | A checkbox with `role="switch"`, and no JS |
+| [`modal`](components/modal.md) | fold | A `<dialog>`, so the focus trap is the platform's |
+| [`drawer`](components/drawer.md) | fold | The modal, pinned to an edge |
+| [`dropdown`](components/dropdown.md) | fold | A popover with menu semantics |
+| [`popover`](components/popover.md) | fold | Anchored, in the top layer, no z-index |
+| [`tooltip`](components/tooltip.md) | fold | For the label of an icon button, and nothing load-bearing |
 
 Every page states the component's Blaze tier and the call sites that keep it on
 the fold path. [Forms](forms.md) starts with the one call site that writes a
 whole field, then covers groups, name resolution, and the single hole cut in the
-fold for validation messages.
+fold for validation messages. [Overlays](overlays.md) covers what the five
+overlays share: the script, the naming convention, what the platform supplies
+and what it doesn't.
+
+## JavaScript
+
+One file, for the overlays only:
+
+```js
+import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
+
+shape()   // or, if you use Alpine: Alpine.plugin(shape)
+```
+
+It imports nothing and depends on nothing. Everything else in the library —
+including switches, checkboxes and the select — is markup and CSS.
 
 ## Customising
 

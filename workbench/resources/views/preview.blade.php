@@ -13,8 +13,9 @@
         <header class="space-y-2">
             <h1 class="text-3xl font-semibold tracking-tight">Shape</h1>
             <p class="text-shape-600 dark:text-shape-400">
-                Forms — fields, labels, descriptions, error messages and every control — on top
-                of the typography, surfaces, tokens and components from the first two steps.
+                Overlays — modal, drawer, dropdown, popover and tooltip — on top of the forms,
+                typography, surfaces and tokens from the first three steps. Everything here opens
+                on the platform's own primitives, so try it with the keyboard.
             </p>
         </header>
 
@@ -340,6 +341,122 @@
         </section>
 
         <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Modal and drawer</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                Both are a <code class="text-xs">&lt;dialog&gt;</code>. The focus trap, the top
+                layer, Escape and the inertness of everything behind them are the browser's, not
+                this package's. Open one and try Tab.
+            </p>
+            <div class="flex flex-wrap items-center gap-3">
+                <x-shape::overlay.trigger for="delete-project" variant="subtle" color="danger" icon="trash">
+                    Delete project
+                </x-shape::overlay.trigger>
+
+                <x-shape::overlay.trigger for="cart" icon="plus">Open cart</x-shape::overlay.trigger>
+
+                <x-shape::overlay.trigger for="terms" variant="ghost">Terms (no Escape)</x-shape::overlay.trigger>
+            </div>
+
+            <x-shape::modal name="delete-project" heading="Delete project" description="This cannot be undone.">
+                <x-shape::text size="sm">
+                    Every invoice attached to this project is deleted with it.
+                </x-shape::text>
+
+                <x-shape::overlay.footer>
+                    <x-shape::overlay.close for="delete-project" label="Cancel" />
+                    <x-shape::button variant="primary" color="danger" icon="trash">Delete</x-shape::button>
+                </x-shape::overlay.footer>
+            </x-shape::modal>
+
+            <x-shape::drawer name="cart" heading="Your cart" description="Two items." side="right">
+                <div class="space-y-4">
+                    <x-shape::card border padding="sm">
+                        <x-shape::card.header>
+                            <x-shape::heading :level="3" size="sm">Annual plan</x-shape::heading>
+                            <x-shape::text size="sm" variant="muted">Renews 12 March</x-shape::text>
+                        </x-shape::card.header>
+                    </x-shape::card>
+
+                    <x-shape::card border padding="sm">
+                        <x-shape::card.header>
+                            <x-shape::heading :level="3" size="sm">Extra seats × 3</x-shape::heading>
+                            <x-shape::text size="sm" variant="muted">Prorated</x-shape::text>
+                        </x-shape::card.header>
+                    </x-shape::card>
+
+                    <x-shape::input label="Discount code" name="discount" placeholder="SPRING" />
+                </div>
+            </x-shape::drawer>
+
+            <x-shape::modal name="terms" heading="Accept the terms" :dismissible="false" size="sm">
+                <x-shape::text size="sm">
+                    Escape does nothing here, and there is no close button. A dialog that has to be
+                    answered rather than dismissed says so by leaving out both.
+                </x-shape::text>
+
+                <x-shape::overlay.footer>
+                    <x-shape::overlay.close for="terms" label="Decline" />
+                    <x-shape::button variant="primary" command="close" commandfor="terms">Accept</x-shape::button>
+                </x-shape::overlay.footer>
+            </x-shape::modal>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Menus and popovers</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                The <code class="text-xs">popover</code> attribute supplies light dismiss, Escape
+                and the top layer. Arrow keys move between menu items; the menu sits above this
+                card even though the card clips its own overflow.
+            </p>
+            <div class="flex flex-wrap items-center gap-3 overflow-hidden rounded-shape border border-shape-200 p-4 dark:border-shape-800">
+                <x-shape::dropdown.trigger for="row-actions" icon-trailing="chevron-down">Actions</x-shape::dropdown.trigger>
+
+                <x-shape::dropdown name="row-actions">
+                    <x-shape::dropdown.item icon="check">Approve</x-shape::dropdown.item>
+                    <x-shape::dropdown.item icon="arrow-right" href="#">Open invoice</x-shape::dropdown.item>
+                    <x-shape::separator class="my-1" />
+                    <x-shape::dropdown.item icon="trash" color="danger">Delete</x-shape::dropdown.item>
+                </x-shape::dropdown>
+
+                <x-shape::popover.trigger for="usage" variant="subtle">Usage</x-shape::popover.trigger>
+
+                <x-shape::popover name="usage" placement="bottom-end">
+                    <x-shape::heading :level="3" size="sm">This month</x-shape::heading>
+                    <x-shape::text size="sm" variant="muted">4,210 of 10,000 requests.</x-shape::text>
+                    <x-shape::badge label="42%" color="success" />
+                </x-shape::popover>
+
+                <x-shape::dropdown.trigger for="more" variant="ghost" square icon="chevron-down" aria-label="More" />
+
+                <x-shape::dropdown name="more" placement="bottom-end">
+                    <x-shape::dropdown.item icon="plus">Duplicate</x-shape::dropdown.item>
+                    <x-shape::dropdown.item icon="check" data-shape-keep-open>Stays open</x-shape::dropdown.item>
+                </x-shape::dropdown>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Tooltips</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                Hover, and tab to them as well — a tooltip that only answers to a pointer is a
+                tooltip half the people using it never see.
+            </p>
+            <div class="flex flex-wrap items-center gap-3">
+                <x-shape::tooltip name="tip-archive" text="Archive this project">
+                    <x-shape::button square variant="ghost" icon="check" aria-label="Archive" />
+                </x-shape::tooltip>
+
+                <x-shape::tooltip name="tip-delete" text="Delete permanently">
+                    <x-shape::button square variant="ghost" icon="trash" aria-label="Delete" />
+                </x-shape::tooltip>
+
+                <x-shape::tooltip name="tip-side" text="Shown to the right instead" placement="bottom">
+                    <x-shape::button variant="subtle">Below</x-shape::button>
+                </x-shape::tooltip>
+            </div>
+        </section>
+
+        <section class="space-y-4">
             <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Elevation</h2>
             <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
                 Tailwind's own scale, used directly. Each step is two parts — a soft cast and a
@@ -356,6 +473,63 @@
             </div>
         </section>
 
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Diagnostics</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                What this browser actually supports, and where the last overlay was put. Here to
+                make a placement bug reportable instead of describable — open a menu, then open
+                this. Delete the section when the overlays are settled.
+            </p>
+            <details class="rounded-shape border border-shape-200 p-4 text-sm dark:border-shape-800">
+                <summary class="cursor-pointer font-medium">Browser support and last placement</summary>
+                <pre id="shape-diagnostics" class="mt-3 overflow-x-auto text-xs leading-6 text-shape-600 dark:text-shape-400"></pre>
+            </details>
+        </section>
+
     </div>
+
+    {{-- Inlined for the same reason the stylesheet is: the preview needs no build step.
+         There is no Alpine on this page — shape.js imports nothing and depends on nothing. --}}
+    <script type="module">{!! file_get_contents(\Orchestra\Testbench\package_path('resources/js/shape.js')) !!}
+        shape()
+
+        // Diagnostics. Not part of the package — the preview only.
+        const report = () => {
+            const supported = (property, value) => {
+                try { return CSS.supports(property, value) } catch { return 'threw' }
+            }
+
+            const open = document.querySelector('[data-shape-popover]:popover-open')
+            const trigger = open ? document.querySelector(`[popovertarget="${open.id}"], [data-shape-tooltip-for="${open.id}"]`) : null
+            const box = (el) => {
+                if (!el) return 'none open'
+                const r = el.getBoundingClientRect()
+                return `top ${Math.round(r.top)}, left ${Math.round(r.left)}, ${Math.round(r.width)}x${Math.round(r.height)}`
+            }
+
+            document.getElementById('shape-diagnostics').textContent = [
+                `userAgent                 ${navigator.userAgent}`,
+                `viewport                  ${innerWidth}x${innerHeight}`,
+                `anchor-name               ${supported('anchor-name', '--a')}`,
+                `position-area             ${supported('position-area', 'block-end')}`,
+                `position-try-fallbacks    ${supported('position-try-fallbacks', 'flip-block')}`,
+                `dialog closedby           ${'closedBy' in HTMLDialogElement.prototype}`,
+                `command / commandfor      ${'command' in HTMLButtonElement.prototype}`,
+                `popover                   ${HTMLElement.prototype.hasOwnProperty('popover')}`,
+                '',
+                `open overlay              ${open ? open.id : 'none'}`,
+                `  placement asked for     ${open ? open.getAttribute('data-shape-placement') : '-'}`,
+                `  its trigger             ${box(trigger)}`,
+                `  the panel               ${box(open)}`,
+                `  computed position       ${open ? getComputedStyle(open).position : '-'}`,
+                `  inline top / left       ${open ? `${open.style.top || 'unset'} / ${open.style.left || 'unset'}` : '-'}`,
+                `  computed margin         ${open ? getComputedStyle(open).margin : '-'}`,
+            ].join('\n')
+        }
+
+        report()
+        document.addEventListener('toggle', report, true)
+        addEventListener('resize', report)
+    </script>
 </body>
 </html>
