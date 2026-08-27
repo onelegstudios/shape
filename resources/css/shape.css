@@ -345,7 +345,7 @@
     | from the same `data-shape-placement` value. The two paths agree because
     | they read the same attribute, not because anyone kept them in sync.
     */
-    @supports (anchor-name: --shape-anchor) {
+    @supports (position-area: block-end) and (position-try-fallbacks: flip-block) {
         [data-shape-popover][data-shape-placement='bottom-start'] {
             position-area: block-end span-inline-end;
             position-try-fallbacks: block-start span-inline-end, block-end span-inline-start;
@@ -530,7 +530,7 @@
 
     /* The anchored overlays offset themselves from their trigger with a margin,
        which a parent's spacing would otherwise add to. */
-    @supports (anchor-name: --shape-anchor) {
+    @supports (position-area: block-end) and (position-try-fallbacks: flip-block) {
         [data-shape-popover] {
             margin: var(--shape-overlay-offset, 0.375rem);
         }

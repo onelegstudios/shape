@@ -37,3 +37,29 @@ it('declares that layer after the components layer it has to outrank', function 
 it('scans the package views so utilities used in vendor blade survive purging', function () {
     expect(shapeStylesheet())->toContain('@source "../views"');
 });
+
+it('asks the same feature question in the stylesheet and in the script', function () {
+    // Anchored placement is split across two files: the stylesheet does it
+    // declaratively where the browser can, and shape.js does it by hand where it
+    // cannot. Each gate decides whether *it* is responsible, so if they can
+    // disagree, one day they will — and the failure is both standing down. A
+    // popover then renders at its static position, which looks like a menu
+    // opening upwards.
+    //
+    // The first version of this gated on `anchor-name`, which only names an
+    // anchor. Safari understood that and not `position-area`, so the stylesheet
+    // placed nothing while the script believed the stylesheet had it covered.
+    $css = shapeStylesheet();
+    $js = (string) file_get_contents(__DIR__.'/../../resources/js/shape.js');
+
+    preg_match('/@supports \(([^)]+)\) and \(([^)]+)\)/', $css, $matches);
+
+    $inCss = array_map(fn (string $test) => trim(explode(':', $test)[0]), [$matches[1], $matches[2]]);
+
+    preg_match_all("/CSS\.supports\?\.\('([a-z-]+)'/", $js, $found);
+
+    $inJs = array_values(array_unique($found[1]));
+
+    expect($inCss)->toBe(['position-area', 'position-try-fallbacks'])
+        ->and($inJs)->toBe($inCss);
+});

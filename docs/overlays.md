@@ -129,9 +129,16 @@ or expect the same bug.
   comparing the click against the dialog's box, which is the part worth stating:
   the dialog is also the panel here, so "did the click hit the dialog" cannot
   answer it.
-- CSS anchor positioning is not universal yet. `shape.js` positions overlays
-  itself where it is missing, reading the same `data-shape-placement` attribute
-  the stylesheet reads.
+- CSS anchor positioning is not universal yet, and — more importantly — it
+  arrives in pieces. Both the stylesheet and `shape.js` gate on
+  `position-area` **and** `position-try-fallbacks`, the two declarations that
+  actually place and re-place the element. Gating on `anchor-name` is the trap:
+  a browser can understand the property that names an anchor without
+  implementing the one that positions against it, and then the stylesheet places
+  nothing while the script stands down, leaving the popover at its static
+  position. Where either is missing, `shape.js` positions everything itself from
+  the same `data-shape-placement` attribute, flipping and clamping the way the
+  fallbacks would.
 - `@starting-style` and `transition-behavior: allow-discrete` degrade to no
   entry animation.
 

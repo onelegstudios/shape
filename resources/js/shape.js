@@ -384,8 +384,24 @@ function tooltips() {
 | attribute the stylesheet reads is read here instead, so the two paths cannot
 | describe different layouts.
 */
+/*
+| The gate tests the properties that do the positioning, not the one that names
+| the anchor — and it is the same pair the stylesheet tests, deliberately.
+|
+| `anchor-name` was the wrong question. A browser can understand it while not
+| yet implementing `position-area`, which is the declaration that actually places
+| the element. Asked the wrong question, this file stood down, the stylesheet
+| placed nothing, and the popover rendered at its static position — which reads
+| as a menu opening upwards, or sideways, or over its own trigger.
+|
+| Whenever a feature is split between a stylesheet and a script like this, both
+| have to ask the same question. If they can disagree, eventually they will, and
+| the failure mode is each one assuming the other did the work.
+*/
 const supportsAnchor = () =>
-    typeof CSS !== 'undefined' && CSS.supports?.('anchor-name: --shape-anchor')
+    typeof CSS !== 'undefined' &&
+    CSS.supports?.('position-area', 'block-end') === true &&
+    CSS.supports?.('position-try-fallbacks', 'flip-block') === true
 
 let tracking = null
 
@@ -414,23 +430,31 @@ function place(el, anchor) {
     const placement = el.getAttribute('data-shape-placement') ?? 'bottom-start'
     const [side, align = 'center'] = placement.split('-')
 
-    let top = side === 'top' ? rect.top - own.height - OFFSET : rect.bottom + OFFSET
+    const below = rect.bottom + OFFSET
+    const above = rect.top - own.height - OFFSET
+    const fitsBelow = below + own.height <= innerHeight - OFFSET
+    const fitsAbove = above >= OFFSET
 
-    // Flip rather than overflow, the same fallback the stylesheet declares.
-    if (top + own.height > window.innerHeight && rect.top - own.height - OFFSET > 0) {
-        top = rect.top - own.height - OFFSET
-    }
+    // Keep the side that was asked for while it fits, flip when it doesn't, and
+    // when neither side fits take the one with more room rather than hanging off
+    // the edge of both. This is `position-try-fallbacks`, by hand.
+    const roomier = innerHeight - rect.bottom >= rect.top ? below : above
+    const wanted = side === 'top'
+        ? (fitsAbove ? above : fitsBelow ? below : roomier)
+        : (fitsBelow ? below : fitsAbove ? above : roomier)
 
     let left = rect.left
 
     if (align === 'end') left = rect.right - own.width
     if (align === 'center') left = rect.left + rect.width / 2 - own.width / 2
 
-    left = Math.max(OFFSET, Math.min(left, window.innerWidth - own.width - OFFSET))
+    const top = Math.max(OFFSET, Math.min(wanted, innerHeight - own.height - OFFSET))
+
+    left = Math.max(OFFSET, Math.min(left, innerWidth - own.width - OFFSET))
 
     el.style.position = 'fixed'
     el.style.margin = '0'
-    el.style.top = `${Math.max(OFFSET, top)}px`
+    el.style.top = `${top}px`
     el.style.left = `${left}px`
 }
 

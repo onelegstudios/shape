@@ -39,6 +39,11 @@ Both are inline styles rather than classes, because the value contains the
 overlay's name, and a class built from an interpolated value is a class Tailwind
 never sees and never generates.
 
+The hand-off between the two paths is gated on `position-area` and
+`position-try-fallbacks` rather than on `anchor-name` — a browser can support
+naming an anchor without supporting positioning against it, and gating on the
+wrong one leaves both paths thinking the other did the work.
+
 ## Keyboard
 
 `aria-haspopup="menu"` is a promise that arrow keys will work, and `shape.js`
