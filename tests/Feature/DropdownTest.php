@@ -15,16 +15,21 @@ it('is a popover with menu semantics', function () {
         ->toContain('data-shape-dropdown');
 });
 
-it('anchors itself to the trigger that opened it, by name', function () {
+it('is findable from its trigger, which is all the positioner needs', function () {
+    // Placement is JavaScript's: shape.js finds the trigger by the popover's own
+    // id and measures it. There is no anchor name in the markup, because CSS
+    // anchor positioning ships in halves and a half-supported declarative path
+    // is worse than one path that always runs.
     $html = Blade::render(<<<'BLADE'
     <x-shape::dropdown.trigger for="row-actions">Actions</x-shape::dropdown.trigger>
     <x-shape::dropdown name="row-actions">Items</x-shape::dropdown>
     BLADE);
 
     expect($html)
-        ->toContain('anchor-name: --shape-row-actions')
-        ->toContain('position-anchor: --shape-row-actions')
-        ->toContain('data-shape-placement="bottom-start"');
+        ->toContain('popovertarget="row-actions"')
+        ->toContain('id="row-actions"')
+        ->toContain('data-shape-placement="bottom-start"')
+        ->not->toContain('anchor-name');
 });
 
 it('opens from popovertarget rather than from a click handler', function () {

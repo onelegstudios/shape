@@ -72,7 +72,7 @@ ancestor stack, which is a hazard worth having exactly once in a library.
 | Dismiss on outside click | native, `closedby` | native light dismiss | `shape.js` |
 | Scrim | `::backdrop` | — | — |
 | Scroll lock | CSS `:has()` | — | — |
-| Placement | CSS | CSS anchor positioning | CSS anchor positioning |
+| Placement | CSS | `shape.js` | `shape.js` |
 | Return focus to trigger | native | native | not applicable |
 
 `shape.js` covers what is left: the invoker and `closedby` fallbacks, holding
@@ -129,16 +129,16 @@ or expect the same bug.
   comparing the click against the dialog's box, which is the part worth stating:
   the dialog is also the panel here, so "did the click hit the dialog" cannot
   answer it.
-- CSS anchor positioning is not universal yet, and — more importantly — it
-  arrives in pieces. Both the stylesheet and `shape.js` gate on
-  `position-area` **and** `position-try-fallbacks`, the two declarations that
-  actually place and re-place the element. Gating on `anchor-name` is the trap:
-  a browser can understand the property that names an anchor without
-  implementing the one that positions against it, and then the stylesheet places
-  nothing while the script stands down, leaving the popover at its static
-  position. Where either is missing, `shape.js` positions everything itself from
-  the same `data-shape-placement` attribute, flipping and clamping the way the
-  fallbacks would.
+- CSS anchor positioning is **not used**, and the reason is worth recording. It
+  arrives in pieces: a browser can support `anchor-name` without `position-area`,
+  and `position-try-fallbacks` takes try-tactics and `@position-try` names rather
+  than the bare position-area values that read so naturally — so those
+  declarations were being dropped as invalid even where the rest worked. A
+  stylesheet and a script each gating on a different half of one feature is how a
+  menu opens upwards in one browser and nowhere in another. Placement is
+  `shape.js`, in every browser, flipping and clamping itself. Worth revisiting
+  when the feature is uniform; it is the better mechanism and it costs no
+  script.
 - `@starting-style` and `transition-behavior: allow-discrete` degrade to no
   entry animation.
 

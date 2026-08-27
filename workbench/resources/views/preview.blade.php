@@ -473,12 +473,63 @@
             </div>
         </section>
 
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Diagnostics</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                What this browser actually supports, and where the last overlay was put. Here to
+                make a placement bug reportable instead of describable — open a menu, then open
+                this. Delete the section when the overlays are settled.
+            </p>
+            <details class="rounded-shape border border-shape-200 p-4 text-sm dark:border-shape-800">
+                <summary class="cursor-pointer font-medium">Browser support and last placement</summary>
+                <pre id="shape-diagnostics" class="mt-3 overflow-x-auto text-xs leading-6 text-shape-600 dark:text-shape-400"></pre>
+            </details>
+        </section>
+
     </div>
 
     {{-- Inlined for the same reason the stylesheet is: the preview needs no build step.
          There is no Alpine on this page — shape.js imports nothing and depends on nothing. --}}
     <script type="module">{!! file_get_contents(\Orchestra\Testbench\package_path('resources/js/shape.js')) !!}
         shape()
+
+        // Diagnostics. Not part of the package — the preview only.
+        const report = () => {
+            const supported = (property, value) => {
+                try { return CSS.supports(property, value) } catch { return 'threw' }
+            }
+
+            const open = document.querySelector('[data-shape-popover]:popover-open')
+            const trigger = open ? document.querySelector(`[popovertarget="${open.id}"], [data-shape-tooltip-for="${open.id}"]`) : null
+            const box = (el) => {
+                if (!el) return 'none open'
+                const r = el.getBoundingClientRect()
+                return `top ${Math.round(r.top)}, left ${Math.round(r.left)}, ${Math.round(r.width)}x${Math.round(r.height)}`
+            }
+
+            document.getElementById('shape-diagnostics').textContent = [
+                `userAgent                 ${navigator.userAgent}`,
+                `viewport                  ${innerWidth}x${innerHeight}`,
+                `anchor-name               ${supported('anchor-name', '--a')}`,
+                `position-area             ${supported('position-area', 'block-end')}`,
+                `position-try-fallbacks    ${supported('position-try-fallbacks', 'flip-block')}`,
+                `dialog closedby           ${'closedBy' in HTMLDialogElement.prototype}`,
+                `command / commandfor      ${'command' in HTMLButtonElement.prototype}`,
+                `popover                   ${HTMLElement.prototype.hasOwnProperty('popover')}`,
+                '',
+                `open overlay              ${open ? open.id : 'none'}`,
+                `  placement asked for     ${open ? open.getAttribute('data-shape-placement') : '-'}`,
+                `  its trigger             ${box(trigger)}`,
+                `  the panel               ${box(open)}`,
+                `  computed position       ${open ? getComputedStyle(open).position : '-'}`,
+                `  inline top / left       ${open ? `${open.style.top || 'unset'} / ${open.style.left || 'unset'}` : '-'}`,
+                `  computed margin         ${open ? getComputedStyle(open).margin : '-'}`,
+            ].join('\n')
+        }
+
+        report()
+        document.addEventListener('toggle', report, true)
+        addEventListener('resize', report)
     </script>
 </body>
 </html>

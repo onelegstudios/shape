@@ -10,9 +10,11 @@
     higher z-index. There is no z-index anywhere in this component, because
     there is no longer a stack to compete in.
 
-    Placement is a data attribute read by CSS anchor positioning, with the
-    fallbacks that flip it when the viewport runs out. Where anchor positioning
-    is unsupported, shape.js positions it from that same attribute.
+    Placement is a data attribute that shape.js reads when it measures the
+    trigger, flipping to the other side when the viewport runs out and clamping
+    to stay in view. It was CSS anchor positioning with a script behind it, until
+    that feature turned out to ship in halves and the two paths could each decide
+    the other was responsible.
 
     Like the modal, `name` is required: an id generated inside a folded component
     is generated once, at compile time, and every instance on the page would
@@ -51,7 +53,7 @@ $classes = Shape::classes()
     id="{{ $name }}"
     popover
     @if ($role) role="{{ $role }}" @endif
-    {{ $attributes->class($classes)->merge(['style' => "position-anchor: --shape-{$name};"]) }}
+    {{ $attributes->class($classes) }}
     data-shape-popover
     data-shape-placement="{{ $placement }}"
 >{{ $slot }}</div>

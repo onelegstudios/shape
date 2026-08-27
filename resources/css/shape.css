@@ -325,62 +325,32 @@
             flex-direction: column;
         }
 
-        /* A popover has a UA border and padding of its own, and it is positioned
-           against the viewport until an anchor says otherwise. */
-        position: absolute;
+        /* A popover arrives with a UA border and padding of its own. Position is
+           left to the UA's `fixed`, which is what shape.js then writes into. */
         border: 0;
         padding: 0;
         overflow: visible;
     }
 
     /*
-    | Anchored placement.
+    | Anchored placement is JavaScript's, all of it.
     |
-    | The trigger declares an `anchor-name`; the content declares the same name
-    | as its `position-anchor` and picks a `position-area` from its placement.
-    | `position-try-fallbacks` is what keeps a menu opened near the bottom of the
-    | window from rendering off-screen.
+    | This started as CSS anchor positioning with a JS fallback, and the split
+    | was the bug. Anchor positioning ships in pieces: a browser can support
+    | `anchor-name` without `position-area`, and `position-try-fallbacks` takes
+    | try-tactics and `@position-try` names — not the bare position-area values
+    | that read so naturally — so the fallbacks were being dropped as invalid
+    | wherever the rest did work. Two paths, each gating itself on a different
+    | half of a feature, is how a menu ends up opening upwards in one browser and
+    | nowhere in another.
     |
-    | Where anchor positioning is unsupported, shape.js positions these elements
-    | from the same `data-shape-placement` value. The two paths agree because
-    | they read the same attribute, not because anyone kept them in sync.
+    | So there is one path. shape.js measures the trigger and writes `top` and
+    | `left` on every open, scroll and resize, in every browser. It is what runs,
+    | it is what the tests exercise, and it behaves the same everywhere.
+    |
+    | Worth revisiting when anchor positioning is uniform: it is the better
+    | mechanism, and it costs no script at all. It is not there yet.
     */
-    @supports (position-area: block-end) and (position-try-fallbacks: flip-block) {
-        [data-shape-popover][data-shape-placement='bottom-start'] {
-            position-area: block-end span-inline-end;
-            position-try-fallbacks: block-start span-inline-end, block-end span-inline-start;
-        }
-
-        [data-shape-popover][data-shape-placement='bottom-end'] {
-            position-area: block-end span-inline-start;
-            position-try-fallbacks: block-start span-inline-start, block-end span-inline-end;
-        }
-
-        [data-shape-popover][data-shape-placement='top-start'] {
-            position-area: block-start span-inline-end;
-            position-try-fallbacks: block-end span-inline-end;
-        }
-
-        [data-shape-popover][data-shape-placement='top-end'] {
-            position-area: block-start span-inline-start;
-            position-try-fallbacks: block-end span-inline-start;
-        }
-
-        [data-shape-popover][data-shape-placement='top'] {
-            position-area: block-start center;
-            position-try-fallbacks: block-end center;
-        }
-
-        [data-shape-popover][data-shape-placement='bottom'] {
-            position-area: block-end center;
-            position-try-fallbacks: block-start center;
-        }
-
-        [data-shape-popover] {
-            /* Never taller than the space it was given. */
-            max-block-size: var(--shape-overlay-available, none);
-        }
-    }
 
     /*
     | Motion.
@@ -511,6 +481,12 @@
         margin: auto;
     }
 
+    /* An anchored overlay is placed by shape.js writing coordinates, so any
+       margin an ancestor's spacing gave it is an offset from where it was put. */
+    [data-shape-popover] {
+        margin: 0;
+    }
+
     [data-shape-drawer] {
         margin-block: 0;
 
@@ -525,14 +501,6 @@
         &[data-shape-side='bottom'] {
             margin-block: auto 0;
             margin-inline: auto;
-        }
-    }
-
-    /* The anchored overlays offset themselves from their trigger with a margin,
-       which a parent's spacing would otherwise add to. */
-    @supports (position-area: block-end) and (position-try-fallbacks: flip-block) {
-        [data-shape-popover] {
-            margin: var(--shape-overlay-offset, 0.375rem);
         }
     }
 }

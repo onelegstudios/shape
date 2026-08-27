@@ -9,12 +9,10 @@
     instead, which is why `<x-shape::overlay.trigger>` is a separate component
     rather than this one with a flag.
 
-    The anchor name goes on as an inline style because it has to carry the
-    overlay's name, and a class containing an interpolated value is a class
-    Tailwind never sees and therefore never generates. The caller's own `style`
-    is concatenated rather than overwritten — the attribute bag's `merge` does
-    that for elements, but this forwards into a component, where the last value
-    for a key would simply win.
+    The overlay finds this button by its own id — `[popovertarget="…"]` — when
+    shape.js measures where to put it. There is no anchor name to carry: CSS
+    anchor positioning turned out to ship in halves, so placement is JavaScript's
+    everywhere, and this element only has to be findable.
 --}}
 
 @props([
@@ -28,7 +26,6 @@
     aria-haspopup="{{ $haspopup }}"
     aria-expanded="false"
     aria-controls="{{ $for }}"
-    style="anchor-name: --shape-{{ $for }};{{ $attributes->get('style') }}"
-    {{ $attributes->except('style') }}
+    {{ $attributes }}
     data-shape-popover-trigger=""
 >{{ $slot }}</x-shape::button>

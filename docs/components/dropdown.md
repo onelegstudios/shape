@@ -28,21 +28,19 @@ header with a higher `z-index`. There is no `z-index` in this component.
 
 ## Anchoring
 
-The trigger declares an `anchor-name`, the menu declares the matching
-`position-anchor`, and `placement` becomes a `position-area` with fallbacks that
-flip it when the viewport runs out. Where CSS anchor positioning is unsupported,
-`shape.js` positions the menu from the same `data-shape-placement` attribute the
-stylesheet reads — the two paths agree because they read one value, not because
-anyone keeps them in sync.
+`shape.js` finds the trigger by the menu's own id, measures both, applies
+`placement`, flips to the other side when the viewport runs out, and clamps to
+stay in view. It repeats that on every scroll and resize while the menu is open.
+There is no anchor name in the markup and nothing to keep in sync.
 
-Both are inline styles rather than classes, because the value contains the
-overlay's name, and a class built from an interpolated value is a class Tailwind
-never sees and never generates.
-
-The hand-off between the two paths is gated on `position-area` and
-`position-try-fallbacks` rather than on `anchor-name` — a browser can support
-naming an anchor without supporting positioning against it, and gating on the
-wrong one leaves both paths thinking the other did the work.
+This was CSS anchor positioning with a script as a fallback, which is the better
+mechanism and cost no JavaScript at all — until it turned out to ship in halves.
+A browser can support `anchor-name` without `position-area`; `position-try-fallbacks`
+takes try-tactics and `@position-try` names, not the bare position-area values
+that read so naturally, so the fallbacks were dropped as invalid wherever the
+rest worked. Two paths each gating on a different half of one feature is how a
+menu opens upwards in one browser and nowhere in another. One path that always
+runs is worth more than a declarative path that sometimes does.
 
 ## Keyboard
 

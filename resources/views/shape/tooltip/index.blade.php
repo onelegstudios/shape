@@ -38,13 +38,13 @@ $classes = Shape::classes()
     ->add('[:where(&)]:shadow-md');
 @endphp
 
-<span class="inline-flex" data-shape-tooltip-for="{{ $name }}" style="anchor-name: --shape-{{ $name }};">{{ $slot }}</span>
+<span class="inline-flex" data-shape-tooltip-for="{{ $name }}">{{ $slot }}</span>
 
 <div
     id="{{ $name }}"
     popover="manual"
     role="tooltip"
-    {{ $attributes->class($classes)->merge(['style' => "position-anchor: --shape-{$name};"]) }}
+    {{ $attributes->class($classes) }}
     data-shape-popover
     data-shape-tooltip
     data-shape-placement="{{ $placement }}"

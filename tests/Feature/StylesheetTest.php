@@ -38,28 +38,18 @@ it('scans the package views so utilities used in vendor blade survive purging', 
     expect(shapeStylesheet())->toContain('@source "../views"');
 });
 
-it('asks the same feature question in the stylesheet and in the script', function () {
-    // Anchored placement is split across two files: the stylesheet does it
-    // declaratively where the browser can, and shape.js does it by hand where it
-    // cannot. Each gate decides whether *it* is responsible, so if they can
-    // disagree, one day they will — and the failure is both standing down. A
-    // popover then renders at its static position, which looks like a menu
-    // opening upwards.
-    //
-    // The first version of this gated on `anchor-name`, which only names an
-    // anchor. Safari understood that and not `position-area`, so the stylesheet
-    // placed nothing while the script believed the stylesheet had it covered.
-    $css = shapeStylesheet();
-    $js = (string) file_get_contents(__DIR__.'/../../resources/js/shape.js');
+it('leaves anchored placement to the script, with no second path to disagree with', function () {
+    // The bug this replaced: the stylesheet gated placement on one half of CSS
+    // anchor positioning and shape.js gated its own on the other, so a browser
+    // with partial support had both of them stand down and the popover rendered
+    // wherever it happened to sit.
+    // Comments are stripped first: both files explain at length why the
+    // declarative path was abandoned, and naming a property is not using it.
+    $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
+    $js = preg_replace('#/\*.*?\*/#s', '', (string) file_get_contents(__DIR__.'/../../resources/js/shape.js')) ?? '';
 
-    preg_match('/@supports \(([^)]+)\) and \(([^)]+)\)/', $css, $matches);
-
-    $inCss = array_map(fn (string $test) => trim(explode(':', $test)[0]), [$matches[1], $matches[2]]);
-
-    preg_match_all("/CSS\.supports\?\.\('([a-z-]+)'/", $js, $found);
-
-    $inJs = array_values(array_unique($found[1]));
-
-    expect($inCss)->toBe(['position-area', 'position-try-fallbacks'])
-        ->and($inJs)->toBe($inCss);
+    expect($css)
+        ->not->toContain('position-area')
+        ->not->toContain('position-try-fallbacks')
+        ->and($js)->not->toContain('CSS.supports');
 });

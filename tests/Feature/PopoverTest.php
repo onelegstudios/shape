@@ -20,11 +20,10 @@ it('places itself from an attribute both the stylesheet and the fallback read', 
         ->toContain("data-shape-placement=\"{$placement}\"");
 })->with(['bottom-start', 'bottom-end', 'top-start', 'top-end', 'top', 'bottom']);
 
-it('keeps a caller\'s style alongside the anchor it needs', function () {
-    // Forwarding into a component is not merging onto an element: the last value
-    // for a key wins, so the two are concatenated by hand.
+it('passes a caller\'s style straight through', function () {
+    // It used to have to concatenate the caller's style with an anchor name.
+    // With placement in JavaScript there is nothing of ours on this attribute.
     expect(Blade::render('<x-shape::popover.trigger for="p" style="width: 10rem">Usage</x-shape::popover.trigger>'))
-        ->toContain('anchor-name: --shape-p')
         ->toContain('width: 10rem');
 });
 

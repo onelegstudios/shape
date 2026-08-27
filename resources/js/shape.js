@@ -15,9 +15,11 @@
 |   4. keeping `aria-expanded` on a popover's trigger honest
 |   5. arrow-key movement between menu items
 |   6. showing and hiding tooltips, which are the one overlay a pointer opens
+|   7. placing every anchored overlay, which CSS anchor positioning was going to
+|      do until it turned out to ship in halves
 |
-| plus a positioner used only where CSS anchor positioning is unsupported, and a
-| pair of window events so a Livewire component can open an overlay by name.
+| plus a pair of window events so a Livewire component can open an overlay by
+| name.
 |
 | There is no Alpine in here. It installs as an Alpine plugin because that is
 | where consumers expect to register it, but it does not use the argument and
@@ -45,7 +47,7 @@ export default function shape() {
     expandedState()
     menuKeys()
     tooltips()
-    anchorFallback()
+    trackAnchor()
     livewireBridge()
 }
 
@@ -379,35 +381,17 @@ function tooltips() {
 /* ------------------------------------------------- anchor position fallback */
 
 /*
-| Where CSS anchor positioning is supported, placement is stylesheet business and
-| this does nothing at all. Where it isn't, the same `data-shape-placement`
-| attribute the stylesheet reads is read here instead, so the two paths cannot
-| describe different layouts.
-*/
-/*
-| The gate tests the properties that do the positioning, not the one that names
-| the anchor — and it is the same pair the stylesheet tests, deliberately.
+| Placement, for every anchored overlay, in every browser.
 |
-| `anchor-name` was the wrong question. A browser can understand it while not
-| yet implementing `position-area`, which is the declaration that actually places
-| the element. Asked the wrong question, this file stood down, the stylesheet
-| placed nothing, and the popover rendered at its static position — which reads
-| as a menu opening upwards, or sideways, or over its own trigger.
-|
-| Whenever a feature is split between a stylesheet and a script like this, both
-| have to ask the same question. If they can disagree, eventually they will, and
-| the failure mode is each one assuming the other did the work.
+| This was a fallback behind `@supports (anchor-name: …)`. It is now the only
+| path, because the split was the bug: anchor positioning arrives in pieces, so a
+| browser could satisfy the gate, take the CSS path, and place nothing — while
+| this stood down believing the stylesheet had it. One path behaves the same
+| everywhere, and is the one the tests exercise.
 */
-const supportsAnchor = () =>
-    typeof CSS !== 'undefined' &&
-    CSS.supports?.('position-area', 'block-end') === true &&
-    CSS.supports?.('position-try-fallbacks', 'flip-block') === true
-
 let tracking = null
 
 function position(el, isOpen) {
-    if (supportsAnchor()) return
-
     if (!isOpen) {
         if (tracking?.el === el) tracking = null
 
@@ -458,9 +442,7 @@ function place(el, anchor) {
     el.style.left = `${left}px`
 }
 
-function anchorFallback() {
-    if (supportsAnchor()) return
-
+function trackAnchor() {
     const reposition = () => {
         if (tracking) place(tracking.el, tracking.anchor)
     }
