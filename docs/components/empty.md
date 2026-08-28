@@ -45,6 +45,18 @@ The action row is the one slot, and it is always rendered — the CSS `empty:hid
 variant collapses it when nothing was passed, which answers the same question in
 the browser instead of at render time.
 
+## Where it is rendered for you
+
+[Table](table.md) and [list](list.md) both render one by default, and neither of
+them ever asks whether it has rows — a `:has()` rule in the stylesheet removes
+the empty state when a row appears. [Data display](../data.md) explains the
+arrangement and its two visible consequences.
+
+The [select](select.md) does not, and cannot: a `<select>` may contain only
+`option`, `optgroup` and script-supporting elements, so an empty state written
+inside one is discarded by the HTML parser before any stylesheet sees it. Its
+`placeholder` option is the equivalent.
+
 ## Folding
 
 Tier A — `@blaze(fold: true)`.

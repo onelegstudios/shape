@@ -135,7 +135,8 @@ See [docs/folding.md](docs/folding.md) for the full explanation.
 
 ### JavaScript
 
-One file, for the overlays and the feedback channel:
+One file, for the overlays, the feedback channel, and the keyboard behaviour of
+a tab strip:
 
 ```js
 import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
@@ -146,8 +147,9 @@ shape()   // or, if your application uses Alpine: Alpine.plugin(shape)
 It imports nothing and depends on nothing — not Alpine, and not Livewire. Modal
 and drawer are a `<dialog>`; dropdown, popover and tooltip use the `popover`
 attribute. The focus trap, the top layer, Escape, light dismiss and the scrim are
-the platform's, so what is left for a script is small. See
-[docs/overlays.md](docs/overlays.md).
+the platform's, so what is left for a script is small. Tabs are the one component
+outside the overlays that reaches for it, and only in their panel-switching mode.
+See [docs/overlays.md](docs/overlays.md).
 
 ```blade
 <x-shape::overlay.trigger for="delete-project" color="danger" variant="subtle">

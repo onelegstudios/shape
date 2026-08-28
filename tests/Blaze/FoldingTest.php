@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
@@ -465,4 +466,135 @@ it('does not bake one request\'s flashed toasts into the compiled template', fun
     expect($first)->toContain('Invoice sent')
         ->and($second)->toContain('Card declined')
         ->and($second)->not->toContain('Invoice sent');
+});
+
+it('folds every call site in the data display set', function () {
+    // The set that renders in loops, so the one where this census is worth the
+    // most: a cell and an avatar appear once per row, and a component that
+    // quietly stopped folding here costs a page far more than one that stopped
+    // folding in a card.
+    //
+    // `shape::empty` is absent on purpose. The table and the list each call it,
+    // and a component called inside another's fold is baked into that fold
+    // without an event of its own — the same reason the confirm dialog reports
+    // one name and nothing under it.
+    $folded = array_count_values(foldedComponentsWhileRendering('static-data'));
+
+    expect($folded)->toBe([
+        'shape::table.heading' => 2,
+        'shape::table.head' => 1,
+        'shape::table.cell' => 2,
+        'shape::table.row' => 1,
+        'shape::table.body' => 1,
+        'shape::table' => 1,
+        'shape::avatar' => 3,
+        'shape::list.item' => 2,
+        'shape::list' => 1,
+        'shape::stat' => 1,
+        'shape::avatar.group' => 1,
+        'shape::tabs.tab' => 2,
+        'shape::tabs' => 1,
+        'shape::tabs.panel' => 2,
+    ]);
+});
+
+it('leaves nothing in the data fixture to resolve at runtime', function () {
+    $fixture = __DIR__.'/../fixtures/views/static-data.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('data-shape-table')
+        ->toContain('role="tabpanel"');
+});
+
+it('renders identical data markup whether or not the components folded', function () {
+    clearCompiledViews();
+    $folded = view('static-data')->render();
+
+    Blaze::disable();
+    clearCompiledViews();
+    $unfolded = view('static-data')->render();
+    Blaze::enable();
+
+    $normalise = function (string $html): string {
+        $html = (string) preg_replace('/\s+/', ' ', $html);
+
+        return trim((string) preg_replace('/>\s+</', '><', $html));
+    };
+
+    expect($normalise($folded))->toBe($normalise($unfolded));
+});
+
+it('keeps folding a cell whose value is bound dynamically', function () {
+    // The call site this whole step turns on: one cell per column per row, each
+    // with a different value. `safe: ['value']` is what keeps it here rather
+    // than on the memo path, where a prop set unique per row means a cache entry
+    // per row and no hits at all.
+    expect(foldedComponentsWhileRendering('dynamic-cell-value', ['value' => '£240.00']))
+        ->toContain('shape::table.cell');
+});
+
+it('keeps folding a stat whose value and delta are bound dynamically', function () {
+    // True only because the delta row is collapsed in CSS. Written as
+    // `@if ($delta)` the prop would drive a branch, could not be safe, and every
+    // stat with a computed delta — which is all of them — would land here in the
+    // negative.
+    expect(foldedComponentsWhileRendering('dynamic-stat-value', ['value' => '1,204', 'delta' => '12%']))
+        ->toContain('shape::stat');
+});
+
+it('abandons folding an avatar whose picture is bound dynamically', function () {
+    // `src` decides which element renders, so it cannot be safe. This is the
+    // avatar list built from per-row URLs, and it is the badge's expensive row
+    // in different clothes.
+    expect(foldedComponentsWhileRendering('dynamic-avatar-src', ['src' => '/ada.jpg']))
+        ->not->toContain('shape::avatar');
+});
+
+it('memoizes that avatar, for whatever that is worth', function () {
+    // It memoizes, and every key is unique, so the table is a cost rather than a
+    // saving. Worth asserting because the annotation promises the net is there;
+    // the docs are where it is said that this call site falls through it.
+    $fixture = __DIR__.'/../fixtures/views/dynamic-avatar-src.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)->toContain('Memo::key("shape::avatar"');
+});
+
+it('abandons folding a tab whose selection is computed', function () {
+    // The normal call site for a tab strip, since selection usually comes from
+    // the current route. `selected` drives `aria-selected`, `tabindex` and
+    // `aria-current`, so it branches — a handful of components on a page, and
+    // stated in the docs rather than discovered.
+    expect(foldedComponentsWhileRendering('dynamic-tab-selected', ['selected' => true]))
+        ->not->toContain('shape::tabs.tab');
+});
+
+it('does not fold the pagination, and must not', function () {
+    // The second compile-only component in the library. It loops a collection
+    // the server produced this request; there is nothing here to bake.
+    $folded = foldedComponentsWhileRendering('static-pagination', [
+        'paginator' => new LengthAwarePaginator(range(1, 10), 120, 10, 1, ['path' => '/invoices']),
+    ]);
+
+    expect($folded)->not->toContain('shape::pagination');
+});
+
+it('does not bake one page of links into the compiled template', function () {
+    // The failure folding it would cause, and the reason it is annotated the way
+    // it is: the view cache is deliberately not cleared between these renders,
+    // so one compiled template has to produce two different pages.
+    $first = view('static-pagination', [
+        'paginator' => new LengthAwarePaginator(range(1, 10), 120, 10, 1, ['path' => '/invoices']),
+    ])->render();
+
+    $second = view('static-pagination', [
+        'paginator' => new LengthAwarePaginator(range(1, 10), 120, 10, 3, ['path' => '/invoices']),
+    ])->render();
+
+    expect($first)->toMatch('/aria-current="page"[^>]*>1</')
+        ->and($second)->toMatch('/aria-current="page"[^>]*>3</');
 });

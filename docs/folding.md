@@ -70,9 +70,18 @@ prop set.
 @endforeach
 ```
 
-Memo requires a component to have **no slots** and to be called self-closing.
-That is why `badge` takes `label` as a prop rather than as children — the slot
-would cost it the safety net on exactly the call sites that need one.
+Memo is decided per **call site**, not per file: Blaze memoizes a component
+written self-closing, whatever else the file can do. That is why `badge` takes
+`label` as a prop rather than as children — the slot would cost it the safety net
+on exactly the call sites that need one — and why `table.cell` can take a `value`
+prop *and* a slot, memoizing on the self-closing form a table is mostly made of.
+
+The net is not always worth much. `avatar` is annotated `memo: true` and does
+fold on its initials, but an avatar list built from per-row URLs produces one
+cache entry per URL and no hits — the same shape as the badge example above,
+without the five distinct states that made it pay.
+[Avatar](components/avatar.md) says so on its own page rather than leaving the
+annotation to imply otherwise.
 
 ## Icons
 
@@ -127,6 +136,18 @@ request and reaches the component as an attribute:
 The same reasoning covers anything else resolved once and used everywhere: a
 formatted date, a currency symbol taken from config, a URL built from the current
 route.
+
+## Two components are compiled and not folded
+
+`toaster` and `pagination` carry a plain `@blaze` — compiled, which removes most
+of Blade's overhead, and nothing more. The rule they share is short: **a
+component that loops data the server produced has nothing to bake.** A folded
+pager would hold one visitor's page of links in the compiled template forever.
+
+It is worth stating because the reflex — annotate everything `fold: true` and let
+Blaze abort where it must — gives you a component that folds successfully and is
+wrong. Blaze aborts on a prop it can't resolve at compile time; it has no opinion
+about a collection you hand it.
 
 ## Cutting a hole for request state
 

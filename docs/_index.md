@@ -66,6 +66,12 @@ Folding is not free of obligations at the call site. See
 | [`toaster`](components/toast.md) | compile | The top layer, so no z-index and no modal on top of it |
 | [`confirm`](components/confirm.md) | fold | The modal, filled in from the server |
 | [`progress`](components/progress.md) | fold | Native, so a dynamic value still folds |
+| [`table`](components/table.md) | fold | Cells fold; the empty state is a CSS question |
+| [`list`](components/list.md) | fold | The table's answer without the columns |
+| [`pagination`](components/pagination.md) | compile | The one component that loops runtime data |
+| [`stat`](components/stat.md) | fold + memo | The value first, the label de-emphasized |
+| [`avatar`](components/avatar.md) | fold + memo | Initials fold; a per-row picture doesn't |
+| [`tabs`](components/tabs.md) | fold | Links when they're links, tabs when they're not |
 
 Every page states the component's Blaze tier and the call sites that keep it on
 the fold path. [Forms](forms.md) starts with the one call site that writes a
@@ -74,11 +80,14 @@ fold for validation messages. [Overlays](overlays.md) covers what the five
 overlays share: the script, the naming convention, what the platform supplies
 and what it doesn't. [Feedback](feedback.md) covers the one direction the rest of
 the library never travels — server to browser — and why that needs no Livewire
-component to do it.
+component to do it. [Data display](data.md) covers what the table, the list and
+the pager share: an empty state answered in CSS, and what a component costs when
+it renders once per row instead of once per page.
 
 ## JavaScript
 
-One file, for the overlays and the feedback channel:
+One file, for the overlays, the feedback channel, and the keyboard behaviour of
+a tab strip:
 
 ```js
 import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
@@ -91,9 +100,12 @@ Everything else in the library — including switches, checkboxes and the select
 is markup and CSS.
 
 Overlays render and open without it, with three small exceptions listed in
-[Overlays](overlays.md#the-script). Toasts are the one thing that does not work
-without it, and [Feedback](feedback.md#toasts-need-the-script) says why that
-trade was taken.
+[Overlays](overlays.md#the-script). [Tabs](components/tabs.md) are the one
+component outside the overlays that uses it, and only in their panel-switching
+mode: without the script every panel is visible and every tab is focusable, and
+a strip of navigation links needs no script at all. Toasts are the one thing
+that does not work without it, and
+[Feedback](feedback.md#toasts-need-the-script) says why that trade was taken.
 
 ## Customising
 

@@ -11,7 +11,7 @@ component reaches for, and the discipline of never reaching outside this list.
 
 | Elevation | Class | Used by |
 | --- | --- | --- |
-| Resting | `shadow-xs` | Table rows, list items that need only the faintest lift |
+| Resting | `shadow-xs` | Nothing, yet — see below |
 | Raised | `shadow-sm` | Buttons, cards, inputs — anything sitting on the page |
 | Floating | `shadow-md` | Popovers, tooltips |
 | Overlay | `shadow-lg` | Dropdowns, menus, toasts |
@@ -19,6 +19,13 @@ component reaches for, and the discipline of never reaching outside this list.
 
 `shadow-2xs` and `shadow-2xl` are deliberately unused. Five options is plenty,
 and leaving two on the shelf costs nothing.
+
+The resting step was written here for table rows and list items, and neither
+turned out to want it. A row separates itself from the row above with a rule, and
+a lift on every row of a table is a hundred soft edges competing for the same
+attention — the table gets whatever elevation it has from the card it sits in.
+The step is kept because the scale should be complete, and the honest entry in
+the third column is nothing.
 
 ## Overriding
 

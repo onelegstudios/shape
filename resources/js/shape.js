@@ -1,12 +1,12 @@
 /*
-| Shape's overlay behaviour.
+| Shape's behaviour that the platform does not already supply.
 |
-| Everything here is what the platform does not supply on its own. `<dialog>`
-| gives modals their focus trap, their top layer, Escape and inertness; the
-| `popover` attribute gives menus light dismiss and Escape; `::backdrop` and
-| `:has()` give the scrim and the scroll lock. None of that is below.
+| Almost all of it is the overlays. `<dialog>` gives modals their focus trap,
+| their top layer, Escape and inertness; the `popover` attribute gives menus
+| light dismiss and Escape; `::backdrop` and `:has()` give the scrim and the
+| scroll lock. None of that is below.
 |
-| What is left is five small jobs, wired as delegated listeners on the document
+| What is left is twelve small jobs, wired as delegated listeners on the document
 | rather than as per-element state:
 |
 |   1. a fallback for `command` / `commandfor`, for browsers that predate them
@@ -14,14 +14,17 @@
 |   3. holding a non-dismissible dialog open when Escape is pressed
 |   4. keeping `aria-expanded` on a popover's trigger honest
 |   5. arrow-key movement between menu items
-|   6. showing and hiding tooltips, which are the one overlay a pointer opens
-|   7. placing every anchored overlay, which CSS anchor positioning was going to
+|   6. arrow-key movement between tabs, and the panel swap that goes with it —
+|      the one job in here that is not an overlay, and the only reason a page
+|      with no overlays on it might still want this file
+|   7. showing and hiding tooltips, which are the one overlay a pointer opens
+|   8. placing every anchored overlay, which CSS anchor positioning was going to
 |      do until it turned out to ship in halves
-|   8. removing a toast or an alert someone dismissed, which is the one thing in
+|   9. removing a toast or an alert someone dismissed, which is the one thing in
 |      this library the platform has no primitive for
-|   9. building toasts, by cloning a template the toaster already rendered
-|  10. filling in the shared confirm dialog and dispatching what it was told to
-|  11. replaying whatever the server flashed into the session, as the same events
+|  10. building toasts, by cloning a template the toaster already rendered
+|  11. filling in the shared confirm dialog and dispatching what it was told to
+|  12. replaying whatever the server flashed into the session, as the same events
 |      it would have dispatched live
 |
 | plus a pair of window events so a Livewire component can open an overlay by
@@ -54,6 +57,7 @@ export default function shape() {
     persistentDialogs()
     expandedState()
     menuKeys()
+    tabKeys()
     tooltips()
     trackAnchor()
     dismissals()
@@ -102,10 +106,34 @@ function fill(root, selector, text) {
     if (el) el.textContent = text ?? ''
 }
 
-function items(menu) {
-    return [...menu.querySelectorAll('[data-shape-menu-item]')].filter(
+// One walker for menus and for tab strips. They ask the same question — which of
+// these can the arrow keys land on — and answer it with the same two exclusions,
+// so the selector is a parameter rather than a second copy of this function.
+function items(root, selector) {
+    return [...root.querySelectorAll(selector)].filter(
         (item) => !item.disabled && item.getAttribute('aria-disabled') !== 'true',
     )
+}
+
+// Moves focus within a list that is a single tab stop, cycling at both ends.
+// Returns the element it moved to, or null if the key was not one of ours.
+function roving(list, key, vertical) {
+    const forward = vertical ? 'ArrowDown' : 'ArrowRight'
+    const back = vertical ? 'ArrowUp' : 'ArrowLeft'
+    const index = list.indexOf(document.activeElement)
+
+    switch (key) {
+        case forward:
+            return list[(index + 1) % list.length]
+        case back:
+            return list[(index - 1 + list.length) % list.length]
+        case 'Home':
+            return list[0]
+        case 'End':
+            return list[list.length - 1]
+        default:
+            return null
+    }
 }
 
 /* ------------------------------------------------------------- 1. invokers */
@@ -243,7 +271,7 @@ function expandedState() {
                 .forEach((trigger) => trigger.setAttribute('aria-expanded', String(isOpen)))
 
             if (isOpen && el.hasAttribute('data-shape-menu')) {
-                items(el)[0]?.focus()
+                items(el, '[data-shape-menu-item]')[0]?.focus()
             }
 
             position(el, isOpen)
@@ -265,33 +293,18 @@ function menuKeys() {
 
         if (!menu) return
 
-        const list = items(menu)
+        const list = items(menu, '[data-shape-menu-item]')
 
         if (list.length === 0) return
 
-        const index = list.indexOf(document.activeElement)
+        // A menu is vertical whichever way its trigger sits, so the arrow keys
+        // it answers are fixed.
+        const next = roving(list, event.key, true)
 
-        let next = null
-
-        switch (event.key) {
-            case 'ArrowDown':
-                next = list[(index + 1) % list.length]
-                break
-            case 'ArrowUp':
-                next = list[(index - 1 + list.length) % list.length]
-                break
-            case 'Home':
-                next = list[0]
-                break
-            case 'End':
-                next = list[list.length - 1]
-                break
-            default:
-                return
-        }
+        if (!next) return
 
         event.preventDefault()
-        next?.focus()
+        next.focus()
     })
 
     // An action that leaves its own menu standing looks like it didn't fire. The
@@ -307,7 +320,76 @@ function menuKeys() {
     })
 }
 
-/* ------------------------------------------------------------- 6. tooltips */
+/* ----------------------------------------------------------------- 6. tabs */
+
+/*
+| A tab strip is a single tab stop that arrow keys move within, and the panel
+| swap that goes with it. It is the one job in this file that is not an overlay.
+|
+| Only the `role="tab"` mode is touched. A strip written `as="nav"` carries no
+| `data-shape-tablist`, so navigation links keep answering to Tab, which is what
+| they should answer to.
+|
+| Activation follows focus, which is the ARIA pattern's default and the right one
+| while a panel is markup the browser already has. If a panel ever costs a
+| request to show, this is the line to revisit.
+*/
+function tabKeys() {
+    document.addEventListener('keydown', (event) => {
+        const strip = event.target instanceof Element ? event.target.closest('[data-shape-tablist]') : null
+
+        if (!strip) return
+
+        const list = items(strip, '[role="tab"]')
+
+        if (list.length === 0) return
+
+        const next = roving(list, event.key, strip.getAttribute('aria-orientation') === 'vertical')
+
+        if (!next) return
+
+        event.preventDefault()
+        next.focus()
+        select(next, strip)
+    })
+
+    document.addEventListener('click', (event) => {
+        const tab = event.target instanceof Element ? event.target.closest('[role="tab"][aria-controls]') : null
+
+        if (!tab) return
+
+        const strip = tab.closest('[data-shape-tablist]')
+
+        if (strip) select(tab, strip)
+    })
+}
+
+/*
+| Writes the selection across the whole strip rather than toggling the tab that
+| was clicked: `aria-selected`, the roving `tabindex` — exactly one tab is in the
+| tab order — and `hidden` on each panel.
+|
+| Panels are found by id, so they do not have to be siblings of the strip, and a
+| tab pointing at a panel that isn't on the page is simply skipped.
+|
+| It walks every tab rather than the filtered list the arrow keys move through: a
+| disabled tab is one the arrows skip, not one that gets to keep a tab stop it
+| was rendered with. Leaving it out of the loop is how a strip ends up with two.
+*/
+function select(chosen, strip) {
+    for (const tab of strip.querySelectorAll('[role="tab"]')) {
+        const isChosen = tab === chosen
+
+        tab.setAttribute('aria-selected', isChosen ? 'true' : 'false')
+        tab.setAttribute('tabindex', isChosen ? '0' : '-1')
+
+        const panel = target(tab.getAttribute('aria-controls'))
+
+        if (panel) panel.hidden = !isChosen
+    }
+}
+
+/* ------------------------------------------------------------- 7. tooltips */
 
 /*
 | The one overlay opened by a pointer rather than by a click, which is why it is
@@ -476,7 +558,7 @@ function trackAnchor() {
     addEventListener('resize', reposition, { passive: true })
 }
 
-/* ----------------------------------------------------------- 8. dismissal */
+/* ----------------------------------------------------------- 9. dismissal */
 
 /*
 | Removing a toast or an alert.
@@ -517,7 +599,7 @@ function dismiss(el) {
     }, reducedMotion() ? 0 : LEAVE_DELAY)
 }
 
-/* --------------------------------------------------------------- 9. toasts */
+/* -------------------------------------------------------------- 10. toasts */
 
 /*
 | A toast arrives as a browser event and leaves as DOM.
@@ -638,7 +720,7 @@ function countdown(el, duration) {
     el.addEventListener('focusout', resume)
 }
 
-/* ------------------------------------------------------------- 10. confirm */
+/* ------------------------------------------------------------- 11. confirm */
 
 /*
 | One dialog in the layout, filled in per question.
@@ -699,7 +781,7 @@ function confirms() {
     })
 }
 
-/* ------------------------------------------------------------ 11. the flash */
+/* ------------------------------------------------------------ 12. the flash */
 
 /*
 | Feedback that had to survive a redirect.

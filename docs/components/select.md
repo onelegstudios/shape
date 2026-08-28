@@ -34,6 +34,15 @@ exists so options can be written the way the rest of the library is. Plain
 | `description` | — | supporting copy, wired to `aria-describedby` |
 | `id` | the resolved name | the element id |
 
+## The placeholder is also its empty state
+
+A [table](table.md) and a [list](list.md) render an
+[empty state](empty.md) when they have nothing in them. A select cannot: a
+`<select>` may contain only `option`, `optgroup` and script-supporting elements,
+and anything else inside one is discarded by the HTML parser before it reaches
+the page. The `placeholder` option does the job that an empty state would do
+elsewhere.
+
 ## The placeholder cannot be chosen
 
 `disabled selected hidden` together are the only way a native select shows prompt

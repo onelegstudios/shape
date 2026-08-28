@@ -552,6 +552,210 @@
         <x-shape::confirm />
 
         <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Tables</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                Content rather than a surface, so it takes its background from the card around it.
+                Rows separate on the body with a rule; the amounts are right-aligned and therefore
+                set in tabular figures. The menu in the last column is a popover in the top layer,
+                which is why it escapes a container that scrolls.
+            </p>
+            <x-shape::card padding="none">
+                <x-shape::table>
+                    <x-shape::table.head>
+                        <x-shape::table.heading label="Invoice" />
+                        <x-shape::table.heading label="Client" />
+                        <x-shape::table.heading label="State" />
+                        <x-shape::table.heading label="Amount" align="end" />
+                        <x-shape::table.heading label="" align="end" />
+                    </x-shape::table.head>
+
+                    <x-shape::table.body>
+                        @foreach ($invoices as $invoice)
+                            <x-shape::table.row>
+                                <x-shape::table.cell :value="$invoice['number']" class="font-medium" />
+                                <x-shape::table.cell :value="$invoice['client']" />
+                                <x-shape::table.cell>
+                                    <x-shape::badge :label="$invoice['state']" :color="$invoice['tone']" />
+                                </x-shape::table.cell>
+                                <x-shape::table.cell :value="$invoice['total']" align="end" />
+                                <x-shape::table.cell align="end">
+                                    <x-shape::dropdown.trigger for="row-{{ $loop->index }}" variant="ghost" size="sm" icon="chevron-down">Actions</x-shape::dropdown.trigger>
+                                    <x-shape::dropdown name="row-{{ $loop->index }}">
+                                        <x-shape::dropdown.item icon="arrow-right">Open</x-shape::dropdown.item>
+                                        <x-shape::dropdown.item icon="trash" color="danger">Void</x-shape::dropdown.item>
+                                    </x-shape::dropdown>
+                                </x-shape::table.cell>
+                            </x-shape::table.row>
+                        @endforeach
+                    </x-shape::table.body>
+                </x-shape::table>
+            </x-shape::card>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Empty by default</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                Nothing was passed to either of these but the copy. The empty state is in the markup
+                of every table and every list; a <code>:has()</code> rule removes it the moment a row
+                appears, which is how the promise is kept without anyone inspecting a slot.
+            </p>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <x-shape::card padding="none">
+                    <x-shape::table empty-icon="information-circle" empty-heading="No invoices yet" empty-description="They will appear here as you raise them." />
+                </x-shape::card>
+                <x-shape::card padding="none">
+                    <x-shape::list empty-icon="plus" empty-heading="No teammates yet" empty-description="Invite someone to get started." />
+                </x-shape::card>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Sticky header</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                The bound on the height is the precondition, not a decoration: the wrapper scrolls
+                because of it, and a header sticking to the top of a box with no height of its own
+                sticks to nothing. Scroll inside the table — the rule under the header travels with
+                it, because it is an inset shadow rather than a border.
+            </p>
+            <x-shape::card padding="none">
+                <x-shape::table class="max-h-48">
+                    <x-shape::table.head sticky>
+                        <x-shape::table.heading label="Invoice" />
+                        <x-shape::table.heading label="Client" />
+                        <x-shape::table.heading label="Amount" align="end" />
+                    </x-shape::table.head>
+
+                    <x-shape::table.body>
+                        @foreach ($invoices as $invoice)
+                            @foreach ($invoices as $repeat)
+                                <x-shape::table.row>
+                                    <x-shape::table.cell :value="$repeat['number']" />
+                                    <x-shape::table.cell :value="$repeat['client']" />
+                                    <x-shape::table.cell :value="$repeat['total']" align="end" />
+                                </x-shape::table.row>
+                            @endforeach
+                        @endforeach
+                    </x-shape::table.body>
+                </x-shape::table>
+            </x-shape::card>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Lists</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                The table's answer for records that have one shape rather than several columns.
+                A rule on the list, nothing on the items, and an item is a slot because it almost
+                always holds three things rather than one value.
+            </p>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <x-shape::card padding="none" class="px-4">
+                    <x-shape::list>
+                        @foreach ($people as $person)
+                            <x-shape::list.item>
+                                <x-shape::avatar :initials="$person['initials']" size="sm" />
+                                <x-shape::text class="grow">{{ $person['name'] }}</x-shape::text>
+                                <x-shape::badge :label="$person['role']" />
+                            </x-shape::list.item>
+                        @endforeach
+                    </x-shape::list>
+                </x-shape::card>
+
+                <x-shape::card padding="none" class="px-4">
+                    <x-shape::list as="ol">
+                        @foreach ($invoices->take(3) as $invoice)
+                            <x-shape::list.item>
+                                <x-shape::text class="grow">{{ $invoice['client'] }}</x-shape::text>
+                                <x-shape::text variant="muted" size="sm">{{ $invoice['total'] }}</x-shape::text>
+                            </x-shape::list.item>
+                        @endforeach
+                    </x-shape::list>
+                </x-shape::card>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Stats</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                The value leads and the label recedes, and the direction is drawn as well as tinted —
+                three different arrows, not one arrow at three angles. The last one is the case that
+                needs the override: up is the wrong way for churn to go.
+            </p>
+            <div class="grid gap-6 sm:grid-cols-4">
+                <x-shape::stat label="Invoices sent" value="1,204" delta="12%" trend="up" />
+                <x-shape::stat label="Outstanding" value="£18,400" delta="4%" trend="down" />
+                <x-shape::stat label="Average days to pay" value="21" delta="0" trend="flat" />
+                <x-shape::stat label="Churn" value="4.1%" delta="0.6pp" trend="up" color="danger" />
+            </div>
+            <div class="grid gap-6 sm:grid-cols-2">
+                <x-shape::stat label="Current plan" value="Team" emphasis="label" description="Renews 1 September" />
+                <x-shape::stat label="Seats" value="12 of 20" description="Eight left before the next tier." />
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Avatars</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                Initials are stated rather than derived — a derivation inside a folded component runs
+                once, at compile time. The group overlaps with a negative gap and a ring on each, and
+                stacks in DOM order, because choosing the order would be a z-index.
+            </p>
+            <div class="flex flex-wrap items-center gap-6">
+                <x-shape::avatar initials="AL" alt="Ada Lovelace" size="xs" />
+                <x-shape::avatar initials="AL" alt="Ada Lovelace" size="sm" />
+                <x-shape::avatar initials="AL" alt="Ada Lovelace" />
+                <x-shape::avatar initials="AL" alt="Ada Lovelace" size="lg" />
+
+                <x-shape::avatar.group>
+                    <x-shape::avatar initials="AL" size="sm" />
+                    <x-shape::avatar initials="GH" size="sm" />
+                    <x-shape::avatar initials="KJ" size="sm" />
+                </x-shape::avatar.group>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Tabs</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                Try the arrow keys, and Home and End. The strip is one tab stop and selection follows
+                focus. Underneath, the same component as navigation: links carry
+                <code>aria-current</code>, the strip carries no tablist role, and nothing there needs
+                the script at all.
+            </p>
+            <x-shape::tabs label="Billing">
+                <x-shape::tabs.tab for="tab-plan" selected>Plan</x-shape::tabs.tab>
+                <x-shape::tabs.tab for="tab-invoices">Invoices</x-shape::tabs.tab>
+                <x-shape::tabs.tab for="tab-usage">Usage</x-shape::tabs.tab>
+            </x-shape::tabs>
+
+            <x-shape::tabs.panel name="tab-plan" selected>
+                <x-shape::text>The Team plan, renewing on 1 September.</x-shape::text>
+            </x-shape::tabs.panel>
+            <x-shape::tabs.panel name="tab-invoices">
+                <x-shape::text>Five invoices, one of them overdue.</x-shape::text>
+            </x-shape::tabs.panel>
+            <x-shape::tabs.panel name="tab-usage">
+                <x-shape::progress :value="90" label="Storage used" />
+            </x-shape::tabs.panel>
+
+            <x-shape::tabs as="nav" label="Settings">
+                <x-shape::tabs.tab href="#general" selected>General</x-shape::tabs.tab>
+                <x-shape::tabs.tab href="#members">Members</x-shape::tabs.tab>
+                <x-shape::tabs.tab href="#api">API</x-shape::tabs.tab>
+            </x-shape::tabs>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Pagination</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                It takes the paginator, so it never reads the request — the route built this one and
+                <code>?page=2</code> moves it. Compiled rather than folded: a folded pager would hold
+                one visitor's page of links forever.
+            </p>
+            <x-shape::pagination :paginator="$pages" />
+            <x-shape::pagination :paginator="$pages" simple />
+        </section>
+
+        <section class="space-y-4">
             <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Elevation</h2>
             <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
                 Tailwind's own scale, used directly. Each step is two parts — a soft cast and a

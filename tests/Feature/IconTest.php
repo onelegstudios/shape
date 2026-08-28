@@ -60,7 +60,26 @@ it('draws the new state icons at all four sizes', function (string $icon) {
         ->and(Blade::render("<x-shape::icon.{$icon} variant=\"mini\" />"))->toContain('viewBox="0 0 20 20"')
         ->and(Blade::render("<x-shape::icon.{$icon} variant=\"solid\" />"))->toContain('fill="currentColor"')
         ->and(Blade::render("<x-shape::icon.{$icon} />"))->toContain('stroke="currentColor"');
-})->with(['x-circle', 'information-circle']);
+})->with(['x-circle', 'information-circle', 'chevron-left', 'chevron-right', 'arrow-trending-up', 'arrow-trending-down']);
+
+it('ships the two directions a stat can move, as two different drawings', function () {
+    // "Never rely on colour alone" only holds if up and down are actually
+    // distinguishable. Rotating one arrow would be one drawing at two angles,
+    // which is the thing this library's icon rule exists to refuse.
+    $up = Blade::render('<x-shape::icon.arrow-trending-up variant="micro" />');
+    $down = Blade::render('<x-shape::icon.arrow-trending-down variant="micro" />');
+
+    expect($up)->toContain('<svg')
+        ->and($down)->toContain('<svg')
+        ->and($up)->not->toBe($down);
+});
+
+it('ships the chevrons the pager needs, pointing opposite ways', function () {
+    $left = Blade::render('<x-shape::icon.chevron-left variant="mini" />');
+    $right = Blade::render('<x-shape::icon.chevron-right variant="mini" />');
+
+    expect($left)->toContain('<svg')->and($left)->not->toBe($right);
+});
 
 it('renders nothing rather than recursing when no name is given', function () {
     // Without a guard, `shape::icon.` resolves back to the dispatcher itself.

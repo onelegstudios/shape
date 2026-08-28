@@ -48,7 +48,16 @@ label. When an icon carries meaning on its own, expose it and give it a name:
 
 ## Available icons
 
-`arrow-right`, `check`, `check-circle`, `chevron-down`, `exclamation-triangle`,
-`loading`, `plus`, `trash`, `x-mark`.
+`arrow-right`, `arrow-trending-down`, `arrow-trending-up`, `check`,
+`check-circle`, `chevron-down`, `chevron-left`, `chevron-right`,
+`exclamation-triangle`, `information-circle`, `loading`, `minus`, `plus`,
+`trash`, `x-circle`, `x-mark`.
 
 `loading` spins, and is the one icon that isn't from Heroicons.
+
+The set grows with the components that need it rather than by importing
+Heroicons wholesale: the state glyphs arrived with the badge and the alert, the
+chevrons with the pager, and the two trending arrows with the stat. They are two
+separate drawings rather than one arrow rotated, which is the same rule that
+gives every variant its own path — a direction that is only a rotation is a
+direction that reads as one thing at a glance.

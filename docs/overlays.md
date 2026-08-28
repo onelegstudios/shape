@@ -33,6 +33,9 @@ Everything renders and opens without it, with three exceptions: Escape closes a
 `:dismissible="false"` dialog, tooltips never appear, and arrow keys don't move
 between menu items. Nothing is invisible or unreachable without it.
 
+The same file also drives the keyboard behaviour of a [tab](components/tabs.md)
+strip, which is not an overlay and is the only thing in here that isn't.
+
 ## Naming: `name` on the overlay, `for` on the trigger
 
 ```blade

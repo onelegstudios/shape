@@ -613,6 +613,34 @@
 }
 
 /*
+| Data display.
+|
+| One rule, and it is here for the reason everything in this file is here: it
+| gates `display` on state, and no utility class can do that.
+|
+| A table and a list both promise an empty state when they have nothing in
+| them. Finding out whether they do is a runtime question — inspecting a slot to
+| see whether anything was passed — and asking it would take both components off
+| the fold path in exchange for something CSS answers for nothing. So the empty
+| state is always rendered, and `:has()` removes it the moment a row or an item
+| exists.
+|
+| Neither wrapper carries a display utility of its own, which is what lets a
+| rule in this layer win. Same arrangement as the overlays above: anything whose
+| display depends on state keeps its display out of the class string.
+|
+| Scoped through `tbody` on the table so that a caller who writes a header row
+| out of `table.row` rather than `table.head` does not hide their own empty
+| state with it.
+*/
+@layer components {
+    [data-shape-table]:has(tbody [data-shape-table-row]) [data-shape-table-empty],
+    [data-shape-list]:has([data-shape-list-item]) [data-shape-list-empty] {
+        display: none;
+    }
+}
+
+/*
 | Placement, in a layer of its own — and the layer is the point.
 |
 | A dialog centres itself with the UA's `inset: 0` and auto margins, and a drawer

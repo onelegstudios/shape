@@ -59,6 +59,28 @@ it('declares that layer after the components layer it has to outrank', function 
     expect(strpos($css, '@layer shape-overlay'))->toBeGreaterThan(strpos($css, '@layer components'));
 });
 
+it('answers the empty-state question in CSS, because asking it in Blade costs the fold', function () {
+    // A table and a list both promise an empty state when they have nothing in
+    // them. Inspecting a slot to find out is a runtime question, and both
+    // components would stop folding for it. So the empty state is always
+    // rendered and `:has()` removes it — which is a `display` gated on state,
+    // and the only kind of thing this file is allowed to contain.
+    $css = shapeStylesheet();
+
+    expect($css)
+        ->toContain('[data-shape-table]:has(tbody [data-shape-table-row]) [data-shape-table-empty]')
+        ->toContain('[data-shape-list]:has([data-shape-list-item]) [data-shape-list-empty]');
+});
+
+it('keeps that rule in the components layer, where a caller can still override it', function () {
+    // It is not placement, so it does not belong in the layer that outranks
+    // utilities. A caller who wants to see their own empty state regardless
+    // should be able to say so with a utility class.
+    $css = shapeStylesheet();
+
+    expect(strpos($css, '[data-shape-list-empty]'))->toBeLessThan(strpos($css, '@layer shape-overlay'));
+});
+
 it('scans the package views so utilities used in vendor blade survive purging', function () {
     expect(shapeStylesheet())->toContain('@source "../views"');
 });
