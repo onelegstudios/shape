@@ -28,6 +28,31 @@ it('keeps overlay placement in a layer that outranks utilities', function () {
         ->toContain("[data-shape-side='right']");
 });
 
+it('places the toaster in that layer too, for the same reason', function () {
+    // A toaster written inside a spaced section is a child like any other, and a
+    // margin on a popover is an offset from the corner it was asked to sit in.
+    $css = shapeStylesheet();
+
+    $placement = substr($css, strpos($css, '@layer shape-overlay'));
+
+    expect($placement)
+        ->toContain('[data-shape-toaster] {')
+        ->toContain("[data-shape-position='bottom-right']");
+});
+
+it('sets no z-index anywhere, because everything that floats is in the top layer', function () {
+    // Every overlay surface in the library — dialogs, popovers, and now the
+    // toaster — is in the top layer, which is above every stacking context and
+    // cannot be reached by a z-index at all. The moment one appears here, some
+    // component has stopped using the platform's own primitive.
+    //
+    // Comments are stripped first, as in the assertion below: the stylesheet
+    // explains at length why it has no z-index, and saying so is not doing so.
+    $css = (string) preg_replace('#/\*.*?\*/#s', '', shapeStylesheet());
+
+    expect($css)->not->toContain('z-index');
+});
+
 it('declares that layer after the components layer it has to outrank', function () {
     $css = shapeStylesheet();
 

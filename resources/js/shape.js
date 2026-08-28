@@ -17,6 +17,12 @@
 |   6. showing and hiding tooltips, which are the one overlay a pointer opens
 |   7. placing every anchored overlay, which CSS anchor positioning was going to
 |      do until it turned out to ship in halves
+|   8. removing a toast or an alert someone dismissed, which is the one thing in
+|      this library the platform has no primitive for
+|   9. building toasts, by cloning a template the toaster already rendered
+|  10. filling in the shared confirm dialog and dispatching what it was told to
+|  11. replaying whatever the server flashed into the session, as the same events
+|      it would have dispatched live
 |
 | plus a pair of window events so a Livewire component can open an overlay by
 | name.
@@ -33,6 +39,8 @@
 const OPEN_DELAY = 120
 const HIDE_DELAY = 80
 const OFFSET = 6
+const TOAST_DURATION = 5000
+const LEAVE_DELAY = 200
 
 let installed = false
 
@@ -48,7 +56,14 @@ export default function shape() {
     menuKeys()
     tooltips()
     trackAnchor()
+    dismissals()
+    toasts()
+    confirms()
     livewireBridge()
+
+    // Last, because it dispatches the events the two above have just started
+    // listening for.
+    feedback()
 }
 
 /* ------------------------------------------------------------------ helpers */
@@ -75,6 +90,16 @@ function close(name) {
     if (!el) return
 
     isDialog(el) ? el.close() : el.hidePopover?.()
+}
+
+function reducedMotion() {
+    return matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function fill(root, selector, text) {
+    const el = root.querySelector(selector)
+
+    if (el) el.textContent = text ?? ''
 }
 
 function items(menu) {
@@ -449,6 +474,273 @@ function trackAnchor() {
 
     addEventListener('scroll', reposition, { passive: true, capture: true })
     addEventListener('resize', reposition, { passive: true })
+}
+
+/* ----------------------------------------------------------- 8. dismissal */
+
+/*
+| Removing a toast or an alert.
+|
+| The one job in this file with no platform primitive behind it. A dialog closes
+| itself and a popover hides itself; an element someone asked to go away has to
+| be taken out by something.
+|
+| `data-shape-leaving` is what the exit transition hangs off, and the element is
+| removed a beat later. When the last toast leaves, the toaster stops being an
+| open popover — an empty one is harmless, but leaving it in the top layer means
+| leaving it in the accessibility tree too.
+*/
+function dismissals() {
+    document.addEventListener('click', (event) => {
+        const button = event.target instanceof Element ? event.target.closest('[data-shape-dismiss]') : null
+
+        if (!button) return
+
+        const el = button.closest('[data-shape-toast], [data-shape-alert]')
+
+        if (el) dismiss(el)
+    })
+}
+
+function dismiss(el) {
+    el.setAttribute('data-shape-leaving', '')
+
+    setTimeout(() => {
+        const toaster = el.closest('[data-shape-toaster]')
+
+        el.remove()
+
+        if (toaster && !toaster.querySelector('[data-shape-toast]')) {
+            toaster.removeAttribute('data-shape-open')
+            toaster.hidePopover?.()
+        }
+    }, reducedMotion() ? 0 : LEAVE_DELAY)
+}
+
+/* --------------------------------------------------------------- 9. toasts */
+
+/*
+| A toast arrives as a browser event and leaves as DOM.
+|
+| The markup is not in here. The toaster renders one `<x-shape::toast>` per tone
+| into a `<template>`, and this clones the one the payload asked for — so the
+| toast's design lives in Blade with every other component, Tailwind scans it
+| like every other component, and this function's whole job is filling in two
+| pieces of text.
+|
+| Tone chooses the live region as well as the template. A failure is announced
+| assertively; everything else waits its turn. One region cannot make that
+| distinction, which is why there are two.
+|
+| Opening it is `promote()`, below, and there is more to that than it looks.
+*/
+function toasts() {
+    addEventListener('shape:toast', (event) => {
+        const toast = event.detail?.toast ?? event.detail ?? {}
+        const toaster = document.querySelector('[data-shape-toaster]')
+
+        if (!toaster) return
+
+        const tone = toast.color ?? 'neutral'
+
+        const template =
+            toaster.querySelector(`[data-shape-toast-template="${CSS.escape(tone)}"]`) ??
+            toaster.querySelector('[data-shape-toast-template="neutral"]')
+
+        const el = template?.content.querySelector('[data-shape-toast]')?.cloneNode(true)
+
+        if (!el) return
+
+        fill(el, '[data-shape-toast-heading]', toast.heading)
+        fill(el, '[data-shape-toast-description]', toast.description)
+
+        const region = toaster.querySelector(
+            `[data-shape-toast-region="${tone === 'danger' ? 'assertive' : 'polite'}"]`,
+        )
+
+        ;(region ?? toaster).append(el)
+
+        promote(toaster)
+
+        const duration = typeof toast.duration === 'number' ? toast.duration : TOAST_DURATION
+
+        if (duration > 0) countdown(el, duration)
+    })
+}
+
+/*
+| Putting the toaster on top, and keeping it there.
+|
+| The top layer has exactly one ordering rule: elements are stacked in the order
+| they were promoted into it. That is normally invisible, because the library only
+| ever has one thing in it at a time. It stops being invisible the moment a modal
+| opens over a toast that is already showing — the dialog was promoted later, so
+| the dialog paints on top, and no stylesheet can answer that. Verified by
+| screenshot, because nothing about it is visible from the DOM.
+|
+| Re-promoting is the whole fix: hiding and showing the popover puts it back at
+| the top of the stack. It is done only when a dialog is open, because taking an
+| element out of the top layer and back in re-runs the entry transition on every
+| toast inside it, and there is no reason to pay that on the common path.
+|
+| `showPopover()` throws when the popover is already open, so the open state is
+| kept on an attribute of its own. `togglePopover(true)` would say the same thing
+| in one line, but its `force` argument landed later than the rest of the popover
+| API, and this is a file with no feature detection left in it.
+|
+| What this cannot fix: a modal dialog makes the rest of the document inert, and
+| a toast is outside the dialog. So while a modal is open a toast is visible above
+| it and cannot be clicked. That is the platform's rule about modality rather than
+| a z-index problem, and no other implementation of a toast escapes it either.
+*/
+function promote(toaster) {
+    if (!toaster.hasAttribute('data-shape-open')) {
+        toaster.setAttribute('data-shape-open', '')
+        toaster.showPopover?.()
+
+        return
+    }
+
+    if (document.querySelector('dialog[open]')) {
+        toaster.hidePopover?.()
+        toaster.showPopover?.()
+    }
+}
+
+/*
+| The timer, which pauses while someone is reading.
+|
+| These listeners are bound to the element rather than delegated to the document,
+| which is the one place in this file that happens. It is deliberate: the state
+| being tracked — how much of this toast's time is left — belongs to one element
+| that this function created and will remove, so it goes out with it.
+*/
+function countdown(el, duration) {
+    let remaining = duration
+    let started = Date.now()
+    let id = setTimeout(() => dismiss(el), remaining)
+
+    const pause = () => {
+        clearTimeout(id)
+        remaining -= Date.now() - started
+    }
+
+    const resume = () => {
+        if (remaining <= 0) return
+
+        started = Date.now()
+        id = setTimeout(() => dismiss(el), remaining)
+    }
+
+    el.addEventListener('pointerenter', pause)
+    el.addEventListener('pointerleave', resume)
+    el.addEventListener('focusin', pause)
+    el.addEventListener('focusout', resume)
+}
+
+/* ------------------------------------------------------------- 10. confirm */
+
+/*
+| One dialog in the layout, filled in per question.
+|
+| What the accept button does is the whole of this library's server integration,
+| and it is three lines: dispatch a window event by the name the payload gave,
+| then close. Nothing here knows what is listening. A Livewire component's
+| `#[On('deleteProject')]` is a window-event listener, so it hears this without
+| anything being wired up, and so does Alpine, and so does a plain listener.
+|
+| The event goes out before the dialog closes. Closing is what returns focus and
+| tears the dialog down, and none of that should be able to decide whether the
+| thing someone confirmed actually happened.
+*/
+const confirmParams = new WeakMap()
+
+function confirms() {
+    addEventListener('shape:confirm', (event) => {
+        const payload = event.detail?.confirm ?? event.detail ?? {}
+        const dialog = target(payload.name ?? 'shape-confirm')
+
+        if (!dialog) return
+
+        if (payload.heading != null) fill(dialog, `#${CSS.escape(dialog.id)}-heading`, payload.heading)
+
+        fill(dialog, '[data-shape-confirm-message]', payload.message)
+
+        const cancel = dialog.querySelector('[data-shape-overlay-close]')
+
+        if (cancel && payload.cancel != null) cancel.textContent = payload.cancel
+
+        const accept = dialog.querySelector('[data-shape-confirm-accept]')
+
+        if (accept) {
+            if (payload.accept != null) accept.textContent = payload.accept
+
+            accept.setAttribute('data-shape-tone', payload.color ?? 'neutral')
+            accept.setAttribute('data-shape-confirm-then', payload.then ?? '')
+
+            confirmParams.set(accept, payload.params ?? [])
+        }
+
+        dialog.showModal?.()
+    })
+
+    document.addEventListener('click', (event) => {
+        const accept = event.target instanceof Element ? event.target.closest('[data-shape-confirm-accept]') : null
+
+        if (!accept) return
+
+        const name = accept.getAttribute('data-shape-confirm-then')
+
+        if (name) {
+            dispatchEvent(new CustomEvent(name, { detail: confirmParams.get(accept) ?? [] }))
+        }
+
+        accept.closest('dialog')?.close()
+    })
+}
+
+/* ------------------------------------------------------------ 11. the flash */
+
+/*
+| Feedback that had to survive a redirect.
+|
+| `Shape::toast()` dispatches through Livewire when it can and flashes to the
+| session when it can't. The flashed half is rendered by the toaster as a block
+| of JSON, and replayed here as exactly the browser event the other half would
+| have produced — so there is one code path building a toast, not two that can
+| drift apart. The overlays learned that the expensive way.
+|
+| The payload is removed once it has been read: a Livewire round trip that
+| re-renders the layout would otherwise replay it.
+*/
+function feedback() {
+    const replay = () => {
+        document.querySelectorAll('[data-shape-feedback]').forEach((script) => {
+            let entries
+
+            try {
+                entries = JSON.parse(script.textContent ?? '[]')
+            } catch {
+                return
+            }
+
+            script.remove()
+
+            if (!Array.isArray(entries)) return
+
+            entries.forEach((entry) => {
+                if (entry?.event) {
+                    dispatchEvent(new CustomEvent(entry.event, { detail: entry.payload ?? {} }))
+                }
+            })
+        })
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', replay, { once: true })
+    } else {
+        replay()
+    }
 }
 
 /* ------------------------------------------------------------ the bridge */

@@ -148,6 +148,25 @@
         --shape-fg: oklch(28% 0.062 62);
         --shape-fg-muted: oklch(41% 0.078 64);
     }
+
+    /*
+    | The tint surface, which is the other kind.
+    |
+    | The four above are filled: a saturated background, light text on top, both
+    | written out by hand. An alert is a pale wash of the tone instead, and the
+    | readable foreground on it is the tone's own ink rather than white — which
+    | the tone variables already carry, so this surface is two lines rather than
+    | four more palettes.
+    |
+    | It earns its place by making the muted foreground correct. Without it, a
+    | `<x-shape::text variant="muted">` inside a danger alert reads the global
+    | grey, on a pink background, which is the exact failure the surface contract
+    | exists to prevent. With it, nothing has to be passed down.
+    */
+    [data-shape-surface='tint'] {
+        --shape-fg: var(--shape-tone-ink);
+        --shape-fg-muted: color-mix(in oklch, var(--shape-tone-ink) 76%, transparent);
+    }
 }
 
 @layer components {
@@ -456,6 +475,143 @@
     }
 }
 
+@layer components {
+    /*
+    | Feedback.
+    |
+    | The toaster is a `popover="manual"`, and that one choice is why this
+    | library still has no z-index in it. A popover is in the top layer, so a
+    | toast is above every stacking context on the page — including an open
+    | `<dialog>`, which is the case that decides it: a toast fired while a modal
+    | is open would otherwise be painted behind the modal's own backdrop, and no
+    | z-index can lift it out, because the dialog isn't in the stack either.
+    |
+    | `manual` rather than the auto kind: an auto popover light-dismisses on the
+    | next click anywhere, and a toast that disappears when you click the page
+    | behind it is not a toast.
+    |
+    | The container is transparent to the pointer; the toasts inside it are not.
+    | Without that, an invisible 24rem column sits over the corner of every page
+    | swallowing clicks.
+    */
+    [data-shape-toaster] {
+        border: 0;
+        padding: 0;
+        background: transparent;
+        overflow: visible;
+
+        &:popover-open {
+            display: flex;
+        }
+
+        /* Two live regions, and usually one of them is empty. An empty flex
+           child still takes its share of the gap, so it has to leave. */
+        & > [data-shape-toast-region]:empty {
+            display: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        [data-shape-toast] {
+            transition:
+                opacity 150ms ease,
+                translate 150ms ease;
+        }
+
+        /* Toasts are inserted rather than revealed, so there is no closed state
+           to transition from — `@starting-style` supplies one. */
+        @starting-style {
+            [data-shape-toast] {
+                opacity: 0;
+                translate: 0 0.75rem;
+            }
+        }
+
+        [data-shape-toast][data-shape-leaving] {
+            opacity: 0;
+            translate: 0 0.75rem;
+        }
+    }
+
+    /*
+    | Progress.
+    |
+    | `appearance: none` and then the track and the bar separately, because no
+    | property styles both and no engine agrees on which pseudo-element owns
+    | which half. Three selectors for one appearance is the price of the element
+    | that computes its own width — which is what keeps the component foldable.
+    */
+    [data-shape-progress] {
+        appearance: none;
+        border: 0;
+        overflow: hidden;
+        background: var(--color-shape-200);
+
+        &::-webkit-progress-bar {
+            background: var(--color-shape-200);
+        }
+
+        &::-webkit-progress-value {
+            background: var(--shape-tone);
+            border-radius: inherit;
+        }
+
+        &::-moz-progress-bar {
+            background: var(--shape-tone);
+            border-radius: inherit;
+        }
+    }
+
+    /*
+    | The indeterminate state is drawn here rather than left to the UA: once
+    | `appearance` is gone there is nothing left for the browser to animate, and
+    | an indeterminate bar that renders as an empty track reads as zero percent
+    | rather than as unknown.
+    */
+    [data-shape-progress]:indeterminate {
+        background:
+            linear-gradient(90deg, transparent, var(--shape-tone), transparent) no-repeat -40% 0 / 40% 100%,
+            var(--color-shape-200);
+
+        &::-webkit-progress-bar {
+            background: transparent;
+        }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        [data-shape-progress]:indeterminate {
+            animation: shape-progress 1.4s ease-in-out infinite;
+        }
+    }
+
+    @keyframes shape-progress {
+        from {
+            background-position:
+                -40% 0,
+                0 0;
+        }
+
+        to {
+            background-position:
+                140% 0,
+                0 0;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        [data-shape-progress],
+        [data-shape-progress]::-webkit-progress-bar {
+            background: var(--color-shape-800);
+        }
+
+        [data-shape-progress]:indeterminate {
+            background:
+                linear-gradient(90deg, transparent, var(--shape-tone), transparent) no-repeat -40% 0 / 40% 100%,
+                var(--color-shape-800);
+        }
+    }
+}
+
 /*
 | Placement, in a layer of its own — and the layer is the point.
 |
@@ -479,6 +635,41 @@
 @layer shape-overlay {
     [data-shape-modal] {
         margin: auto;
+    }
+
+    /* The toaster is an element in someone's layout like any other, so a
+       parent's `space-y-*` reaches it too — and a margin on a popover is an
+       offset from the corner it was asked to sit in. */
+    [data-shape-toaster] {
+        position: fixed;
+        margin: 0;
+        inset: auto;
+
+        &[data-shape-position='bottom-right'] {
+            inset: auto 1rem 1rem auto;
+        }
+
+        &[data-shape-position='bottom-left'] {
+            inset: auto auto 1rem 1rem;
+        }
+
+        &[data-shape-position='top-right'] {
+            inset: 1rem 1rem auto auto;
+        }
+
+        &[data-shape-position='top-left'] {
+            inset: 1rem auto auto 1rem;
+        }
+
+        &[data-shape-position='top-center'] {
+            inset: 1rem auto auto 50%;
+            translate: -50% 0;
+        }
+
+        &[data-shape-position='bottom-center'] {
+            inset: auto auto 1rem 50%;
+            translate: -50% 0;
+        }
     }
 
     /* An anchored overlay is placed by shape.js writing coordinates, so any

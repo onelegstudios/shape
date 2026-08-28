@@ -135,7 +135,7 @@ See [docs/folding.md](docs/folding.md) for the full explanation.
 
 ### JavaScript
 
-One file, and only the overlays need it:
+One file, for the overlays and the feedback channel:
 
 ```js
 import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
@@ -143,10 +143,11 @@ import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.j
 shape()   // or, if your application uses Alpine: Alpine.plugin(shape)
 ```
 
-It imports nothing and depends on nothing. Modal and drawer are a `<dialog>`;
-dropdown, popover and tooltip use the `popover` attribute. The focus trap, the
-top layer, Escape, light dismiss and the scrim are the platform's, so what is
-left for a script is small. See [docs/overlays.md](docs/overlays.md).
+It imports nothing and depends on nothing — not Alpine, and not Livewire. Modal
+and drawer are a `<dialog>`; dropdown, popover and tooltip use the `popover`
+attribute. The focus trap, the top layer, Escape, light dismiss and the scrim are
+the platform's, so what is left for a script is small. See
+[docs/overlays.md](docs/overlays.md).
 
 ```blade
 <x-shape::overlay.trigger for="delete-project" color="danger" variant="subtle">
@@ -157,6 +158,29 @@ left for a script is small. See [docs/overlays.md](docs/overlays.md).
     <x-shape::text size="sm">This cannot be undone.</x-shape::text>
 </x-shape::modal>
 ```
+
+### Feedback
+
+Put a toaster and a confirm dialog in your layout, and the server can reach the
+browser:
+
+```blade
+<x-shape::toaster />
+<x-shape::confirm />
+```
+
+```php
+Shape::toast()->success('Invoice sent')->send();
+
+Shape::confirm('Delete project?')->accept('Delete')->color('danger')->then('deleteProject')->send();
+```
+
+`send()` dispatches a browser event through Livewire when there is a Livewire
+request to ride on, and flashes to the session otherwise — both arriving as the
+same event, so one code path builds the toast either way. There is no Livewire
+component here and no Livewire in `composer.json`; `then()` names a window event,
+which is what `#[On]` already listens for. See
+[docs/feedback.md](docs/feedback.md).
 
 ## Documentation
 

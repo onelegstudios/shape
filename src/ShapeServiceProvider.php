@@ -18,6 +18,7 @@ class ShapeServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/shape.php', 'shape');
 
+        $this->app->singleton(FeedbackChannel::class);
         $this->app->singleton(Shape::class);
     }
 

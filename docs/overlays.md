@@ -87,7 +87,9 @@ $this->dispatch('shape:close', name: 'confirm-delete');
 ```
 
 Browser events rather than a Livewire dependency, so the package keeps working in
-an application that has no Livewire in it.
+an application that has no Livewire in it. [Feedback](feedback.md) takes the same
+idea further: `Shape::toast()` and `Shape::confirm()` send browser events from
+PHP, and fall back to the session when there is no Livewire request to ride on.
 
 ## A parent's spacing outranks a component library
 

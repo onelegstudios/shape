@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static \Onelegstudios\Shape\ClassBuilder classes(string|array<array-key, mixed>|null $classes = null)
+ * @method static \Onelegstudios\Shape\PendingToast toast(string|null $heading = null)
+ * @method static \Onelegstudios\Shape\PendingConfirm confirm(string|null $message = null)
+ * @method static list<array{event: string, payload: array<string, mixed>}> flashedFeedback()
  *
  * @see \Onelegstudios\Shape\Shape
  */

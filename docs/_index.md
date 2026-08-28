@@ -61,17 +61,24 @@ Folding is not free of obligations at the call site. See
 | [`dropdown`](components/dropdown.md) | fold | A popover with menu semantics |
 | [`popover`](components/popover.md) | fold | Anchored, in the top layer, no z-index |
 | [`tooltip`](components/tooltip.md) | fold | For the label of an icon button, and nothing load-bearing |
+| [`alert`](components/alert.md) | fold | A message that stays on the page |
+| [`toast`](components/toast.md) | fold | Markup in Blade, cloned by the script |
+| [`toaster`](components/toast.md) | compile | The top layer, so no z-index and no modal on top of it |
+| [`confirm`](components/confirm.md) | fold | The modal, filled in from the server |
+| [`progress`](components/progress.md) | fold | Native, so a dynamic value still folds |
 
 Every page states the component's Blaze tier and the call sites that keep it on
 the fold path. [Forms](forms.md) starts with the one call site that writes a
 whole field, then covers groups, name resolution, and the single hole cut in the
 fold for validation messages. [Overlays](overlays.md) covers what the five
 overlays share: the script, the naming convention, what the platform supplies
-and what it doesn't.
+and what it doesn't. [Feedback](feedback.md) covers the one direction the rest of
+the library never travels — server to browser — and why that needs no Livewire
+component to do it.
 
 ## JavaScript
 
-One file, for the overlays only:
+One file, for the overlays and the feedback channel:
 
 ```js
 import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
@@ -79,8 +86,14 @@ import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.j
 shape()   // or, if you use Alpine: Alpine.plugin(shape)
 ```
 
-It imports nothing and depends on nothing. Everything else in the library —
-including switches, checkboxes and the select — is markup and CSS.
+It imports nothing and depends on nothing — not Alpine, and not Livewire.
+Everything else in the library — including switches, checkboxes and the select —
+is markup and CSS.
+
+Overlays render and open without it, with three small exceptions listed in
+[Overlays](overlays.md#the-script). Toasts are the one thing that does not work
+without it, and [Feedback](feedback.md#toasts-need-the-script) says why that
+trade was taken.
 
 ## Customising
 

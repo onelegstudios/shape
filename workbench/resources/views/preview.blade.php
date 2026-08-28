@@ -13,9 +13,10 @@
         <header class="space-y-2">
             <h1 class="text-3xl font-semibold tracking-tight">Shape</h1>
             <p class="text-shape-600 dark:text-shape-400">
-                Overlays — modal, drawer, dropdown, popover and tooltip — on top of the forms,
-                typography, surfaces and tokens from the first three steps. Everything here opens
-                on the platform's own primitives, so try it with the keyboard.
+                Feedback — alerts, toasts, the confirm dialog and progress — on top of the
+                overlays, forms, typography, surfaces and tokens from the first four steps.
+                Everything here opens on the platform's own primitives, so try it with the
+                keyboard.
             </p>
         </header>
 
@@ -457,6 +458,100 @@
         </section>
 
         <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Alerts</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                A message that stays on the page. Every tone resolves a glyph of its own, and the
+                muted line inside each one reads a dialled-back version of the tone rather than a
+                grey — squint, or turn the colour off, and both still work.
+            </p>
+            <div class="space-y-3">
+                <x-shape::alert color="accent" heading="Weekly digest is on">
+                    <x-shape::text size="sm" variant="muted">Sent every Monday at 9am, in your timezone.</x-shape::text>
+                </x-shape::alert>
+
+                <x-shape::alert color="success" heading="Payment received">
+                    <x-shape::text size="sm" variant="muted">Invoice #1042 was paid in full.</x-shape::text>
+                </x-shape::alert>
+
+                <x-shape::alert color="warning" heading="Your trial ends on Friday" dismissible>
+                    <x-shape::text size="sm" variant="muted">Add a payment method to keep your projects.</x-shape::text>
+                </x-shape::alert>
+
+                <x-shape::alert color="danger" heading="Card declined">
+                    <x-shape::text size="sm" variant="muted">Update the card on file and try the payment again.</x-shape::text>
+                </x-shape::alert>
+
+                <x-shape::alert>
+                    <x-shape::text size="sm" variant="muted">No tone, no glyph — the neutral case.</x-shape::text>
+                </x-shape::alert>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Progress</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                A native <code class="text-xs">&lt;progress&gt;</code>, which is what lets a dynamic
+                value keep folding: the browser computes the width, so nothing in the template
+                divides one number by another. The percentage is printed at the call site.
+            </p>
+            <div class="max-w-md space-y-4">
+                <div class="space-y-1.5">
+                    <div class="flex items-baseline justify-between">
+                        <x-shape::text size="sm" id="storage-label">Storage used</x-shape::text>
+                        <x-shape::text size="sm" variant="muted">42%</x-shape::text>
+                    </div>
+                    <x-shape::progress :value="42" aria-labelledby="storage-label" />
+                </div>
+
+                <x-shape::progress :value="18" size="sm" color="warning" label="Seats used" />
+                <x-shape::progress :value="92" size="lg" color="danger" label="Quota" />
+                <x-shape::progress :value="70" color="success" label="Onboarding" />
+                <x-shape::progress indeterminate label="Uploading" />
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Toasts</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                Sent as a browser event, built by cloning a template the toaster already rendered.
+                Hover one to stop its timer. Open a modal first, then fire one — it appears above
+                the modal, which is what the top layer buys and what no z-index could.
+            </p>
+            <div class="flex flex-wrap items-center gap-3">
+                {{-- One attribute per field rather than a blob of JSON: an attribute bag
+                     escapes a quote as `\"`, which HTML does not unescape, so JSON written
+                     here arrives at the script unparseable. --}}
+                <x-shape::button variant="subtle" color="success" data-toast="Invoice sent" data-toast-description="A copy went to billing@example.com" data-toast-color="success">Success</x-shape::button>
+                <x-shape::button variant="subtle" color="danger" data-toast="Card declined" data-toast-description="Announced assertively, unlike the rest." data-toast-color="danger">Danger</x-shape::button>
+                <x-shape::button variant="subtle" color="warning" data-toast="Trial ends Friday" data-toast-color="warning">Warning</x-shape::button>
+                <x-shape::button variant="subtle" color="accent" data-toast="Digest is on" data-toast-color="accent">Accent</x-shape::button>
+                <x-shape::button variant="subtle" data-toast="Saved">Neutral</x-shape::button>
+                <x-shape::button variant="ghost" data-toast="Uploading" data-toast-description="Stays until dismissed." data-toast-duration="0">Sticky</x-shape::button>
+                <x-shape::button variant="ghost" as="a" href="/flash" icon-trailing="arrow-right">Through the session</x-shape::button>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Confirm</h2>
+            <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                One dialog in the layout, filled in per question. Accepting dispatches a window
+                event by whatever name the payload gave — which is the whole of this library's
+                server integration. Watch the console.
+            </p>
+            <div class="flex flex-wrap items-center gap-3">
+                <x-shape::button variant="subtle" color="danger" icon="trash" data-confirm="Delete project?" data-confirm-message="Every invoice attached to it goes too." data-confirm-accept="Delete" data-confirm-color="danger" data-confirm-then="deleteProject">Delete project</x-shape::button>
+                <x-shape::button variant="subtle" data-confirm="Publish now?" data-confirm-message="It goes live immediately." data-confirm-accept="Publish" data-confirm-color="accent" data-confirm-then="publish">Publish</x-shape::button>
+            </div>
+        </section>
+
+        {{-- Deliberately inside the spaced container. `space-y-14` sets a bottom margin on
+             every child, including these two — which is exactly the bug the `shape-overlay`
+             layer exists to outrank. If the dialog stops being centred or the toaster drifts
+             off the corner, that layer has been moved. --}}
+        <x-shape::toaster />
+        <x-shape::confirm />
+
+        <section class="space-y-4">
             <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Elevation</h2>
             <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
                 Tailwind's own scale, used directly. Each step is two parts — a soft cast and a
@@ -493,6 +588,46 @@
     <script type="module">{!! file_get_contents(\Orchestra\Testbench\package_path('resources/js/shape.js')) !!}
         shape()
 
+        // Firing feedback. Not part of the package — the preview only. The event
+        // is the API, so a demo needs nothing the package doesn't already give a
+        // Livewire component.
+        document.addEventListener('click', (event) => {
+            const toast = event.target.closest?.('[data-toast]')
+
+            if (toast) {
+                dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: {
+                    heading: toast.dataset.toast,
+                    description: toast.dataset.toastDescription ?? null,
+                    color: toast.dataset.toastColor ?? null,
+                    duration: toast.dataset.toastDuration === undefined ? undefined : Number(toast.dataset.toastDuration),
+                } } }))
+            }
+
+            const confirm = event.target.closest?.('[data-confirm]')
+
+            if (confirm) {
+                dispatchEvent(new CustomEvent('shape:confirm', { detail: { confirm: {
+                    heading: confirm.dataset.confirm,
+                    message: confirm.dataset.confirmMessage ?? null,
+                    accept: confirm.dataset.confirmAccept ?? null,
+                    color: confirm.dataset.confirmColor ?? null,
+                    then: confirm.dataset.confirmThen ?? null,
+                    params: [1042],
+                } } }))
+            }
+        })
+
+        // What a Livewire component's `#[On('deleteProject')]` would be doing.
+        addEventListener('deleteProject', (event) => {
+            console.log('deleteProject', event.detail)
+            dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Project deleted', color: 'success' } } }))
+        })
+
+        addEventListener('publish', (event) => {
+            console.log('publish', event.detail)
+            dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Published', color: 'accent' } } }))
+        })
+
         // Diagnostics. Not part of the package — the preview only.
         const report = () => {
             const supported = (property, value) => {
@@ -516,6 +651,7 @@
                 `dialog closedby           ${'closedBy' in HTMLDialogElement.prototype}`,
                 `command / commandfor      ${'command' in HTMLButtonElement.prototype}`,
                 `popover                   ${HTMLElement.prototype.hasOwnProperty('popover')}`,
+                `showPopover              ${'showPopover' in HTMLElement.prototype}`,
                 '',
                 `open overlay              ${open ? open.id : 'none'}`,
                 `  placement asked for     ${open ? open.getAttribute('data-shape-placement') : '-'}`,

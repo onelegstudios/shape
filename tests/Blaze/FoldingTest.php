@@ -6,9 +6,12 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Session;
 use Illuminate\View\Component;
 use Livewire\Blaze\Blaze;
 use Livewire\Blaze\Events\ComponentFolded;
+use Onelegstudios\Shape\Facades\Shape;
+use Onelegstudios\Shape\FeedbackChannel;
 
 /**
  * Folding happens during Blade compilation, so every test here starts from a
@@ -364,4 +367,102 @@ it('bakes a translation into a folded component, which is why none of them call 
 
     expect(trim($english))->toBe('<span data-probe>Hello</span>')
         ->and(trim($swedish))->toBe(trim($english));
+});
+
+it('folds every call site in the feedback set', function () {
+    // Counted rather than merely present, like the sets before it. The confirm
+    // dialog reports as one fold and not five: the modal, the text, the footer
+    // and the two buttons inside it are baked into its body, the same way the
+    // button's icon is.
+    $folded = array_count_values(foldedComponentsWhileRendering('static-feedback'));
+
+    expect($folded)->toBe([
+        'shape::text' => 1,
+        'shape::alert' => 2,
+        'shape::progress' => 2,
+        'shape::confirm' => 1,
+    ]);
+});
+
+it('leaves nothing in the feedback fixture to resolve at runtime', function () {
+    $fixture = __DIR__.'/../fixtures/views/static-feedback.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('data-shape-alert')
+        ->toContain('<progress')
+        ->toContain('data-shape-confirm');
+});
+
+it('keeps folding a progress bar whose value is bound dynamically', function () {
+    // The call site every progress bar has. It folds because the element
+    // computes its own width — the template never divides `value` by `max`, and
+    // `indeterminate` is a separate prop precisely so that nothing has to branch
+    // on the one value that is always dynamic.
+    expect(foldedComponentsWhileRendering('dynamic-progress-value', ['value' => 42]))
+        ->toContain('shape::progress');
+});
+
+it('keeps folding a toast whose text is bound dynamically', function () {
+    // Which is what makes the template approach pay: the toaster renders one
+    // toast per tone at compile time, and a toast's text is never known then.
+    expect(foldedComponentsWhileRendering('dynamic-toast-heading', ['heading' => 'Invoice sent']))
+        ->toContain('shape::toast');
+});
+
+it('abandons folding an alert whose colour is bound dynamically', function () {
+    // Same trade the badge makes, for the same reason: the alert branches on
+    // `color` to resolve its glyph, so colour cannot be safe here. It is the
+    // documented price of never relying on colour alone.
+    expect(foldedComponentsWhileRendering('dynamic-alert-color', ['color' => 'danger']))
+        ->not->toContain('shape::alert');
+});
+
+it('renders identical feedback markup whether or not the components folded', function () {
+    clearCompiledViews();
+    $folded = view('static-feedback')->render();
+
+    Blaze::disable();
+    clearCompiledViews();
+    $unfolded = view('static-feedback')->render();
+    Blaze::enable();
+
+    $normalise = function (string $html): string {
+        $html = (string) preg_replace('/\s+/', ' ', $html);
+
+        return trim((string) preg_replace('/>\s+</', '><', $html));
+    };
+
+    expect($normalise($folded))->toBe($normalise($unfolded));
+});
+
+it('does not fold the toaster, and does not need to', function () {
+    // The one component in the library that reads request state without cutting
+    // a hole for it. There is one on a page, so folding it would save nothing
+    // and cost a boundary that variables cannot cross. Its templates fold on
+    // their own — which is the part that matters, since they are what gets
+    // cloned for every toast.
+    $folded = foldedComponentsWhileRendering('static-toaster');
+
+    expect($folded)
+        ->not->toContain('shape::toaster')
+        ->toContain('shape::toast');
+});
+
+it('does not bake one request\'s flashed toasts into the compiled template', function () {
+    // The failure the toaster would have if it folded, and the reason it does
+    // not: the view cache is deliberately not cleared between these renders, so
+    // one compiled template has to produce two different payloads.
+    Shape::toast()->success('Invoice sent')->send();
+    $first = view('static-toaster')->render();
+
+    Session::forget(FeedbackChannel::SESSION_KEY);
+    Shape::toast()->danger('Card declined')->send();
+    $second = view('static-toaster')->render();
+
+    expect($first)->toContain('Invoice sent')
+        ->and($second)->toContain('Card declined')
+        ->and($second)->not->toContain('Invoice sent');
 });
