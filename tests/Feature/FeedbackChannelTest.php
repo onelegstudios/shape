@@ -8,25 +8,20 @@ use Onelegstudios\Shape\Facades\Shape;
 use Onelegstudios\Shape\FeedbackChannel;
 
 /**
- * Stands in for Livewire's manager.
+ * Stands in for the Livewire component the channel dispatches through.
  *
- * The channel reaches Livewire through the container binding rather than the
- * class — which is what lets this exist at all, and what lets the package have
- * no Livewire in its composer.json.
+ * `dispatch()` lives on the component, not on `app('livewire')` itself — the
+ * manager only exposes `current()`, the top of Livewire's component stack.
+ * This mirrors that shape rather than putting `dispatch()` on the manager
+ * fake, which is what let a real bug (dispatching through the manager, which
+ * has no such method) pass a suite whose fake didn't match Livewire's own.
  */
 function fakeLivewire(bool $duringLivewireRequest = true): object
 {
-    $livewire = new class
+    $component = new class
     {
-        public bool $duringLivewireRequest = true;
-
         /** @var list<array{string, array<string, mixed>}> */
         public array $dispatched = [];
-
-        public function isLivewireRequest(): bool
-        {
-            return $this->duringLivewireRequest;
-        }
 
         public function dispatch(string $event, mixed ...$params): void
         {
@@ -34,11 +29,28 @@ function fakeLivewire(bool $duringLivewireRequest = true): object
         }
     };
 
-    $livewire->duringLivewireRequest = $duringLivewireRequest;
+    $manager = new class($component)
+    {
+        public bool $duringLivewireRequest = true;
 
-    app()->instance('livewire', $livewire);
+        public function __construct(private readonly object $component) {}
 
-    return $livewire;
+        public function isLivewireRequest(): bool
+        {
+            return $this->duringLivewireRequest;
+        }
+
+        public function current(): object
+        {
+            return $this->component;
+        }
+    };
+
+    $manager->duringLivewireRequest = $duringLivewireRequest;
+
+    app()->instance('livewire', $manager);
+
+    return $component;
 }
 
 it('flashes to the session when there is no livewire to dispatch through', function () {

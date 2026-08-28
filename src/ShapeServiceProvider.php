@@ -11,6 +11,7 @@ use Onelegstudios\Shape\Console\Commands\DoctorCommand;
 use Onelegstudios\Shape\Console\Commands\EjectCommand;
 use Onelegstudios\Shape\Console\Commands\IconCommand;
 use Onelegstudios\Shape\Console\Commands\InstallCommand;
+use Onelegstudios\Shape\Http\Middleware\RescueFeedbackFromNavigate;
 
 class ShapeServiceProvider extends ServiceProvider
 {
@@ -36,6 +37,8 @@ class ShapeServiceProvider extends ServiceProvider
         $this->registerComponentPaths();
 
         $this->registerBlaze();
+
+        $this->registerFeedbackMiddleware();
 
         if (! $this->app->runningInConsole()) {
             return;
@@ -87,6 +90,23 @@ class ShapeServiceProvider extends ServiceProvider
         }
 
         Blade::anonymousComponentPath(__DIR__.'/../resources/views/shape', 'shape');
+    }
+
+    /**
+     * Guard `Shape::toast()`/`Shape::confirm()` against a `wire:navigate`
+     * redirect eating the event — see `RescueFeedbackFromNavigate`.
+     *
+     * Bound to the container rather than checked by class, for the same
+     * reason `FeedbackChannel` reaches Livewire that way: this never runs
+     * in an application that has never installed Livewire.
+     */
+    protected function registerFeedbackMiddleware(): void
+    {
+        if (! $this->app->bound('livewire')) {
+            return;
+        }
+
+        $this->app->make('router')->pushMiddlewareToGroup('web', RescueFeedbackFromNavigate::class);
     }
 
     /**

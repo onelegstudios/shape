@@ -51,6 +51,19 @@ dispatchEvent(new CustomEvent('shape:toast', {
 Livewire is reached through the container binding rather than the class, so
 nothing here breaks in an application that has never installed it.
 
+### `send()` right before `redirect(navigate: true)`
+
+That is the common shape — save, toast, redirect — and it needs one more
+piece: Livewire's frontend processes a `navigate: true` redirect *before* a
+dispatched event, regardless of which order your PHP called them in, so the
+event would otherwise fire on a page already being swapped out from under
+it. `RescueFeedbackFromNavigate`, a middleware `ShapeServiceProvider`
+registers on the `web` group whenever Livewire is installed, catches this
+after Livewire has built the response but before it reaches the browser: it
+moves a Shape event riding a `navigate: true` redirect into the session
+instead, exactly where it would have gone for a plain (non-Livewire)
+redirect. The next page's toaster renders it from there.
+
 ## `then()` names an event, not a method
 
 ```php
@@ -174,10 +187,14 @@ If a message is still true after someone has read it, it is an alert.
 ## What is not covered by tests
 
 Render tests assert the markup, the wiring attributes and the ARIA. The channel's
-two transports are asserted, including the fallback. What no test in this package
-covers yet is behaviour that needs a real browser: whether a toast is actually
-announced, whether the timer pauses on hover, whether the toast is painted above
-an open modal, and whether focus returns to the trigger after a confirmation.
+two transports are asserted, including the fallback, and so is
+`RescueFeedbackFromNavigate`'s rewrite of a Livewire response — but only
+against a payload shaped like Livewire's, not a real `wire:navigate` swap.
+What no test in this package covers yet is behaviour that needs a real
+browser: whether a toast is actually announced, whether the timer pauses on
+hover, whether the toast is painted above an open modal, whether focus
+returns to the trigger after a confirmation, and whether a toast actually
+survives a real `wire:navigate` round trip end to end.
 
 The paint-order one is not hypothetical — it was a real bug, found by taking a
 screenshot and reading the pixel where the toast was, because the DOM says the

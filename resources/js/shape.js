@@ -794,6 +794,13 @@ function confirms() {
 |
 | The payload is removed once it has been read: a Livewire round trip that
 | re-renders the layout would otherwise replay it.
+|
+| `DOMContentLoaded` only fires once, but `wire:navigate` swaps the page's
+| content without one — a link followed, or a redirect landed on, that way
+| carries its own `<script data-shape-feedback>` into the swap with nothing
+| left to read it. `livewire:navigated` fires after every such swap, so
+| replay runs there too; the listener costs nothing in an application that
+| never fires it, same as the rest of this file's stance on Livewire.
 */
 function feedback() {
     const replay = () => {
@@ -823,6 +830,8 @@ function feedback() {
     } else {
         replay()
     }
+
+    document.addEventListener('livewire:navigated', replay)
 }
 
 /* ------------------------------------------------------------ the bridge */

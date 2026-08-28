@@ -108,7 +108,7 @@ final class PendingToast
      */
     public function send(): void
     {
-        $this->channel->send('shape:toast', ['toast' => $this->toArray()]);
+        $this->channel->send(FeedbackChannel::EVENT_TOAST, ['toast' => $this->toArray()]);
     }
 
     /**

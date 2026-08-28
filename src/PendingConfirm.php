@@ -109,7 +109,7 @@ final class PendingConfirm
 
     public function send(): void
     {
-        $this->channel->send('shape:confirm', ['confirm' => $this->toArray()]);
+        $this->channel->send(FeedbackChannel::EVENT_CONFIRM, ['confirm' => $this->toArray()]);
     }
 
     /**
