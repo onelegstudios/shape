@@ -35,7 +35,12 @@
     --color-shape-950: oklch(14.6% 0.012 185);
 
     /* The accent. One hue, five usable steps — a base that works as a button
-       background, edges for text and tint, and the gaps filled in. */
+       background, edges for text and tint, and the gaps filled in.
+
+       `-fg` is the pair that goes on top when the tone is used as a filled
+       surface. It is not a ramp step: near-white carrying a trace of the hue,
+       and the muted half beside it, so a foreground on a coloured background is
+       never plain grey. */
     --color-shape-accent-50: oklch(97.6% 0.018 181);
     --color-shape-accent-100: oklch(94.4% 0.038 181);
     --color-shape-accent-200: oklch(88.2% 0.065 181);
@@ -43,14 +48,24 @@
     --color-shape-accent-600: oklch(54.6% 0.104 180);
     --color-shape-accent-700: oklch(46.2% 0.094 181);
     --color-shape-accent-800: oklch(38.4% 0.079 182);
+    --color-shape-accent-fg: oklch(99% 0.01 181);
+    --color-shape-accent-fg-muted: oklch(88.6% 0.048 181);
 
-    /* State colours. Never the only signal — components pair them with an icon. */
+    /* State colours. Never the only signal — components pair them with an icon.
+
+       The 800 and 900 steps carry the dark-mode tints, and the `-fg` pair the
+       filled surface, exactly as the accent does above. Every value a rule needs
+       lives here; none is written inline further down. */
     --color-shape-danger-50: oklch(97.2% 0.014 25);
     --color-shape-danger-100: oklch(93.6% 0.032 25);
     --color-shape-danger-200: oklch(88.5% 0.062 25);
     --color-shape-danger-500: oklch(63.7% 0.208 26);
     --color-shape-danger-600: oklch(57.7% 0.213 27);
     --color-shape-danger-700: oklch(50.5% 0.188 27);
+    --color-shape-danger-800: oklch(37% 0.11 27);
+    --color-shape-danger-900: oklch(31% 0.09 27);
+    --color-shape-danger-fg: oklch(99% 0.008 25);
+    --color-shape-danger-fg-muted: oklch(89.2% 0.052 25);
 
     --color-shape-success-50: oklch(97.4% 0.018 152);
     --color-shape-success-100: oklch(94.2% 0.044 152);
@@ -58,6 +73,10 @@
     --color-shape-success-500: oklch(64.6% 0.148 151);
     --color-shape-success-600: oklch(57.4% 0.136 151);
     --color-shape-success-700: oklch(48.8% 0.115 152);
+    --color-shape-success-800: oklch(37% 0.085 152);
+    --color-shape-success-900: oklch(31% 0.07 152);
+    --color-shape-success-fg: oklch(99% 0.01 152);
+    --color-shape-success-fg-muted: oklch(89% 0.05 152);
 
     --color-shape-warning-50: oklch(97.8% 0.022 85);
     --color-shape-warning-100: oklch(95.2% 0.055 88);
@@ -65,6 +84,15 @@
     --color-shape-warning-500: oklch(72.4% 0.158 74);
     --color-shape-warning-600: oklch(66.2% 0.148 68);
     --color-shape-warning-700: oklch(55.4% 0.126 62);
+    --color-shape-warning-800: oklch(37% 0.09 68);
+    --color-shape-warning-900: oklch(31% 0.075 68);
+
+    /* Warning's foreground pair is the dark end of the hue rather than the light
+       one: a saturated yellow cannot carry white text. It is the same value
+       whether warning is a filled surface or a filled button, so it is one
+       token, read from both. */
+    --color-shape-warning-fg: oklch(28% 0.062 62);
+    --color-shape-warning-fg-muted: oklch(41% 0.078 64);
 
     /*
     | Elevation is deliberately absent.
@@ -125,18 +153,18 @@
     }
 
     [data-shape-surface='accent'] {
-        --shape-fg: oklch(99% 0.01 181);
-        --shape-fg-muted: oklch(88.6% 0.048 181);
+        --shape-fg: var(--color-shape-accent-fg);
+        --shape-fg-muted: var(--color-shape-accent-fg-muted);
     }
 
     [data-shape-surface='danger'] {
-        --shape-fg: oklch(99% 0.008 25);
-        --shape-fg-muted: oklch(89.2% 0.052 25);
+        --shape-fg: var(--color-shape-danger-fg);
+        --shape-fg-muted: var(--color-shape-danger-fg-muted);
     }
 
     [data-shape-surface='success'] {
-        --shape-fg: oklch(99% 0.01 152);
-        --shape-fg-muted: oklch(89% 0.05 152);
+        --shape-fg: var(--color-shape-success-fg);
+        --shape-fg-muted: var(--color-shape-success-fg-muted);
     }
 
     /*
@@ -145,15 +173,15 @@
     | of the same hue rather than light ones.
     */
     [data-shape-surface='warning'] {
-        --shape-fg: oklch(28% 0.062 62);
-        --shape-fg-muted: oklch(41% 0.078 64);
+        --shape-fg: var(--color-shape-warning-fg);
+        --shape-fg-muted: var(--color-shape-warning-fg-muted);
     }
 
     /*
     | The tint surface, which is the other kind.
     |
-    | The four above are filled: a saturated background, light text on top, both
-    | written out by hand. An alert is a pale wash of the tone instead, and the
+    | The four above are filled: a saturated background with the light text that
+    | belongs on it, both named in the palette. An alert is a pale wash of the
     | readable foreground on it is the tone's own ink rather than white — which
     | the tone variables already carry, so this surface is two lines rather than
     | four more palettes.
@@ -233,7 +261,7 @@
     [data-shape-tone='warning'] {
         --shape-tone: var(--color-shape-warning-500);
         --shape-tone-hover: var(--color-shape-warning-600);
-        --shape-tone-fg: oklch(28% 0.062 62);
+        --shape-tone-fg: var(--color-shape-warning-fg);
         --shape-tone-ink: var(--color-shape-warning-700);
         --shape-tone-tint: var(--color-shape-warning-100);
         --shape-tone-tint-hover: var(--color-shape-warning-200);
@@ -266,8 +294,8 @@
             --shape-tone-hover: var(--color-shape-danger-600);
             --shape-tone-fg: var(--color-shape-950);
             --shape-tone-ink: var(--color-shape-danger-200);
-            --shape-tone-tint: oklch(31% 0.09 27);
-            --shape-tone-tint-hover: oklch(37% 0.11 27);
+            --shape-tone-tint: var(--color-shape-danger-900);
+            --shape-tone-tint-hover: var(--color-shape-danger-800);
         }
 
         [data-shape-tone='success'] {
@@ -275,8 +303,8 @@
             --shape-tone-hover: var(--color-shape-success-600);
             --shape-tone-fg: var(--color-shape-950);
             --shape-tone-ink: var(--color-shape-success-200);
-            --shape-tone-tint: oklch(31% 0.07 152);
-            --shape-tone-tint-hover: oklch(37% 0.085 152);
+            --shape-tone-tint: var(--color-shape-success-900);
+            --shape-tone-tint-hover: var(--color-shape-success-800);
         }
 
         [data-shape-tone='warning'] {
@@ -284,8 +312,8 @@
             --shape-tone-hover: var(--color-shape-warning-600);
             --shape-tone-fg: var(--color-shape-950);
             --shape-tone-ink: var(--color-shape-warning-200);
-            --shape-tone-tint: oklch(31% 0.075 68);
-            --shape-tone-tint-hover: oklch(37% 0.09 68);
+            --shape-tone-tint: var(--color-shape-warning-900);
+            --shape-tone-tint-hover: var(--color-shape-warning-800);
         }
     }
 }
@@ -312,7 +340,7 @@
         /* The scrim. A pseudo-element, so there is no backdrop component to
            compose and nothing for a caller to forget. */
         &::backdrop {
-            background: oklch(20.6% 0.014 185 / 55%);
+            background: color-mix(in oklch, var(--color-shape-900) 55%, transparent);
             backdrop-filter: blur(2px);
         }
 
