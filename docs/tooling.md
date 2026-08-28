@@ -154,6 +154,30 @@ is a version matrix to maintain for what is fundamentally a code generator, and
 it puts the set you actually want furthest out of reach. This reads whatever
 directory you point it at.
 
+## The documentation site
+
+The workbench is the docs site. Testbench already boots a real Laravel
+application to run this package's tests in, so `composer serve` gives the
+markdown in `docs/` at `/docs`, rendered by
+[laradocs](https://laradocs.dev), beside a gallery of every component at `/`.
+
+Examples on the component pages are written once:
+
+```markdown
+@docs('preview', name: 'button')
+```
+
+That renders `docs/previews/button.blade.php` — a real Blade file, with the real
+components in it — and prints the same file underneath as the example. The suite
+asserts that every preview still compiles and that every page and file have each
+other, so an example cannot quietly describe a prop that was renamed.
+
+Six pages keep a fenced code block instead, and for a reason worth stating: the
+table, the list, the pager and the progress bar take runtime data, and the
+toaster and the confirm dialog render nothing you can see until something sends
+them a message. An example that has to invent a paginator in order to look at
+itself is no longer the example.
+
 ## The registry
 
 `resources/registry.json` is the manifest all of the above reads: what files

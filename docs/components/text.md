@@ -1,8 +1,6 @@
 # Text
 
-```blade
-<x-shape::text>We'll only use this for receipts.</x-shape::text>
-```
+@docs('preview', name: 'text')
 
 ## Muted is a relationship, not a colour
 

@@ -1,8 +1,6 @@
 # Input
 
-```blade
-<x-shape::input type="email" label="Email" wire:model="email" />
-```
+@docs('preview', name: 'input')
 
 ## It never has to be told its name
 

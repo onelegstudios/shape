@@ -1,8 +1,6 @@
 # Heading
 
-```blade
-<x-shape::heading level="1" size="2xl">Invoices</x-shape::heading>
-```
+@docs('preview', name: 'heading')
 
 ## Document hierarchy and visual hierarchy are separate props
 

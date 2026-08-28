@@ -216,16 +216,24 @@ See [docs/tooling.md](docs/tooling.md).
 Documentation lives in [docs/](docs) as markdown, committed alongside the code it
 describes.
 
-## Previewing components
+## Previewing components and reading the docs
 
 ```bash
-npm install && npm run preview
+npm install && npm run preview && npm run docs
 composer serve
 ```
 
-The workbench serves a gallery of every component at `/`. `npm run preview`
-compiles the Tailwind stylesheet the gallery inlines; the package itself ships
-no CSS.
+The workbench serves two things. A gallery of every component at `/`, and the
+documentation at `/docs` — the markdown in [docs/](docs), rendered by
+[laradocs](https://laradocs.dev), with the components rendering inside it.
+
+Every `@docs('preview', name: '…')` in a page renders `docs/previews/<name>.blade.php`
+and prints that same file underneath as the example. One file for the picture and
+for the code, and a test asserts every one of them still compiles — so a prop
+that gets renamed cannot leave a page describing the old one.
+
+`npm run preview` and `npm run docs` compile the two Tailwind stylesheets those
+pages use. The package itself ships no CSS.
 
 ## Changelog
 

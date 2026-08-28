@@ -1,10 +1,6 @@
 # Alert
 
-```blade
-<x-shape::alert color="warning" heading="Your trial ends on Friday">
-    Add a payment method to keep your projects.
-</x-shape::alert>
-```
+@docs('preview', name: 'alert')
 
 Other libraries call this a callout. It is the same component: a message that
 stays in the flow of the page it belongs to.

@@ -3,18 +3,7 @@
 What every control assembles when you give it a `label`. Reach for these
 directly only when the shorthand cannot express what you need.
 
-```blade
-{{-- This… --}}
-<x-shape::input type="email" label="Email" description="For receipts." wire:model="email" />
-
-{{-- …renders this. --}}
-<x-shape::field field-name="email">
-    <x-shape::label>Email</x-shape::label>
-    <x-shape::description>For receipts.</x-shape::description>
-    <x-shape::input type="email" aria-describedby="email-description" wire:model="email" />
-    <x-shape::error />
-</x-shape::field>
-```
+@docs('preview', name: 'field')
 
 Compose by hand when you need a control between the label and the description,
 two controls in one field, or markup of your own between the pieces. Groups are

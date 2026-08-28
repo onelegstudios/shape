@@ -1,8 +1,6 @@
 # Textarea
 
-```blade
-<x-shape::textarea label="Notes" rows="5" wire:model="notes" />
-```
+@docs('preview', name: 'textarea')
 
 The input's chrome without the fixed height. The shorthand, name resolution and
 the `aria-describedby` rule all work exactly as they do on [input](input.md) —

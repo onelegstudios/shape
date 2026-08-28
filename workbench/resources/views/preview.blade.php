@@ -11,12 +11,15 @@
     <div class="mx-auto max-w-3xl px-6 py-16 space-y-14">
 
         <header class="space-y-2">
-            <h1 class="text-3xl font-semibold tracking-tight">Shape</h1>
+            <div class="flex items-baseline justify-between gap-4">
+                <h1 class="text-3xl font-semibold tracking-tight">Shape</h1>
+                <a href="/docs" class="text-sm font-medium text-shape-600 underline-offset-4 hover:underline dark:text-shape-400">Documentation &rarr;</a>
+            </div>
             <p class="text-shape-600 dark:text-shape-400">
-                Feedback — alerts, toasts, the confirm dialog and progress — on top of the
-                overlays, forms, typography, surfaces and tokens from the first four steps.
-                Everything here opens on the platform's own primitives, so try it with the
-                keyboard.
+                Every component in the library, on one page: tokens, typography and surfaces,
+                forms, overlays, feedback and data display. Everything here opens on the
+                platform's own primitives, so try it with the keyboard. The documentation
+                site renders the same components beside the prose that explains them.
             </p>
         </header>
 

@@ -1,8 +1,6 @@
 # Button
 
-```blade
-<x-shape::button variant="primary">Save changes</x-shape::button>
-```
+@docs('preview', name: 'button')
 
 ## Hierarchy and semantics are separate props
 

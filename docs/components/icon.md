@@ -1,9 +1,6 @@
 # Icon
 
-```blade
-<x-shape::icon.check />
-<x-shape::icon.arrow-right variant="mini" />
-```
+@docs('preview', name: 'icon')
 
 Icons come from [Heroicons](https://heroicons.com) and are generated into the
 package as one component per icon by

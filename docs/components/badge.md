@@ -1,8 +1,6 @@
 # Badge
 
-```blade
-<x-shape::badge label="Paid" color="success" />
-```
+@docs('preview', name: 'badge')
 
 ## The label is a prop, not a slot
 

@@ -1,8 +1,6 @@
 # Separator
 
-```blade
-<x-shape::separator />
-```
+@docs('preview', name: 'separator')
 
 ## With a label
 

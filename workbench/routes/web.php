@@ -56,3 +56,13 @@ Route::get('/flash', function () {
 
     return redirect('/');
 });
+
+// The previews inside the docs site need Shape's stylesheet, and laradocs'
+// layout is not this package's file to edit. It exposes a `head` stack, so the
+// workbench provider pushes a link to this route into it.
+Route::get('/shape-docs.css', function () {
+    return response()
+        ->file(\Orchestra\Testbench\package_path('workbench/resources/css/docs.css'), [
+            'Content-Type' => 'text/css',
+        ]);
+})->name('shape.docs.css');

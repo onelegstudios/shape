@@ -1,8 +1,6 @@
 # Switch
 
-```blade
-<x-shape::switch label="Email me about new invoices" wire:model.live="notify" />
-```
+@docs('preview', name: 'switch')
 
 ## It is a real checkbox
 

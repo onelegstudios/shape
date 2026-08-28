@@ -1,10 +1,6 @@
 # Avatar
 
-```blade
-<x-shape::avatar src="/avatars/ada.jpg" alt="Ada Lovelace" />
-
-<x-shape::avatar initials="AL" alt="Ada Lovelace" />
-```
+@docs('preview', name: 'avatar')
 
 | Prop | Default | Values |
 | --- | --- | --- |

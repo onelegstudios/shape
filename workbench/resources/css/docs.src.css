@@ -1,0 +1,36 @@
+/*
+| Stylesheet for the component previews inside the docs site.
+|
+| Tailwind's preflight is deliberately not imported. These rules are injected
+| into laradocs' own page, and a reset would take the documentation's typography
+| down with it — the previews are guests on someone else's page. Everything a
+| Shape component needs is in the theme layer and the utilities.
+|
+| Rebuild with `npm run docs`.
+*/
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@import "../../../resources/css/shape.css";
+
+/*
+| laradocs' theme switch stamps `data-theme` on the root element, and its "auto"
+| setting stamps nothing at all — so `dark:` has to mean both. Without this a
+| reader who switches the site to dark gets white preview boxes on a dark page.
+*/
+@custom-variant dark {
+    &:where([data-theme="dark"], [data-theme="dark"] *) {
+        @slot;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        &:where(:not([data-theme="light"]) *) {
+            @slot;
+        }
+    }
+}
+
+@source "../../../docs/previews";
+@source "../views";

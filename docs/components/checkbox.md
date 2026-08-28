@@ -1,8 +1,6 @@
 # Checkbox
 
-```blade
-<x-shape::checkbox name="terms" value="1" label="I agree to the terms" />
-```
+@docs('preview', name: 'checkbox')
 
 ## The label wraps the control
 
