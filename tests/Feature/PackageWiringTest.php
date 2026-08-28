@@ -15,6 +15,16 @@ it('publishes each resource group under its own tag', function (string $tag) {
     'laravel-shape-components',
     'laravel-shape-css',
     'laravel-shape-js',
+]);
+
+it('publishes nothing it has no use for', function (string $tag) {
+    // A UI library on the fold path has no translations to ship — a folded
+    // component resolves one at compile time and serves that locale to
+    // everybody, which is why `__(` is a fold hazard. It has no tables, no
+    // routes, and no compiled asset either: the stylesheet is imported from
+    // `vendor/` so a consumer's own Tailwind build stays authoritative.
+    expect(ServiceProvider::pathsToPublish(ShapeServiceProvider::class, $tag))->toBeEmpty();
+})->with([
     'laravel-shape-lang',
     'laravel-shape-assets',
     'laravel-shape-migrations',

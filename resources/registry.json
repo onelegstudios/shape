@@ -1,0 +1,386 @@
+{
+    "alert": {
+        "files": [
+            "alert.blade.php"
+        ],
+        "requires": [
+            "button",
+            "heading",
+            "icon",
+            "text"
+        ],
+        "docs": "components/alert.md",
+        "tier": "fold"
+    },
+    "avatar": {
+        "files": [
+            "avatar/group.blade.php",
+            "avatar/index.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/avatar.md",
+        "tier": "fold + memo"
+    },
+    "badge": {
+        "files": [
+            "badge/index.blade.php"
+        ],
+        "requires": [
+            "icon"
+        ],
+        "docs": "components/badge.md",
+        "tier": "fold + memo"
+    },
+    "button": {
+        "files": [
+            "button/element.blade.php",
+            "button/index.blade.php"
+        ],
+        "requires": [
+            "icon"
+        ],
+        "docs": "components/button.md",
+        "tier": "fold"
+    },
+    "card": {
+        "files": [
+            "card/footer.blade.php",
+            "card/header.blade.php",
+            "card/index.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/card.md",
+        "tier": "fold"
+    },
+    "checkbox": {
+        "files": [
+            "checkbox.blade.php"
+        ],
+        "requires": [
+            "icon"
+        ],
+        "docs": "components/checkbox.md",
+        "tier": "fold"
+    },
+    "confirm": {
+        "files": [
+            "confirm.blade.php"
+        ],
+        "requires": [
+            "button",
+            "modal",
+            "overlay",
+            "text"
+        ],
+        "docs": "components/confirm.md",
+        "tier": "fold"
+    },
+    "description": {
+        "files": [
+            "description.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/field.md",
+        "tier": "fold"
+    },
+    "drawer": {
+        "files": [
+            "drawer/index.blade.php"
+        ],
+        "requires": [
+            "heading",
+            "overlay",
+            "text"
+        ],
+        "docs": "components/drawer.md",
+        "tier": "fold"
+    },
+    "dropdown": {
+        "files": [
+            "dropdown/index.blade.php",
+            "dropdown/item.blade.php",
+            "dropdown/trigger.blade.php"
+        ],
+        "requires": [
+            "button",
+            "icon",
+            "popover"
+        ],
+        "docs": "components/dropdown.md",
+        "tier": "fold"
+    },
+    "empty": {
+        "files": [
+            "empty.blade.php"
+        ],
+        "requires": [
+            "heading",
+            "icon",
+            "text"
+        ],
+        "docs": "components/empty.md",
+        "tier": "fold"
+    },
+    "error": {
+        "files": [
+            "error.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/field.md",
+        "tier": "fold"
+    },
+    "field": {
+        "files": [
+            "field.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/field.md",
+        "tier": "fold"
+    },
+    "heading": {
+        "files": [
+            "heading.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/heading.md",
+        "tier": "fold"
+    },
+    "icon": {
+        "files": [
+            "icon/arrow-right.blade.php",
+            "icon/arrow-trending-down.blade.php",
+            "icon/arrow-trending-up.blade.php",
+            "icon/check-circle.blade.php",
+            "icon/check.blade.php",
+            "icon/chevron-down.blade.php",
+            "icon/chevron-left.blade.php",
+            "icon/chevron-right.blade.php",
+            "icon/exclamation-triangle.blade.php",
+            "icon/index.blade.php",
+            "icon/information-circle.blade.php",
+            "icon/loading.blade.php",
+            "icon/minus.blade.php",
+            "icon/plus.blade.php",
+            "icon/trash.blade.php",
+            "icon/x-circle.blade.php",
+            "icon/x-mark.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/icon.md",
+        "tier": "fold + memo"
+    },
+    "input": {
+        "files": [
+            "input/index.blade.php"
+        ],
+        "requires": [
+            "description",
+            "error",
+            "field",
+            "label"
+        ],
+        "docs": "components/input.md",
+        "tier": "fold"
+    },
+    "label": {
+        "files": [
+            "label.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/field.md",
+        "tier": "fold"
+    },
+    "list": {
+        "files": [
+            "list/index.blade.php",
+            "list/item.blade.php"
+        ],
+        "requires": [
+            "empty"
+        ],
+        "docs": "components/list.md",
+        "tier": "fold"
+    },
+    "modal": {
+        "files": [
+            "modal/index.blade.php"
+        ],
+        "requires": [
+            "heading",
+            "overlay",
+            "text"
+        ],
+        "docs": "components/modal.md",
+        "tier": "fold"
+    },
+    "overlay": {
+        "files": [
+            "overlay/close.blade.php",
+            "overlay/footer.blade.php",
+            "overlay/trigger.blade.php"
+        ],
+        "requires": [
+            "button"
+        ],
+        "docs": "overlays.md",
+        "tier": "fold"
+    },
+    "pagination": {
+        "files": [
+            "pagination.blade.php"
+        ],
+        "requires": [
+            "icon"
+        ],
+        "docs": "components/pagination.md",
+        "tier": "compile"
+    },
+    "popover": {
+        "files": [
+            "popover/index.blade.php",
+            "popover/trigger.blade.php"
+        ],
+        "requires": [
+            "button"
+        ],
+        "docs": "components/popover.md",
+        "tier": "fold"
+    },
+    "progress": {
+        "files": [
+            "progress.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/progress.md",
+        "tier": "fold"
+    },
+    "radio": {
+        "files": [
+            "radio.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/radio.md",
+        "tier": "fold"
+    },
+    "select": {
+        "files": [
+            "select/index.blade.php",
+            "select/option.blade.php"
+        ],
+        "requires": [
+            "description",
+            "error",
+            "field",
+            "icon",
+            "label"
+        ],
+        "docs": "components/select.md",
+        "tier": "fold"
+    },
+    "separator": {
+        "files": [
+            "separator.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/separator.md",
+        "tier": "fold + memo"
+    },
+    "stat": {
+        "files": [
+            "stat.blade.php"
+        ],
+        "requires": [
+            "icon"
+        ],
+        "docs": "components/stat.md",
+        "tier": "fold + memo"
+    },
+    "switch": {
+        "files": [
+            "switch.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/switch.md",
+        "tier": "fold"
+    },
+    "table": {
+        "files": [
+            "table/body.blade.php",
+            "table/cell.blade.php",
+            "table/head.blade.php",
+            "table/heading.blade.php",
+            "table/index.blade.php",
+            "table/row.blade.php"
+        ],
+        "requires": [
+            "empty"
+        ],
+        "docs": "components/table.md",
+        "tier": "fold"
+    },
+    "tabs": {
+        "files": [
+            "tabs/index.blade.php",
+            "tabs/panel.blade.php",
+            "tabs/tab.blade.php"
+        ],
+        "requires": [
+            "button",
+            "icon"
+        ],
+        "docs": "components/tabs.md",
+        "tier": "fold"
+    },
+    "text": {
+        "files": [
+            "text.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/text.md",
+        "tier": "fold"
+    },
+    "textarea": {
+        "files": [
+            "textarea.blade.php"
+        ],
+        "requires": [
+            "description",
+            "error",
+            "field",
+            "label"
+        ],
+        "docs": "components/textarea.md",
+        "tier": "fold"
+    },
+    "toast": {
+        "files": [
+            "toast.blade.php"
+        ],
+        "requires": [
+            "button",
+            "heading",
+            "icon",
+            "text"
+        ],
+        "docs": "components/toast.md",
+        "tier": "fold"
+    },
+    "toaster": {
+        "files": [
+            "toaster/index.blade.php"
+        ],
+        "requires": [
+            "toast"
+        ],
+        "docs": "components/toast.md",
+        "tier": "compile"
+    },
+    "tooltip": {
+        "files": [
+            "tooltip/index.blade.php"
+        ],
+        "requires": [],
+        "docs": "components/tooltip.md",
+        "tier": "fold"
+    }
+}

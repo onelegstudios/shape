@@ -5,7 +5,10 @@ HTML directly in the parent template. A folded component costs essentially
 nothing to render, no matter how many times it appears on the page.
 
 Shape annotates every component with the strategy it can safely use. What Shape
-cannot decide on your behalf is how you call them.
+cannot decide on your behalf is how you call them — and once you have
+[ejected](tooling.md#shapeeject) one, the annotation on it is yours to keep true.
+`php artisan shape:doctor` is the check for that, and the rest of this page is
+what it checks for.
 
 Every component in the library folds, overlays included. Nothing here inspects a
 slot, and open state belongs to `<dialog>` and the `popover` attribute rather

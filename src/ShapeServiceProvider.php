@@ -7,7 +7,10 @@ namespace Onelegstudios\Shape;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Blaze\Blaze;
-use Onelegstudios\Shape\Console\Commands\ShapeCommand;
+use Onelegstudios\Shape\Console\Commands\DoctorCommand;
+use Onelegstudios\Shape\Console\Commands\EjectCommand;
+use Onelegstudios\Shape\Console\Commands\IconCommand;
+use Onelegstudios\Shape\Console\Commands\InstallCommand;
 
 class ShapeServiceProvider extends ServiceProvider
 {
@@ -20,6 +23,7 @@ class ShapeServiceProvider extends ServiceProvider
 
         $this->app->singleton(FeedbackChannel::class);
         $this->app->singleton(Shape::class);
+        $this->app->singleton(Registry::class);
     }
 
     /**
@@ -27,11 +31,7 @@ class ShapeServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__.'/../routes/shape.php');
-
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'shape');
-
-        $this->loadTranslationsFrom(__DIR__.'/../lang', 'shape');
 
         $this->registerComponentPaths();
 
@@ -49,6 +49,9 @@ class ShapeServiceProvider extends ServiceProvider
             __DIR__.'/../resources/views' => resource_path('views/vendor/shape'),
         ], ['laravel-shape', 'laravel-shape-views']);
 
+        // The whole library at once. `shape:eject` is the same operation for one
+        // component and the components it composes, which is what anyone
+        // customizing a single modal actually wants.
         $this->publishes([
             __DIR__.'/../resources/views/shape' => resource_path('views/shape'),
         ], ['laravel-shape', 'laravel-shape-components']);
@@ -61,20 +64,11 @@ class ShapeServiceProvider extends ServiceProvider
             __DIR__.'/../resources/js/shape.js' => resource_path('js/shape.js'),
         ], ['laravel-shape', 'laravel-shape-js']);
 
-        $this->publishes([
-            __DIR__.'/../lang' => $this->app->langPath('vendor/shape'),
-        ], ['laravel-shape', 'laravel-shape-lang']);
-
-        $this->publishes([
-            __DIR__.'/../public' => public_path('vendor/shape'),
-        ], ['laravel-shape', 'laravel-shape-assets']);
-
-        $this->publishesMigrations([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
-        ], ['laravel-shape', 'laravel-shape-migrations']);
-
         $this->commands([
-            ShapeCommand::class,
+            DoctorCommand::class,
+            EjectCommand::class,
+            IconCommand::class,
+            InstallCommand::class,
         ]);
     }
 

@@ -6,7 +6,9 @@
 ```
 
 Icons come from [Heroicons](https://heroicons.com) and are generated into the
-package as one component per icon.
+package as one component per icon by
+[`shape:icon`](../tooling.md#shapeicon), which reads any directory of SVGs —
+including yours.
 
 ## Variants are drawings, not sizes
 
@@ -61,3 +63,6 @@ chevrons with the pager, and the two trending arrows with the stat. They are two
 separate drawings rather than one arrow rotated, which is the same rule that
 gives every variant its own path — a direction that is only a rotation is a
 direction that reads as one thing at a glance.
+
+Adding the next one is `php artisan shape:icon bell --from=…`; see
+[Tooling](../tooling.md#shapeicon).

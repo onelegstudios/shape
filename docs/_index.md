@@ -82,7 +82,8 @@ and what it doesn't. [Feedback](feedback.md) covers the one direction the rest o
 the library never travels — server to browser — and why that needs no Livewire
 component to do it. [Data display](data.md) covers what the table, the list and
 the pager share: an empty state answered in CSS, and what a component costs when
-it renders once per row instead of once per page.
+it renders once per row instead of once per page. [Tooling](tooling.md) covers
+the four commands and the manifest they read.
 
 ## JavaScript
 
@@ -114,11 +115,25 @@ Customisation escalates in three steps:
 1. **Tokens.** Redeclare Shape's `@theme` values in your own stylesheet.
 2. **Utilities.** Pass any Tailwind class to any component; Shape's own defaults
    carry zero specificity and yield to it.
-3. **Eject.** Publish a component into your application and own it outright:
+3. **Eject.** Copy a component into your application and own it outright:
 
 ```bash
-php artisan vendor:publish --tag="laravel-shape-components"
+php artisan shape:eject modal
 ```
+
+A modal composes a heading, a text and a close button, so all four arrive
+together — ejecting the shell without the parts you wanted to change is the
+worst of both arrangements. `vendor:publish --tag="laravel-shape-components"`
+still takes the whole library at once.
 
 Ejected components resolve ahead of the packaged ones. The location is
 configurable with `shape.components_path`.
+
+## Tooling
+
+Four commands, none of them required: `shape:install` writes the import and the
+script registration for you,
+`shape:eject` hands you a component and everything it composes, `shape:doctor`
+checks an ejected component for the global state that would cost it its fold,
+and `shape:icon` generates icon components from a directory of SVGs. See
+[Tooling](tooling.md).

@@ -21,7 +21,17 @@ You can install the package via Composer:
 
 ```bash
 composer require onelegstudios/laravel-shape
+php artisan shape:install
 ```
+
+`shape:install` imports the design tokens into your stylesheet and registers the
+script. That is the whole installation — there is no config to publish before the
+package works and no asset to build. Both lines are shown below if you would
+rather write them yourself.
+
+There are no migrations, no routes and no translations to publish either. A
+folded component resolves a translation once at compile time and serves that one
+locale to everybody, so the library has none to ship.
 
 You may publish all of the package's resources at once:
 
@@ -37,35 +47,26 @@ Or, you may publish each resource individually:
 php artisan vendor:publish --tag="laravel-shape-config"
 ```
 
-### Publishing and Running the Migrations
-
-```bash
-php artisan vendor:publish --tag="laravel-shape-migrations"
-php artisan migrate
-```
-
 ### Publishing the Views
 
 ```bash
 php artisan vendor:publish --tag="laravel-shape-views"
 ```
 
+### Publishing the Stylesheet
+
+The tokens are normally imported from `vendor/`, which keeps your overrides
+authoritative and leaves nothing to rebuild on an upgrade. Publish them only if
+you intend to own the token layer outright:
+
+```bash
+php artisan vendor:publish --tag="laravel-shape-css"
+```
+
 ### Publishing the JavaScript
 
 ```bash
 php artisan vendor:publish --tag="laravel-shape-js"
-```
-
-### Publishing the Translations
-
-```bash
-php artisan vendor:publish --tag="laravel-shape-lang"
-```
-
-### Publishing the Public Assets
-
-```bash
-php artisan vendor:publish --tag="laravel-shape-assets"
 ```
 
 ### Publishing the Components
@@ -76,6 +77,9 @@ the packaged ones:
 ```bash
 php artisan vendor:publish --tag="laravel-shape-components"
 ```
+
+`php artisan shape:eject modal` does the same for one component and everything it
+composes, which is usually what you want. See [Commands](#commands).
 
 ## Usage
 
@@ -183,6 +187,29 @@ same event, so one code path builds the toast either way. There is no Livewire
 component here and no Livewire in `composer.json`; `then()` names a window event,
 which is what `#[On]` already listens for. See
 [docs/feedback.md](docs/feedback.md).
+
+## Commands
+
+```bash
+php artisan shape:install       # import the tokens, register the script
+php artisan shape:eject modal   # a component, and everything it composes
+php artisan shape:eject --status
+php artisan shape:doctor        # the mistake that costs a fold and says nothing
+php artisan shape:icon --all --from=./resources/svg
+```
+
+`shape:eject` follows a dependency graph — a modal arrives with the heading, the
+text and the close button inside it — and records what the package held at the
+moment it copied each file, so `--status` can tell a component you edited from
+one the package has changed underneath you.
+
+`shape:doctor` checks ejected components for request-scoped state. A folded
+component is pre-rendered while Blade compiles, so `auth()`, `session()`,
+`config()` or a translation inside one is resolved once and then served to
+everybody — a failure with no stack trace and no symptom in development. It
+exits non-zero, so it can sit in CI.
+
+See [docs/tooling.md](docs/tooling.md).
 
 ## Documentation
 
