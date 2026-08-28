@@ -34,8 +34,8 @@
     --color-shape-900: oklch(20.6% 0.014 185);
     --color-shape-950: oklch(14.6% 0.012 185);
 
-    /* The accent. One hue, five usable steps — a base that works as a button
-       background, edges for text and tint, and the gaps filled in.
+    /* The accent. A full 50–950 ramp, so no rule ever has to reach for a value
+       that is not in it.
 
        `-fg` is the pair that goes on top when the tone is used as a filled
        surface. It is not a ramp step: near-white carrying a trace of the hue,
@@ -44,48 +44,62 @@
     --color-shape-accent-50: oklch(97.6% 0.018 181);
     --color-shape-accent-100: oklch(94.4% 0.038 181);
     --color-shape-accent-200: oklch(88.2% 0.065 181);
+    --color-shape-accent-300: oklch(81% 0.077 181);
+    --color-shape-accent-400: oklch(71.4% 0.089 180);
     --color-shape-accent-500: oklch(62.4% 0.101 180);
     --color-shape-accent-600: oklch(54.6% 0.104 180);
     --color-shape-accent-700: oklch(46.2% 0.094 181);
     --color-shape-accent-800: oklch(38.4% 0.079 182);
+    --color-shape-accent-900: oklch(33% 0.064 182);
+    --color-shape-accent-950: oklch(27% 0.047 182);
     --color-shape-accent-fg: oklch(99% 0.01 181);
     --color-shape-accent-fg-muted: oklch(88.6% 0.048 181);
 
     /* State colours. Never the only signal — components pair them with an icon.
 
-       The 800 and 900 steps carry the dark-mode tints, and the `-fg` pair the
-       filled surface, exactly as the accent does above. Every value a rule needs
-       lives here; none is written inline further down. */
+       Full 50–950 ramps, as the accent. The dark end is where these get used:
+       900 and 950 are the dark-mode tints, and the `-fg` pair is the filled
+       surface. Every value a rule needs lives here; none is written inline
+       further down. */
     --color-shape-danger-50: oklch(97.2% 0.014 25);
     --color-shape-danger-100: oklch(93.6% 0.032 25);
     --color-shape-danger-200: oklch(88.5% 0.062 25);
+    --color-shape-danger-300: oklch(80.8% 0.111 25);
+    --color-shape-danger-400: oklch(70.4% 0.159 26);
     --color-shape-danger-500: oklch(63.7% 0.208 26);
     --color-shape-danger-600: oklch(57.7% 0.213 27);
     --color-shape-danger-700: oklch(50.5% 0.188 27);
-    --color-shape-danger-800: oklch(37% 0.11 27);
-    --color-shape-danger-900: oklch(31% 0.09 27);
+    --color-shape-danger-800: oklch(43.1% 0.149 27);
+    --color-shape-danger-900: oklch(37% 0.11 27);
+    --color-shape-danger-950: oklch(31% 0.09 27);
     --color-shape-danger-fg: oklch(99% 0.008 25);
     --color-shape-danger-fg-muted: oklch(89.2% 0.052 25);
 
     --color-shape-success-50: oklch(97.4% 0.018 152);
     --color-shape-success-100: oklch(94.2% 0.044 152);
     --color-shape-success-200: oklch(88.4% 0.082 152);
+    --color-shape-success-300: oklch(81.8% 0.104 152);
+    --color-shape-success-400: oklch(72.7% 0.126 151);
     --color-shape-success-500: oklch(64.6% 0.148 151);
     --color-shape-success-600: oklch(57.4% 0.136 151);
     --color-shape-success-700: oklch(48.8% 0.115 152);
-    --color-shape-success-800: oklch(37% 0.085 152);
-    --color-shape-success-900: oklch(31% 0.07 152);
+    --color-shape-success-800: oklch(41.7% 0.1 152);
+    --color-shape-success-900: oklch(37% 0.085 152);
+    --color-shape-success-950: oklch(31% 0.07 152);
     --color-shape-success-fg: oklch(99% 0.01 152);
     --color-shape-success-fg-muted: oklch(89% 0.05 152);
 
     --color-shape-warning-50: oklch(97.8% 0.022 85);
     --color-shape-warning-100: oklch(95.2% 0.055 88);
     --color-shape-warning-200: oklch(90.4% 0.098 88);
+    --color-shape-warning-300: oklch(85.1% 0.118 83);
+    --color-shape-warning-400: oklch(79.1% 0.138 79);
     --color-shape-warning-500: oklch(72.4% 0.158 74);
     --color-shape-warning-600: oklch(66.2% 0.148 68);
     --color-shape-warning-700: oklch(55.4% 0.126 62);
-    --color-shape-warning-800: oklch(37% 0.09 68);
-    --color-shape-warning-900: oklch(31% 0.075 68);
+    --color-shape-warning-800: oklch(45% 0.108 65);
+    --color-shape-warning-900: oklch(37% 0.09 68);
+    --color-shape-warning-950: oklch(31% 0.075 68);
 
     /* Warning's foreground pair is the dark end of the hue rather than the light
        one: a saturated yellow cannot carry white text. It is the same value
@@ -294,8 +308,8 @@
             --shape-tone-hover: var(--color-shape-danger-600);
             --shape-tone-fg: var(--color-shape-950);
             --shape-tone-ink: var(--color-shape-danger-200);
-            --shape-tone-tint: var(--color-shape-danger-900);
-            --shape-tone-tint-hover: var(--color-shape-danger-800);
+            --shape-tone-tint: var(--color-shape-danger-950);
+            --shape-tone-tint-hover: var(--color-shape-danger-900);
         }
 
         [data-shape-tone='success'] {
@@ -303,8 +317,8 @@
             --shape-tone-hover: var(--color-shape-success-600);
             --shape-tone-fg: var(--color-shape-950);
             --shape-tone-ink: var(--color-shape-success-200);
-            --shape-tone-tint: var(--color-shape-success-900);
-            --shape-tone-tint-hover: var(--color-shape-success-800);
+            --shape-tone-tint: var(--color-shape-success-950);
+            --shape-tone-tint-hover: var(--color-shape-success-900);
         }
 
         [data-shape-tone='warning'] {
@@ -312,8 +326,8 @@
             --shape-tone-hover: var(--color-shape-warning-600);
             --shape-tone-fg: var(--color-shape-950);
             --shape-tone-ink: var(--color-shape-warning-200);
-            --shape-tone-tint: var(--color-shape-warning-900);
-            --shape-tone-tint-hover: var(--color-shape-warning-800);
+            --shape-tone-tint: var(--color-shape-warning-950);
+            --shape-tone-tint-hover: var(--color-shape-warning-900);
         }
     }
 }
