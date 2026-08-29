@@ -1,14 +1,22 @@
 @blaze(fold: true, memo: true)
 
+{{--
+    The one icon in this set that is not from Heroicons, and the one that is not
+    generated: it is a single drawing with a spin on it, so it declares `variant`
+    only so that a style named by a shared call site is ignored rather than
+    rendered onto the `<svg>`.
+--}}
+
 @props([
     'variant' => 'outline',
+    'size' => 'base',
 ])
 
 @php
 $classes = Shape::classes('shrink-0 animate-spin')
-    ->add(match ($variant) {
-        'micro' => '[:where(&)]:size-4',
-        'mini' => '[:where(&)]:size-5',
+    ->add(match ($size) {
+        'xs' => '[:where(&)]:size-4',
+        'sm' => '[:where(&)]:size-5',
         default => '[:where(&)]:size-6',
     });
 @endphp

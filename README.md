@@ -100,7 +100,7 @@ package's components without further configuration. Shape ships no compiled CSS.
 
 <x-shape::button as="a" href="/settings" icon-trailing="arrow-right">Settings</x-shape::button>
 
-<x-shape::icon.check-circle variant="mini" />
+<x-shape::icon.check-circle size="sm" />
 ```
 
 `variant` is hierarchy — where an action sits in the pyramid of importance.

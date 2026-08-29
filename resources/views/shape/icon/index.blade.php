@@ -8,6 +8,10 @@
     this file, and the request recurses until it runs out of memory. A name that
     doesn't exist still raises Blade's usual "unable to locate component" error.
 
+    `variant` defaults to null rather than to a style, so that a call site naming
+    only a size leaves the choice to the icon — where the set's own rule about
+    which style a size prefers is baked in. Naming a style here overrides it.
+
     Not memoized — this resolves a different component per call, which is the
     opposite of what memoization is for.
 
@@ -18,9 +22,10 @@
 
 @props([
     'name' => null,
-    'variant' => 'outline',
+    'variant' => null,
+    'size' => 'base',
 ])
 
 @if (filled($name))
-    <x-dynamic-component :component="'shape::icon.'.$name" :variant="$variant" {{ $attributes }} />
+    <x-dynamic-component :component="'shape::icon.'.$name" :variant="$variant" :size="$size" {{ $attributes }} />
 @endif

@@ -27,7 +27,7 @@
     'for' => null,
     'selected' => false,
     'icon' => null,
-    'iconVariant' => 'mini',
+    'iconSize' => 'sm',
     'as' => null,
 ])
 
@@ -64,7 +64,7 @@ $state = $link
     data-shape-tone="accent"
 >
     @if ($icon)
-        <x-shape::icon :name="$icon" :variant="$iconVariant" class="opacity-70" />
+        <x-shape::icon :name="$icon" :size="$iconSize" class="opacity-70" />
     @endif
 
     {{ $slot }}

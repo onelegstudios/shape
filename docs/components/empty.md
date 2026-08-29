@@ -37,7 +37,7 @@ equivalent.
 | Prop | Default | Values |
 | --- | --- | --- |
 | `icon` | — | any icon name |
-| `icon-variant` | `outline` | `micro`, `mini`, `solid`, `outline` |
+| `icon-size` | `base` | `xs`, `sm`, `base` |
 | `heading` | — | the headline |
 | `description` | — | one line of supporting copy |
 

@@ -18,7 +18,7 @@
 
 @props([
     'icon' => null,
-    'iconVariant' => 'mini',
+    'iconSize' => 'sm',
     'color' => null,
     'as' => null,
 ])
@@ -43,7 +43,7 @@ $classes = Shape::classes()
     data-shape-tone="{{ $color ?? 'neutral' }}"
 >
     @if ($icon)
-        <x-shape::icon :name="$icon" :variant="$iconVariant" class="opacity-70" />
+        <x-shape::icon :name="$icon" :size="$iconSize" class="opacity-70" />
     @endif
 
     {{ $slot }}

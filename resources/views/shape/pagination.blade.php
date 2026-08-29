@@ -77,11 +77,11 @@ $current = (string) Shape::classes($step)
     >
         @if ($paginator->previousPageUrl())
             <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="{{ $enabled }}" {{ $wire }} data-shape-pagination-previous>
-                <x-shape::icon.chevron-left variant="mini" />{{ $previousLabel }}
+                <x-shape::icon.chevron-left size="sm" />{{ $previousLabel }}
             </a>
         @else
             <span class="{{ $inert }}" aria-disabled="true" data-shape-pagination-previous>
-                <x-shape::icon.chevron-left variant="mini" />{{ $previousLabel }}
+                <x-shape::icon.chevron-left size="sm" />{{ $previousLabel }}
             </span>
         @endif
 
@@ -98,11 +98,11 @@ $current = (string) Shape::classes($step)
 
         @if ($paginator->nextPageUrl())
             <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="{{ $enabled }}" {{ $wire }} data-shape-pagination-next>
-                {{ $nextLabel }}<x-shape::icon.chevron-right variant="mini" />
+                {{ $nextLabel }}<x-shape::icon.chevron-right size="sm" />
             </a>
         @else
             <span class="{{ $inert }}" aria-disabled="true" data-shape-pagination-next>
-                {{ $nextLabel }}<x-shape::icon.chevron-right variant="mini" />
+                {{ $nextLabel }}<x-shape::icon.chevron-right size="sm" />
             </span>
         @endif
     </nav>

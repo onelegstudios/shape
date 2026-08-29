@@ -39,7 +39,7 @@ it('reproduces a shipped icon from the SVGs it was drawn from', function () {
         ->toBe(file_get_contents(__DIR__.'/../../resources/views/shape/icon/check.blade.php'));
 });
 
-it('generates an icon that renders at every variant', function () {
+it('generates an icon that renders across the whole matrix', function () {
     $this->artisan('shape:icon', ['icons' => ['check'], '--from' => $this->heroicons])->assertSuccessful();
 
     expect(Blade::render('<x-shape::icon.check />'))
@@ -47,13 +47,21 @@ it('generates an icon that renders at every variant', function () {
         ->toContain('viewBox="0 0 24 24"')
         ->toContain('stroke="currentColor"');
 
-    expect(Blade::render('<x-shape::icon.check variant="micro" />'))
+    // The size reaches for the style, so this is the 16px solid drawing and not
+    // the 24px outline one shrunk to fit.
+    expect(Blade::render('<x-shape::icon.check size="xs" />'))
         ->toContain('viewBox="0 0 16 16"')
+        ->toContain('fill="currentColor"')
+        ->toContain('size-4');
+
+    // ...and the cell Heroicons does not draw is that outline drawing, scaled.
+    expect(Blade::render('<x-shape::icon.check variant="outline" size="xs" />'))
+        ->toContain('viewBox="0 0 24 24"')
         ->toContain('size-4');
 });
 
 it('drops the attributes that describe how a drawing is used', function () {
-    $this->artisan('shape:icon', ['icons' => ['spinner'], '--from' => $this->flat])->assertSuccessful();
+    $this->artisan('shape:icon', ['icons' => ['spinner'], '--set' => 'lucide', '--from' => $this->flat])->assertSuccessful();
 
     $source = (string) file_get_contents($this->destination.'/icon/spinner.blade.php');
 
@@ -67,11 +75,18 @@ it('drops the attributes that describe how a drawing is used', function () {
 });
 
 it('writes no switch for a set that has one drawing per name', function () {
-    $this->artisan('shape:icon', ['icons' => ['spinner'], '--from' => $this->flat])->assertSuccessful();
+    $this->artisan('shape:icon', ['icons' => ['spinner'], '--set' => 'lucide', '--from' => $this->flat])->assertSuccessful();
 
     $source = (string) file_get_contents($this->destination.'/icon/spinner.blade.php');
 
-    expect($source)->not->toContain('switch');
+    // One style at one size is one drawing, and a `switch` with a single arm
+    // asks the reader to work out that it never branches. The `variant` prop
+    // stays regardless, so a style named by a shared call site is ignored
+    // rather than rendered onto the `<svg>`.
+    expect($source)->not->toContain('switch')
+        ->and($source)->toContain("'variant' => 'outline',")
+        ->and($source)->toContain("'size' => 'base',")
+        ->and($source)->toContain('Lucide');
 
     // Both elements survive, and the source's own indentation does not.
     expect(Blade::render('<x-shape::icon.spinner />'))

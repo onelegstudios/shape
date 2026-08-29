@@ -18,7 +18,7 @@
 
 @props([
     'icon' => null,
-    'iconVariant' => 'outline',
+    'iconSize' => 'base',
     'heading' => null,
     'description' => null,
 ])
@@ -29,7 +29,7 @@
 >
     @if ($icon)
         <span class="mb-2 rounded-full bg-shape-100 p-3 text-[color:var(--shape-fg-muted)] dark:bg-shape-800">
-            <x-shape::icon :name="$icon" :variant="$iconVariant" />
+            <x-shape::icon :name="$icon" :size="$iconSize" />
         </span>
     @endif
 

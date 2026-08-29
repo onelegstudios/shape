@@ -68,7 +68,7 @@ $labelClasses = match ($emphasis) {
 
     <p class="{{ $valueClasses }}" data-shape-stat-value>{{ $value }}</p>
 
-    <p class="inline-flex items-center gap-1 text-sm font-medium text-[color:var(--shape-tone-ink)] empty:hidden" data-shape-stat-delta data-shape-tone="{{ $tone }}">@if ($glyph)<x-shape::icon :name="$glyph" variant="micro" />@endif{{ $delta }}</p>
+    <p class="inline-flex items-center gap-1 text-sm font-medium text-[color:var(--shape-tone-ink)] empty:hidden" data-shape-stat-delta data-shape-tone="{{ $tone }}">@if ($glyph)<x-shape::icon :name="$glyph" size="xs" />@endif{{ $delta }}</p>
 
     <p class="text-sm text-[color:var(--shape-fg-muted)] empty:hidden" data-shape-stat-description>{{ $description }}</p>
 </div>

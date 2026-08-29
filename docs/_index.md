@@ -42,7 +42,7 @@ Folding is not free of obligations at the call site. See
 | Component | Tier | |
 | --- | --- | --- |
 | [`button`](components/button.md) | fold | An action, with `variant` for hierarchy and `color` for meaning |
-| [`icon`](components/icon.md) | fold + memo | One component per icon, drawn at four sizes |
+| [`icon`](components/icon.md) | fold + memo | One component per icon, at three sizes and two styles |
 | [`heading`](components/heading.md) | fold | `level` picks the element, `size` picks the type |
 | [`text`](components/text.md) | fold | A paragraph, muted or strong |
 | [`card`](components/card.md) | fold | A surface, with a header and footer if you want them |

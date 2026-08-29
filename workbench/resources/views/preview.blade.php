@@ -133,10 +133,10 @@
                 @endforeach
             </div>
             <div class="flex items-end gap-6 pt-2 text-shape-700 dark:text-shape-300">
-                <x-shape::icon.check-circle variant="micro" />
-                <x-shape::icon.check-circle variant="mini" />
+                <x-shape::icon.check-circle size="xs" />
+                <x-shape::icon.check-circle size="sm" />
+                <x-shape::icon.check-circle size="base" />
                 <x-shape::icon.check-circle variant="solid" />
-                <x-shape::icon.check-circle />
             </div>
         </section>
 

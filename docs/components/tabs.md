@@ -76,7 +76,7 @@ panel.
 | | `href` | — | makes it a link instead |
 | | `selected` | `false` | |
 | | `icon` | — | any icon name |
-| | `icon-variant` | `mini` | `micro`, `mini`, `solid`, `outline` |
+| | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | | `as` | resolved from `href` | `button`, `a`, `div` |
 | `tabs.panel` | `name` | — | matched by a tab's `for` |
 | | `selected` | `false` | |

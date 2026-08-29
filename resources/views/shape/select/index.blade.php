@@ -87,7 +87,7 @@ $arrow = match ($size) {
                 @endif
                 {{ $slot }}
             </select>
-            <span class="{{ $arrow }}"><x-shape::icon.chevron-down variant="mini" /></span>
+            <span class="{{ $arrow }}"><x-shape::icon.chevron-down size="sm" /></span>
         </span>
 
         <x-shape::error />
@@ -100,6 +100,6 @@ $arrow = match ($size) {
             @endif
             {{ $slot }}
         </select>
-        <span class="{{ $arrow }}"><x-shape::icon.chevron-down variant="mini" /></span>
+        <span class="{{ $arrow }}"><x-shape::icon.chevron-down size="sm" /></span>
     </span>
 @endif

@@ -1,1 +1,1 @@
-<x-shape::icon.check variant="mini" />
+<x-shape::icon.check size="sm" />

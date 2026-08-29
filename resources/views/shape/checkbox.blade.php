@@ -67,8 +67,8 @@ $glyph = 'col-start-1 row-start-1 pointer-events-none size-3.5 text-[color:var(-
 >
     <span class="grid place-items-center pt-0.5">
         <input type="checkbox" {{ $attributes->merge($defaults)->class($box) }} data-shape-control />
-        <x-shape::icon.check variant="micro" class="{{ $glyph }} peer-checked:opacity-100" />
-        <x-shape::icon.minus variant="micro" class="{{ $glyph }} peer-indeterminate:opacity-100" />
+        <x-shape::icon.check size="xs" class="{{ $glyph }} peer-checked:opacity-100" />
+        <x-shape::icon.minus size="xs" class="{{ $glyph }} peer-indeterminate:opacity-100" />
     </span>
 
     @if (filled($label))

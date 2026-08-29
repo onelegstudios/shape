@@ -72,6 +72,88 @@ it('folds icons', function () {
         ->toContain('shape::icon.check');
 });
 
+it('folds an icon down to one drawing, leaving no switch behind', function () {
+    // An icon is a matrix of styles against sizes, and both axes are static at
+    // almost every call site — so what reaches the compiled template is one
+    // `<svg>` and none of the machinery that chose it.
+    $fixture = __DIR__.'/../fixtures/views/static-icon.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('switch')
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('data-shape-icon');
+});
+
+it('bakes in the drawing the size chose, not the one the default style would give', function () {
+    // `static-icon` asks for `size="sm"` and names no style. Heroicons draws no
+    // outline at 20px, so the size reaches for solid — and it is the solid
+    // drawing that has to end up in the compiled template, decided at compile
+    // time rather than left as a `match` for every request to re-run.
+    $fixture = __DIR__.'/../fixtures/views/static-icon.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->toContain('viewBox="0 0 20 20"')
+        ->toContain('fill="currentColor"')
+        ->toContain('size-5')
+        ->not->toContain('stroke="currentColor"');
+});
+
+it('bakes an icon size travelling through a parent prop into that parent\'s fold', function () {
+    // The shape of eleven of the twelve places this library draws an icon: the
+    // size is a prop on the component around it, and the icon is baked into that
+    // component's fold rather than folding on its own.
+    $fixture = __DIR__.'/../fixtures/views/static-button-icon-size.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('switch')
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('viewBox="0 0 16 16"')
+        ->toContain('size-4');
+});
+
+it('memoizes an icon whose size is bound dynamically', function () {
+    // Size drives which drawing is chosen, so it cannot be declared safe. What
+    // catches this call site is memoization, and there are only three sizes, so
+    // the cache actually hits.
+    expect(foldedComponentsWhileRendering('dynamic-icon-size', ['size' => 'sm']))
+        ->not->toContain('shape::icon.check');
+
+    $fixture = __DIR__.'/../fixtures/views/dynamic-icon-size.blade.php';
+
+    expect(Blaze::compile((string) file_get_contents($fixture), $fixture))
+        ->toContain('Memo::key("shape::icon.check"');
+});
+
+it('renders an icon identically folded and unfolded, on every cell of the matrix', function () {
+    // Six cells over four drawings, three of which Heroicons does not draw and
+    // fills by scaling. Every one of them has to survive the compile-time path
+    // and the run-time one identically, or folding is changing what renders.
+    $cells = [
+        ['solid', 'xs'], ['solid', 'sm'], ['solid', 'base'],
+        ['outline', 'xs'], ['outline', 'sm'], ['outline', 'base'],
+    ];
+
+    foreach ($cells as [$variant, $size]) {
+        $call = "<x-shape::icon.check variant=\"{$variant}\" size=\"{$size}\" />";
+
+        clearCompiledViews();
+        $folded = Blade::render($call);
+
+        Blaze::disable();
+        clearCompiledViews();
+        $unfolded = Blade::render($call);
+        Blaze::enable();
+
+        expect(trim($folded))->toBe(trim($unfolded), "{$variant}/{$size}");
+    }
+});
+
 it('bakes a nested icon into the compiled template', function () {
     // The nested icon doesn't fold on its own — it is rendered as part of the
     // button's fold. What matters is the result: the SVG ends up in the

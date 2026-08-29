@@ -1,3 +1,3 @@
 <x-shape::icon.check />
-<x-shape::icon.arrow-right variant="mini" />
-<x-shape::icon.trash variant="micro" />
+<x-shape::icon.arrow-right size="sm" />
+<x-shape::icon.trash size="xs" />

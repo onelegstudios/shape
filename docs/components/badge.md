@@ -29,8 +29,8 @@ a button given the same colour agree without either knowing about the other.
 
 Every colour but `neutral` resolves a glyph of its own, so a badge stays
 readable in greyscale and to anyone who can't separate the hues. `icon` picks a
-different one, `:icon="false"` removes it, and `icon-variant` changes the
-drawing:
+different one, `:icon="false"` removes it, and `icon-size` changes how big
+it is:
 
 @docs('preview', name: 'badge-icons')
 
@@ -51,7 +51,7 @@ drawing:
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `size` | `base` | `sm`, `base` |
 | `icon` | resolved from `color` | any icon name, or `false` to omit |
-| `icon-variant` | `micro` | `micro`, `mini`, `solid`, `outline` |
+| `icon-size` | `xs` | `xs`, `sm`, `base` |
 
 There is no slot: Blaze memoizes a component only when it has none and is called
 self-closing, and a badge — one per row, every row, every page — is the best

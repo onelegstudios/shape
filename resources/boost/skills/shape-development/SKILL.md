@@ -59,9 +59,9 @@ Every component is `<x-shape::name>`. Props take scale keys, never raw values:
 
 | Component | Tier | Key props |
 | --- | --- | --- |
-| `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `color`, `size`, `icon`, `icon-trailing`, `square`, `as` |
+| `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `color`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `as` |
 | `button.element` | fold | `as`, `type` — the element a button renders |
-| `icon.<name>` | fold + memo | `variant` (micro\|mini\|solid\|outline) |
+| `icon.<name>` | fold + memo | `size` (xs\|sm\|base), `variant` (outline\|solid — chosen by `size` if unset) |
 | `icon` | — | `name` — resolves at runtime, so it cannot fold |
 | `heading` | fold | `level` (document hierarchy), `size` (visual hierarchy) |
 | `text` | fold | `size`, `variant` (base\|muted\|strong), `as` |
@@ -155,6 +155,7 @@ php artisan shape:eject modal      # + heading, text, overlay, button, icon
 php artisan shape:eject --status   # what has drifted since an upgrade
 php artisan shape:doctor           # fold safety of ejected components
 php artisan shape:icon --all --from=./resources/svg
+php artisan shape:icon bell --set=lucide --from=./vendor/lucide/icons
 ```
 
 Run `shape:doctor` in CI once anything has been ejected: it exits non-zero when a
@@ -192,4 +193,7 @@ Read before executing:
   ejected component that is annotated `fold: true`
 - do not reach for `<x-shape::icon :name="$name" />` on a hot path; the direct
   `<x-shape::icon.check />` form is the one that folds and memoizes
+- name a `size` on an icon and leave `variant` alone unless the style is the
+  point; the small sizes are drawn solid because a stroke does not read at 16px,
+  and a call site that names only a size works with any icon set
 - do not publish the stylesheet to change colours; redeclare the tokens instead

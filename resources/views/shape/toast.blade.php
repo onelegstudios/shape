@@ -30,7 +30,7 @@
     'heading' => null,
     'description' => null,
     'icon' => null,
-    'iconVariant' => 'mini',
+    'iconSize' => 'sm',
     'dismissible' => true,
 ])
 
@@ -59,7 +59,7 @@ $classes = Shape::classes()
 >
     <span class="mt-0.5 shrink-0 text-[color:var(--shape-tone-ink)] empty:hidden" data-shape-toast-icon>
         @if ($glyph)
-            <x-shape::icon :name="$glyph" :variant="$iconVariant" />
+            <x-shape::icon :name="$glyph" :size="$iconSize" />
         @endif
     </span>
 
@@ -75,7 +75,7 @@ $classes = Shape::classes()
             size="sm"
             variant="ghost"
             icon="x-mark"
-            icon-variant="micro"
+            icon-size="xs"
             aria-label="Dismiss"
             class="-mr-1.5 -mt-1.5 shrink-0"
             data-shape-dismiss=""

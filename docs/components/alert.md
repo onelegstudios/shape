@@ -23,7 +23,7 @@ stand alone:
 
 Every colour resolves a glyph of its own, so an alert stays readable in
 greyscale and to anyone who can't separate the hues. `icon` picks a different
-one, `:icon="false"` removes it, and `icon-variant` changes the drawing:
+one, `:icon="false"` removes it, and `icon-size` changes how big it is:
 
 @docs('preview', name: 'alert-icons', layout: 'stack')
 
@@ -63,7 +63,7 @@ the fact.
 | `color` | `neutral` | `accent`, `success`, `warning`, `danger` |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `color` | any icon name, or `false` for none |
-| `icon-variant` | `mini` | `micro`, `mini`, `outline`, `solid` |
+| `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `dismissible` | `false` | adds a close button |
 
 The default slot is the body.

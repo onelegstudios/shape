@@ -33,7 +33,7 @@
         square
         variant="ghost"
         icon="x-mark"
-        icon-variant="mini"
+        icon-size="sm"
         aria-label="Close"
         command="close"
         commandfor="{{ $for }}"

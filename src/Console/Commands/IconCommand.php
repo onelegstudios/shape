@@ -6,24 +6,26 @@ namespace Onelegstudios\Shape\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use InvalidArgumentException;
+use Onelegstudios\Shape\IconSet;
 
 /**
  * Turn a directory of SVGs into icon components.
  *
- * Every icon in this library is a generated file: four drawings, one per size,
- * behind a `variant` prop. Generating them is what makes the set cheap to grow
- * and what keeps the header on each file — "Regenerate; don't hand-edit" — an
- * honest instruction rather than a hope.
+ * Every icon in this library is a generated file, and generating them is what
+ * makes the set cheap to grow and what keeps the header on each one —
+ * "Regenerate; don't hand-edit" — an honest instruction rather than a hope.
+ *
+ * What a set looks like is declared in `shape.icon_sets` and parsed by
+ * `IconSet`: a matrix of styles against sizes, mostly sparse. This command is
+ * the part that walks that matrix, reads whichever cells the source directory
+ * actually holds, and writes one component per name with the answers baked in.
  *
  * The alternative, which WireUI takes, is a Composer package per icon set. That
  * is a version matrix to maintain for what is fundamentally a code generator,
  * and it puts the set a consumer actually wants — theirs — furthest out of
- * reach. This reads whatever directory it is pointed at.
- *
- * Two layouts are understood: Heroicons' own, where a name exists at four sizes
- * in `16/solid`, `20/solid`, `24/solid` and `24/outline`, and a flat directory
- * of SVGs, where each name is a single drawing and the component has no variants
- * to switch between.
+ * reach. This reads whatever directory it is pointed at, in whatever layout the
+ * manifest describes.
  */
 class IconCommand extends Command
 {
@@ -32,6 +34,7 @@ class IconCommand extends Command
      */
     protected $signature = 'shape:icon
         {icons?* : The icon names to generate}
+        {--set=heroicons : The icon set the source directory holds}
         {--from= : The directory to read SVGs from}
         {--to= : Where to write the components}
         {--all : Generate every icon in the source directory}
@@ -43,25 +46,18 @@ class IconCommand extends Command
     protected $description = 'Generate Shape icon components from a directory of SVGs.';
 
     /**
-     * Where each variant is drawn, in the layout Heroicons ships.
-     *
-     * The order is the order the arms are written in, and `outline` is last
-     * because it is the default — the arm a `switch` falls through to.
-     *
-     * @var array<string, string>
-     */
-    protected array $variants = [
-        'micro' => '16/solid',
-        'mini' => '20/solid',
-        'solid' => '24/solid',
-        'outline' => '24/outline',
-    ];
-
-    /**
      * Execute the console command.
      */
     public function handle(Filesystem $files): int
     {
+        try {
+            $set = $this->set();
+        } catch (InvalidArgumentException $e) {
+            $this->components->error($e->getMessage());
+
+            return self::FAILURE;
+        }
+
         $from = $this->source();
 
         if ($from === null) {
@@ -72,7 +68,7 @@ class IconCommand extends Command
 
         $to = $this->destination();
 
-        $names = $this->names($files, $from);
+        $names = $this->names($set, $files, $from);
 
         if ($names === []) {
             $this->components->error('Name at least one icon, or pass --all.');
@@ -83,9 +79,9 @@ class IconCommand extends Command
         $written = 0;
 
         foreach ($names as $name) {
-            $drawings = $this->drawings($files, $from, $name);
+            $cells = $this->matrix($set, $files, $from, $name);
 
-            if ($drawings === []) {
+            if ($cells === []) {
                 $this->components->twoColumnDetail("  {$name}", '<fg=red>no SVG found</>');
 
                 continue;
@@ -100,11 +96,11 @@ class IconCommand extends Command
             }
 
             $files->ensureDirectoryExists(dirname($target));
-            $files->put($target, $this->component($drawings));
+            $files->put($target, $this->component($set, $files, $cells));
 
             $written++;
 
-            $this->components->twoColumnDetail("  {$name}", '<fg=green>'.implode(', ', array_keys($drawings)).'</>');
+            $this->components->twoColumnDetail("  {$name}", '<fg=green>'.count(array_unique($cells)).' drawing(s)</>');
         }
 
         $this->newLine();
@@ -114,37 +110,66 @@ class IconCommand extends Command
     }
 
     /**
-     * Assemble the component around however many drawings there are.
+     * Which cell of the matrix is drawn where, for one name.
      *
-     * One drawing needs no `switch`: a set with a single style has no variants
-     * to choose between, and a component that emits a `switch` with one arm is
-     * asking the reader to work out that it never branches.
+     * Keyed the way the generated component switches on it, so that assembling
+     * the arms afterwards is a grouping and nothing more.
      *
-     * @param  array<string, string>  $drawings
+     * @return array<string, string>
      */
-    protected function component(array $drawings): string
+    protected function matrix(IconSet $set, Filesystem $files, string $from, string $name): array
     {
-        $svgs = array_map(fn (string $svg): string => $this->svg($svg), $drawings);
+        $cells = [];
 
-        $body = count($svgs) === 1
-            ? reset($svgs)
-            : $this->switch($svgs);
+        foreach ($set->styles() as $style) {
+            foreach ($set->sizes() as $size) {
+                $pattern = $set->pattern($style, $size);
+
+                if ($pattern === null) {
+                    continue;
+                }
+
+                $path = $from.'/'.str_replace('{name}', $name, $pattern);
+
+                if ($files->exists($path)) {
+                    $cells["{$style}:{$size}"] = $path;
+                }
+            }
+        }
+
+        return $cells;
+    }
+
+    /**
+     * Assemble the component around however many distinct drawings there are.
+     *
+     * One drawing needs no `switch`: a set with a single style drawn at a single
+     * size has nothing to choose between, and a component that emits a `switch`
+     * with one arm is asking the reader to work out that it never branches.
+     *
+     * @param  array<string, string>  $cells
+     */
+    protected function component(IconSet $set, Filesystem $files, array $cells): string
+    {
+        $body = count(array_unique($cells)) === 1
+            ? $this->svg($files->get((string) reset($cells)))
+            : $this->switch($set, $files, $cells);
+
+        $notice = $set->notice === '' ? '' : $set->notice.' ';
 
         return <<<BLADE
         @blaze(fold: true, memo: true)
 
-        {{-- Heroicons (https://heroicons.com), MIT licensed. Regenerate; don't hand-edit. --}}
+        {{-- {$notice}Regenerate; don't hand-edit. --}}
 
         @props([
-            'variant' => 'outline',
+        {$this->props($set)}
         ])
 
         @php
-        \$classes = Shape::classes('shrink-0')
-            ->add(match (\$variant) {
-                'micro' => '[:where(&)]:size-4',
-                'mini' => '[:where(&)]:size-5',
-                default => '[:where(&)]:size-6',
+        {$this->resolution($set)}\$classes = Shape::classes('shrink-0')
+            ->add(match (\$size) {
+        {$this->classes($set)}
             });
         @endphp
 
@@ -154,26 +179,127 @@ class IconCommand extends Command
     }
 
     /**
-     * The variant arms, with the last drawing as the default.
+     * The props, which are the two axes and nothing else.
      *
-     * Written as raw PHP rather than `@if` so that the arms are compiled to a
-     * `switch` verbatim. Blaze folds the whole thing away when the variant is
-     * static, which it is at almost every call site.
-     *
-     * @param  array<string, string>  $svgs
+     * A set with one style still declares `variant`, so that a `variant` passed
+     * by a shared call site is ignored rather than falling through to the
+     * attribute bag and rendering itself on the `<svg>`.
      */
-    protected function switch(array $svgs): string
+    protected function props(IconSet $set): string
     {
-        $default = array_key_last($svgs);
+        $variant = $set->hasOneStyle()
+            ? "'".$set->styles()[0]."'"
+            : 'null';
+
+        return implode("\n", [
+            "    'variant' => {$variant},",
+            "    'size' => '".$set->defaultSize()."',",
+        ]);
+    }
+
+    /**
+     * The line that lets a size choose a style, when there is a choice to make.
+     *
+     * Written as `??=` rather than as a default in `@props` because the answer
+     * depends on the other prop. Both are static at almost every call site, so
+     * Blaze folds the whole thing away and the generated file is the only place
+     * this ever runs.
+     */
+    protected function resolution(IconSet $set): string
+    {
+        if ($set->hasOneStyle()) {
+            return '';
+        }
+
+        $default = $set->styleFor($set->defaultSize());
+
+        $grouped = [];
+
+        foreach ($set->sizes() as $size) {
+            $style = $set->styleFor($size);
+
+            if ($style !== $default) {
+                $grouped[$style][] = "'{$size}'";
+            }
+        }
+
+        $arms = [];
+
+        foreach ($grouped as $style => $sizes) {
+            $arms[] = '    '.implode(', ', $sizes)." => '{$style}',";
+        }
+
+        $arms[] = "    default => '{$default}',";
+
+        return implode("\n", [
+            '$variant ??= match ($size) {',
+            ...$arms,
+            '};',
+            '',
+            '',
+        ]);
+    }
+
+    /**
+     * The arms of the size match, with the largest size as the default.
+     */
+    protected function classes(IconSet $set): string
+    {
+        $sizes = $set->sizes();
+        $default = $set->defaultSize();
+
+        $arms = [];
+
+        foreach ($sizes as $size) {
+            $arms[] = $size === $default
+                ? "        default => '".$set->classFor($size)."',"
+                : "        '{$size}' => '".$set->classFor($size)."',";
+        }
+
+        return implode("\n", $arms);
+    }
+
+    /**
+     * The drawing arms, with the default cell's drawing as the fallthrough.
+     *
+     * Every cell that resolved to the same file shares an arm, which is why
+     * Heroicons — six cells over four drawings — writes three cases and a
+     * default rather than six of anything.
+     *
+     * Written as raw PHP rather than `@if` so that the arms compile to a
+     * `switch` verbatim. Blaze folds the whole thing away when both props are
+     * static, which they are at almost every call site.
+     *
+     * @param  array<string, string>  $cells
+     */
+    protected function switch(IconSet $set, Filesystem $files, array $cells): string
+    {
+        $fallthrough = $cells[$set->styleFor($set->defaultSize()).':'.$set->defaultSize()]
+            ?? (string) reset($cells);
+
+        $grouped = [];
+
+        foreach ($cells as $cell => $path) {
+            if ($path !== $fallthrough) {
+                $grouped[$path][] = $cell;
+            }
+        }
+
         $out = [];
 
-        foreach ($svgs as $variant => $svg) {
-            $out[] = $variant === $default
-                ? "<?php break; default: ?>\n{$svg}"
-                : ($out === []
-                    ? "<?php switch (\$variant): case ('{$variant}'): ?>\n{$svg}"
-                    : "<?php break; case ('{$variant}'): ?>\n{$svg}");
+        foreach ($grouped as $path => $group) {
+            $labels = implode(' ', array_map(
+                fn (string $cell): string => "case ('{$cell}'):",
+                $group,
+            ));
+
+            $out[] = ($out === []
+                ? "<?php switch (\$variant.':'.\$size): {$labels} ?>"
+                : "<?php break; {$labels} ?>")
+                ."\n".$this->svg($files->get($path));
         }
+
+        $out[] = "<?php break; default: ?>\n".$this->svg($files->get($fallthrough));
 
         return implode("\n", $out)."\n<?php endswitch; ?>";
     }
@@ -240,35 +366,11 @@ class IconCommand extends Command
     }
 
     /**
-     * Read whichever variants of an icon the source directory holds.
-     *
-     * @return array<string, string>
-     */
-    protected function drawings(Filesystem $files, string $from, string $name): array
-    {
-        $drawings = [];
-
-        foreach ($this->variants as $variant => $directory) {
-            $path = "{$from}/{$directory}/{$name}.svg";
-
-            if ($files->exists($path)) {
-                $drawings[$variant] = $files->get($path);
-            }
-        }
-
-        if ($drawings === [] && $files->exists("{$from}/{$name}.svg")) {
-            $drawings['outline'] = $files->get("{$from}/{$name}.svg");
-        }
-
-        return $drawings;
-    }
-
-    /**
      * The icons to generate.
      *
      * @return list<string>
      */
-    protected function names(Filesystem $files, string $from): array
+    protected function names(IconSet $set, Filesystem $files, string $from): array
     {
         if (! $this->option('all')) {
             /** @var list<string> $icons */
@@ -279,7 +381,7 @@ class IconCommand extends Command
 
         $names = [];
 
-        foreach ([...array_values($this->variants), ''] as $directory) {
+        foreach ($set->directories() as $directory) {
             $path = rtrim("{$from}/{$directory}", '/');
 
             if (! $files->isDirectory($path)) {
@@ -298,6 +400,23 @@ class IconCommand extends Command
         sort($names);
 
         return $names;
+    }
+
+    /**
+     * The set the source directory is laid out in.
+     */
+    protected function set(): IconSet
+    {
+        $name = $this->option('set');
+        $name = is_string($name) && $name !== '' ? $name : 'heroicons';
+
+        $sets = config('shape.icon_sets');
+
+        if (! is_array($sets) || ! array_key_exists($name, $sets)) {
+            throw new InvalidArgumentException("No icon set named [{$name}] is configured.");
+        }
+
+        return IconSet::fromArray($name, $sets[$name]);
     }
 
     protected function source(): ?string

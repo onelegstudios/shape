@@ -131,6 +131,11 @@ Icons nested inside a component that folds are baked in with it, so
 `<x-shape::button icon="check">` and `<x-shape::badge color="success">` both
 end up as literal SVG in the compiled template.
 
+Both of an icon's props drive which drawing is chosen, so neither can be
+declared safe — an icon whose `size` is computed drops to the memo path. There
+are three sizes and two styles, so unlike an avatar keyed on a per-row URL, that
+cache actually hits.
+
 ## Inherited props are unsafe
 
 A component that reads a value from its parent with `@aware` folds only while the

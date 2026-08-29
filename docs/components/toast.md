@@ -105,7 +105,7 @@ If a message is still true after someone has read it, it is an
 | `heading` | — | the line in bold |
 | `description` | — | a second line under it |
 | `icon` | resolved from `color` | any icon name, or `false` for none |
-| `icon-variant` | `mini` | `micro`, `mini`, `solid`, `outline` |
+| `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `dismissible` | `true` | `false` removes the close button |
 
 ## Folding

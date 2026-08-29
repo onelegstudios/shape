@@ -38,10 +38,11 @@ the text up too.
 
 @docs('preview', name: 'button-icons')
 
-`icon-variant` picks which drawing is used: `micro` is 16px, `mini` — the
-default — is 20px, and `solid` and `outline` are both 24px.
+`icon-size` picks how big the drawing is: `xs` is 16px, `sm` — the default — is
+20px, and `base` is 24px. The style is left to the icon, which draws the small
+sizes solid because a stroke does not read at 16px.
 
-@docs('preview', name: 'button-icon-variants')
+@docs('preview', name: 'button-icon-sizes')
 
 ## Icon-only buttons
 
@@ -102,7 +103,7 @@ without `!important`:
 | `size` | `base` | `sm`, `base`, `lg` |
 | `icon` | — | any icon name, rendered before the label |
 | `icon-trailing` | — | any icon name, rendered after the label |
-| `icon-variant` | `mini` | `micro`, `mini`, `solid`, `outline` |
+| `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `square` | `false` | drops the horizontal padding, for icon-only buttons |
 | `as` | `button` | `button`, `a`, `div` |
 | `type` | `button` | any button type |

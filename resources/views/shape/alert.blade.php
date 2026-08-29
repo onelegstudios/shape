@@ -33,7 +33,7 @@
     'color' => null,
     'heading' => null,
     'icon' => null,
-    'iconVariant' => 'mini',
+    'iconSize' => 'sm',
     'dismissible' => false,
 ])
 
@@ -62,7 +62,7 @@ $classes = Shape::classes()
     data-shape-surface="tint"
 >
     @if ($glyph)
-        <x-shape::icon :name="$glyph" :variant="$iconVariant" class="mt-0.5" />
+        <x-shape::icon :name="$glyph" :size="$iconSize" class="mt-0.5" />
     @endif
 
     <div class="flex min-w-0 flex-1 flex-col gap-1">
@@ -82,7 +82,7 @@ $classes = Shape::classes()
             size="sm"
             variant="ghost"
             icon="x-mark"
-            icon-variant="micro"
+            icon-size="xs"
             aria-label="Dismiss"
             class="-mr-1.5 -mt-1.5 shrink-0"
             data-shape-dismiss=""

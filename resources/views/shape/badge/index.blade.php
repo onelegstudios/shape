@@ -25,7 +25,7 @@
     'variant' => 'subtle',
     'size' => 'base',
     'icon' => null,
-    'iconVariant' => 'micro',
+    'iconSize' => 'xs',
 ])
 
 @php
@@ -65,7 +65,7 @@ $classes = Shape::classes()
     data-shape-tone="{{ $color ?? 'neutral' }}"
 >
     @if ($glyph)
-        <x-shape::icon :name="$glyph" :variant="$iconVariant" />
+        <x-shape::icon :name="$glyph" :size="$iconSize" />
     @endif
 
     {{ $label }}
