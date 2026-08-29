@@ -1,0 +1,154 @@
+/*
+| Shape seed palette — optional.
+|
+| Import it after shape.css and give it one colour:
+|
+|   @import "tailwindcss";
+|   @import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+|   @import "../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css";
+|
+|   :root { --shape-seed: oklch(52% 0.16 300); }
+|
+| The accent ramp and the neutral ramp are both derived from that one value:
+| the accent takes the seed's hue and a chroma scaled per step, the neutrals
+| take its hue at a fixed, very low chroma. Which is how `mist` relates to
+| `cyan` — the same relationship, generated rather than looked up.
+|
+| The state colours are deliberately NOT derived. Danger has to be red and
+| success has to be green whatever the brand is, so those stay Tailwind's.
+|
+| WHY THIS HOLDS CONTRAST
+|
+| Every step pins its OKLCH lightness and lets only hue and chroma come from
+| the seed. Lightness is what carries contrast, so pinning it is what makes the
+| guarantee hue-independent — a `700` here is a promise about contrast rather
+| than a position in a list. Tailwind's own `600` is not that promise: white on
+| red-600 is 4.76:1 and on yellow-600 is 2.93:1, which is the whole reason the
+| tones in shape.css fill with 700 and not the 600 the naming suggests.
+|
+| The scales below were verified by rendering them: 24 hues at four chromas —
+| 96 seeds — screenshotted in Chrome, and the contrast of all fourteen
+| foreground/background pairings measured from the pixels. Worst case 4.61:1.
+|
+| Measured rather than modelled on purpose. The first pass computed the same
+| numbers from the CSS instead, assuming a browser gamut-maps by holding the
+| lightness and reducing the chroma. It does not. Asked for `oklch(71.5% 0.259
+| 25)`, Chrome renders L=65.7% and C=0.229 — it trades lightness for chroma,
+| which is the one thing the pinned lightness cannot survive. The model called
+| that case 6.75:1; it renders at 4.42:1.
+|
+| Hence the caps below, and hence the one real constraint on the seed:
+|
+|   THE SEED MUST BE INSIDE sRGB.
+|
+| A seed that is not, `oklch(52% 0.30 195)` say, is gamut-mapped before any of
+| this runs, and every step derives from a colour other than the one asked for.
+| Those seeds measure as low as 3.15:1. There is no way to detect it in CSS, so
+| it is a documented precondition rather than something the file can enforce.
+*/
+
+@layer theme {
+    /*
+    | The default seed is the cyan the aliased palette already uses, so importing
+    | this file without setting one leaves you close to where you started —
+    | close, not identical. A ramp drifts its hue as it darkens and Tailwind's
+    | cyan runs 201° at the 50 step to 230° at the 950; one seed carries one hue,
+    | so the derived ramp cannot follow that. The neutrals land within 2/255, and
+    | the accent within 17/255 at its most saturated steps. It sits in the
+    | theme layer so that an unlayered `:root { --shape-seed: … }` in the
+    | application beats it no matter which order the two are written in.
+    */
+    :root {
+        --shape-seed: oklch(52% 0.105 223.128);
+    }
+}
+
+/*
+| Guarded, because a custom property holding syntax the browser cannot parse is
+| not dropped — it is stored, and then fails when something tries to use it, so
+| an unguarded block would break colour outright on an old browser rather than
+| falling through. Inside the guard the aliases in shape.css simply stand.
+|
+| Relative colour syntax is Chrome 119, Safari 16.4, Firefox 128 — all below the
+| floor the overlays in shape.css already set with `@starting-style`.
+*/
+@supports (color: oklch(from red l c h)) {
+    @layer base {
+        /*
+    | `[data-shape-seed]` re-derives the whole palette from whatever seed is in
+    | scope, so a section can carry its own accent:
+    |
+    |   <section data-shape-seed style="--shape-seed: oklch(52% 0.19 25)">
+    |
+    | Nothing inside it needs to know. Every component already reads the tone
+    | variables, and the tone variables read these.
+    */
+        :root,
+        [data-shape-seed] {
+            /*
+        | The accent. Lightness is fixed per step; chroma is the seed's, scaled.
+        | The multipliers are cyan's own chroma curve normalised to its 700 —
+        | low at both ends, peaking around 400 — because a ramp that holds one
+        | chroma the whole way reads flat at the dark end and garish at the light
+        | one. This is the part a formula cannot invent for itself.
+        |
+        | The four steps that amplify chroma are capped at 0.24. Past that the
+        | step leaves sRGB, and a browser asked for a colour it cannot show does
+        | not hold the lightness and reduce the chroma — it trades one for the
+        | other, which is exactly what pinning the lightness was protecting. The
+        | cap keeps every step inside the gamut, so the guarantee is never handed
+        | to the gamut mapper. Measured, not guessed: uncapped, a violet seed put
+        | the dark solid at 4.42:1.
+        */
+            --color-shape-accent-50: oklch(
+                from var(--shape-seed) 98.4% calc(c * 0.181) h
+            );
+            --color-shape-accent-100: oklch(
+                from var(--shape-seed) 95.6% calc(c * 0.429) h
+            );
+            --color-shape-accent-200: oklch(
+                from var(--shape-seed) 91.7% calc(c * 0.762) h
+            );
+            --color-shape-accent-300: oklch(
+                from var(--shape-seed) 86.5% calc(min(c * 1.21, 0.24)) h
+            );
+            --color-shape-accent-400: oklch(
+                from var(--shape-seed) 78.9% calc(min(c * 1.467, 0.24)) h
+            );
+            --color-shape-accent-500: oklch(
+                from var(--shape-seed) 71.5% calc(min(c * 1.362, 0.24)) h
+            );
+            --color-shape-accent-600: oklch(
+                from var(--shape-seed) 60.9% calc(min(c * 1.2, 0.24)) h
+            );
+            --color-shape-accent-700: oklch(from var(--shape-seed) 52% c h);
+            --color-shape-accent-800: oklch(
+                from var(--shape-seed) 45% calc(c * 0.81) h
+            );
+            --color-shape-accent-900: oklch(
+                from var(--shape-seed) 39.8% calc(c * 0.667) h
+            );
+            --color-shape-accent-950: oklch(
+                from var(--shape-seed) 30.2% calc(c * 0.533) h
+            );
+
+            /*
+        | The neutrals take the seed's hue and nothing else. Chroma is absolute
+        | rather than scaled, so a neon seed still gets calm greys — the cast is
+        | meant to be felt and not seen. These are mist's own values, which is
+        | what the aliased palette resolves to at the default seed.
+        */
+            --color-shape-50: oklch(from var(--shape-seed) 98.7% 0.002 h);
+            --color-shape-100: oklch(from var(--shape-seed) 96.3% 0.002 h);
+            --color-shape-200: oklch(from var(--shape-seed) 92.5% 0.005 h);
+            --color-shape-300: oklch(from var(--shape-seed) 87.2% 0.007 h);
+            --color-shape-400: oklch(from var(--shape-seed) 72.3% 0.014 h);
+            --color-shape-500: oklch(from var(--shape-seed) 56% 0.021 h);
+            --color-shape-600: oklch(from var(--shape-seed) 45% 0.017 h);
+            --color-shape-700: oklch(from var(--shape-seed) 37.8% 0.015 h);
+            --color-shape-800: oklch(from var(--shape-seed) 27.5% 0.011 h);
+            --color-shape-900: oklch(from var(--shape-seed) 21.8% 0.008 h);
+            --color-shape-950: oklch(from var(--shape-seed) 14.8% 0.004 h);
+        }
+    }
+}

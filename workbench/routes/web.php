@@ -6,7 +6,11 @@ use Illuminate\Support\MessageBag;
 use Illuminate\Support\ViewErrorBag;
 use Onelegstudios\Shape\Facades\Shape;
 
-Route::get('/', function () {
+// The gallery is served twice, because the seed layer is an optional import
+// rather than a setting: /  is shape.css on its own, /seed adds shape-seed.css.
+// Same view, same fixtures, different stylesheet — which is exactly the choice
+// an application makes in its own CSS.
+$gallery = function (string $stylesheet, bool $seeded) {
     // The gallery has to show a field that failed validation, and the error
     // component reads the bag the session middleware would normally share. This
     // stands in for that, so the invalid state is visible without a form to post.
@@ -43,8 +47,13 @@ Route::get('/', function () {
         ->with('errors', $errors)
         ->with('invoices', $invoices)
         ->with('people', $people)
-        ->with('pages', $pages);
-});
+        ->with('pages', $pages)
+        ->with('stylesheet', $stylesheet)
+        ->with('seeded', $seeded);
+};
+
+Route::get('/', fn () => $gallery('workbench/resources/css/preview.css', false));
+Route::get('/seed', fn () => $gallery('workbench/resources/css/preview-seed.css', true));
 
 // The other half of the feedback channel. There is no Livewire request here for
 // a dispatch to ride on, so this flashes to the session — and the toaster on the

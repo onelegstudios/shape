@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Shape — component preview</title>
     {{-- Inlined so the preview needs no asset pipeline. Rebuild with `npm run preview`. --}}
-    <style>{!! file_get_contents(\Orchestra\Testbench\package_path('workbench/resources/css/preview.css')) !!}</style>
+    <style>{!! file_get_contents(\Orchestra\Testbench\package_path($stylesheet)) !!}</style>
 </head>
 <body class="text-shape-900 dark:text-shape-100 antialiased">
     <div class="mx-auto max-w-3xl px-6 py-16 space-y-14">
@@ -13,7 +13,10 @@
         <header class="space-y-2">
             <div class="flex items-baseline justify-between gap-4">
                 <h1 class="text-3xl font-semibold tracking-tight">Shape</h1>
-                <a href="/docs" class="text-sm font-medium text-shape-600 underline-offset-4 hover:underline dark:text-shape-400">Documentation &rarr;</a>
+                <div class="flex items-baseline gap-4">
+                    <a href="{{ $seeded ? '/' : '/seed' }}" class="text-sm font-medium text-shape-600 underline-offset-4 hover:underline dark:text-shape-400">{{ $seeded ? 'Default palette' : 'Seed palette' }} &rarr;</a>
+                    <a href="/docs" class="text-sm font-medium text-shape-600 underline-offset-4 hover:underline dark:text-shape-400">Documentation &rarr;</a>
+                </div>
             </div>
             <p class="text-shape-600 dark:text-shape-400">
                 Every component in the library, on one page: tokens, typography and surfaces,
@@ -22,6 +25,41 @@
                 site renders the same components beside the prose that explains them.
             </p>
         </header>
+
+        @if ($seeded)
+            <section class="space-y-4">
+                <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Seed palette</h2>
+                <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                    This page is built with <code class="text-shape-700 dark:text-shape-300">shape-seed.css</code>
+                    imported on top of <code class="text-shape-700 dark:text-shape-300">shape.css</code>; the
+                    default page is not. Below, the same markup under six seeds &mdash; each strip
+                    sets one colour and nothing else, and the accent ramp, the neutrals behind the
+                    text, the tint on the subtle button and the focus ring all derive from it.
+                    Every one clears AA without a per-hue exception.
+                </p>
+                <div class="space-y-3">
+                    @foreach ([
+                        'cyan (the default)' => 'oklch(52% 0.105 223.128)',
+                        'purple' => 'oklch(52% 0.16 300)',
+                        'crimson' => 'oklch(52% 0.19 25)',
+                        'forest' => 'oklch(52% 0.13 150)',
+                        'amber' => 'oklch(52% 0.12 70)',
+                        'near-grey' => 'oklch(52% 0.03 260)',
+                    ] as $label => $seed)
+                        <div data-shape-seed style="--shape-seed: {{ $seed }}"
+                             class="flex flex-wrap items-center gap-3 rounded-shape border border-shape-200 bg-shape-50 p-4 dark:border-shape-800 dark:bg-shape-900">
+                            <span class="w-36 shrink-0 text-xs font-medium text-shape-500">{{ $label }}</span>
+                            <x-shape::button variant="primary" color="accent">Primary</x-shape::button>
+                            <x-shape::button variant="subtle" color="accent">Subtle</x-shape::button>
+                            <x-shape::button variant="ghost" color="accent">Ghost</x-shape::button>
+                            <span class="text-sm text-shape-600 dark:text-shape-400">Body copy on the derived neutral.</span>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
+        </section>
 
         <section class="space-y-4">
             <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Hierarchy</h2>

@@ -6,7 +6,9 @@
         "preview": "tailwindcss -i workbench/resources/css/preview.src.css -o workbench/resources/css/preview.css --minify",
         "preview:watch": "tailwindcss -i workbench/resources/css/preview.src.css -o workbench/resources/css/preview.css --watch",
         "docs": "tailwindcss -i workbench/resources/css/docs.src.css -o workbench/resources/css/docs.css --minify",
-        "docs:watch": "tailwindcss -i workbench/resources/css/docs.src.css -o workbench/resources/css/docs.css --watch"
+        "docs:watch": "tailwindcss -i workbench/resources/css/docs.src.css -o workbench/resources/css/docs.css --watch",
+        "preview:seed": "tailwindcss -i workbench/resources/css/preview-seed.src.css -o workbench/resources/css/preview-seed.css --minify",
+        "preview:seed:watch": "tailwindcss -i workbench/resources/css/preview-seed.src.css -o workbench/resources/css/preview-seed.css --watch"
     },
     "devDependencies": {
         "@tailwindcss/cli": "^4.3.0",
