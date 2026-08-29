@@ -74,7 +74,10 @@ Folding is not free of obligations at the call site. See
 | [`tabs`](components/tabs.md) | fold | Links when they're links, tabs when they're not |
 
 Every page states the component's Blaze tier and the call sites that keep it on
-the fold path. [Forms](forms.md) starts with the one call site that writes a
+the fold path. [Theming](theming.md) covers the token layer: what Shape owns and
+what it leaves to Tailwind, the two steps of a ramp that have to carry contrast,
+the one-colour seed, the surface contract, and what a manual dark-mode toggle
+costs. [Forms](forms.md) starts with the one call site that writes a
 whole field, then covers groups, name resolution, and the single hole cut in the
 fold for validation messages. [Overlays](overlays.md) covers what the five
 overlays share: the script, the naming convention, what the platform supplies
@@ -112,7 +115,9 @@ that does not work without it, and
 
 Customisation escalates in three steps:
 
-1. **Tokens.** Redeclare Shape's `@theme` values in your own stylesheet.
+1. **Tokens.** Redeclare Shape's `@theme` values in your own stylesheet, or
+   derive the whole palette from a single colour. [Theming](theming.md) covers
+   the token layer, the surface contract, the tones and dark mode.
 2. **Utilities.** Pass any Tailwind class to any component; Shape's own defaults
    carry zero specificity and yield to it.
 3. **Eject.** Copy a component into your application and own it outright:

@@ -114,6 +114,38 @@ without `!important`:
 <x-shape::button class="rounded-full w-full">Continue</x-shape::button>
 ```
 
+### Theming
+
+Shape's theme layer is small on purpose. Tailwind's spacing, type and shadow
+scales are already the right ones, so the package adds only what Tailwind has no
+opinion about: a neutral ramp with a temperature, an accent, three state colours,
+one radius decision, and a per-surface foreground contract. Every ramp is aliased
+rather than copied, so retinting Tailwind's own colours retints Shape with them.
+
+```css
+@import "tailwindcss";
+@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+
+@theme {
+    --color-shape-accent-700: oklch(45.7% 0.24 277.023);
+    --radius-shape: 0.25rem;
+}
+```
+
+Or derive the accent and the neutrals from one colour, with an optional second
+stylesheet:
+
+```css
+@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css";
+
+:root { --shape-seed: oklch(52% 0.16 300); }
+```
+
+Each step pins its OKLCH lightness and takes only hue and chroma from the seed,
+which is what keeps the contrast guarantee hue-independent — verified by
+rendering 96 seeds and measuring the result, not by modelling it. See
+[docs/theming.md](docs/theming.md).
+
 ### Performance
 
 ```bash
