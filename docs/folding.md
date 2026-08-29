@@ -10,10 +10,45 @@ cannot decide on your behalf is how you call them — and once you have
 `php artisan shape:doctor` is the check for that, and the rest of this page is
 what it checks for.
 
-Every component in the library folds, overlays included. Nothing here inspects a
-slot, and open state belongs to `<dialog>` and the `popover` attribute rather
+## The four tiers
+
+Every component is annotated once, when it is written, with the strategy Blaze is
+allowed to use on it. Component pages name the tier by letter; the
+[component table](_index.md#components) and `resources/registry.json` name it by
+what it does. There are four of them:
+
+| Tier | Annotation | In the registry | |
+| --- | --- | --- | --- |
+| A | `@blaze(fold: true)` | `fold` | Pre-rendered into the parent template. Render cost approaches zero. |
+| B | `@blaze(fold: true, memo: true)` | `fold + memo` | Folds, and caches its output per prop set at the call sites where folding gave up. |
+| C | `@blaze(fold: true)` around an `@unblaze` block | `fold` | Folds with a hole cut in it. One region reads request state and runs per render. |
+| D | `@blaze` | `compile` | Compiled and not folded. Most of Blade's overhead goes; nothing is baked in. |
+
+**Tier A is nearly the whole library**, overlays included. Nothing here inspects
+a slot, and open state belongs to `<dialog>` and the `popover` attribute rather
 than to a variable a template has to read — so there is no runtime question left
 for a modal or a menu to ask.
+
+**Tier B is the small things a page repeats**: `icon`, `badge`, `separator`,
+`avatar` and `stat`, plus `table.cell`, `table.heading` and `select.option`
+inside their parents. The second flag is not a stronger fold. It is the net
+underneath one, and
+[the two are alternatives](#fold-and-memo-are-alternatives-not-a-stack) rather
+than a stack.
+
+**Tier C is one component.** `error` reads `$errors`, and request state cannot be
+baked into a template, so it isolates that region and folds everything around it.
+Its directive is a tier A directive — which is why the registry files it under
+`fold` — and the hole is inside the file.
+[Cutting one](#cutting-a-hole-for-request-state) is the last section here.
+
+**Tier D is `toaster` and `pagination`**: a component that reads the session, and
+a component that loops a collection the server produced this request. Neither has
+anything to bake, and the [rule they share](#two-components-are-compiled-and-not-folded)
+is worth knowing before you annotate a component of your own.
+
+Which tier a component is in is settled by the package. Which of them you
+actually get is settled by how you call it, and that is the rest of this page.
 
 ## The rule
 

@@ -101,9 +101,9 @@ share a value.
 
 Tier A — `@blaze(fold: true)` for all four.
 
-`error` cuts the request-scoped region out with `@unblaze` and keeps folding
-everything around it. `label`'s `as` is a real branch rather than an interpolated
-tag name — a `<legend>` takes no `for` — so unlike `heading`'s `level` it is not
-declared safe.
+`error` is tier C on top of that: the same directive, with the request-scoped
+region cut out by `@unblaze` so everything around it still folds. `label`'s `as`
+is a real branch rather than an interpolated tag name — a `<legend>` takes no
+`for` — so unlike `heading`'s `level` it is not declared safe.
 
 See [Forms](../forms.md#the-error-hole) and [Folding](../folding.md).

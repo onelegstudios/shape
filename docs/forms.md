@@ -170,7 +170,8 @@ Or use the shorthand, which does it for you.
 
 ## Folding
 
-Every component in this set is tier A — `@blaze(fold: true)`.
+Every component in this set is tier A — `@blaze(fold: true)` — except `error`,
+which is tier C: the same directive with the hole above cut in it.
 
 The cost of stating the name once is that `@aware` props count as unsafe. A
 dynamic `:name` on the field takes **every** child off the fold path, not just
