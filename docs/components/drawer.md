@@ -1,29 +1,27 @@
 # Drawer
 
+The [modal](modal.md), pinned to an edge. Same `<dialog>`, same trigger, same
+close button.
+
 @docs('preview', name: 'drawer')
 
-## The modal, with a side
+## Sides
 
-Structurally identical: a `<dialog>` opened with `showModal()`, so the focus
-trap, the top layer, Escape and inertness are the platform's. What differs is
-placement, and placement is CSS — the side sets a data attribute, `shape.css`
-pins the dialog to that edge and slides it in from the direction it is pinned
-to. Nothing measures anything.
+`side` sets a data attribute and `shape.css` pins the dialog to that edge and
+slides it in from the direction it is pinned to. Nothing measures anything:
 
-| Prop | Default | Values |
-| --- | --- | --- |
-| `name` | *required* | the dialog's id |
-| `heading` | — | title row, and the dialog's accessible name |
-| `description` | — | a line under the heading |
-| `side` | `right` | `right`, `left`, `bottom` |
-| `size` | `base` | `sm`, `base`, `lg` — across the viewport, or down it for `bottom` |
-| `dismissible` | `true` | `false` removes the close button and holds Escape off |
+@docs('preview', name: 'drawer-sides')
+
+## Sizes
+
+`size` is measured across the viewport — or down it, for `side="bottom"`:
+
+@docs('preview', name: 'drawer-sizes')
 
 ## It shares the modal's trigger, close and footer
 
 There is no `drawer.trigger`. The thing being opened is named in `for`, so one
-trigger covers both, and a second name for one component is a second thing to
-keep in sync:
+trigger covers both:
 
 ```blade
 <x-shape::overlay.trigger for="cart" icon="plus">Cart</x-shape::overlay.trigger>
@@ -33,7 +31,7 @@ keep in sync:
 ## The body scrolls, not the panel
 
 A drawer holds a list, a filter panel, a form — content that outgrows the
-viewport. The body is its own scroll container so the heading stays put while
+viewport. The body is its own scroll container, so the heading stays put while
 the content moves under it. Nothing is needed at the call site.
 
 ## Motion
@@ -44,6 +42,20 @@ animated on the way out. The whole treatment sits behind
 `prefers-reduced-motion: no-preference`, so a drawer appears without sliding for
 anyone who asked for that.
 
+## Reference
+
+| Prop | Default | Values |
+| --- | --- | --- |
+| `name` | *required* | the dialog's id |
+| `heading` | — | title row, and the dialog's accessible name |
+| `description` | — | a line under the heading |
+| `side` | `right` | `right`, `left`, `bottom` |
+| `size` | `base` | `sm`, `base`, `lg` |
+| `dismissible` | `true` | `false` removes the close button and holds Escape off |
+
+The default slot is the body.
+
 ## Folding
 
-Tier A — `@blaze(fold: true)`.
+Tier A — `@blaze(fold: true)`. See [Folding](../folding.md) and
+[Overlays](../overlays.md).

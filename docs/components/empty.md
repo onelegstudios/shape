@@ -1,14 +1,38 @@
 # Empty
 
-@docs('preview', name: 'empty')
+The screen someone sees before there is any data, and again every time they
+filter it all away.
 
-## Why this is a component at all
+@docs('preview', name: 'empty', layout: 'stack')
 
-The empty state is the screen someone sees first, before there is any data to
-look at — and again every time they filter it all away. Most libraries leave it
-to the application, which is why most applications ship a blank div.
+## Actions
 
-Shipping it means it gets designed once.
+The default slot is for actions, laid out in a centred row under the copy. An
+empty state without one is a dead end, so give it a next step wherever there is
+a sensible one:
+
+@docs('preview', name: 'empty-actions', layout: 'stack')
+
+## Rendered for you
+
+[Table](table.md) and [list](list.md) both render one by default, and neither
+ever asks whether it has rows — a `:has()` rule removes the empty state when a
+row appears. Set the copy through their `empty-*` props:
+
+```blade
+<x-shape::table empty-icon="plus"
+                empty-heading="No invoices yet"
+                empty-description="They'll appear here as you raise them.">
+    …
+</x-shape::table>
+```
+
+The [select](select.md) does not, and cannot: a `<select>` may contain only
+`option`, `optgroup` and script-supporting elements, so an empty state written
+inside one is discarded by the HTML parser. Its `placeholder` option is the
+equivalent.
+
+## Reference
 
 | Prop | Default | Values |
 | --- | --- | --- |
@@ -17,42 +41,11 @@ Shipping it means it gets designed once.
 | `heading` | — | the headline |
 | `description` | — | one line of supporting copy |
 
-The default slot is for actions:
-
-```blade
-<x-shape::empty icon="plus" heading="No invoices yet" description="Send one to get started.">
-    <x-shape::button variant="primary" icon="plus">New invoice</x-shape::button>
-    <x-shape::button variant="ghost">Import</x-shape::button>
-</x-shape::empty>
-```
-
-An empty state without an action is a dead end. Give it one wherever there's a
-sensible next step.
-
-## Props, not slots
-
-`heading` and `description` are props rather than slots on purpose. A condition
-on a prop is answered when the template compiles; a condition on a slot is a
-runtime question, and asking it would cost the component its fold.
-
-The action row is the one slot, and it is always rendered — the CSS `empty:hidden`
-variant collapses it when nothing was passed, which answers the same question in
-the browser instead of at render time.
-
-## Where it is rendered for you
-
-[Table](table.md) and [list](list.md) both render one by default, and neither of
-them ever asks whether it has rows — a `:has()` rule in the stylesheet removes
-the empty state when a row appears. [Data display](../data.md) explains the
-arrangement and its two visible consequences.
-
-The [select](select.md) does not, and cannot: a `<select>` may contain only
-`option`, `optgroup` and script-supporting elements, so an empty state written
-inside one is discarded by the HTML parser before any stylesheet sees it. Its
-`placeholder` option is the equivalent.
+The default slot is the action row. It is always rendered and collapsed with the
+CSS `empty:hidden` variant when nothing was passed, which answers "does this
+slot have content" in the browser rather than at render time — where asking it
+would cost the component its fold.
 
 ## Folding
 
-Tier A — `@blaze(fold: true)`.
-
-See [Folding](../folding.md).
+Tier A — `@blaze(fold: true)`. See [Folding](../folding.md).

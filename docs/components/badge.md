@@ -1,19 +1,48 @@
 # Badge
 
+A small piece of state attached to something else. The text is the `label` prop
+rather than a slot.
+
 @docs('preview', name: 'badge')
 
-## The label is a prop, not a slot
+## Colors
 
-This is the one place in Shape where the API is shaped by the compiler rather
-than by taste.
+`color` says what the badge means, and resolves a matching icon:
 
-Blaze memoizes a component only when it has **no slots** and is called
-self-closing. Badges are the highest-volume component in any real application —
-one per row, every row, every page — which makes them the single best candidate
-for memoization in the library. A `{{ $slot }}` here would trade that away for a
-composition nobody actually wants inside a badge.
+@docs('preview', name: 'badge-colors')
 
-So: `label`, not children.
+## Variants
+
+`variant` is how loud the badge is. `subtle` is the default, because a badge is
+almost always annotating something rather than being the thing you look at:
+
+@docs('preview', name: 'badge-variants')
+
+Both read the same tone variables the [button](button.md) reads, so a badge and
+a button given the same colour agree without either knowing about the other.
+
+## Sizes
+
+@docs('preview', name: 'badge-sizes')
+
+## Icons
+
+Every colour but `neutral` resolves a glyph of its own, so a badge stays
+readable in greyscale and to anyone who can't separate the hues. `icon` picks a
+different one, `:icon="false"` removes it, and `icon-variant` changes the
+drawing:
+
+@docs('preview', name: 'badge-icons')
+
+| `color` | Icon |
+| --- | --- |
+| `success` | `check-circle` |
+| `danger` | `x-circle` |
+| `warning` | `exclamation-triangle` |
+| `accent` | `information-circle` |
+| `neutral` | none — a neutral badge has no state to signal |
+
+## Reference
 
 | Prop | Default | Values |
 | --- | --- | --- |
@@ -24,46 +53,17 @@ So: `label`, not children.
 | `icon` | resolved from `color` | any icon name, or `false` to omit |
 | `icon-variant` | `micro` | `micro`, `mini`, `solid`, `outline` |
 
-## Colour is never the only signal
-
-Every state resolves a glyph of its own, so a badge stays readable in greyscale
-and to anyone who can't separate the hues:
-
-| `color` | Icon |
-| --- | --- |
-| `success` | `check-circle` |
-| `danger` | `x-circle` |
-| `warning` | `exclamation-triangle` |
-| `accent` | `information-circle` |
-| `neutral` | none — a neutral badge has no state to signal |
-
-Opting out is possible. Forgetting isn't:
-
-```blade
-<x-shape::badge label="Paid" color="success" :icon="false" />
-```
-
-## Hierarchy and semantics, same as the button
-
-`variant` is how loud the badge is; `color` is what it means. `subtle` is the
-default because a badge is almost always annotating something else rather than
-being the thing you look at.
-
-```blade
-<x-shape::badge label="Overdue" color="danger" />              {{-- quiet --}}
-<x-shape::badge label="Overdue" color="danger" variant="solid" /> {{-- loud --}}
-```
-
-Both read the same `--shape-tone-*` variables the button reads, so a badge and a
-button given the same colour agree without either knowing about the other.
+There is no slot: Blaze memoizes a component only when it has none and is called
+self-closing, and a badge — one per row, every row, every page — is the best
+candidate for memoization in the library.
 
 ## Folding
 
 Tier B — `@blaze(fold: true, memo: true, safe: ['label'])`.
 
-`label` is `safe` — it is interpolated and nothing more — so a badge folds even
-though its text differs on every row. `color` is not, and cannot be: the badge
-branches on it to resolve the state icon.
+`label` is interpolated and nothing more, so a badge folds even though its text
+differs on every row. `color` branches to resolve the state icon, so it cannot
+be `safe`:
 
 ```blade
 {{-- Folds. --}}
@@ -76,8 +76,8 @@ branches on it to resolve the state icon.
 <x-shape::badge :label="$invoice->state" :color="$invoice->tone" />
 ```
 
-The memo path is cheap while labels repeat, and expensive when they don't,
-because memoization only pays off on a cache hit. Measured over 200 rows:
+Memoization pays off on a cache hit, so the last form is cheap while labels
+repeat and expensive when they don't. Measured over 200 rows:
 
 | Call site | Cost | Memo entries |
 | --- | --- | --- |
@@ -85,8 +85,8 @@ because memoization only pays off on a cache hit. Measured over 200 rows:
 | Dynamic colour, ~5 repeated labels | 0.77 ms | 5 |
 | Dynamic colour, label unique per row | 17.0 ms | 200 |
 
-The last row is the one to avoid, and it is easy to: **keep the colour static
-wherever you can.** Deriving it at the call site costs nothing —
+Keep the colour static wherever you can. Deriving it at the call site costs
+nothing and folds every branch:
 
 ```blade
 @foreach ($invoices as $invoice)
@@ -97,8 +97,5 @@ wherever you can.** Deriving it at the call site costs nothing —
     @endif
 @endforeach
 ```
-
-— and folds every branch. A `:color` bound to an accessor is fine when the
-labels are a small fixed vocabulary, which is the usual case for a status badge.
 
 See [Folding](../folding.md).

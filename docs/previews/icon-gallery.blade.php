@@ -1,0 +1,16 @@
+<x-shape::icon.arrow-right />
+<x-shape::icon.arrow-trending-down />
+<x-shape::icon.arrow-trending-up />
+<x-shape::icon.check />
+<x-shape::icon.check-circle />
+<x-shape::icon.chevron-down />
+<x-shape::icon.chevron-left />
+<x-shape::icon.chevron-right />
+<x-shape::icon.exclamation-triangle />
+<x-shape::icon.information-circle />
+<x-shape::icon.loading />
+<x-shape::icon.minus />
+<x-shape::icon.plus />
+<x-shape::icon.trash />
+<x-shape::icon.x-circle />
+<x-shape::icon.x-mark />

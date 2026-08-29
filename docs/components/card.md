@@ -1,69 +1,62 @@
 # Card
 
-@docs('preview', name: 'card')
+A surface. It separates itself from the page with a background shift and a
+resting shadow, and draws no border unless you ask for one.
 
-## No border, on purpose
+@docs('preview', name: 'card', layout: 'stack')
 
-A card separates itself from the page with a surface shift and a resting
-shadow. It draws no border, because a border is the least effective of the three
-and the easiest to overuse.
+## Padding
 
-`border` is there for the case the other two can't cover — a card sitting on a
-surface too close to its own to read against:
+Padding and the gap between children move together — `sm` is a tighter card
+*and* tighter stacking:
+
+@docs('preview', name: 'card-padding', layout: 'stack')
+
+`padding="none"` keeps the gap and drops the inset, for a card whose contents
+reach the edge:
+
+@docs('preview', name: 'card-padding-none', layout: 'stack')
+
+## Border
+
+`border` adds a hairline, for a card sitting on a surface too close to its own
+to read against:
+
+@docs('preview', name: 'card-border', layout: 'stack')
+
+## Header and footer
+
+`card.header` stacks its children tightly; `card.footer` lays them out in a row.
+Neither draws a rule — compose a [separator](separator.md) if you want one:
+
+@docs('preview', name: 'card-regions', layout: 'stack')
+
+Both are components rather than named slots, because deciding whether a slot has
+content is a runtime question and asking it would take the card off the fold
+path.
+
+## Spacing
+
+Nothing inside a card sets its own outer margin; the gap belongs to the card.
+Change it with a utility on the card itself:
 
 ```blade
-<x-shape::card border>…</x-shape::card>
+<x-shape::card class="gap-8">…</x-shape::card>
 ```
+
+## Reference
 
 | Prop | Default | Values |
 | --- | --- | --- |
 | `padding` | `base` | `none`, `sm`, `base`, `lg` |
 | `border` | `false` | adds a hairline border |
 
-Padding and the gap between children move together — `sm` is a tighter card
-*and* tighter stacking. Letting them be set apart is how cards end up looking
-cramped at one size and loose at another.
+`card.header` and `card.footer` take no props. The default slot is the card's
+contents.
 
-## The card owns the space between its children
-
-Nothing inside a card sets its own outer margin. The gap belongs to the parent,
-which is what stops "which element does this space belong to" from ever becoming
-a question you have to answer.
-
-## Header and footer are components, not slots
-
-```blade
-<x-shape::card>
-    <x-shape::card.header>
-        <x-shape::heading size="lg">Acme Corp</x-shape::heading>
-        <x-shape::text size="sm" variant="muted">Invoice #1042</x-shape::text>
-    </x-shape::card.header>
-
-    <x-shape::separator />
-
-    <x-shape::text>Thirty day terms.</x-shape::text>
-
-    <x-shape::card.footer>
-        <x-shape::button variant="primary">Send receipt</x-shape::button>
-        <x-shape::button variant="ghost">Void</x-shape::button>
-    </x-shape::card.footer>
-</x-shape::card>
-```
-
-Named slots would read a little better at the call site, but deciding whether a
-slot has content is a question only answerable at render time — and asking it
-would take the card off the fold path entirely. Separate components ask nothing.
-
-Neither region draws a rule of its own. If you want one, compose a
-[separator](separator.md); most of the time the gap is enough.
-
-## Elevation
-
-Cards use `shadow-sm`, the "raised" step. See [Elevation](../elevation.md) for
-the full mapping, and for why Shape doesn't own a shadow scale.
+Cards use `shadow-sm`, the "raised" step — see [Elevation](../elevation.md).
 
 ## Folding
 
-Tier A — `@blaze(fold: true)` on all three files.
-
-See [Folding](../folding.md).
+Tier A — `@blaze(fold: true)` on all three files. See
+[Folding](../folding.md).

@@ -1,12 +1,49 @@
 # Checkbox
 
-@docs('preview', name: 'checkbox')
+A checkbox inside its own label.
 
-## The label wraps the control
+@docs('preview', name: 'checkbox', layout: 'stack')
 
-A control inside its own `<label>` needs no `for`, so nothing can drift out of
-sync and there is nothing for a caller to remember. The `id` is still resolved
-and rendered, because `aria-describedby` needs something to point at.
+## Description
+
+@docs('preview', name: 'checkbox-description', layout: 'stack')
+
+## Colors
+
+@docs('preview', name: 'checkbox-colors')
+
+The fill reads the same tone variables the [button](button.md) and
+[badge](badge.md) read, so a checkbox given a colour agrees with everything else
+given the same one.
+
+## Groups
+
+One name, many values. Put them in a fieldset so the group has an accessible
+name, and state the shared name once on the [field](field.md):
+
+@docs('preview', name: 'checkbox-group', layout: 'stack')
+
+Each checkbox gets `name="days"` and an id of `days-{value}`.
+
+## Disabled
+
+@docs('preview', name: 'checkbox-disabled', layout: 'stack')
+
+The wrapper dims its own label with `group-has-disabled:`, and the field matches
+direct children only — so one disabled checkbox never dims its siblings.
+
+## Indeterminate
+
+There is no `indeterminate` prop, because there could not be a working one:
+indeterminate is a DOM property rather than an attribute, so no server-rendered
+markup can set it. The glyph and its styling ship anyway, so the dash appears
+the moment anything sets the property:
+
+```blade
+<x-shape::checkbox name="all" x-init="$el.indeterminate = @js($partial)" />
+```
+
+## Reference
 
 | Prop | Default | Values |
 | --- | --- | --- |
@@ -16,47 +53,13 @@ and rendered, because `aria-describedby` needs something to point at.
 | `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
 | `id` | `{name}-{value}` | the element id |
 
-## Groups
+`checked`, `disabled`, `required` and `wire:model` pass through to the
+`<input>`.
 
-One name, many values. Put them in a fieldset so the group has an accessible
-name, and the shared name is stated once:
-
-```blade
-<x-shape::field as="fieldset" field-name="days">
-    <x-shape::label as="legend">Send reminders on</x-shape::label>
-    <x-shape::checkbox value="mon" label="Monday" />
-    <x-shape::checkbox value="tue" label="Tuesday" />
-</x-shape::field>
-```
-
-## The box is drawn, not native
-
-`appearance-none` plus a grid that stacks the input and its glyph in one cell, so
-the tick sits on top of the box without absolute positioning or a
-background-image SVG. The fill reads `--shape-tone`, the same variable the button
-and badge read, so a checkbox given a colour agrees with everything else given
-the same one.
-
-## Indeterminate
-
-There is no `indeterminate` prop, because there could not be a working one:
-indeterminate is a DOM property rather than an attribute, so no server-rendered
-markup can set it. A prop would be a knob that quietly does nothing.
-
-The glyph and its styling ship anyway, so the dash appears the moment anything
-sets the property:
-
-```blade
-<x-shape::checkbox name="all" x-init="$el.indeterminate = @js($partial)" />
-```
-
-## Disabled
-
-The wrapper dims its own label with `group-has-disabled:`, not `peer-`: the input
-sits a level down, and a peer has to be a previous sibling. The
-[field](field.md#disabled-state-without-prop-plumbing) matches direct children
-only, so one disabled checkbox never dims its siblings.
+The control sits inside its own `<label>`, so nothing needs a `for` and nothing
+can drift out of sync. The `id` is still resolved and rendered, because
+`aria-describedby` needs something to point at.
 
 ## Folding
 
-Tier A — `@blaze(fold: true)`.
+Tier A — `@blaze(fold: true)`. See [Folding](../folding.md).

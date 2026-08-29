@@ -1,21 +1,43 @@
 # List
 
-```blade
-<x-shape::list>
-    @foreach ($people as $person)
-        <x-shape::list.item wire:key="{{ $person->id }}">
-            <x-shape::avatar :initials="$person->initials" :alt="$person->name" size="sm" />
-            <x-shape::text>{{ $person->name }}</x-shape::text>
-        </x-shape::list.item>
-    @endforeach
-</x-shape::list>
-```
+The [table](table.md)'s answer without the columns. Reach for it when the
+records have one shape rather than several columns — people, activity,
+notifications.
 
-## The table's answer without the columns
+@docs('preview', name: 'list', layout: 'stack')
 
-Reach for a list when the records have one shape rather than several columns —
-people, activity, notifications. Everything the table does about separation and
-empty states, the list does the same way, so the two are worth learning once.
+An item is a slot rather than a set of props, unlike a table cell: a list item
+almost always holds an avatar, two lines of text and a trailing button, and a
+`value` prop would buy nothing while costing the composition that is the reason
+to reach for a list at all.
+
+## Other list elements
+
+`as` takes any list element — `ol` for a ranked list:
+
+@docs('preview', name: 'list-ordered', layout: 'stack')
+
+`as` is only ever interpolated into the tag name, so a list whose element is
+decided at runtime still folds.
+
+## The empty state
+
+Rendered every time and removed by a `:has()` rule as soon as one item exists:
+
+@docs('preview', name: 'list-empty', layout: 'stack')
+
+It sits beside the `<ul>` rather than inside it, because an `<li>` holding an
+empty state would be an item like any other and would hide itself. Pass
+`:empty="false"` to turn it off, and see
+[Table](table.md#the-empty-state) for the reasoning at length.
+
+## Separation is a rule on the list, not a border on each item
+
+`divide-y` on the `<ul>`, nothing on the `<li>`. It draws the same line and has
+nothing to reset on the last item — which is the whole of "use fewer borders",
+in one class.
+
+## Reference
 
 | Prop | Default | Values |
 | --- | --- | --- |
@@ -25,35 +47,7 @@ empty states, the list does the same way, so the two are worth learning once.
 | `empty-heading` | `Nothing here yet` | |
 | `empty-description` | — | |
 
-`as` is only ever interpolated into the tag name, so a list whose element is
-decided at runtime still folds.
-
-## Separation is a rule on the list, not a border on each item
-
-`divide-y` on the `<ul>`, nothing on the `<li>`. It draws the same line and has
-nothing to reset on the last item — which is the whole of "use fewer borders",
-in one class.
-
-An item is a slot rather than a set of props, unlike a table cell. A list item
-almost always holds an avatar, two lines of text and a trailing button, and a
-`value` prop would buy nothing while costing the composition that is the reason
-to reach for a list at all.
-
-## The empty state is always there
-
-```blade
-<x-shape::list empty-heading="No teammates yet"
-               empty-description="Invite someone to get started." />
-```
-
-Rendered every time and removed by a `:has()` rule as soon as one item exists,
-for the reason [Table](table.md#the-empty-state-is-always-there) gives at
-length: asking Blade whether the slot has items is a runtime question and would
-cost the fold. It sits beside the `<ul>` rather than inside it, because an
-`<li>` holding an empty state would be an item like any other and would hide
-itself.
-
-Pass `:empty="false"` to turn it off.
+`list.item` takes no props. The default slot is the items.
 
 ## Folding
 

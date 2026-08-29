@@ -1,37 +1,36 @@
 # Dropdown
 
+A menu of actions, anchored to its trigger. Items are children.
+
 @docs('preview', name: 'dropdown')
 
-## It is a popover with menu semantics
+It is a popover with menu semantics, so light dismiss, Escape and the top layer
+come from the platform. Being in the top layer fixes the oldest bug in this
+category: a menu clipped by the `overflow: hidden` of a card three ancestors up,
+or covered by a sticky header. There is no `z-index` in this component.
 
-The `popover` attribute supplies light dismiss, Escape and the top layer. Being
-in the top layer is what fixes the oldest bug in this category: a menu clipped by
-the `overflow: hidden` of a card three ancestors up, or covered by a sticky
-header with a higher `z-index`. There is no `z-index` in this component.
+## Placement
 
-| Prop | Default | Values |
-| --- | --- | --- |
-| `name` | *required* | the popover's id; what a trigger points `for` at |
-| `placement` | `bottom-start` | `bottom-start`, `bottom-end`, `bottom`, `top-start`, `top-end`, `top` |
+`placement` decides which corner the menu opens from. It flips to the other side
+when the viewport runs out, and clamps to stay in view:
 
-`dropdown.item` takes `icon`, `icon-variant`, `color`, and anything else you pass
-— `href`, `wire:click`, `disabled`.
+@docs('preview', name: 'dropdown-placement')
 
-## Anchoring
+`shape.js` finds the trigger by the menu's own id, measures both and applies the
+placement on every scroll and resize while the menu is open. There is no anchor
+name in the markup and nothing to keep in sync.
 
-`shape.js` finds the trigger by the menu's own id, measures both, applies
-`placement`, flips to the other side when the viewport runs out, and clamps to
-stay in view. It repeats that on every scroll and resize while the menu is open.
-There is no anchor name in the markup and nothing to keep in sync.
+## Items
 
-This was CSS anchor positioning with a script as a fallback, which is the better
-mechanism and cost no JavaScript at all — until it turned out to ship in halves.
-A browser can support `anchor-name` without `position-area`; `position-try-fallbacks`
-takes try-tactics and `@position-try` names, not the bare position-area values
-that read so naturally, so the fallbacks were dropped as invalid wherever the
-rest worked. Two paths each gating on a different half of one feature is how a
-menu opens upwards in one browser and nowhere in another. One path that always
-runs is worth more than a declarative path that sometimes does.
+`dropdown.item` takes an `icon` and a `color`, and passes everything else
+through — `href`, `wire:click`, `disabled`. An item with `href` renders an `<a>`;
+everything else renders a `<button>`:
+
+@docs('preview', name: 'dropdown-items')
+
+Compose freely: a [separator](separator.md) between groups, an `@foreach`, your
+own markup. An `:items` array would need a convention for labels, icons,
+destructive styling and `wire:click`, all of which children already have.
 
 ## Keyboard
 
@@ -41,22 +40,29 @@ keeps it: <kbd>↓</kbd> and <kbd>↑</kbd> move between items, <kbd>Home</kbd> 
 Items keep their natural tab order underneath that, so a browser that never runs
 the script still leaves every item reachable.
 
-Choosing an item closes the menu — the popover only light-dismisses on a click
-*outside* itself, and an action that leaves its own menu standing looks like it
-didn't fire. Opt out per item with `data-shape-keep-open`.
+Choosing an item closes the menu — an action that leaves its own menu standing
+looks like it didn't fire. Opt out per item with `data-shape-keep-open`.
 
-## Items are children, not an array
+## Reference
 
-An `:items` array would need a convention for labels, icons, destructive styling
-and `wire:click`. Children already compose with `@foreach`, with a separator, and
-with your own markup. This is the same call `select` makes about its options.
+| Prop | Default | Values |
+| --- | --- | --- |
+| `name` | *required* | the popover's id; what a trigger points `for` at |
+| `placement` | `bottom-start` | `bottom-start`, `bottom-end`, `bottom`, `top-start`, `top-end`, `top` |
 
-## Link or button
+`dropdown.item`:
 
-An item with `href` renders an `<a>`; everything else renders a `<button>`.
-Middle-click, open-in-new-tab and the status bar all work for a link and none of
-them work for a button pretending to be one.
+| Prop | Default | Values |
+| --- | --- | --- |
+| `icon` | — | any icon name |
+| `icon-variant` | `mini` | `micro`, `mini`, `solid`, `outline` |
+| `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
+| `as` | resolved from `href` | `button`, `a`, `div` |
+
+`dropdown.trigger` takes `for` and passes everything else to a
+[button](button.md).
 
 ## Folding
 
-Tier A — `@blaze(fold: true)`, trigger, menu and items alike.
+Tier A — `@blaze(fold: true)`, trigger, menu and items alike. See
+[Folding](../folding.md) and [Overlays](../overlays.md).

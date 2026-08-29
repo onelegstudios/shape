@@ -1,19 +1,41 @@
 # Switch
 
-@docs('preview', name: 'switch')
+A setting that applies the moment it moves.
+
+@docs('preview', name: 'switch', layout: 'stack')
+
+## Description
+
+@docs('preview', name: 'switch-description', layout: 'stack')
+
+## Colors
+
+`color` defaults to `accent` here rather than `neutral`, which is the one place
+in the library that differs — a switch is a live setting, and reading as "on" is
+the whole point:
+
+@docs('preview', name: 'switch-colors')
+
+## Disabled
+
+@docs('preview', name: 'switch-disabled', layout: 'stack')
+
+## Switch or checkbox?
+
+A switch applies immediately. A [checkbox](checkbox.md) waits for a submit.
+Inside a form with a save button, reach for a checkbox.
 
 ## It is a real checkbox
 
 `role="switch"` on a native `<input type="checkbox">` is the whole accessibility
-story: a screen reader announces on and off instead of checked and unchecked, and
-every native keyboard and form behaviour is kept. Rebuilding this out of a button
-and some JavaScript would trade all of that for a visual.
+story: a screen reader announces on and off instead of checked and unchecked,
+and every native keyboard and form behaviour is kept.
 
-## No JavaScript
+The knob moves on `:checked`, which the browser handles — so this component
+works before the script exists and keeps working if it never loads. It also
+holds still for anyone who asked for reduced motion.
 
-The knob moves on `:checked`, which the browser handles. This component works
-before the Alpine layer exists and keeps working if it never loads. It also holds
-still for anyone who asked for reduced motion.
+## Reference
 
 | Prop | Default | Values |
 | --- | --- | --- |
@@ -23,15 +45,8 @@ still for anyone who asked for reduced motion.
 | `color` | `accent` | `neutral`, `accent`, `danger`, `success`, `warning` |
 | `id` | the resolved name | the element id |
 
-`color` defaults to `accent` here rather than `neutral`, which is the one place
-in the library that differs. A switch is a live setting rather than an annotation
-— it takes effect the moment it moves — and reading as "on" is the whole point.
-
-## Switch or checkbox?
-
-A switch applies immediately. A checkbox waits for a submit. Inside a form with a
-save button, reach for a [checkbox](checkbox.md).
+`checked`, `disabled` and `wire:model` pass through to the `<input>`.
 
 ## Folding
 
-Tier A — `@blaze(fold: true)`.
+Tier A — `@blaze(fold: true)`. See [Folding](../folding.md).

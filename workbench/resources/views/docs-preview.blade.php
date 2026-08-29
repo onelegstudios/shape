@@ -24,6 +24,20 @@
     $file = \Orchestra\Testbench\package_path('docs/previews/'.basename($name).'.blade.php');
     $source = trim((string) file_get_contents($file));
 
+    // One failed field, shared the way the session middleware shares it.
+    //
+    // `x-shape::error` reads the bag out of the view factory's shared data, so
+    // passing it to `Blade::render()` as view data would not reach it. Sharing
+    // is what a real request does. It is keyed to one field name, so only the
+    // preview that asks for `billing_email` shows a message and every other
+    // preview renders a valid field.
+    view()->share('errors', (new \Illuminate\Support\ViewErrorBag)->put(
+        'default',
+        new \Illuminate\Support\MessageBag([
+            'billing_email' => 'That address is already in use on another account.',
+        ]),
+    ));
+
     $rendered = trim(Blade::render($source));
 
     // A heading inside a preview becomes a div with the heading role.
@@ -44,6 +58,17 @@
 
     // The stage is styled here; the source block underneath is left bare, so
     // that laradocs renders it as it renders every other code block on the page.
-    $stage = 'mt-6 flex flex-wrap items-start gap-4 rounded-shape-lg border border-shape-200 bg-white p-6 text-shape-900 dark:border-shape-800 dark:bg-shape-950 dark:text-shape-100';
+    //
+    // `layout` decides how the example's own elements sit on the stage. A row of
+    // buttons compares well side by side; a set of headings or a card does not,
+    // and `layout: 'stack'` gives those the full width in a column. It is a
+    // property of the picture, not of the example, so it is an argument to the
+    // macro rather than a wrapper div printed in everybody's copied code.
+    $arrangement = match ($layout ?? 'row') {
+        'stack' => 'flex flex-col items-stretch gap-4',
+        default => 'flex flex-wrap items-center gap-4',
+    };
+
+    $stage = 'mt-6 '.$arrangement.' rounded-shape-lg border border-shape-200 bg-white p-6 text-shape-900 dark:border-shape-800 dark:bg-shape-950 dark:text-shape-100';
 @endphp
 <div data-shape-preview class="{{ $stage }}">{!! str_replace("\n", ' ', $rendered) !!}</div><pre><code class="language-blade">{!! $printed !!}</code></pre>

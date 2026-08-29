@@ -64,7 +64,7 @@ class WorkbenchServiceProvider extends ServiceProvider
     }
 
     /**
-     * Put Shape's stylesheet in the head of every documentation page.
+     * Put Shape's stylesheet and script in the head of every documentation page.
      *
      * The previews render real components, so they need the real tokens. The
      * layout belongs to laradocs and is not this package's file to edit — but it
@@ -79,7 +79,8 @@ class WorkbenchServiceProvider extends ServiceProvider
         View::composer('laradocs::layout', function ($view): void {
             $view->getFactory()->startPush(
                 'head',
-                '<link rel="stylesheet" href="'.route('shape.docs.css').'">',
+                '<link rel="stylesheet" href="'.route('shape.docs.css').'">'
+                    .'<script type="module">import shape from "'.route('shape.docs.js').'"; shape()</script>',
             );
         });
     }

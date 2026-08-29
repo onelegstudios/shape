@@ -1,15 +1,24 @@
 # Radio
 
-@docs('preview', name: 'radio')
+Structurally the [checkbox](checkbox.md), with a round box and a dot. A radio
+only means anything in a group.
 
-Structurally the [checkbox](checkbox.md), with a round box and a dot.
+@docs('preview', name: 'radio', layout: 'stack')
 
-## A radio only means anything in a group
+The [field](field.md) in `fieldset` mode carries the shared `name`, so no radio
+repeats it: each one here gets `name="billing"` and an id of `billing-{value}`.
+A group only has an accessible name if it is a real `<fieldset>` with a
+`<legend>`.
 
-And a group only has an accessible name if it is a real `<fieldset>` with a
-`<legend>`. That is what `as="fieldset"` on the [field](field.md) is for — and it
-carries the shared `name`, so no radio repeats it. Every radio in the example
-above gets `name="billing"` and an id of `billing-{value}`.
+## Descriptions
+
+@docs('preview', name: 'radio-description', layout: 'stack')
+
+## Colors
+
+@docs('preview', name: 'radio-colors')
+
+## Reference
 
 | Prop | Default | Values |
 | --- | --- | --- |
@@ -19,9 +28,8 @@ above gets `name="billing"` and an id of `billing-{value}`.
 | `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
 | `id` | `{name}-{value}` | the element id |
 
-The dot is a plain span rather than an icon component. It is a filled circle, and
-asking an icon for a filled circle would be more machinery than drawing it.
+`checked`, `disabled` and `wire:model` pass through to the `<input>`.
 
 ## Folding
 
-Tier A — `@blaze(fold: true)`.
+Tier A — `@blaze(fold: true)`. See [Folding](../folding.md).

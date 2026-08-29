@@ -1,40 +1,52 @@
 # Icon
 
+One component per icon, from [Heroicons](https://heroicons.com). Call the one
+you want by name.
+
 @docs('preview', name: 'icon')
 
-Icons come from [Heroicons](https://heroicons.com) and are generated into the
-package as one component per icon by
-[`shape:icon`](../tooling.md#shapeicon), which reads any directory of SVGs —
-including yours.
-
-## Variants are drawings, not sizes
+## Variants
 
 Each variant is a separate drawing made at its own size, so nothing is ever
-scaled up or down:
+scaled:
+
+@docs('preview', name: 'icon-variants')
 
 | Variant | Size | Style |
 | --- | --- | --- |
 | `micro` | 16px | solid |
 | `mini` | 20px | solid |
 | `solid` | 24px | solid |
-| `outline` | 24px (default) | stroked |
+| `outline` | 24px — the default | stroked |
 
-Overriding the size with a utility class works, but prefer the variant that is
-drawn at the size you need:
+Overriding the size with a utility works, but prefer the variant drawn at the
+size you need:
 
 ```blade
 <x-shape::icon.check variant="mini" />   {{-- drawn at 20px --}}
 <x-shape::icon.check class="size-5" />   {{-- 24px drawing squeezed into 20px --}}
 ```
 
+## Colour
+
+Icons paint in `currentColor`, so they take the colour of whatever they sit in —
+or a utility class of your own:
+
+@docs('preview', name: 'icon-color')
+
+Inside a [button](button.md), [badge](badge.md) or [alert](alert.md) that
+happens on its own, and the icon picks up the tone.
+
 ## Resolving by name
+
+When the name is not known until runtime, `<x-shape::icon>` takes it as a prop:
 
 ```blade
 <x-shape::icon :name="$status === 'done' ? 'check-circle' : 'exclamation-triangle'" />
 ```
 
-This form resolves the component at runtime and cannot fold. Inside a loop or a
-table, use the direct form.
+This form resolves the component at runtime and cannot fold or memoize. Inside a
+loop or a table, use the direct form.
 
 ## Accessibility
 
@@ -47,6 +59,8 @@ label. When an icon carries meaning on its own, expose it and give it a name:
 
 ## Available icons
 
+@docs('preview', name: 'icon-gallery')
+
 `arrow-right`, `arrow-trending-down`, `arrow-trending-up`, `check`,
 `check-circle`, `chevron-down`, `chevron-left`, `chevron-right`,
 `exclamation-triangle`, `information-circle`, `loading`, `minus`, `plus`,
@@ -54,12 +68,26 @@ label. When an icon carries meaning on its own, expose it and give it a name:
 
 `loading` spins, and is the one icon that isn't from Heroicons.
 
-The set grows with the components that need it rather than by importing
-Heroicons wholesale: the state glyphs arrived with the badge and the alert, the
-chevrons with the pager, and the two trending arrows with the stat. They are two
-separate drawings rather than one arrow rotated, which is the same rule that
-gives every variant its own path — a direction that is only a rotation is a
-direction that reads as one thing at a glance.
+Add your own from any directory of SVGs:
 
-Adding the next one is `php artisan shape:icon bell --from=…`; see
-[Tooling](../tooling.md#shapeicon).
+```bash
+php artisan shape:icon bell --from=resources/icons
+```
+
+See [Tooling](../tooling.md#shapeicon).
+
+## Reference
+
+| Prop | Default | Values |
+| --- | --- | --- |
+| `variant` | `outline` | `micro`, `mini`, `solid`, `outline` |
+
+`<x-shape::icon>` — the by-name form — takes `name` as well.
+
+## Folding
+
+Tier B — `@blaze(fold: true, memo: true)` on every named icon.
+
+`<x-shape::icon name="…">` is `@blaze(memo: false)`: it resolves a different
+component per call, which is the opposite of what memoization is for. See
+[Folding](../folding.md).

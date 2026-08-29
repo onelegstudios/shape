@@ -66,6 +66,38 @@ Route::get('/flash', function () {
     return redirect('/');
 });
 
+// A face for the avatar preview.
+//
+// The avatar's `src` is a prop with a picture attached to it, so the page about
+// it has to show one — and a real photograph is a file this package would then
+// have to carry, license and keep. This draws one instead, in the palette the
+// rest of the page is already using.
+Route::get('/avatars/{name}.svg', function (string $name) {
+    $hue = crc32($name) % 360;
+
+    $svg = <<<SVG
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img">
+            <rect width="80" height="80" fill="oklch(86% 0.09 {$hue})"/>
+            <circle cx="40" cy="31" r="14" fill="oklch(45% 0.09 {$hue})"/>
+            <path d="M8 80a32 32 0 0 1 64 0Z" fill="oklch(45% 0.09 {$hue})"/>
+        </svg>
+        SVG;
+
+    return response($svg, 200, ['Content-Type' => 'image/svg+xml']);
+})->name('shape.docs.avatar');
+
+// The overlays in the docs previews are meant to open.
+//
+// A modal, a drawer, a dropdown, a popover and a tooltip are all components whose
+// props you can only see the effect of once they are on screen, so the docs site
+// serves the same `shape.js` a consuming application imports.
+Route::get('/shape-docs.js', function () {
+    return response()
+        ->file(\Orchestra\Testbench\package_path('resources/js/shape.js'), [
+            'Content-Type' => 'text/javascript',
+        ]);
+})->name('shape.docs.js');
+
 // The previews inside the docs site need Shape's stylesheet, and laradocs'
 // layout is not this package's file to edit. It exposes a `head` stack, so the
 // workbench provider pushes a link to this route into it.

@@ -37,7 +37,7 @@ function previewCalls(): array
     $names = [];
 
     foreach (Finder::create()->files()->in(__DIR__.'/../../docs')->name('*.md') as $file) {
-        preg_match_all("/@docs\('preview', name: '([^']+)'\)/", (string) file_get_contents($file->getPathname()), $matches);
+        preg_match_all("/@docs\('preview', name: '([^']+)'/", (string) file_get_contents($file->getPathname()), $matches);
 
         $names = [...$names, ...$matches[1]];
     }

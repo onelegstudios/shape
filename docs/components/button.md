@@ -1,61 +1,119 @@
 # Button
 
+An action. `variant` sets how loud the button is, `color` sets what it means,
+and the two are independent — which is what lets a destructive action be quiet.
+
 @docs('preview', name: 'button')
 
-## Hierarchy and semantics are separate props
+## Variants
 
-`variant` says where an action sits in the pyramid of importance. `color` says
-what it means. Keeping them apart is what lets a destructive action be quiet:
+`variant` places an action in the page's hierarchy. Most pages have one true
+primary action, so reach for `primary` once.
 
-```blade
-<x-shape::button variant="subtle" color="danger" icon="trash">Delete</x-shape::button>
-```
+@docs('preview', name: 'button-variants')
 
-Most pages have one true primary action. Reach for `variant="primary"` once.
+## Colors
 
-| Prop | Default | Values |
-| --- | --- | --- |
-| `variant` | `outline` | `primary`, `outline`, `subtle`, `ghost` |
-| `color` | `neutral` | `neutral`, `accent`, `danger`, `success` |
-| `size` | `base` | `sm`, `base`, `lg` |
-| `icon` | — | any icon name, rendered before the label |
-| `icon-trailing` | — | any icon name, rendered after the label |
-| `icon-variant` | `mini` | `micro`, `mini`, `solid`, `outline` |
-| `square` | `false` | drops the horizontal padding for icon-only buttons |
-| `as` | `button` | `button`, `a`, `div` |
-| `type` | `button` | any button type |
+`color` changes the tone a variant paints with. `neutral` is the default and the
+right answer for most buttons; the rest carry meaning.
 
-## Links
+@docs('preview', name: 'button-colors')
 
-```blade
-<x-shape::button as="a" href="/settings" icon-trailing="arrow-right">Settings</x-shape::button>
-```
+Because hierarchy and meaning are separate props, a destructive action does not
+have to shout:
 
-`href` is passed straight through the attribute bag rather than declared as a
-prop, so `:href="$url"` does not stop the button folding.
+@docs('preview', name: 'button-quiet-danger')
+
+## Sizes
+
+@docs('preview', name: 'button-sizes')
+
+`sm` and `base` share a type size and differ in height and padding. `lg` steps
+the text up too.
+
+## Icons
+
+`icon` renders before the label, `icon-trailing` after, and both take any
+[icon](icon.md) name. Use one or both.
+
+@docs('preview', name: 'button-icons')
+
+`icon-variant` picks which drawing is used: `micro` is 16px, `mini` — the
+default — is 20px, and `solid` and `outline` are both 24px.
+
+@docs('preview', name: 'button-icon-variants')
 
 ## Icon-only buttons
 
-`square` removes the horizontal padding. Give the button an accessible name,
-because there is no label to read:
+`square` drops the horizontal padding and makes the button as tall as it is
+wide, at every size. There is no label to read, so pass an `aria-label`:
 
-```blade
-<x-shape::button square icon="trash" color="danger" aria-label="Delete project" />
-```
+@docs('preview', name: 'button-square')
 
-## Overriding styles
+Pair one with a [tooltip](tooltip.md) when the glyph alone is not obvious.
 
-Every default Shape sets carries zero specificity, so your classes win without
-`!important`:
+## Links
 
-```blade
-<x-shape::button class="rounded-full w-full">Continue</x-shape::button>
-```
+`as="a"` renders an anchor with the same styling. `href` goes through the
+attribute bag, so `:href="$url"` costs nothing.
+
+@docs('preview', name: 'button-link')
+
+`as` also takes `div`, for a button that sits inside something already
+clickable.
+
+## Disabled
+
+`disabled` is a plain attribute — Shape claims no prop for it — and dims the
+button while removing pointer events. An anchor cannot be disabled, so use
+`aria-disabled` there and Shape styles it the same way:
+
+@docs('preview', name: 'button-disabled')
 
 ## Livewire and Alpine
 
 Anything Shape doesn't claim as a prop lands on the rendered element:
 
 ```blade
-<x-shape::button wire:click="save" wire:loading.attr="disabled">Save</x-shape::button>
+<x-shape::button variant="primary" wire:click="save" wire:loading.attr="disabled">
+    Save
+</x-shape::button>
 ```
+
+```blade
+<x-shape::button icon="trash" color="danger" x-on:click="open = true">Delete</x-shape::button>
+```
+
+## Overriding styles
+
+Every default Shape sets carries zero specificity, so your own classes win
+without `!important`:
+
+```blade
+<x-shape::button variant="primary" class="w-full rounded-full">Continue</x-shape::button>
+```
+
+## Reference
+
+| Prop | Default | Values |
+| --- | --- | --- |
+| `variant` | `outline` | `primary`, `outline`, `subtle`, `ghost` |
+| `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
+| `size` | `base` | `sm`, `base`, `lg` |
+| `icon` | — | any icon name, rendered before the label |
+| `icon-trailing` | — | any icon name, rendered after the label |
+| `icon-variant` | `mini` | `micro`, `mini`, `solid`, `outline` |
+| `square` | `false` | drops the horizontal padding, for icon-only buttons |
+| `as` | `button` | `button`, `a`, `div` |
+| `type` | `button` | any button type |
+
+The default slot is the label. Every other attribute — `href`, `disabled`,
+`wire:*`, `class` — passes through to the rendered element.
+
+## Folding
+
+Tier A — `@blaze(fold: true, safe: ['color'])`.
+
+`color` is interpolated into an attribute and nothing more, so `:color="$tone"`
+still folds. Everything else is a static choice at the call site. See
+[Folding](../folding.md).
