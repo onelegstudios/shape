@@ -3,8 +3,10 @@
 |
 | Tailwind's preflight is deliberately not imported. These rules are injected
 | into laradocs' own page, and a reset would take the documentation's typography
-| down with it — the previews are guests on someone else's page. Everything a
-| Shape component needs is in the theme layer and the utilities.
+| down with it — the previews are guests on someone else's page. So the reset
+| the components do need is scoped to the preview stage instead, at the bottom
+| of this file, along with the rule that keeps the host page's own styles from
+| reaching into it.
 |
 | Rebuild with `npm run docs`.
 */
@@ -29,6 +31,146 @@
         &:where(:not([data-theme="light"]) *) {
             @slot;
         }
+    }
+}
+
+/*
+| The stage, taken back off the page it is standing on.
+|
+| laradocs' stylesheet is written without cascade layers, and an unlayered
+| author rule outranks every layer no matter how the layers are ordered — so
+| `.laradocs-prose a`, `.laradocs-prose td`, `.laradocs-prose ul` and the rest
+| reach inside the previews and beat the components' own utilities, which are
+| in `@layer utilities` and cannot win. A preview of the button-as-link renders
+| as an underlined accent-coloured link; a table gets the documentation's cell
+| padding and a margin under it; a list gets the prose indent and bullets.
+|
+| `revert-layer` is the way out, and it has to be unlayered itself to reach
+| laradocs: it rolls every property back to whatever the layers below settled
+| on, which is Shape's own CSS and Tailwind's utilities and nothing of the
+| documentation's. Anything neither of them declares falls through to the
+| scoped preflight below.
+|
+| The selector is written three times for its specificity and nothing else.
+| `.laradocs-prose tr:last-child td` is the heaviest rule laradocs points at
+| anything a preview can contain, and three attribute selectors clear it.
+*/
+[data-shape-preview][data-shape-preview][data-shape-preview],
+[data-shape-preview][data-shape-preview][data-shape-preview] *,
+[data-shape-preview][data-shape-preview][data-shape-preview] *::before,
+[data-shape-preview][data-shape-preview][data-shape-preview] *::after,
+[data-shape-preview][data-shape-preview][data-shape-preview] *::marker {
+    all: revert-layer;
+}
+
+/*
+| Tailwind's preflight, scoped to the stage.
+|
+| Every component in the library is built on the assumption that preflight has
+| run — a `<button>` with no reset keeps the platform's own button chrome, which
+| on macOS is a bevelled border and a drop shadow underneath whatever background
+| the variant paints. The same goes for the border on an `<input>`, the border
+| and padding on a `<fieldset>`, the bullets and indent on a `<ul>` and the
+| baseline gap under an inline `<svg>`.
+|
+| This is preflight, minus the parts that belong to a document rather than to a
+| component: the `html` rules, the typographic corrections for elements no
+| component renders, and the `<hr>` and heading resets that would undo the
+| documentation's own prose. It sits in `@layer base`, so every utility on a
+| component still outranks it.
+*/
+@layer base {
+    [data-shape-preview],
+    [data-shape-preview] *,
+    [data-shape-preview] *::before,
+    [data-shape-preview] *::after,
+    [data-shape-preview] *::backdrop,
+    [data-shape-preview] ::file-selector-button {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        border: 0 solid;
+    }
+
+    /* Links opt in to their styling, so a button rendered with `as="a"` is a
+       button and not a link that happens to be shaped like one. */
+    [data-shape-preview] a {
+        color: inherit;
+        -webkit-text-decoration: inherit;
+        text-decoration: inherit;
+    }
+
+    [data-shape-preview] :is(ol, ul, menu) {
+        list-style: none;
+    }
+
+    [data-shape-preview] :is(img, svg, video, canvas, audio, iframe, embed, object) {
+        display: block;
+        vertical-align: middle;
+    }
+
+    [data-shape-preview] :is(img, video) {
+        max-width: 100%;
+        height: auto;
+    }
+
+    [data-shape-preview] table {
+        text-indent: 0;
+        border-color: inherit;
+        border-collapse: collapse;
+    }
+
+    [data-shape-preview] :is(button, input, select, optgroup, textarea),
+    [data-shape-preview] ::file-selector-button {
+        font: inherit;
+        font-feature-settings: inherit;
+        font-variation-settings: inherit;
+        letter-spacing: inherit;
+        color: inherit;
+        border-radius: 0;
+        background-color: transparent;
+        opacity: 1;
+    }
+
+    /* The one that removes the platform's button: without it the browser paints
+       its own bevel and shadow around every variant. */
+    [data-shape-preview] :is(button, input:where([type="button"], [type="reset"], [type="submit"])),
+    [data-shape-preview] ::file-selector-button {
+        appearance: button;
+    }
+
+    [data-shape-preview] ::placeholder {
+        opacity: 1;
+    }
+
+    @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
+        [data-shape-preview] ::placeholder {
+            color: color-mix(in oklab, currentcolor 50%, transparent);
+        }
+    }
+
+    [data-shape-preview] textarea {
+        resize: vertical;
+    }
+
+    [data-shape-preview] :is(::-webkit-inner-spin-button, ::-webkit-outer-spin-button) {
+        height: auto;
+    }
+
+    [data-shape-preview] progress {
+        vertical-align: baseline;
+    }
+
+    [data-shape-preview] summary {
+        display: list-item;
+    }
+
+    [data-shape-preview] :-moz-focusring:where(:not(iframe)) {
+        outline: auto;
+    }
+
+    [data-shape-preview] [hidden]:where(:not([hidden="until-found"])) {
+        display: none !important;
     }
 }
 
