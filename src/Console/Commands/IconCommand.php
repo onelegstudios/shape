@@ -16,10 +16,11 @@ use Onelegstudios\Shape\IconSet;
  * makes the set cheap to grow and what keeps the header on each one —
  * "Regenerate; don't hand-edit" — an honest instruction rather than a hope.
  *
- * What a set looks like is declared in `shape.icon_sets` and parsed by
- * `IconSet`: a matrix of styles against sizes, mostly sparse. This command is
- * the part that walks that matrix, reads whichever cells the source directory
- * actually holds, and writes one component per name with the answers baked in.
+ * What a set looks like is declared in `shape.icon_sets`, measured against the
+ * scale in `shape.icon_sizes`, and parsed by `IconSet`: a matrix of styles
+ * against sizes, mostly sparse. This command is the part that walks that
+ * matrix, reads whichever cells the source directory actually holds, and writes
+ * one component per name with the answers baked in.
  *
  * The alternative, which WireUI takes, is a Composer package per icon set. That
  * is a version matrix to maintain for what is fundamentally a code generator,
@@ -416,7 +417,9 @@ class IconCommand extends Command
             throw new InvalidArgumentException("No icon set named [{$name}] is configured.");
         }
 
-        return IconSet::fromArray($name, $sets[$name]);
+        // Two keys, because the two axes belong to different people: the scale
+        // is the library's and the drawings are the set's.
+        return IconSet::fromArray($name, $sets[$name], config('shape.icon_sizes'));
     }
 
     protected function source(): ?string

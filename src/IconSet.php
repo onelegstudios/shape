@@ -16,6 +16,13 @@ use InvalidArgumentException;
  * declare which cells are real covers all three without a special case for any
  * of them; a cell with no drawing borrows the largest one its style has.
  *
+ * One axis of that matrix belongs to the library rather than to the set. The
+ * size scale is declared once, in `shape.icon_sizes`, and every set is measured
+ * against it — otherwise `<x-shape::icon.bell size="sm" />` and
+ * `<x-shape::icon.check size="sm" />` could render at different sizes because
+ * the icons came from different sets, which is exactly what a supplementary set
+ * invites. A set says only which cells it draws.
+ *
  * This is a compile-time thing. `shape:icon` reads it while writing a component
  * and bakes every value it decides — the size class, the preferred style, the
  * case labels — into that file as a literal. Nothing here is read at run time,
@@ -27,10 +34,11 @@ use InvalidArgumentException;
 final class IconSet
 {
     /**
-     * Both are non-empty: `fromArray` refuses a set that declares neither, so
-     * the largest size and the first style are always there to be reached for.
+     * Both are non-empty: `fromArray` refuses a set that draws nothing and a
+     * scale that measures nothing, so the largest size and the first style are
+     * always there to be reached for.
      *
-     * @param  non-empty-array<string, array{class: string, prefer?: string}>  $sizes  In ascending order; the last is the default.
+     * @param  non-empty-array<string, array{class: string, prefer?: string}>  $sizes  The library's scale, in ascending order; the last is the default.
      * @param  non-empty-array<string, array<string, string>>  $styles  Style, then the sizes it draws its own glyph at.
      */
     private function __construct(
@@ -43,28 +51,28 @@ final class IconSet
     /**
      * Read one set out of whatever the config file holds.
      *
-     * Everything is checked rather than assumed: a set can come from a
+     * The scale arrives separately from the set because it is the library's,
+     * not the set's: `shape.icon_sizes` against one entry of `shape.icon_sets`.
+     *
+     * Everything is checked rather than assumed: both halves can come from a
      * consumer's published config, so a malformed one has to say what is wrong
      * with it instead of surfacing three methods later as a type error.
      */
-    public static function fromArray(string $name, mixed $definition): self
+    public static function fromArray(string $name, mixed $definition, mixed $sizes): self
     {
         if (! is_array($definition)) {
             throw new InvalidArgumentException("Icon set [{$name}] is not an array.");
         }
 
-        $sizes = [];
-
-        foreach ((array) ($definition['sizes'] ?? []) as $size => $spec) {
-            if (! is_string($size) || ! is_array($spec) || ! isset($spec['class']) || ! is_string($spec['class'])) {
-                throw new InvalidArgumentException("Icon set [{$name}] has a size without a class.");
-            }
-
-            $sizes[$size] = isset($spec['prefer']) && is_string($spec['prefer'])
-                ? ['class' => $spec['class'], 'prefer' => $spec['prefer']]
-                : ['class' => $spec['class']];
+        // A config published before the scale was hoisted has this key, and no
+        // `icon_sizes` to go with it. Saying so is worth more than ignoring it:
+        // a set that quietly keeps its own scale is the bug this key's removal
+        // exists to prevent.
+        if (array_key_exists('sizes', $definition)) {
+            throw new InvalidArgumentException("Icon set [{$name}] declares its own [sizes]. The size scale belongs to the library now — move it to [icon_sizes] in config/shape.php.");
         }
 
+        $scale = self::scale($sizes);
         $styles = [];
 
         foreach ((array) ($definition['styles'] ?? []) as $style => $patterns) {
@@ -77,25 +85,54 @@ final class IconSet
                     throw new InvalidArgumentException("Icon set [{$name}] has a drawing without a path.");
                 }
 
-                if (! isset($sizes[$size])) {
-                    throw new InvalidArgumentException("Icon set [{$name}] draws [{$style}] at [{$size}], which is not one of its sizes.");
+                if (! isset($scale[$size])) {
+                    throw new InvalidArgumentException("Icon set [{$name}] draws [{$style}] at [{$size}], which is not one of the library's sizes.");
                 }
 
                 $styles[$style][$size] = $pattern;
             }
         }
 
-        if ($sizes === [] || $styles === []) {
-            throw new InvalidArgumentException("Icon set [{$name}] needs at least one size and one style.");
+        if ($styles === []) {
+            throw new InvalidArgumentException("Icon set [{$name}] needs at least one style.");
         }
 
         $notice = $definition['notice'] ?? null;
 
-        return new self($name, is_string($notice) ? $notice : '', $sizes, $styles);
+        return new self($name, is_string($notice) ? $notice : '', $scale, $styles);
+    }
+
+    /**
+     * The library's size scale, read out of whatever the config file holds.
+     *
+     * @return non-empty-array<string, array{class: string, prefer?: string}>
+     */
+    private static function scale(mixed $sizes): array
+    {
+        if (! is_array($sizes) || $sizes === []) {
+            throw new InvalidArgumentException('No icon sizes are configured. Add [icon_sizes] to config/shape.php — the size scale moved there out of the individual sets.');
+        }
+
+        $scale = [];
+
+        foreach ($sizes as $size => $spec) {
+            if (! is_string($size) || ! is_array($spec) || ! isset($spec['class']) || ! is_string($spec['class'])) {
+                throw new InvalidArgumentException('The icon sizes hold a size without a class.');
+            }
+
+            $scale[$size] = isset($spec['prefer']) && is_string($spec['prefer'])
+                ? ['class' => $spec['class'], 'prefer' => $spec['prefer']]
+                : ['class' => $spec['class']];
+        }
+
+        return $scale;
     }
 
     /**
      * The size scale, smallest first.
+     *
+     * The library's, not this set's: two sets generate the same size match, so
+     * one word at a call site means one size whichever set answered it.
      *
      * @return non-empty-list<string>
      */
@@ -131,8 +168,9 @@ final class IconSet
      * This is the whole reason the two axes are worth separating. Eleven of the
      * twelve places this library renders an icon want a solid drawing at a small
      * size, and one — the empty state — wants an outline at a large one. Stated
-     * once here, those call sites ask for a size and nothing else, and a set
-     * with a single style answers the same question just as well.
+     * once on the scale, those call sites ask for a size and nothing else, and a
+     * set that has no such style answers with the one it does have: a preference
+     * the set cannot honour falls through rather than failing.
      */
     public function styleFor(string $size): string
     {

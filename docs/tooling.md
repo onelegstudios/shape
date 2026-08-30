@@ -142,16 +142,36 @@ at three sizes with three cells empty, because it draws no outline at 16px or
 20px — a 1.5px stroke does not read that small.
 
 Modelling the matrix covers all three without a special case for any of them.
-Sets live in `shape.icon_sets`, and Heroicons is one entry in it:
+One axis of it is the library's and the other is the set's.
+
+The scale lives in `shape.icon_sizes`, once, for every set:
+
+```php
+'icon_sizes' => [
+    'xs' => ['class' => 'size-4', 'prefer' => 'solid'],
+    'sm' => ['class' => 'size-5', 'prefer' => 'solid'],
+    'base' => ['class' => 'size-6', 'prefer' => 'outline'],
+],
+```
+
+Smallest first; the last is the default. It is declared outside the sets so that
+a call site reads the same whichever set is behind it — `size="sm"` is 20px for
+an icon from your supplementary set as much as for one of Shape's, which is not
+something a per-set scale could promise. Every generated icon emits the same
+size `match`, so mixing sets cannot mix scales.
+
+`prefer` is what a size reaches for when the call site names no style. It is the
+reason eleven of the twelve places this library draws an icon can ask for a size
+and nothing else, and still get a crisp solid glyph rather than a stroke shrunk
+until it disappears. It is also what makes those call sites portable: a set that
+has no such style ignores the preference and answers with the one style it has.
+
+Sets live in `shape.icon_sets`, and say only which cells they draw. Heroicons is
+one entry in it:
 
 ```php
 'heroicons' => [
     'notice' => 'Heroicons (https://heroicons.com), MIT licensed.',
-    'sizes' => [
-        'xs' => ['class' => 'size-4', 'prefer' => 'solid'],
-        'sm' => ['class' => 'size-5', 'prefer' => 'solid'],
-        'base' => ['class' => 'size-6', 'prefer' => 'outline'],
-    ],
     'styles' => [
         'solid' => [
             'xs' => '16/solid/{name}.svg',
@@ -165,18 +185,11 @@ Sets live in `shape.icon_sets`, and Heroicons is one entry in it:
 ],
 ```
 
-`sizes` is the scale, smallest first; the last is the default. It is the
-library's own scale — `xs`, `sm`, `base` — rather than the set's vocabulary, so
-a call site reads the same whichever set is behind it. `styles` says
-where each cell is drawn, as a path with `{name}` in it — a directory layout and
-a filename convention are the same declaration. A cell a style doesn't draw
-borrows that style's largest drawing and is sized down by the class; never up.
-
-`prefer` is what a size reaches for when the call site names no style. It is the
-reason eleven of the twelve places this library draws an icon can ask for a size
-and nothing else, and still get a crisp solid glyph rather than a stroke shrunk
-until it disappears. It is also what makes those call sites portable: a set with
-one style answers the same question just as well.
+`styles` says where each cell is drawn, as a path with `{name}` in it — a
+directory layout and a filename convention are the same declaration. A cell a
+style doesn't draw borrows that style's largest drawing and is sized down by the
+class; never up. A size the scale doesn't declare is refused rather than
+ignored, because in a hand-written set that is a typo every time.
 
 Publish the config to add your own:
 
@@ -193,9 +206,9 @@ whose only pattern is `{name}.svg`, which is what the shipped `lucide` entry is.
 describe how a drawing is *used*, and they arrive through the attribute bag.
 What describes the drawing itself is kept exactly as the source states it.
 
-Everything the set decides — the size classes, the preferred style, which cell
-gets which drawing — is written into the component as a literal. Nothing reads
-`shape.icon_sets` at run time, which is what keeps a generated icon at
+Everything the config decides — the size classes, the preferred style, which
+cell gets which drawing — is written into the component as a literal. Nothing
+reads `shape.icon_sets` or `shape.icon_sizes` at run time, which is what keeps a generated icon at
 [Tier B](folding.md): both props are static at almost every call site, so what
 reaches the compiled template is one `<svg>` and none of the machinery that
 chose it.

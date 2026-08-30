@@ -94,6 +94,30 @@ it('writes no switch for a set that has one drawing per name', function () {
         ->toContain('<path');
 });
 
+it('sizes a one-style set by the same scale as every other', function () {
+    // The reason the scale is the library's rather than each set's. Lucide draws
+    // at one size and Heroicons at three, and both write the same size `match` —
+    // so `size="sm"` is 20px whichever set the icon at a call site came from.
+    $this->artisan('shape:icon', ['icons' => ['check'], '--from' => $this->heroicons])->assertSuccessful();
+    $this->artisan('shape:icon', ['icons' => ['spinner'], '--set' => 'lucide', '--from' => $this->flat])->assertSuccessful();
+
+    $arms = function (string $icon): string {
+        preg_match(
+            '/->add\(match \(\$size\) \{(.*?)\}\)/s',
+            (string) file_get_contents($this->destination.'/icon/'.$icon.'.blade.php'),
+            $matches,
+        );
+
+        return $matches[1] ?? '';
+    };
+
+    expect($arms('spinner'))
+        ->toContain("'xs' => '[:where(&)]:size-4',")
+        ->toContain("'sm' => '[:where(&)]:size-5',")
+        ->toContain("default => '[:where(&)]:size-6',")
+        ->toBe($arms('check'));
+});
+
 it('finds every icon in the source directory', function () {
     $this->artisan('shape:icon', ['--from' => $this->heroicons, '--all' => true])
         ->expectsOutputToContain('check')
