@@ -156,12 +156,20 @@ php artisan shape:eject --status   # what has drifted since an upgrade
 php artisan shape:doctor           # fold safety of ejected components
 php artisan shape:icon --all --from=./resources/svg
 php artisan shape:icon bell --set=lucide --from=./vendor/lucide/icons
+php artisan shape:icon --replace --set=lucide --from=./vendor/lucide/icons
 ```
+
+`--replace` generates the icons Shape draws in its own components, under Shape's
+names, from whatever the set calls them — the set's own spellings are declared
+once as `aliases` in `shape.icon_sets`. Call sites never change: an icon is
+`<x-shape::icon.x-mark />` whichever set drew it.
 
 Run `shape:doctor` in CI once anything has been ejected: it exits non-zero when a
 folded component reads `auth()`, `session()`, `request()`, `config()`, `$errors`,
 `now()`, `@csrf` or a translation helper — each of which is resolved once at
-compile time and then served to every visitor.
+compile time and then served to every visitor. It also counts how many of the
+icons the library draws a replaced set covers, since a name missed falls back to
+the packaged Heroicon and renders in the wrong set without complaint.
 
 ## Rules, References, and Templates
 

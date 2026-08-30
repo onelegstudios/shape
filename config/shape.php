@@ -52,6 +52,15 @@ return [
     | 1.5px stroke does not read at that size. A cell with no drawing of its own
     | borrows the largest one its style has and is scaled down to fit.
     |
+    | `aliases` is the other half of that. A set decides the layout of its files
+    | and it also decides their names, and only the first of those generalised:
+    | Lucide draws `x` where Heroicons draws `x-mark`. Shape's own components ask
+    | for Heroicons' spellings, so without a translation another set can add
+    | icons to the library but never replace the ones it draws itself. An alias
+    | moves the source file and nothing else — `x-mark` is read from `x.svg` and
+    | still written to `x-mark.blade.php` — so the call sites stay as they are
+    | and the drawing behind them changes. One direction only.
+    |
     | None of this is read at run time. It is spent while `shape:icon` writes a
     | component, and every value it decides is a literal in the generated file —
     | which is what keeps those files foldable.
@@ -80,6 +89,22 @@ return [
                 'outline' => [
                     'base' => '{name}.svg',
                 ],
+            ],
+            // Enough to cover every icon Shape draws itself, so that
+            // `shape:icon --replace --set=lucide` leaves nothing behind. The
+            // names on the right are the current release's own files; several
+            // were renamed around v0.4xx and the old spellings survive as
+            // metadata aliases rather than as SVGs, so `circle-check` is the
+            // file and `check-circle` is not. `check`, `minus` and the three
+            // chevrons carry over unchanged and need no entry.
+            'aliases' => [
+                'x-mark' => 'x',
+                'check-circle' => 'circle-check',
+                'x-circle' => 'circle-x',
+                'exclamation-triangle' => 'triangle-alert',
+                'information-circle' => 'info',
+                'arrow-trending-up' => 'trending-up',
+                'arrow-trending-down' => 'trending-down',
             ],
         ],
 

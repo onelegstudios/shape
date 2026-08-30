@@ -21,6 +21,11 @@ use RuntimeException;
  * discover a graph that only changes when a component does would be the wrong
  * trade — so the scan lives in the test suite instead, where it fails the build
  * if the JSON and the markup ever disagree.
+ *
+ * `icons()` is the one thing here that does read the views, and for the same
+ * reason inverted: which icons the library draws is a detail of the markup that
+ * nobody would remember to write down twice. It is called by two console
+ * commands and never by a request.
  */
 final class Registry
 {
@@ -28,6 +33,11 @@ final class Registry
      * @var array<string, array{files: list<string>, requires: list<string>, docs: string, tier: string}>|null
      */
     private ?array $components = null;
+
+    /**
+     * @var list<string>|null
+     */
+    private ?array $icons = null;
 
     public function __construct(
         private readonly string $manifest = __DIR__.'/../resources/registry.json',
@@ -90,6 +100,89 @@ final class Registry
         }
 
         return array_keys($resolved);
+    }
+
+    /**
+     * The icon names the library draws in components of its own.
+     *
+     * A fact about this library, not about any icon set: twelve names are baked
+     * into the markup of the checkbox, the pager, the select, the overlay close,
+     * the three tone maps and the stat, and a replacement set that covers eleven
+     * of them leaves the twelfth resolving to the packaged Heroicon. That is a
+     * page with two icon sets on it and nothing anywhere that says so, which is
+     * why `shape:icon --replace` generates this list and `shape:doctor` checks
+     * it.
+     *
+     * Read out of the markup rather than typed out here, because a list typed
+     * out here is a list that is right until the next component gains an icon.
+     * The manifest supplies both halves: the `icon` component's files are the
+     * vocabulary, and every other component's files are where it is spoken.
+     *
+     * A name counts if it appears as a static tag or as a quoted literal — the
+     * two forms in the library, one being `<x-shape::icon.check />` and the
+     * other the `'success' => 'check-circle'` arms that a tone resolves through.
+     * Deliberately the broader reading of the two: a literal that coincides with
+     * an icon name without being one costs a component nobody needed, and a name
+     * missed costs the silence this whole check exists to break.
+     *
+     * @return list<string>
+     */
+    public function icons(): array
+    {
+        if ($this->icons !== null) {
+            return $this->icons;
+        }
+
+        $drawn = [];
+
+        foreach ($this->vocabulary() as $name) {
+            $pattern = '/<x-shape::icon\.'.preg_quote($name, '/').'(?![\w-])|([\'"])'.preg_quote($name, '/').'\1/';
+
+            foreach ($this->all() as $component) {
+                foreach ($component['files'] as $file) {
+                    if (str_starts_with($file, 'icon/')) {
+                        continue;
+                    }
+
+                    if (preg_match($pattern, (string) @file_get_contents($this->path($file))) === 1) {
+                        $drawn[] = $name;
+
+                        continue 3;
+                    }
+                }
+            }
+        }
+
+        sort($drawn);
+
+        return $this->icons = $drawn;
+    }
+
+    /**
+     * Every icon this package ships a component for.
+     *
+     * @return list<string>
+     */
+    private function vocabulary(): array
+    {
+        $names = [];
+
+        foreach ($this->all() as $component) {
+            foreach ($component['files'] as $file) {
+                if (! str_starts_with($file, 'icon/')) {
+                    continue;
+                }
+
+                $name = basename($file, '.blade.php');
+
+                // The by-name form, which resolves one of the others.
+                if ($name !== 'index') {
+                    $names[] = $name;
+                }
+            }
+        }
+
+        return array_values(array_unique($names));
     }
 
     /**

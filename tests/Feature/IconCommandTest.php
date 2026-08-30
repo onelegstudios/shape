@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Blade;
+use Onelegstudios\Shape\IconSet;
+use Onelegstudios\Shape\Registry;
 use Onelegstudios\Shape\Tests\TestCase;
 
 beforeAll(function () {
@@ -26,6 +28,10 @@ beforeEach(function () {
 
     $this->heroicons = __DIR__.'/../fixtures/icons';
     $this->flat = __DIR__.'/../fixtures/icons-flat';
+
+    // A flat set spelling every name Shape draws the way Lucide spells it, so
+    // that a replacement can actually be checked end to end.
+    $this->lucide = __DIR__.'/../fixtures/icons-lucide';
 });
 
 it('reproduces a shipped icon from the SVGs it was drawn from', function () {
@@ -153,4 +159,117 @@ it('needs a directory to read from', function () {
     $this->artisan('shape:icon', ['icons' => ['check']])
         ->expectsOutputToContain('Pass --from')
         ->assertFailed();
+});
+
+it('reads a name through the alias and writes it under Shape\'s', function () {
+    // The asymmetry that makes a replacement possible at all. Lucide has no
+    // `x-mark.svg`; it has `x.svg`. The drawing comes from there, and the file
+    // is still called what the close button asks for.
+    $this->artisan('shape:icon', ['icons' => ['x-mark'], '--set' => 'lucide', '--from' => $this->lucide])
+        ->assertSuccessful();
+
+    expect($this->destination.'/icon/x-mark.blade.php')->toBeFile()
+        ->and($this->destination.'/icon/x.blade.php')->not->toBeFile();
+
+    // The fixture marks each drawing with the file it came from.
+    expect(file_get_contents($this->destination.'/icon/x-mark.blade.php'))
+        ->toContain('data-drawn="x"');
+});
+
+it('leaves a name the set spells the same way alone', function () {
+    $this->artisan('shape:icon', ['icons' => ['check'], '--set' => 'lucide', '--from' => $this->lucide])
+        ->assertSuccessful();
+
+    expect(file_get_contents($this->destination.'/icon/check.blade.php'))
+        ->toContain('data-drawn="check"');
+});
+
+it('generates exactly the icons the library draws itself', function () {
+    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'lucide', '--from' => $this->lucide])
+        ->assertSuccessful();
+
+    $written = array_map(
+        fn (string $path): string => basename($path, '.blade.php'),
+        glob($this->destination.'/icon/*.blade.php') ?: [],
+    );
+
+    sort($written);
+
+    expect($written)->toBe((new Registry)->icons());
+});
+
+it('replaces every one of them from a set that spells them differently', function () {
+    // The point of the whole feature: after this, nothing in the library is
+    // still drawing a Heroicon. Each file has to have come from Lucide's own
+    // spelling of the name it is written under.
+    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'lucide', '--from' => $this->lucide])
+        ->assertSuccessful();
+
+    $set = IconSet::fromArray('lucide', config('shape.icon_sets')['lucide'], config('shape.icon_sizes'));
+
+    foreach ((new Registry)->icons() as $name) {
+        expect(file_get_contents($this->destination.'/icon/'.$name.'.blade.php'))
+            ->toContain('data-drawn="'.$set->sourceName($name).'"')
+            ->toContain('Lucide');
+    }
+});
+
+it('draws the twelve names the components actually ask for', function () {
+    // Derived from the markup rather than typed out, so this guards the
+    // derivation rather than restating it: a component gaining an icon fails
+    // here, which is the moment to decide whether a replacement set has to
+    // cover it.
+    expect((new Registry)->icons())->toBe([
+        'arrow-trending-down',
+        'arrow-trending-up',
+        'check',
+        'check-circle',
+        'chevron-down',
+        'chevron-left',
+        'chevron-right',
+        'exclamation-triangle',
+        'information-circle',
+        'minus',
+        'x-circle',
+        'x-mark',
+    ]);
+});
+
+it('will not be told which icons to replace', function () {
+    // `--replace` already knows. Taking names as well would let one be quietly
+    // dropped from the list that has to be complete to mean anything.
+    $this->artisan('shape:icon', ['icons' => ['check'], '--replace' => true, '--from' => $this->lucide])
+        ->expectsOutputToContain('already knows')
+        ->assertFailed();
+
+    $this->artisan('shape:icon', ['--replace' => true, '--all' => true, '--from' => $this->lucide])
+        ->expectsOutputToContain('already knows')
+        ->assertFailed();
+});
+
+it('reverses the files it discovers back through the alias map', function () {
+    // `--all` walks files, and files carry the set's names. `x.svg` has to be
+    // written as `x-mark.blade.php` or the component nothing renders it under.
+    $this->artisan('shape:icon', ['--set' => 'lucide', '--from' => $this->lucide, '--all' => true])
+        ->assertSuccessful();
+
+    $written = array_map(
+        fn (string $path): string => basename($path, '.blade.php'),
+        glob($this->destination.'/icon/*.blade.php') ?: [],
+    );
+
+    sort($written);
+
+    expect($written)->toBe((new Registry)->icons())
+        ->and($this->destination.'/icon/circle-check.blade.php')->not->toBeFile();
+});
+
+it('generates a set\'s own name for a drawing Shape has no name for', function () {
+    // The other half of `--all`: a file nothing aliases to is written under its
+    // own name, which is how a supplementary set adds icons rather than
+    // replacing them.
+    $this->artisan('shape:icon', ['--set' => 'lucide', '--from' => $this->flat, '--all' => true])
+        ->assertSuccessful();
+
+    expect($this->destination.'/icon/spinner.blade.php')->toBeFile();
 });

@@ -40,12 +40,14 @@ final class IconSet
      *
      * @param  non-empty-array<string, array{class: string, prefer?: string}>  $sizes  The library's scale, in ascending order; the last is the default.
      * @param  non-empty-array<string, array<string, string>>  $styles  Style, then the sizes it draws its own glyph at.
+     * @param  array<string, string>  $aliases  Shape's name for a drawing, against this set's own spelling of it.
      */
     private function __construct(
         public readonly string $name,
         public readonly string $notice,
         private readonly array $sizes,
         private readonly array $styles,
+        private readonly array $aliases = [],
     ) {}
 
     /**
@@ -99,7 +101,40 @@ final class IconSet
 
         $notice = $definition['notice'] ?? null;
 
-        return new self($name, is_string($notice) ? $notice : '', $scale, $styles);
+        return new self(
+            $name,
+            is_string($notice) ? $notice : '',
+            $scale,
+            $styles,
+            self::aliases($name, $definition['aliases'] ?? []),
+        );
+    }
+
+    /**
+     * The set's own spellings, keyed by the name Shape draws them under.
+     *
+     * Read the same way as everything else here — checked rather than assumed,
+     * because this half of the config is the half a consumer writes by hand.
+     *
+     * @return array<string, string>
+     */
+    private static function aliases(string $name, mixed $aliases): array
+    {
+        if (! is_array($aliases)) {
+            throw new InvalidArgumentException("Icon set [{$name}] has an [aliases] that is not an array.");
+        }
+
+        $map = [];
+
+        foreach ($aliases as $canonical => $source) {
+            if (! is_string($canonical) || ! is_string($source) || $canonical === '' || $source === '') {
+                throw new InvalidArgumentException("Icon set [{$name}] has an alias that is not a name against a name.");
+            }
+
+            $map[$canonical] = $source;
+        }
+
+        return $map;
     }
 
     /**
@@ -194,6 +229,58 @@ final class IconSet
     public function classFor(string $size): string
     {
         return '[:where(&)]:'.$this->sizes[$size]['class'];
+    }
+
+    /**
+     * This set's own spelling of a name Shape draws under.
+     *
+     * The matrix model generalised across sets; the vocabulary did not. Lucide
+     * has `x` where Heroicons has `x-mark`, `info` where it has
+     * `information-circle`, `circle-check` where it has `check-circle`. Without
+     * a translation, swapping a set can add icons to this library but can never
+     * replace the ones it draws itself, because the component a checkbox renders
+     * is `icon.check` and nothing else.
+     *
+     * So an alias moves the *source* file only. `shape:icon x-mark --set=lucide`
+     * reads `x.svg` and writes `x-mark.blade.php`: the call sites inside this
+     * library keep asking for the name they have always asked for, and the
+     * drawing behind it changes. That is the whole feature.
+     *
+     * Identity when the set declares none, which is every set that happens to
+     * spell things the way Heroicons does.
+     */
+    public function sourceName(string $name): string
+    {
+        return $this->aliases[$name] ?? $name;
+    }
+
+    /**
+     * The names Shape would draw one of this set's files under, for `--all`.
+     *
+     * The reverse of `sourceName`, and it is not a function: two Shape names may
+     * legitimately be drawn from one file, so this answers with a list. Three
+     * cases, and the third is the one worth naming:
+     *
+     * - A file something aliases to is written under every name that aliases it.
+     * - A file nothing aliases to is written under its own name — a set's own
+     *   `bell.svg` is `icon.bell` here, which is what `--all` is for.
+     * - A file whose name is itself an alias *key* is written under nothing. If
+     *   `check-circle` means `circle-check.svg` in this set, then a
+     *   `check-circle.svg` sitting beside it is a different drawing with no
+     *   Shape name left to take — generating it would quietly shadow the alias
+     *   with the wrong glyph.
+     *
+     * @return list<string>
+     */
+    public function canonicalNames(string $source): array
+    {
+        $names = array_keys($this->aliases, $source, true);
+
+        if ($names !== []) {
+            return $names;
+        }
+
+        return isset($this->aliases[$source]) ? [] : [$source];
     }
 
     /**

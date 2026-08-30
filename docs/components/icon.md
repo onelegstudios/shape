@@ -100,6 +100,26 @@ php artisan shape:icon bell --set=lucide --from=vendor/lucide/icons
 
 See [Tooling](../tooling.md#shapeicon).
 
+## Using a different set
+
+An icon written into `shape.components_path` replaces the packaged one
+everywhere, including inside Shape's own components — so swapping the set the
+whole library draws in is one command:
+
+```bash
+php artisan shape:icon --replace --set=lucide --from=vendor/lucide/icons
+```
+
+That generates the twelve names Shape draws in components of its own, under
+those names, from whatever the set calls them. Nothing at a call site changes:
+`<x-shape::icon.x-mark />` is still `x-mark`, and Lucide's `x.svg` is what is
+behind it now.
+
+A set that spells things its own way says so once, in `aliases` — see
+[Tooling](../tooling.md#names-and-replacing-shapes-own-icons). Cover eleven of
+the twelve and the twelfth quietly keeps its Heroicon, which is why
+`shape:doctor` counts them.
+
 ## Reference
 
 | Prop | Default | Values |

@@ -23,6 +23,12 @@ use Symfony\Component\Finder\Finder;
  * that is where the rule is easiest to break: the file is in `resources/views`
  * now, it looks like every other Blade file in the project, and nothing about it
  * says the compiler is going to pre-render it.
+ *
+ * Icon coverage is here for the same reason and is otherwise unrelated. Once an
+ * application has replaced Shape's icons with a set of its own, a name it missed
+ * does not fail — it resolves to the packaged Heroicon and draws perfectly, in
+ * the wrong set, on a page that is now wearing two. Nothing renders red, so
+ * something has to say it out loud.
  */
 class DoctorCommand extends Command
 {
@@ -63,20 +69,108 @@ class DoctorCommand extends Command
             }
         }
 
+        $missing = $this->coverage($registry);
+
         $this->newLine();
 
-        if ($offences === 0) {
+        if ($offences === 0 && $missing === 0) {
             $this->components->info("{$checked} component(s) checked, and every one of them folds cleanly.");
 
             return self::SUCCESS;
         }
 
-        $this->components->error("{$offences} problem(s) in {$checked} component(s).");
-        $this->line('  A folded component is rendered once, while Blade compiles. Anything above');
-        $this->line('  belongs at the call site, or inside an @unblaze block that cuts a hole in');
-        $this->line('  the fold on purpose — which is what `error.blade.php` does, and why.');
+        if ($offences > 0) {
+            $this->components->error("{$offences} problem(s) in {$checked} component(s).");
+            $this->line('  A folded component is rendered once, while Blade compiles. Anything above');
+            $this->line('  belongs at the call site, or inside an @unblaze block that cuts a hole in');
+            $this->line('  the fold on purpose — which is what `error.blade.php` does, and why.');
+        }
+
+        if ($missing > 0) {
+            $this->components->error("{$missing} icon(s) this library draws are not in your set.");
+            $this->line('  Each one falls back to the icon this package ships, so those components');
+            $this->line('  render in Heroicons while the rest of the page renders in yours. Generate');
+            $this->line('  them with `shape:icon --replace`, and if a name has no drawing under it,');
+            $this->line('  give the set an `aliases` entry for that name in `shape.icon_sets`.');
+        }
 
         return self::FAILURE;
+    }
+
+    /**
+     * Report how much of what the library draws the ejected icon set covers.
+     *
+     * Both halves are derived rather than declared: the names come out of the
+     * markup of the components that draw them, and the coverage out of the
+     * directory those names resolve from first. The check is silent when nothing
+     * has been ejected into that directory — an application on the packaged
+     * icons is not partially covered, it is covered.
+     */
+    protected function coverage(Registry $registry): int
+    {
+        $path = config('shape.components_path');
+
+        if (! is_string($path) || ! is_dir($directory = rtrim($path, '/').'/icon')) {
+            return 0;
+        }
+
+        $drawn = $registry->icons();
+
+        $present = array_values(array_filter(
+            $drawn,
+            fn (string $name): bool => is_file($directory.'/'.$name.'.blade.php'),
+        ));
+
+        if ($present === []) {
+            return 0;
+        }
+
+        $missing = array_values(array_diff($drawn, $present));
+
+        $this->components->twoColumnDetail(
+            'icon set',
+            $this->attribution($directory, $present).', '.count($present).' of '.count($drawn).' names',
+        );
+
+        foreach ($missing as $name) {
+            $this->components->twoColumnDetail(
+                "  {$name}",
+                '<fg=red>missing</> <fg=gray>— falls back to Heroicons</>',
+            );
+        }
+
+        return count($missing);
+    }
+
+    /**
+     * Which set the ejected icons came from, as far as they will say.
+     *
+     * Every generated icon carries its set's notice verbatim, so this is a fact
+     * about the files rather than a guess about them. Two answers instead of one
+     * is worth printing on its own: a directory holding icons from two sets is
+     * the mistake this whole check is looking for, arrived at from the other
+     * direction.
+     *
+     * @param  list<string>  $present
+     */
+    protected function attribution(string $directory, array $present): string
+    {
+        $sets = config('shape.icon_sets');
+        $found = [];
+
+        foreach ($present as $name) {
+            $source = (string) file_get_contents($directory.'/'.$name.'.blade.php');
+
+            foreach (is_array($sets) ? $sets : [] as $set => $definition) {
+                $notice = is_array($definition) ? ($definition['notice'] ?? null) : null;
+
+                if (is_string($notice) && $notice !== '' && str_contains($source, $notice)) {
+                    $found[(string) $set] = true;
+                }
+            }
+        }
+
+        return $found === [] ? 'unattributed' : implode(' and ', array_keys($found));
     }
 
     /**

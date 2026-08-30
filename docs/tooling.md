@@ -118,6 +118,25 @@ comments are exempt too, since a comment never runs.
 Components that only memoize are left alone: memoization caches a rendered
 component per prop set at run time, so it sees the request it was rendered in.
 
+It also reports how much of the library a replaced icon set covers, which is a
+different mistake with the same shape — it has no symptom either:
+
+```
+  icon set ............................ lucide, 11 of 12 names
+  information-circle ....... missing — falls back to Heroicons
+```
+
+Eleven of twelve renders perfectly. The twelfth resolves to the Heroicon this
+package ships and draws correctly, in the wrong set, on a page now wearing two.
+Both halves are derived — the names out of the components that draw them, the
+coverage out of `components_path` — and the attribution is read from the notice
+each generated file carries, so an icon directory holding two sets says so.
+
+The check is silent until something has actually replaced one of those names: an
+application on the packaged icons is not partially covered, and a directory of
+icons that are none of Shape's own is a supplementary set, which is the other
+supported thing to do.
+
 It exits non-zero on a finding, so it can sit in CI. `--path=` points it
 somewhere else, and `--package` runs it over the components Shape itself
 ships — which the suite in this repository does on every run, so the library is
@@ -132,6 +151,7 @@ Every icon in Shape is generated. The header on each file says
 php artisan shape:icon check arrow-right --from=vendor/heroicons/heroicons/optimized
 php artisan shape:icon --all --from=./resources/svg
 php artisan shape:icon bell --set=lucide --from=./vendor/lucide/icons
+php artisan shape:icon --replace --set=lucide --from=./vendor/lucide/icons
 ```
 
 ### What a set is
@@ -199,6 +219,63 @@ php artisan vendor:publish --tag="laravel-shape-config"
 
 A flat directory of SVGs is not a special case — it is a set with one style
 whose only pattern is `{name}.svg`, which is what the shipped `lucide` entry is.
+
+### Names, and replacing Shape's own icons
+
+Writing an icon into `components_path` replaces the packaged one *everywhere*,
+including inside Shape's own components — the service provider registers that
+path first, so `resources/views/shape/icon/check.blade.php` is what a checkbox
+renders. No config, no registration, and no cost to folding.
+
+What stood in the way of using that was never the mechanism. It was spelling.
+Shape's components ask for Heroicons' names, and Lucide has `x` rather than
+`x-mark`, `info` rather than `information-circle`, `circle-check` rather than
+`check-circle`. The matrix generalised across sets; the vocabulary did not.
+
+So a set can also declare what it calls things:
+
+```php
+'lucide' => [
+    'notice' => 'Lucide (https://lucide.dev), ISC licensed.',
+    'styles' => [
+        'outline' => ['base' => '{name}.svg'],
+    ],
+    'aliases' => [
+        'x-mark' => 'x',
+        'information-circle' => 'info',
+        // …
+    ],
+],
+```
+
+An alias moves the *source file* and nothing else. `shape:icon x-mark
+--set=lucide` reads `x.svg` and writes `x-mark.blade.php`: the close button goes
+on asking for the name it has always asked for, and the drawing behind it
+changes. One direction only, and a name a set spells the same way needs no
+entry — most of them.
+
+`--replace` is that applied to the whole library at once:
+
+```bash
+php artisan shape:icon --replace --set=lucide --from=./vendor/lucide/icons
+```
+
+It generates exactly the twelve names Shape draws in components of its own — the
+checkbox's `check` and `minus`, the pager's chevrons, the select's
+`chevron-down`, the close button's `x-mark`, the four glyphs the tones resolve
+to, and the stat's two trends — and nothing else. That list is read out of the
+markup rather than written down, so a component that gains an icon cannot leave
+a hole in it. On a fresh application `components_path` is empty, so there is
+nothing to `--force` and nothing to eject first.
+
+Nothing above changes what a call site looks like, because none of it reaches
+the component's name. `<x-shape::icon.x-mark />` is `x-mark` whichever set drew
+it.
+
+`--all` is the one place the translation runs backwards: it walks files, and
+files carry the set's names, so each is written under every Shape name that
+aliases to it. A file nothing aliases to is written under its own name, which is
+how a supplementary set adds icons rather than replacing them.
 
 ### What it writes
 

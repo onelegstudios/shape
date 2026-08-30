@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Onelegstudios\Shape\Registry;
 use Onelegstudios\Shape\Tests\TestCase;
 
 beforeAll(function () {
@@ -27,6 +28,30 @@ beforeEach(function () {
 function writeComponent(string $name, string $source): void
 {
     file_put_contents((string) TestCase::$componentsPath.'/'.$name, $source);
+}
+
+/**
+ * Stand in an ejected icon set of `$names`, as `shape:icon` would have left it.
+ *
+ * The notice is what the command writes verbatim from the set's config, and is
+ * how the report knows which set is on the page.
+ *
+ * @param  list<string>  $names
+ */
+function writeIcons(array $names, string $notice = 'Lucide (https://lucide.dev), ISC licensed.'): void
+{
+    $directory = (string) TestCase::$componentsPath.'/icon';
+
+    if (! is_dir($directory)) {
+        mkdir($directory, 0777, true);
+    }
+
+    foreach ($names as $name) {
+        file_put_contents(
+            $directory.'/'.$name.'.blade.php',
+            "@blaze(fold: true, memo: true)\n\n{{-- {$notice} Regenerate; don't hand-edit. --}}\n\n<svg />\n",
+        );
+    }
 }
 
 it('passes the components the package itself ships', function () {
@@ -117,5 +142,55 @@ it('has nothing to check when nothing has been ejected', function () {
 
     $this->artisan('shape:doctor')
         ->expectsOutputToContain('No components to check')
+        ->assertSuccessful();
+});
+
+it('says which icons a replacement set left behind', function () {
+    // Eleven of twelve renders perfectly. The twelfth resolves to the Heroicon
+    // this package ships and draws in the wrong set, on a page now wearing two,
+    // with nothing anywhere to say so — which is exactly the kind of mistake
+    // this command exists for.
+    $drawn = (new Registry)->icons();
+
+    writeIcons(array_values(array_diff($drawn, ['information-circle'])));
+
+    // One expectation per line written: the coverage header, the name that is
+    // missing, and the failure it adds up to.
+    $this->artisan('shape:doctor')
+        ->expectsOutputToContain('lucide, '.(count($drawn) - 1).' of '.count($drawn).' names')
+        ->expectsOutputToContain('information-circle')
+        ->expectsOutputToContain('are not in your set')
+        ->assertFailed();
+});
+
+it('passes a replacement set that covers every name the library draws', function () {
+    writeIcons((new Registry)->icons());
+
+    $this->artisan('shape:doctor')
+        ->expectsOutputToContain('lucide, 12 of 12 names')
+        ->assertSuccessful();
+});
+
+it('names both sets when an icon directory is wearing two', function () {
+    // Arrived at from the other direction: full coverage, and still a page in
+    // two icon sets. Worth printing on its own.
+    $drawn = (new Registry)->icons();
+
+    writeIcons(array_values(array_diff($drawn, ['check'])));
+    writeIcons(['check'], 'Heroicons (https://heroicons.com), MIT licensed.');
+
+    $this->artisan('shape:doctor')
+        ->expectsOutputToContain('lucide and heroicons, 12 of 12 names')
+        ->assertSuccessful();
+});
+
+it('has no opinion about icons until something has replaced them', function () {
+    // An application on the packaged icons is not partially covered; it is
+    // covered. A directory with icons in it that are none of the library's own
+    // is a supplementary set, which is the other supported thing to do.
+    writeIcons(['bell', 'sparkles']);
+
+    $this->artisan('shape:doctor')
+        ->doesntExpectOutputToContain('icon set')
         ->assertSuccessful();
 });

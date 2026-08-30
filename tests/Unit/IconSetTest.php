@@ -45,6 +45,24 @@ function lucide(): IconSet
     ], scale());
 }
 
+/**
+ * A set that spells things its own way, which is every set that is not
+ * Heroicons.
+ */
+function aliased(): IconSet
+{
+    return IconSet::fromArray('lucide', [
+        'styles' => [
+            'outline' => ['base' => '{name}.svg'],
+        ],
+        'aliases' => [
+            'x-mark' => 'x',
+            'information-circle' => 'info',
+            'close' => 'x',
+        ],
+    ], scale());
+}
+
 it('reads the styles off a set and the sizes off the library', function () {
     expect(heroicons()->sizes())->toBe(['xs', 'sm', 'base'])
         ->and(heroicons()->styles())->toBe(['solid', 'outline'])
@@ -183,4 +201,71 @@ it('ships a heroicons set and a single-style set to check the model generalises'
 
     expect($single->styleFor('sm'))->toBe('outline')
         ->and($single->sizes())->toBe($shipped->sizes());
+});
+
+it('translates one of Shape\'s names into the set\'s own', function () {
+    expect(aliased()->sourceName('x-mark'))->toBe('x')
+        ->and(aliased()->sourceName('information-circle'))->toBe('info');
+});
+
+it('leaves a name the set spells the same way alone', function () {
+    // Which is most of them, and why a set with no `aliases` key needs no
+    // special case anywhere: identity is the default answer.
+    expect(aliased()->sourceName('check'))->toBe('check')
+        ->and(lucide()->sourceName('x-mark'))->toBe('x-mark')
+        ->and(heroicons()->sourceName('x-mark'))->toBe('x-mark');
+});
+
+it('reverses a file back to every name Shape would draw it under', function () {
+    // `--all` walks files, and files carry the set's names. Two of Shape's names
+    // may legitimately be drawn from one file, so the reverse is a list.
+    expect(aliased()->canonicalNames('x'))->toBe(['x-mark', 'close'])
+        ->and(aliased()->canonicalNames('info'))->toBe(['information-circle']);
+});
+
+it('reverses a file nothing aliases to under its own name', function () {
+    // The ordinary case, and the one `--all` is for: a set's own `bell.svg`
+    // becomes `icon.bell` here.
+    expect(aliased()->canonicalNames('bell'))->toBe(['bell'])
+        ->and(lucide()->canonicalNames('bell'))->toBe(['bell']);
+});
+
+it('reverses a file whose name an alias has already spoken for under nothing', function () {
+    // If `x-mark` means `x.svg` in this set, then a file actually called
+    // `x-mark.svg` is a different drawing with no name left to take. Generating
+    // it would shadow the alias with the wrong glyph, silently.
+    expect(aliased()->canonicalNames('x-mark'))->toBe([])
+        ->and(aliased()->canonicalNames('information-circle'))->toBe([]);
+});
+
+it('refuses an alias that is not a name against a name', function () {
+    expect(fn () => IconSet::fromArray('bad', [
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+        'aliases' => ['x-mark' => ['x']],
+    ], scale()))->toThrow(InvalidArgumentException::class, 'not a name against a name');
+
+    expect(fn () => IconSet::fromArray('bad', [
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+        'aliases' => 'x',
+    ], scale()))->toThrow(InvalidArgumentException::class, 'not an array');
+});
+
+it('ships aliases that cover every name the library draws', function () {
+    // The shipped Lucide entry is the worked example of a replacement set, so
+    // it has to actually be one. A name Lucide spells differently and this map
+    // misses is a component that keeps its Heroicon after a full replacement.
+    $set = IconSet::fromArray('lucide', config('shape.icon_sets')['lucide'], config('shape.icon_sizes'));
+
+    expect($set->sourceName('x-mark'))->toBe('x')
+        ->and($set->sourceName('check-circle'))->toBe('circle-check')
+        ->and($set->sourceName('x-circle'))->toBe('circle-x')
+        ->and($set->sourceName('exclamation-triangle'))->toBe('triangle-alert')
+        ->and($set->sourceName('information-circle'))->toBe('info')
+        ->and($set->sourceName('arrow-trending-up'))->toBe('trending-up')
+        ->and($set->sourceName('arrow-trending-down'))->toBe('trending-down');
+
+    // The five Lucide happens to agree with Heroicons about.
+    foreach (['check', 'minus', 'chevron-left', 'chevron-right', 'chevron-down'] as $name) {
+        expect($set->sourceName($name))->toBe($name);
+    }
 });

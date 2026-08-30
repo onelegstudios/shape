@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use InvalidArgumentException;
 use Onelegstudios\Shape\IconSet;
+use Onelegstudios\Shape\Registry;
 
 /**
  * Turn a directory of SVGs into icon components.
@@ -27,6 +28,14 @@ use Onelegstudios\Shape\IconSet;
  * and it puts the set a consumer actually wants — theirs — furthest out of
  * reach. This reads whatever directory it is pointed at, in whatever layout the
  * manifest describes.
+ *
+ * `--replace` is that taken to its conclusion. Writing an icon into
+ * `components_path` replaces the packaged one everywhere, including inside this
+ * library's own components, because that path resolves first — so generating
+ * the twelve names the library draws swaps the icon set out from under the whole
+ * of it. What made that impossible before aliases was not the mechanism but the
+ * vocabulary: a set that spells `x-mark` as `x` can add icons here, and never
+ * replace one.
  */
 class IconCommand extends Command
 {
@@ -39,6 +48,7 @@ class IconCommand extends Command
         {--from= : The directory to read SVGs from}
         {--to= : Where to write the components}
         {--all : Generate every icon in the source directory}
+        {--replace : Generate exactly the icons Shape draws itself}
         {--force : Overwrite icons that already exist}';
 
     /**
@@ -49,12 +59,18 @@ class IconCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(Filesystem $files): int
+    public function handle(Filesystem $files, Registry $registry): int
     {
         try {
             $set = $this->set();
         } catch (InvalidArgumentException $e) {
             $this->components->error($e->getMessage());
+
+            return self::FAILURE;
+        }
+
+        if ($this->option('replace') && ((array) $this->argument('icons') !== [] || $this->option('all'))) {
+            $this->components->error('--replace already knows which icons to generate. Drop the names and --all, or drop --replace.');
 
             return self::FAILURE;
         }
@@ -69,7 +85,7 @@ class IconCommand extends Command
 
         $to = $this->destination();
 
-        $names = $this->names($set, $files, $from);
+        $names = $this->names($set, $files, $registry, $from);
 
         if ($names === []) {
             $this->components->error('Name at least one icon, or pass --all.');
@@ -116,11 +132,18 @@ class IconCommand extends Command
      * Keyed the way the generated component switches on it, so that assembling
      * the arms afterwards is a grouping and nothing more.
      *
+     * `$name` is Shape's name for the drawing throughout; only the path it is
+     * substituted into takes the set's own spelling of it. That asymmetry is the
+     * point of an alias — `x-mark` reads `x.svg` and is still written to
+     * `x-mark.blade.php`, so the checkbox and the close button keep asking for
+     * the names they have always asked for.
+     *
      * @return array<string, string>
      */
     protected function matrix(IconSet $set, Filesystem $files, string $from, string $name): array
     {
         $cells = [];
+        $source = $set->sourceName($name);
 
         foreach ($set->styles() as $style) {
             foreach ($set->sizes() as $size) {
@@ -130,7 +153,7 @@ class IconCommand extends Command
                     continue;
                 }
 
-                $path = $from.'/'.str_replace('{name}', $name, $pattern);
+                $path = $from.'/'.str_replace('{name}', $source, $pattern);
 
                 if ($files->exists($path)) {
                     $cells["{$style}:{$size}"] = $path;
@@ -367,12 +390,23 @@ class IconCommand extends Command
     }
 
     /**
-     * The icons to generate.
+     * The icons to generate, as Shape's names for them.
+     *
+     * Three ways to arrive at that list, and they differ in what has to be
+     * translated. Names on the command line are already Shape's. `--replace` is
+     * the list the library draws itself, derived from the markup so that a
+     * component gaining an icon does not quietly leave a hole here. `--all` is
+     * the odd one: what it finds are *files*, which are the set's names, and
+     * they have to come back through the alias map before they can be written.
      *
      * @return list<string>
      */
-    protected function names(IconSet $set, Filesystem $files, string $from): array
+    protected function names(IconSet $set, Filesystem $files, Registry $registry, string $from): array
     {
+        if ($this->option('replace')) {
+            return $registry->icons();
+        }
+
         if (! $this->option('all')) {
             /** @var list<string> $icons */
             $icons = (array) $this->argument('icons');
@@ -391,7 +425,11 @@ class IconCommand extends Command
 
             foreach ($files->files($path) as $file) {
                 if ($file->getExtension() === 'svg') {
-                    $names[] = $file->getFilenameWithoutExtension();
+                    // A file may answer to more than one of Shape's names, or —
+                    // when its own name is spoken for by an alias — to none.
+                    foreach ($set->canonicalNames($file->getFilenameWithoutExtension()) as $name) {
+                        $names[] = $name;
+                    }
                 }
             }
         }
