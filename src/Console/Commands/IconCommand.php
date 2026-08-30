@@ -36,6 +36,12 @@ use Onelegstudios\Shape\Registry;
  * of it. What made that impossible before aliases was not the mechanism but the
  * vocabulary: a set that spells `x-mark` as `x` can add icons here, and never
  * replace one.
+ *
+ * `--namespace` is the other end of the same problem. Two sets written flat
+ * share one namespace, and the second to spell `check` is refused rather than
+ * allowed to overwrite the first; a subdirectory gives each set its own. It is
+ * not the default, and shouldn't be: the primary set stays flat so that a call
+ * site has one spelling for an icon whichever set drew it.
  */
 class IconCommand extends Command
 {
@@ -47,6 +53,7 @@ class IconCommand extends Command
         {--set=heroicons : The icon set the source directory holds}
         {--from= : The directory to read SVGs from}
         {--to= : Where to write the components}
+        {--namespace= : Write into a subdirectory, so a set has a namespace of its own}
         {--all : Generate every icon in the source directory}
         {--replace : Generate exactly the icons Shape draws itself}
         {--force : Overwrite icons that already exist}';
@@ -63,6 +70,7 @@ class IconCommand extends Command
     {
         try {
             $set = $this->set();
+            $namespace = $this->namespace();
         } catch (InvalidArgumentException $e) {
             $this->components->error($e->getMessage());
 
@@ -75,6 +83,16 @@ class IconCommand extends Command
             return self::FAILURE;
         }
 
+        if ($this->option('replace') && $namespace !== null) {
+            // A namespaced icon replaces nothing: this library asks for
+            // `shape::icon.x-mark`, and a file under `icon/lucide/` answers to
+            // `shape::icon.lucide.x-mark`. The run would write twelve files and
+            // change nothing.
+            $this->components->error('--replace writes over the names Shape draws, which are flat. Drop --namespace, or drop --replace.');
+
+            return self::FAILURE;
+        }
+
         $from = $this->source();
 
         if ($from === null) {
@@ -83,7 +101,7 @@ class IconCommand extends Command
             return self::FAILURE;
         }
 
-        $to = $this->destination();
+        $to = $this->destination($namespace);
 
         $names = $this->names($set, $files, $registry, $from);
 
@@ -467,16 +485,46 @@ class IconCommand extends Command
         return is_string($from) && $from !== '' ? rtrim($from, '/') : null;
     }
 
-    protected function destination(): string
+    /**
+     * The subdirectory this set is written into, if it asked for one.
+     *
+     * Two sets generated into `icon/` share one namespace, and the second one
+     * to spell `check` is refused rather than allowed to overwrite the first.
+     * A subdirectory is the way to keep both: `icon/lucide/bell.blade.php` is
+     * `<x-shape::icon.lucide.bell />`, and a flat `bell` is no longer in its
+     * way.
+     *
+     * One kebab-case segment and nothing else. This is the only option that
+     * can put a file outside the components path — `--namespace=../..` would —
+     * so it is the one that has to be checked rather than trusted.
+     */
+    protected function namespace(): ?string
+    {
+        $namespace = $this->option('namespace');
+
+        if (! is_string($namespace) || $namespace === '') {
+            return null;
+        }
+
+        if (preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $namespace) !== 1) {
+            throw new InvalidArgumentException("[{$namespace}] is not a namespace. Pass one lower-case segment, like --namespace=lucide.");
+        }
+
+        return $namespace;
+    }
+
+    protected function destination(?string $namespace = null): string
     {
         $to = $this->option('to');
 
         if (is_string($to) && $to !== '') {
-            return rtrim($to, '/');
+            $base = rtrim($to, '/');
+        } else {
+            $path = config('shape.components_path');
+
+            $base = (is_string($path) ? rtrim($path, '/') : resource_path('views/shape')).'/icon';
         }
 
-        $path = config('shape.components_path');
-
-        return (is_string($path) ? rtrim($path, '/') : resource_path('views/shape')).'/icon';
+        return $namespace === null ? $base : $base.'/'.$namespace;
     }
 }

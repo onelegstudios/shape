@@ -152,6 +152,7 @@ php artisan shape:icon check arrow-right --from=vendor/heroicons/heroicons/optim
 php artisan shape:icon --all --from=./resources/svg
 php artisan shape:icon bell --set=lucide --from=./vendor/lucide/icons
 php artisan shape:icon --replace --set=lucide --from=./vendor/lucide/icons
+php artisan shape:icon --all --set=lucide --from=./vendor/lucide/icons --namespace=lucide
 ```
 
 ### What a set is
@@ -276,6 +277,49 @@ it.
 files carry the set's names, so each is written under every Shape name that
 aliases to it. A file nothing aliases to is written under its own name, which is
 how a supplementary set adds icons rather than replacing them.
+
+### Two sets at once
+
+Sets generated into `icon/` share one namespace. Names that don't collide
+coexist there, which is the ordinary supplementary case and wants nothing:
+
+```
+check .. 4 drawing(s)      # Heroicons
+bell .. 1 drawing(s)       # a second set
+check .. exists, kept      # a collision, refused
+```
+
+Refusing is the right default — the alternative is a set silently overwriting
+another set's drawings — but it leaves no way to keep both. `--namespace` gives
+a set a subdirectory, and with it a namespace of its own:
+
+```bash
+php artisan shape:icon --all --set=lucide --from=./vendor/lucide/icons --namespace=lucide
+```
+
+```
+resources/views/shape/icon/lucide/bell.blade.php
+→ <x-shape::icon.lucide.bell />
+→ <x-shape::icon name="lucide.bell" />
+→ <x-shape::button icon="lucide.bell">
+```
+
+Nesting is a path and nothing else: a namespaced icon folds exactly as a
+top-level one does, including into the fold of a button it sits inside, because
+every generated file carries its own `@blaze` front matter and that is what
+Blaze reads. `shape:eject`, `shape:doctor` and Tailwind's `@source` all recurse
+already.
+
+It is one lower-case segment — `--namespace=../..` is refused rather than
+allowed to write outside the components path — and it does not combine with
+`--replace`, which writes over names that are flat by definition.
+
+Reach for it when two sets genuinely collide, and not before. Flat is better for
+the ordinary case of Heroicons plus the gaps: one spelling at every call site,
+and no collisions by construction. Note that a bare set name is a component that
+doesn't exist — `<x-shape::icon name="lucide" />` raises Blade's usual "unable
+to locate" error rather than rendering nothing, because Blade resolves a
+directory to an `index` view.
 
 ### What it writes
 

@@ -273,3 +273,87 @@ it('generates a set\'s own name for a drawing Shape has no name for', function (
 
     expect($this->destination.'/icon/spinner.blade.php')->toBeFile();
 });
+
+it('writes a namespaced set into a subdirectory of its own', function () {
+    // Two sets written flat share one namespace, and the second to spell a name
+    // the first already holds is refused. A subdirectory is how both are kept.
+    $this->artisan('shape:icon', [
+        'icons' => ['spinner'],
+        '--set' => 'lucide',
+        '--from' => $this->flat,
+        '--namespace' => 'lucide',
+    ])->assertSuccessful();
+
+    expect($this->destination.'/icon/lucide/spinner.blade.php')->toBeFile()
+        ->and($this->destination.'/icon/spinner.blade.php')->not->toBeFile();
+
+    // All three ways of naming an icon reach it, and the nesting is the only
+    // thing that changes about any of them.
+    expect(Blade::render('<x-shape::icon.lucide.spinner />'))->toContain('data-shape-icon');
+    expect(Blade::render('<x-shape::icon name="lucide.spinner" />'))->toContain('data-shape-icon');
+    expect(Blade::render('<x-shape::button icon="lucide.spinner">Save</x-shape::button>'))
+        ->toContain('data-shape-icon');
+});
+
+it('joins a namespace onto an explicit destination too', function () {
+    $this->artisan('shape:icon', [
+        'icons' => ['spinner'],
+        '--set' => 'lucide',
+        '--from' => $this->flat,
+        '--to' => $this->destination.'/icon',
+        '--namespace' => 'lucide',
+    ])->assertSuccessful();
+
+    expect($this->destination.'/icon/lucide/spinner.blade.php')->toBeFile();
+});
+
+it('does not treat a flat name and a namespaced one as a collision', function () {
+    // The reason the flag exists. Without the subdirectory the second run would
+    // print "exists, kept" and the second set would have nowhere to go.
+    $this->artisan('shape:icon', ['icons' => ['check'], '--from' => $this->heroicons])->assertSuccessful();
+
+    $this->artisan('shape:icon', [
+        'icons' => ['check'],
+        '--set' => 'lucide',
+        '--from' => $this->lucide,
+        '--namespace' => 'lucide',
+    ])->doesntExpectOutputToContain('exists, kept')->assertSuccessful();
+
+    expect(file_get_contents($this->destination.'/icon/check.blade.php'))
+        ->not->toContain('data-drawn="check"')
+        ->and(file_get_contents($this->destination.'/icon/lucide/check.blade.php'))
+        ->toContain('data-drawn="check"');
+
+    // And both are reachable, under names that don't compete.
+    expect(Blade::render('<x-shape::icon.check />'))->toContain('viewBox="0 0 24 24"');
+    expect(Blade::render('<x-shape::icon.lucide.check />'))->toContain('data-drawn="check"');
+});
+
+it('refuses a namespace that would write outside the components path', function () {
+    // The one way this flag can do damage, so it is checked rather than trusted.
+    foreach (['../escape', 'lucide/nested', 'Lucide', '.'] as $namespace) {
+        $this->artisan('shape:icon', [
+            'icons' => ['spinner'],
+            '--set' => 'lucide',
+            '--from' => $this->flat,
+            '--namespace' => $namespace,
+        ])->expectsOutputToContain('is not a namespace')->assertFailed();
+    }
+
+    expect(dirname($this->destination).'/escape')->not->toBeDirectory();
+});
+
+it('will not namespace the icons it replaces', function () {
+    // A namespaced icon replaces nothing: the library asks for
+    // `shape::icon.x-mark`, and a file under `icon/lucide/` answers to
+    // `shape::icon.lucide.x-mark`. The run would write twelve files and change
+    // nothing at all.
+    $this->artisan('shape:icon', [
+        '--replace' => true,
+        '--set' => 'lucide',
+        '--from' => $this->lucide,
+        '--namespace' => 'lucide',
+    ])->expectsOutputToContain('Drop --namespace')->assertFailed();
+
+    expect($this->destination.'/icon/lucide')->not->toBeDirectory();
+});

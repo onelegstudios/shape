@@ -98,6 +98,16 @@ php artisan shape:icon bell --from=resources/icons
 php artisan shape:icon bell --set=lucide --from=vendor/lucide/icons
 ```
 
+A whole second set can have a subdirectory, and a namespace, of its own:
+
+```bash
+php artisan shape:icon --all --set=lucide --from=vendor/lucide/icons --namespace=lucide
+```
+
+```blade
+<x-shape::icon.lucide.bell />
+```
+
 See [Tooling](../tooling.md#shapeicon).
 
 ## Using a different set
