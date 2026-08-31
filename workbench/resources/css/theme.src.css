@@ -1,0 +1,197 @@
+/*
+| The manual theme toggle. Workbench only — the package ships no part of this.
+|
+| Imported by preview.src.css and preview-seed.src.css rather than built on its
+| own; it produces no stylesheet of its own.
+|
+| Shape's dark treatment follows the operating system: three blocks in
+| shape.css sit behind `prefers-color-scheme: dark`, and a media query cannot
+| be re-pointed at a selector from outside. `docs/theming.md` tells an
+| application with a switch of its own what it has to do about that, and this
+| file is the gallery doing it — the gallery is a consuming application, so it
+| takes the documented path rather than one the documentation does not describe.
+|
+| Two halves, because the toggle needs both.
+|
+| The utilities half is the custom variant below: `dark:` compiles against
+| `data-theme` as well as the media query, and that covers the gallery's own
+| markup and every `dark:` in the package's Blade, since this build already
+| scans the package's views.
+|
+| The token half is the three blocks, restated. Twice: once to turn the tokens
+| dark when the reader asks for dark on a light system, and once to turn them
+| back when the reader asks for light on a dark one — that second half is the
+| one the media query would otherwise win outright. Both selectors carry an
+| extra attribute, so they outrank the originals on specificity and need no
+| layer of their own beyond the one they are correcting.
+|
+| Three states, matching what a reader can actually mean: `dark`, `light`, and
+| no attribute at all for "whatever this machine says".
+*/
+
+@custom-variant dark {
+    &:where([data-theme='dark'], [data-theme='dark'] *) {
+        @slot;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        &:where(:not([data-theme='light'], [data-theme='light'] *)) {
+            @slot;
+        }
+    }
+}
+
+@layer base {
+    /* Scrollbars, form-control chrome and the canvas behind the page. */
+    :root[data-theme='dark'] {
+        color-scheme: dark;
+    }
+
+    :root[data-theme='light'] {
+        color-scheme: light;
+    }
+
+    /* The surface contract. */
+    :root[data-theme='dark'] {
+        --shape-fg: var(--color-shape-50);
+        --shape-fg-muted: var(--color-shape-400);
+        --shape-ring: var(--color-shape-accent-500);
+    }
+
+    /* The tone block. */
+    [data-theme='dark'] [data-shape-tone] {
+        --shape-tone: var(--color-shape-100);
+        --shape-tone-hover: white;
+        --shape-tone-fg: var(--color-shape-900);
+        --shape-tone-ink: var(--color-shape-200);
+        --shape-tone-tint: var(--color-shape-800);
+        --shape-tone-tint-hover: var(--color-shape-700);
+        --shape-tone-surface: var(--color-shape-900);
+        --shape-tone-surface-hover: var(--color-shape-800);
+        --shape-tone-border: var(--color-shape-800);
+    }
+
+    [data-theme='dark'] [data-shape-tone='accent'] {
+        --shape-tone: var(--color-shape-accent-500);
+        --shape-tone-hover: var(--color-shape-accent-400);
+        --shape-tone-fg: var(--color-shape-950);
+        --shape-tone-ink: var(--color-shape-accent-200);
+        --shape-tone-tint: var(--color-shape-accent-950);
+        --shape-tone-tint-hover: var(--color-shape-accent-900);
+    }
+
+    [data-theme='dark'] [data-shape-tone='danger'] {
+        --shape-tone: var(--color-shape-danger-500);
+        --shape-tone-hover: var(--color-shape-danger-400);
+        --shape-tone-fg: var(--color-shape-950);
+        --shape-tone-ink: var(--color-shape-danger-200);
+        --shape-tone-tint: var(--color-shape-danger-950);
+        --shape-tone-tint-hover: var(--color-shape-danger-900);
+    }
+
+    [data-theme='dark'] [data-shape-tone='success'] {
+        --shape-tone: var(--color-shape-success-500);
+        --shape-tone-hover: var(--color-shape-success-400);
+        --shape-tone-fg: var(--color-shape-950);
+        --shape-tone-ink: var(--color-shape-success-200);
+        --shape-tone-tint: var(--color-shape-success-950);
+        --shape-tone-tint-hover: var(--color-shape-success-900);
+    }
+
+    [data-theme='dark'] [data-shape-tone='warning'] {
+        --shape-tone: var(--color-shape-warning-500);
+        --shape-tone-hover: var(--color-shape-warning-400);
+        --shape-tone-fg: var(--color-shape-950);
+        --shape-tone-ink: var(--color-shape-warning-200);
+        --shape-tone-tint: var(--color-shape-warning-950);
+        --shape-tone-tint-hover: var(--color-shape-warning-900);
+    }
+
+    /*
+    | And back again. Everything above this point is what shape.css would have
+    | done on a dark machine anyway; these are the values it would not have,
+    | for the reader who is on one and asked for light regardless.
+    */
+    @media (prefers-color-scheme: dark) {
+        :root[data-theme='light'] {
+            --shape-fg: var(--color-shape-900);
+            --shape-fg-muted: var(--color-shape-600);
+            --shape-ring: var(--color-shape-accent-600);
+        }
+
+        [data-theme='light'] [data-shape-tone] {
+            --shape-tone: var(--color-shape-900);
+            --shape-tone-hover: var(--color-shape-800);
+            --shape-tone-fg: var(--color-shape-50);
+            --shape-tone-ink: var(--color-shape-800);
+            --shape-tone-tint: var(--color-shape-100);
+            --shape-tone-tint-hover: var(--color-shape-200);
+            --shape-tone-surface: white;
+            --shape-tone-surface-hover: var(--color-shape-50);
+            --shape-tone-border: var(--color-shape-200);
+        }
+
+        [data-theme='light'] [data-shape-tone='accent'] {
+            --shape-tone: var(--color-shape-accent-700);
+            --shape-tone-hover: var(--color-shape-accent-800);
+            --shape-tone-fg: white;
+            --shape-tone-ink: var(--color-shape-accent-800);
+            --shape-tone-tint: var(--color-shape-accent-100);
+            --shape-tone-tint-hover: var(--color-shape-accent-200);
+        }
+
+        [data-theme='light'] [data-shape-tone='danger'] {
+            --shape-tone: var(--color-shape-danger-700);
+            --shape-tone-hover: var(--color-shape-danger-800);
+            --shape-tone-fg: white;
+            --shape-tone-ink: var(--color-shape-danger-800);
+            --shape-tone-tint: var(--color-shape-danger-100);
+            --shape-tone-tint-hover: var(--color-shape-danger-200);
+        }
+
+        [data-theme='light'] [data-shape-tone='success'] {
+            --shape-tone: var(--color-shape-success-700);
+            --shape-tone-hover: var(--color-shape-success-800);
+            --shape-tone-fg: white;
+            --shape-tone-ink: var(--color-shape-success-800);
+            --shape-tone-tint: var(--color-shape-success-100);
+            --shape-tone-tint-hover: var(--color-shape-success-200);
+        }
+
+        [data-theme='light'] [data-shape-tone='warning'] {
+            --shape-tone: var(--color-shape-warning-500);
+            --shape-tone-hover: var(--color-shape-warning-600);
+            --shape-tone-fg: var(--color-shape-warning-fg);
+            --shape-tone-ink: var(--color-shape-warning-800);
+            --shape-tone-tint: var(--color-shape-warning-100);
+            --shape-tone-tint-hover: var(--color-shape-warning-200);
+        }
+    }
+}
+
+@layer components {
+    /* The progress track, the third of the three. */
+    [data-theme='dark'] [data-shape-progress],
+    [data-theme='dark'] [data-shape-progress]::-webkit-progress-bar {
+        background: var(--color-shape-800);
+    }
+
+    [data-theme='dark'] [data-shape-progress]:indeterminate {
+        background:
+            linear-gradient(90deg, transparent, var(--shape-tone), transparent) no-repeat -40% 0 / 40% 100%,
+            var(--color-shape-800);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        [data-theme='light'] [data-shape-progress],
+        [data-theme='light'] [data-shape-progress]::-webkit-progress-bar {
+            background: var(--color-shape-200);
+        }
+
+        [data-theme='light'] [data-shape-progress]:indeterminate {
+            background:
+                linear-gradient(90deg, transparent, var(--shape-tone), transparent) no-repeat -40% 0 / 40% 100%,
+                var(--color-shape-200);
+        }
+    }
+}

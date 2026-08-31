@@ -11,4 +11,6 @@
 @import "../../../resources/css/shape.css";
 @import "../../../resources/css/shape-seed.css";
 
+@import "./theme.src.css";
+
 @source "../views";

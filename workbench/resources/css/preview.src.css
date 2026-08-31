@@ -9,4 +9,6 @@
 @import "tailwindcss";
 @import "../../../resources/css/shape.css";
 
+@import "./theme.src.css";
+
 @source "../views";
