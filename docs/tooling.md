@@ -152,8 +152,8 @@ php artisan shape:icon check arrow-right
 php artisan shape:icon --all
 php artisan shape:icon bell --set=lucide
 php artisan shape:icon --replace --set=lucide
-php artisan shape:icon --all --set=lucide --namespace=lucide
 php artisan shape:icon --all --from=./resources/svg
+php artisan shape:icon --status
 ```
 
 ### Where the drawings come from
@@ -366,11 +366,21 @@ check .. exists, kept      # a collision, refused
 ```
 
 Refusing is the right default — the alternative is a set silently overwriting
-another set's drawings — but it leaves no way to keep both. `--namespace` gives
-a set a subdirectory, and with it a namespace of its own:
+another set's drawings — but it leaves no way to keep both. Give the set a
+`namespace`, and it gets a subdirectory and a namespace of its own:
+
+```php
+'lucide' => [
+    'namespace' => 'lucide',
+    'notice' => 'Lucide (https://lucide.dev), ISC licensed.',
+    'styles' => [
+        'outline' => ['base' => '{name}.svg'],
+    ],
+],
+```
 
 ```bash
-php artisan shape:icon --all --set=lucide --from=./vendor/lucide/icons --namespace=lucide
+php artisan shape:icon --all --set=lucide --from=./vendor/lucide/icons
 ```
 
 ```
@@ -380,22 +390,40 @@ resources/views/shape/icon/lucide/bell.blade.php
 → <x-shape::button icon="lucide.bell">
 ```
 
+It belongs in the config rather than only on the command line because where a
+set lives is true of the set, not of the run that generated it. A flag is
+remembered for one run: the next `shape:icon bell --set=lucide` without it would
+write a second copy flat, into the namespace the first was moved out of to avoid
+a collision, and pin it in a second lockfile — silently, because the "exists,
+kept" check only looks in the directory the run resolved to.
+
+`--namespace` is still there as the override for a one-off run, and
+`--namespace=` with nothing after it is the way to say a run is flat about a set
+that normally isn't — which is what `--replace` needs, since it writes over
+names that are flat by definition. One lower-case segment either way:
+`../..` is refused rather than allowed to write outside the components path,
+whether it comes from the flag or from the set.
+
+`--status` reports every directory that holds a lockfile, not just the one the
+run resolved to, so a namespaced set is not a blind spot:
+
+```bash
+php artisan shape:icon --status
+```
+
 Nesting is a path and nothing else: a namespaced icon folds exactly as a
 top-level one does, including into the fold of a button it sits inside, because
 every generated file carries its own `@blaze` front matter and that is what
 Blaze reads. `shape:eject`, `shape:doctor` and Tailwind's `@source` all recurse
 already.
 
-It is one lower-case segment — `--namespace=../..` is refused rather than
-allowed to write outside the components path — and it does not combine with
-`--replace`, which writes over names that are flat by definition.
-
-Reach for it when two sets genuinely collide, and not before. Flat is better for
-the ordinary case of Heroicons plus the gaps: one spelling at every call site,
-and no collisions by construction. Note that a bare set name is a component that
-doesn't exist — `<x-shape::icon name="lucide" />` raises Blade's usual "unable
-to locate" error rather than rendering nothing, because Blade resolves a
-directory to an `index` view.
+Reach for a namespace when two sets genuinely collide, and not before. Flat is
+better for the ordinary case of Heroicons plus the gaps: one spelling at every
+call site, and no collisions by construction — which is why neither shipped set
+declares one. Note that a bare set name is a component that doesn't exist —
+`<x-shape::icon name="lucide" />` raises Blade's usual "unable to locate" error
+rather than rendering nothing, because Blade resolves a directory to an `index`
+view.
 
 ### What it writes
 

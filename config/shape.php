@@ -70,6 +70,16 @@ return [
     | when given, and stays the way to read a local folder or a set with no
     | upstream at all.
     |
+    | `namespace` gives a set a subdirectory of the components path, and with it
+    | a namespace of its own: `icon/lucide/bell.blade.php` is
+    | `<x-shape::icon.lucide.bell />`, and a flat `bell` from another set is no
+    | longer in its way. Leave it unset for the primary set — flat is the
+    | default so that a call site has one spelling for an icon whichever set
+    | drew it — and set it on a supplementary set that would otherwise collide.
+    | It belongs here rather than only on the command line because where a set
+    | lives is true of the set: a `--namespace` flag is remembered for one run,
+    | and the next run without it writes a second copy flat.
+    |
     | None of this is read at run time. It is spent while `shape:icon` writes a
     | component, and every value it decides is a literal in the generated file —
     | which is what keeps those files foldable.
@@ -96,6 +106,12 @@ return [
         ],
 
         'lucide' => [
+            // Uncomment to write this set into `icon/lucide/` instead of flat,
+            // so it can keep a name Heroicons already spells:
+            // `<x-shape::icon.lucide.bell />`. It is off here because this is
+            // the worked example of a *replacement* set, and `--replace`
+            // writes over Shape's own names, which are flat by definition.
+            // 'namespace' => 'lucide',
             'repo' => 'lucide-icons/lucide',
             'ref' => 'main',
             'path' => 'icons',

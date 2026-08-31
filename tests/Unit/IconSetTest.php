@@ -269,3 +269,33 @@ it('ships aliases that cover every name the library draws', function () {
         expect($set->sourceName($name))->toBe($name);
     }
 });
+
+it('reads the subdirectory a set is written into', function () {
+    $set = IconSet::fromArray('lucide', [
+        'namespace' => 'lucide',
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+    ], scale());
+
+    expect($set->namespace)->toBe('lucide');
+});
+
+it('ships both sets flat, so a call site has one spelling for an icon', function () {
+    // Flat is the default and stays it: a namespace declared here would put the
+    // set's drawings under a second spelling at every call site, and neither
+    // shipped set is the supplementary one that wants that.
+    foreach (['heroicons', 'lucide'] as $name) {
+        $set = IconSet::fromArray($name, config('shape.icon_sets')[$name], config('shape.icon_sizes'));
+
+        expect($set->namespace)->toBeNull();
+    }
+});
+
+it('refuses a namespace that is more than one segment', function () {
+    // The only value in a set definition that decides where a file is written.
+    foreach (['../escape', 'lucide/nested', 'Lucide', '.', ''] as $namespace) {
+        expect(fn () => IconSet::fromArray('bad', [
+            'namespace' => $namespace,
+            'styles' => ['outline' => ['base' => '{name}.svg']],
+        ], scale()))->toThrow(InvalidArgumentException::class);
+    }
+});

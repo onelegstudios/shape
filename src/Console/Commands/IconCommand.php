@@ -48,11 +48,19 @@ use RuntimeException;
  * vocabulary: a set that spells `x-mark` as `x` can add icons here, and never
  * replace one.
  *
- * `--namespace` is the other end of the same problem. Two sets written flat
- * share one namespace, and the second to spell `check` is refused rather than
- * allowed to overwrite the first; a subdirectory gives each set its own. It is
- * not the default, and shouldn't be: the primary set stays flat so that a call
- * site has one spelling for an icon whichever set drew it.
+ * A namespace is the other end of the same problem. Two sets written flat share
+ * one namespace, and the second to spell `check` is refused rather than allowed
+ * to overwrite the first; a subdirectory gives each set its own. It is not the
+ * default, and shouldn't be: the primary set stays flat so that a call site has
+ * one spelling for an icon whichever set drew it.
+ *
+ * Which subdirectory is the set's own answer, declared as `namespace` in
+ * `shape.icon_sets` beside everything else that is true of it. A flag alone was
+ * not enough: it is remembered only for the run it is typed on, so the next run
+ * without it wrote a second copy flat and pinned it in a second lockfile —
+ * exactly the collision the subdirectory existed to prevent. `--namespace`
+ * survives as the override for a one-off run, and `--namespace=` as the way to
+ * say flat out loud.
  */
 class IconCommand extends Command
 {
@@ -66,7 +74,7 @@ class IconCommand extends Command
         {--ref= : The branch, tag or commit to fetch, overriding the set\'s own}
         {--offline : Work from what has already been fetched, and fail rather than fetch}
         {--to= : Where to write the components}
-        {--namespace= : Write into a subdirectory, so a set has a namespace of its own}
+        {--namespace= : Override the set\'s own subdirectory; empty writes flat}
         {--all : Generate every icon in the set}
         {--replace : Generate exactly the icons Shape draws itself}
         {--status : Report which generated icons have been redrawn upstream}
@@ -84,7 +92,7 @@ class IconCommand extends Command
     {
         try {
             $set = $this->set();
-            $namespace = $this->namespace();
+            $namespace = $this->namespace($set);
         } catch (InvalidArgumentException $e) {
             $this->components->error($e->getMessage());
 
@@ -106,7 +114,7 @@ class IconCommand extends Command
             // `shape::icon.x-mark`, and a file under `icon/lucide/` answers to
             // `shape::icon.lucide.x-mark`. The run would write twelve files and
             // change nothing.
-            $this->components->error('--replace writes over the names Shape draws, which are flat. Drop --namespace, or drop --replace.');
+            $this->components->error("--replace writes over the names Shape draws, which are flat, and [{$set->name}] is written into [icon/{$namespace}/]. Pass --namespace= to write this run flat, or drop --replace.");
 
             return self::FAILURE;
         }
@@ -187,17 +195,67 @@ class IconCommand extends Command
      * This is the same trade `shape:eject --status` makes against the package,
      * one layer further out — there, the package is upstream; here, the icon set
      * is.
+     *
+     * Every directory that holds a lockfile is reported, not only the one this
+     * run resolved to. A set in a subdirectory keeps its own lock beside its own
+     * components, and a status that read one lockfile would answer "nothing has
+     * been generated" for a set sitting right there — the one answer worse than
+     * no answer, because it reads like a clean bill of health.
      */
     protected function status(Filesystem $files, string $to): int
     {
-        $lock = $this->lock($files, $to);
+        $directories = $this->recorded($files, $to);
+        $locks = [];
 
-        if ($lock === []) {
+        foreach ($directories as $directory) {
+            $lock = $this->lock($files, $directory);
+
+            if ($lock !== []) {
+                $locks[$directory] = $lock;
+            }
+        }
+
+        if ($locks === []) {
             $this->components->info("No icons have been generated into {$to}.");
 
             return self::SUCCESS;
         }
 
+        $stale = 0;
+
+        // Named whenever a reader could be in any doubt about which directory a
+        // row belongs to — several of them, or one that is not the destination
+        // this run resolved to. A run that reports on exactly where it was
+        // pointed reads as it always did.
+        $named = count($locks) > 1 || array_key_first($locks) !== $to;
+
+        foreach ($locks as $directory => $lock) {
+            if ($named) {
+                $this->newLine();
+                $this->components->info("In {$directory}.");
+            }
+
+            $stale += $this->report($files, (string) $directory, $lock);
+        }
+
+        $this->newLine();
+
+        if ($stale > 0) {
+            $this->components->warn("{$stale} icon(s) have been redrawn upstream. Regenerate them with --force.");
+        } else {
+            $this->components->info('Every generated icon is level with the set it came from.');
+        }
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * Report on one directory's worth of generated icons, and count the stale.
+     *
+     * @param  array<string, array{repo?: string, ref?: string, commit?: string, icons: array<string, string>}>  $lock
+     */
+    protected function report(Filesystem $files, string $to, array $lock): int
+    {
         $stale = 0;
 
         foreach ($lock as $name => $record) {
@@ -231,15 +289,7 @@ class IconCommand extends Command
             }
         }
 
-        $this->newLine();
-
-        if ($stale > 0) {
-            $this->components->warn("{$stale} icon(s) have been redrawn upstream. Regenerate them with --force.");
-        } else {
-            $this->components->info('Every generated icon is level with the set it came from.');
-        }
-
-        return self::SUCCESS;
+        return $stale;
     }
 
     /**
@@ -800,7 +850,7 @@ class IconCommand extends Command
     }
 
     /**
-     * The subdirectory this set is written into, if it asked for one.
+     * The subdirectory this set is written into, if it has one.
      *
      * Two sets generated into `icon/` share one namespace, and the second one
      * to spell `check` is refused rather than allowed to overwrite the first.
@@ -808,15 +858,26 @@ class IconCommand extends Command
      * `<x-shape::icon.lucide.bell />`, and a flat `bell` is no longer in its
      * way.
      *
-     * One kebab-case segment and nothing else. This is the only option that
-     * can put a file outside the components path — `--namespace=../..` would —
-     * so it is the one that has to be checked rather than trusted.
+     * The set answers this, and the flag only overrides it. A flag on its own
+     * is remembered by nobody: the run after it, without the flag, would write
+     * a second copy flat and pin it in a second lockfile, which is the
+     * collision the subdirectory was for. `--namespace=` with nothing after it
+     * is the way to say flat out loud, for the one run that means it.
+     *
+     * Three states, so all three are distinguishable: the option absent is
+     * null and defers to the set, the option empty is "flat", and anything
+     * else is one kebab-case segment, checked — `--namespace=../..` is the one
+     * way this can write outside the components path.
      */
-    protected function namespace(): ?string
+    protected function namespace(IconSet $set): ?string
     {
         $namespace = $this->option('namespace');
 
-        if (! is_string($namespace) || $namespace === '') {
+        if ($namespace === null) {
+            return $set->namespace;
+        }
+
+        if ($namespace === '') {
             return null;
         }
 
@@ -825,6 +886,45 @@ class IconCommand extends Command
         }
 
         return $namespace;
+    }
+
+    /**
+     * Every directory a generated set could be recorded in.
+     *
+     * `--status` is asked "what is stale", not "what is stale in this one
+     * directory", and answering only for the destination this run resolved to
+     * would have it report nothing at all for a set that lives in a
+     * subdirectory — a silence indistinguishable from a clean bill of health.
+     * Namespaces come out of the config rather than off the command line now,
+     * so the set of places to look is knowable without scanning for it.
+     *
+     * @return list<string>
+     */
+    protected function recorded(Filesystem $files, string $to): array
+    {
+        $directories = [$to];
+
+        if (is_string($this->option('namespace'))) {
+            return $directories;
+        }
+
+        $sets = config('shape.icon_sets');
+
+        foreach (is_array($sets) ? $sets : [] as $name => $definition) {
+            try {
+                $namespace = $this->set((string) $name)->namespace;
+            } catch (InvalidArgumentException) {
+                continue;
+            }
+
+            $directory = $this->destination($namespace);
+
+            if ($namespace !== null && ! in_array($directory, $directories, true) && $files->exists($directory.'/'.$this->lockName())) {
+                $directories[] = $directory;
+            }
+        }
+
+        return $directories;
     }
 
     protected function destination(?string $namespace = null): string

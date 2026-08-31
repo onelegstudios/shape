@@ -421,7 +421,112 @@ it('will not namespace the icons it replaces', function () {
         '--set' => 'lucide',
         '--from' => $this->lucide,
         '--namespace' => 'lucide',
-    ])->expectsOutputToContain('Drop --namespace')->assertFailed();
+    ])->expectsOutputToContain('Pass --namespace= to write this run flat')->assertFailed();
 
     expect($this->destination.'/icon/lucide')->not->toBeDirectory();
+});
+
+it('writes a set into the subdirectory the set itself declares', function () {
+    // The regression this key exists for. A namespace typed on the command line
+    // is remembered for exactly one run: the next `shape:icon check
+    // --set=lucide` without it wrote a second copy flat, into the namespace the
+    // first was moved out of to avoid a collision, and pinned it in a second
+    // lockfile — silently, because the "exists, kept" check only ever looks in
+    // the directory the run resolved to.
+    config()->set('shape.icon_sets.lucide.namespace', 'lucide');
+
+    $this->artisan('shape:icon', [
+        'icons' => ['check'],
+        '--set' => 'lucide',
+        '--from' => $this->lucide,
+    ])->assertSuccessful();
+
+    expect($this->destination.'/icon/lucide/check.blade.php')->toBeFile()
+        ->and($this->destination.'/icon/check.blade.php')->not->toBeFile();
+
+    // And the run after it lands in the same place rather than beside it.
+    $this->artisan('shape:icon', [
+        'icons' => ['check'],
+        '--set' => 'lucide',
+        '--from' => $this->lucide,
+    ])->expectsOutputToContain('exists, kept')->assertSuccessful();
+
+    expect($this->destination.'/icon/check.blade.php')->not->toBeFile()
+        ->and($this->destination.'/icon/shape-icons.json')->not->toBeFile();
+});
+
+it('lets one run override the subdirectory its set declares', function () {
+    config()->set('shape.icon_sets.lucide.namespace', 'lucide');
+
+    $this->artisan('shape:icon', [
+        'icons' => ['check'],
+        '--set' => 'lucide',
+        '--from' => $this->lucide,
+        '--namespace' => 'second',
+    ])->assertSuccessful();
+
+    expect($this->destination.'/icon/second/check.blade.php')->toBeFile()
+        ->and($this->destination.'/icon/lucide/check.blade.php')->not->toBeFile();
+});
+
+it('writes flat for a run that says flat out loud', function () {
+    // `--namespace=` with nothing after it. The one way to say "this run is
+    // flat" about a set that normally is not, which is what `--replace` needs.
+    config()->set('shape.icon_sets.lucide.namespace', 'lucide');
+
+    $this->artisan('shape:icon', [
+        'icons' => ['check'],
+        '--set' => 'lucide',
+        '--from' => $this->lucide,
+        '--namespace' => '',
+    ])->assertSuccessful();
+
+    expect($this->destination.'/icon/check.blade.php')->toBeFile()
+        ->and($this->destination.'/icon/lucide')->not->toBeDirectory();
+
+    $this->artisan('shape:icon', [
+        '--replace' => true,
+        '--set' => 'lucide',
+        '--from' => $this->lucide,
+        '--namespace' => '',
+        '--force' => true,
+    ])->assertSuccessful();
+
+    expect($this->destination.'/icon/x-mark.blade.php')->toBeFile();
+});
+
+it('refuses a set whose declared namespace would write outside the components path', function () {
+    // Checked where the set is parsed rather than where it is used, because this
+    // is the only value in a set definition that decides where a file is written.
+    foreach (['../escape', 'lucide/nested', 'Lucide'] as $namespace) {
+        config()->set('shape.icon_sets.lucide.namespace', $namespace);
+
+        $this->artisan('shape:icon', [
+            'icons' => ['spinner'],
+            '--set' => 'lucide',
+            '--from' => $this->flat,
+        ])->expectsOutputToContain('which is not one')->assertFailed();
+    }
+
+    expect(dirname($this->destination).'/escape')->not->toBeDirectory();
+});
+
+it('reports on a namespaced set that the run did not name', function () {
+    // `--status` is asked what is stale, not what is stale in one directory. A
+    // set keeps its lockfile beside its own components, so reading only the flat
+    // one answered "nothing has been generated" for a set sitting right there —
+    // which reads like a clean bill of health rather than like a blind spot.
+    config()->set('shape.icon_sets.lucide.namespace', 'lucide');
+
+    $this->artisan('shape:icon', [
+        'icons' => ['check'],
+        '--set' => 'lucide',
+        '--from' => $this->lucide,
+    ])->assertSuccessful();
+
+    $this->artisan('shape:icon', ['--status' => true, '--from' => $this->lucide])
+        ->expectsOutputToContain('icon/lucide')
+        ->expectsOutputToContain('check')
+        ->doesntExpectOutputToContain('No icons have been generated')
+        ->assertSuccessful();
 });

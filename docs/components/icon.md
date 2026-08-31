@@ -99,10 +99,18 @@ php artisan shape:icon bell --set=lucide
 php artisan shape:icon bell --from=resources/icons
 ```
 
-A whole second set can have a subdirectory, and a namespace, of its own:
+A whole second set can have a subdirectory, and a namespace, of its own. Say so
+once, on the set:
+
+```php
+'lucide' => [
+    'namespace' => 'lucide',
+    // …
+],
+```
 
 ```bash
-php artisan shape:icon --all --set=lucide --namespace=lucide
+php artisan shape:icon --all --set=lucide
 ```
 
 ```blade

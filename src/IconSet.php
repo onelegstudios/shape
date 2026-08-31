@@ -43,6 +43,7 @@ final class IconSet
      * @param  array<string, string>  $aliases  Shape's name for a drawing, against this set's own spelling of it.
      * @param  string  $ref  Only meaningful with a repo; ignored otherwise.
      * @param  string  $path  The subdirectory of the repository the drawings live in, if any.
+     * @param  string|null  $namespace  The subdirectory of the components path this set is written into, if it wants one of its own.
      */
     private function __construct(
         public readonly string $name,
@@ -53,6 +54,7 @@ final class IconSet
         public readonly ?string $repo = null,
         public readonly string $ref = 'main',
         public readonly string $path = '',
+        public readonly ?string $namespace = null,
     ) {}
 
     /**
@@ -119,7 +121,37 @@ final class IconSet
             $repo,
             $ref ?? 'main',
             trim($path ?? '', '/'),
+            self::namespace($name, $definition),
         );
+    }
+
+    /**
+     * The subdirectory this set is written into, if it declares one.
+     *
+     * Where a set lives is a property of the set, not of the run that generated
+     * it. A flag alone is remembered by nobody: the next `shape:icon bell
+     * --set=lucide` without it writes a second copy flat, into a namespace the
+     * first one was moved out of precisely to avoid, and pins it in a second
+     * lockfile. Declaring it here is what makes "lucide lives under
+     * `icon/lucide/`" true of every run rather than of the ones that remembered
+     * to say so.
+     *
+     * One kebab-case segment and nothing else, checked here rather than where
+     * it is used — this is the only value in a set definition that decides
+     * where a file is written, so `../..` is the one way a set can put a
+     * component outside the components path.
+     *
+     * @param  array<mixed>  $definition
+     */
+    private static function namespace(string $name, array $definition): ?string
+    {
+        $namespace = self::text($name, $definition, 'namespace');
+
+        if ($namespace !== null && preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $namespace) !== 1) {
+            throw new InvalidArgumentException("Icon set [{$name}] has a [namespace] of [{$namespace}], which is not one. Give it one lower-case segment, like [lucide].");
+        }
+
+        return $namespace;
     }
 
     /**

@@ -157,7 +157,6 @@ php artisan shape:doctor           # fold safety of ejected components
 php artisan shape:icon bell        # one icon from the configured set
 php artisan shape:icon --all --set=lucide
 php artisan shape:icon --replace --set=lucide
-php artisan shape:icon --all --set=lucide --namespace=lucide
 php artisan shape:icon --all --from=./resources/svg
 ```
 
@@ -179,10 +178,16 @@ names, from whatever the set calls them — the set's own spellings are declared
 once as `aliases` in `shape.icon_sets`. Call sites never change: an icon is
 `<x-shape::icon.x-mark />` whichever set drew it.
 
-`--namespace` writes a set into a subdirectory instead, for when two sets spell
-the same name: `icon/lucide/bell.blade.php` is `<x-shape::icon.lucide.bell />`,
-and it folds exactly as a top-level icon does. Keep the primary set flat so a
-call site has one spelling for an icon whichever set drew it.
+A set that declares a `namespace` in `shape.icon_sets` is written into a
+subdirectory instead, for when two sets spell the same name:
+`icon/lucide/bell.blade.php` is `<x-shape::icon.lucide.bell />`, and it folds
+exactly as a top-level icon does. It belongs on the set rather than on the
+command line — where a set lives is true of the set, and a `--namespace` flag is
+remembered only for the run it is typed on, so the next run without it writes a
+second copy flat. The flag survives as a per-run override, and `--namespace=`
+says a run is flat about a set that normally isn't, which is what `--replace`
+needs. Keep the primary set flat so a call site has one spelling for an icon
+whichever set drew it.
 
 Run `shape:doctor` in CI once anything has been ejected: it exits non-zero when a
 folded component reads `auth()`, `session()`, `request()`, `config()`, `$errors`,
