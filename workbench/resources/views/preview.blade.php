@@ -453,7 +453,7 @@
                 card even though the card clips its own overflow.
             </p>
             <div class="flex flex-wrap items-center gap-3 overflow-hidden rounded-shape border border-shape-200 p-4 dark:border-shape-800">
-                <x-shape::dropdown.trigger for="row-actions" icon-trailing="chevron-down">Actions</x-shape::dropdown.trigger>
+                <x-shape::dropdown.trigger for="row-actions" icon-trailing="shape-expand">Actions</x-shape::dropdown.trigger>
 
                 <x-shape::dropdown name="row-actions">
                     <x-shape::dropdown.item icon="shape-checked">Approve</x-shape::dropdown.item>
