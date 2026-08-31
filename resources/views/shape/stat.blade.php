@@ -40,9 +40,9 @@
 // resolved here rather than asked for at the call site so that forgetting is not
 // one of the things a caller can do.
 $glyph = match ($trend) {
-    'up' => 'arrow-trending-up',
-    'down' => 'arrow-trending-down',
-    'flat' => 'minus',
+    'up' => 'shape-trend-up',
+    'down' => 'shape-trend-down',
+    'flat' => 'shape-trend-flat',
     default => null,
 };
 

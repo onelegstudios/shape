@@ -1,3 +1,3 @@
-<x-shape::icon.check size="xs" />
-<x-shape::icon.check size="sm" />
-<x-shape::icon.check size="base" />
+<x-shape::icon.shape-checked size="xs" />
+<x-shape::icon.shape-checked size="sm" />
+<x-shape::icon.shape-checked size="base" />

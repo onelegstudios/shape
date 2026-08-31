@@ -1,1 +1,1 @@
-<x-shape::icon name="check" size="sm" />
+<x-shape::icon name="shape-checked" size="sm" />

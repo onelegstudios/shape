@@ -82,7 +82,7 @@ Anything Shape doesn't claim as a prop lands on the rendered element:
 ```
 
 ```blade
-<x-shape::button icon="trash" color="danger" x-on:click="open = true">Delete</x-shape::button>
+<x-shape::button icon="shape-trash" color="danger" x-on:click="open = true">Delete</x-shape::button>
 ```
 
 ## Overriding styles

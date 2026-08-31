@@ -33,10 +33,10 @@
 // badge stays readable in greyscale and to anyone who can't separate the hues.
 // Opting out is `:icon="false"`; forgetting isn't possible.
 $glyph = $icon ?? match ($color) {
-    'success' => 'check-circle',
-    'danger' => 'x-circle',
-    'warning' => 'exclamation-triangle',
-    'accent' => 'information-circle',
+    'success' => 'shape-success',
+    'danger' => 'shape-danger',
+    'warning' => 'shape-warning',
+    'accent' => 'shape-info',
     default => null,
 };
 

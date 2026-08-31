@@ -15,7 +15,7 @@
     Not memoized — this resolves a different component per call, which is the
     opposite of what memoization is for.
 
-    On hot paths reach for `<x-shape::icon.check />` instead. That form folds and
+    On hot paths reach for `<x-shape::icon.shape-plus />` instead. That form folds and
     memoizes; this one can do neither, because the component it renders isn't
     known until the name is.
 --}}

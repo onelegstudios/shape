@@ -60,7 +60,7 @@ it('ejects a component and everything it composes', function () {
     expect(ejected('modal/index.blade.php'))->toBeFile()
         ->and(ejected('overlay/close.blade.php'))->toBeFile()
         ->and(ejected('button/index.blade.php'))->toBeFile()
-        ->and(ejected('icon/check.blade.php'))->toBeFile();
+        ->and(ejected('icon/shape-checked.blade.php'))->toBeFile();
 });
 
 it('says which component asked for each dependency', function () {

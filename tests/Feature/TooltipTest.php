@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Blade;
 it('wraps its trigger and renders the tip as a sibling in the top layer', function () {
     $html = Blade::render(<<<'BLADE'
     <x-shape::tooltip name="archive-tip" text="Archive this project">
-        <x-shape::button square icon="check" aria-label="Archive" />
+        <x-shape::button square icon="shape-checked" aria-label="Archive" />
     </x-shape::tooltip>
     BLADE);
 

@@ -16,6 +16,6 @@
     </x-shape::card.footer>
 </x-shape::card>
 
-<x-shape::empty icon="information-circle" heading="No invoices yet" description="They will show up here.">
+<x-shape::empty icon="shape-info" heading="No invoices yet" description="They will show up here.">
     <x-shape::button>New invoice</x-shape::button>
 </x-shape::empty>

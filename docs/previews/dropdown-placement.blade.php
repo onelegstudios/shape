@@ -1,6 +1,6 @@
-<x-shape::dropdown.trigger for="below-start" icon-trailing="chevron-down">bottom-start</x-shape::dropdown.trigger>
-<x-shape::dropdown.trigger for="below-end" icon-trailing="chevron-down">bottom-end</x-shape::dropdown.trigger>
-<x-shape::dropdown.trigger for="above" icon-trailing="chevron-down">top</x-shape::dropdown.trigger>
+<x-shape::dropdown.trigger for="below-start" icon-trailing="shape-expand">bottom-start</x-shape::dropdown.trigger>
+<x-shape::dropdown.trigger for="below-end" icon-trailing="shape-expand">bottom-end</x-shape::dropdown.trigger>
+<x-shape::dropdown.trigger for="above" icon-trailing="shape-expand">top</x-shape::dropdown.trigger>
 
 <x-shape::dropdown name="below-start" placement="bottom-start">
     <x-shape::dropdown.item>Approve</x-shape::dropdown.item>

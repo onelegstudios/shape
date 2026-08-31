@@ -3,27 +3,32 @@
 Planned work on `shape:icon`, in dependency order. Each file states what is true
 now, what changes, what is already settled, and how it is tested.
 
-| | Task | Depends on |
-| --- | --- | --- |
-| 01 | [Icon slots, so Shape's own names stop impersonating a vendor](01-icon-slots.md) | — |
-| 02 | [Stop the docs promising a catalogue](02-docs-vocabulary.md) | 01 |
+| | Task | Depends on | State |
+| --- | --- | --- | --- |
+| 01 | [Icon slots, so Shape's own names stop impersonating a vendor](01-icon-slots.md) | — | **landed** |
+| 02 | [Stop the docs promising a catalogue](02-docs-vocabulary.md) | 01 | open |
 
-01 renames the twelve icons the library draws itself, promotes the spinner to a
-fourteenth slot, and turns `aliases` into a per-set `slots` map under a declared
+01 renamed the twelve icons the library draws itself, promoted the spinner to a
+fourteenth slot, and turned `aliases` into a per-set `slots` map under a declared
 `icon_slots` list. 02 rewrites the documentation that currently presents those
-icons, plus three example ones, as a single flat catalogue. 02 is small, but 01
-without it ships docs describing a vocabulary that no longer exists.
+icons, plus three example ones, as a single flat catalogue.
+
+01 carried the docs far enough that nothing in them is now false: every renamed
+name was moved, `docs/tooling.md` describes slots rather than aliases, and
+`docs/components/icon.md` gained the two-tier split and the override section.
+What 02 still owns is the editorial pass over the rest — the preview set, the
+tone tables' surrounding prose, and whether `icon-gallery` stays a gallery.
 
 ## The problem, in one paragraph
 
-Shape draws twelve icons in components of its own, and spells all twelve the way
-Heroicons spells them. `aliases` keeps that spelling when another set is
-substituted, so `--replace --set=lucide` writes a Lucide drawing into
-`exclamation-triangle.blade.php`. The name says one vendor, the drawing is
-another's, and the only thing recording the truth is a comment nobody greps. Slot
-names — `shape-warning`, not `exclamation-triangle` — say what the file is *for*
-instead of guessing at what drew it, and leave the vendor's own vocabulary free
-for the user.
+Shape drew twelve icons in components of its own, and spelled all twelve the way
+Heroicons spells them. `aliases` kept that spelling when another set was
+substituted, so `--replace --set=lucide` wrote a Lucide drawing into
+`exclamation-triangle.blade.php`. The name said one vendor, the drawing was
+another's, and the only thing recording the truth was a comment nobody greps.
+Slot names — `shape-warning`, not `exclamation-triangle` — say what the file is
+*for* instead of guessing at what drew it, and leave the vendor's own vocabulary
+free for the user.
 
 ## What is already settled
 
@@ -31,8 +36,14 @@ for the user.
   `@blaze(fold: true, memo: true)` behaves exactly as it does today. A config
   role map would not have folded, which is why this is a rename and not a lookup.
 - **Two tiers, not one.** Slots (`shape-*`, fourteen of them) are framework and
-  `--replace` regenerates them; extras (`arrow-right`, `plus`, `trash`) are there
-  so the README and previews render, and `--replace` correctly ignores them.
+  `--replace` regenerates them. The three examples — `shape-arrow-right`,
+  `shape-plus`, `shape-trash` — are there so the README and previews render, and
+  `--replace` correctly ignores them: they are not the library's to keep level
+  with your set. *Revised during 01 on one point only: they are prefixed now.
+  Unprefixed, `icon="trash"` resolved, drew, and stayed a Heroicon beside
+  thirteen Lucide slots, with `shape:doctor` silent because coverage is a slot
+  question. Prefixed, the bare names are free for whatever an application
+  generates, and reaching for one it never generated is an error.*
 - **The slot list is declared, not derived.** `icon_slots` sits beside
   `icon_sizes` at library level, for the same reason that one was hoisted out of
   the sets. `Registry::icons()` inverts from source-of-truth to check: every
@@ -61,5 +72,5 @@ for the user.
   the next `--replace`.
 
 What is left open is smaller, and marked in each file: whether `Registry` grows a
-`slots()`/`extras()` split, and whether `shape:doctor` says anything about
-extras.
+`slots()`/`extras()` split. `shape:doctor` does now report what it finds outside
+the slots, which settles the other one.

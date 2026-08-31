@@ -66,7 +66,7 @@ it('renders an item as a button, and as a link when it is one', function () {
 });
 
 it('carries a destructive item\'s colour on the tone attribute rather than in a second variant table', function () {
-    expect(Blade::render('<x-shape::dropdown.item color="danger" icon="trash">Delete</x-shape::dropdown.item>'))
+    expect(Blade::render('<x-shape::dropdown.item color="danger" icon="shape-trash">Delete</x-shape::dropdown.item>'))
         ->toContain('data-shape-tone="danger"')
         ->toContain('data-shape-icon');
 });

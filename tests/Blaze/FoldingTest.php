@@ -69,7 +69,7 @@ it('folds a button when every prop that drives logic is static', function () {
 
 it('folds icons', function () {
     expect(foldedComponentsWhileRendering('static-icon'))
-        ->toContain('shape::icon.check');
+        ->toContain('shape::icon.shape-checked');
 });
 
 it('folds an icon down to one drawing, leaving no switch behind', function () {
@@ -103,7 +103,7 @@ it('bakes in the drawing the size chose, not the one the default style would giv
 });
 
 it('bakes an icon size travelling through a parent prop into that parent\'s fold', function () {
-    // The shape of eleven of the twelve places this library draws an icon: the
+    // The shape of most of the places this library draws an icon: the
     // size is a prop on the component around it, and the icon is baked into that
     // component's fold rather than folding on its own.
     $fixture = __DIR__.'/../fixtures/views/static-button-icon-size.blade.php';
@@ -122,12 +122,12 @@ it('memoizes an icon whose size is bound dynamically', function () {
     // catches this call site is memoization, and there are only three sizes, so
     // the cache actually hits.
     expect(foldedComponentsWhileRendering('dynamic-icon-size', ['size' => 'sm']))
-        ->not->toContain('shape::icon.check');
+        ->not->toContain('shape::icon.shape-checked');
 
     $fixture = __DIR__.'/../fixtures/views/dynamic-icon-size.blade.php';
 
     expect(Blaze::compile((string) file_get_contents($fixture), $fixture))
-        ->toContain('Memo::key("shape::icon.check"');
+        ->toContain('Memo::key("shape::icon.shape-checked"');
 });
 
 it('renders an icon identically folded and unfolded, on every cell of the matrix', function () {
@@ -140,7 +140,7 @@ it('renders an icon identically folded and unfolded, on every cell of the matrix
     ];
 
     foreach ($cells as [$variant, $size]) {
-        $call = "<x-shape::icon.check variant=\"{$variant}\" size=\"{$size}\" />";
+        $call = "<x-shape::icon.shape-checked variant=\"{$variant}\" size=\"{$size}\" />";
 
         clearCompiledViews();
         $folded = Blade::render($call);

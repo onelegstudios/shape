@@ -36,10 +36,10 @@ it is:
 
 | `color` | Icon |
 | --- | --- |
-| `success` | `check-circle` |
-| `danger` | `x-circle` |
-| `warning` | `exclamation-triangle` |
-| `accent` | `information-circle` |
+| `success` | `shape-success` |
+| `danger` | `shape-danger` |
+| `warning` | `shape-warning` |
+| `accent` | `shape-info` |
 | `neutral` | none — a neutral badge has no state to signal |
 
 ## Reference

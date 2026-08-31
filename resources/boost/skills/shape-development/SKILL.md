@@ -61,7 +61,7 @@ Every component is `<x-shape::name>`. Props take scale keys, never raw values:
 | --- | --- | --- |
 | `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `color`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `as` |
 | `button.element` | fold | `as`, `type` — the element a button renders |
-| `icon.<name>` | fold + memo | `size` (xs\|sm\|base), `variant` (outline\|solid — chosen by `size` if unset) |
+| `icon.<name>` | fold + memo | `size` (xs\|sm\|base), `variant` (outline\|solid — chosen by `size` if unset). Shape's own are the `shape-*` slots |
 | `icon` | — | `name` — resolves at runtime, so it cannot fold |
 | `heading` | fold | `level` (document hierarchy), `size` (visual hierarchy) |
 | `text` | fold | `size`, `variant` (base\|muted\|strong), `as` |
@@ -117,7 +117,7 @@ also the only form Blaze will memoize:
 ```blade
 <x-shape::table.cell :value="$invoice->number" />   {{-- folds --}}
 <x-shape::badge label="Paid" color="success" />     {{-- folds and memoizes --}}
-<x-shape::icon.check />                             {{-- folds; <x-shape::icon :name="$n" /> cannot --}}
+<x-shape::icon.shape-plus />                              {{-- folds; <x-shape::icon :name="$n" /> cannot --}}
 ```
 
 ### 5. Feedback from the server
@@ -178,10 +178,48 @@ at run time — a generated component is a Blade file with the drawing baked in.
 - `--status` reports which icons have been redrawn upstream since they were
   generated, from the `shape-icons.json` written beside them.
 
-`--replace` generates the icons Shape draws in its own components, under Shape's
-names, from whatever the set calls them — the set's own spellings are declared
-once as `aliases` in `shape.icon_sets`. Call sites never change: an icon is
-`<x-shape::icon.x-mark />` whichever set drew it.
+`--replace` generates Shape's icon **slots** — the icons it resolves in
+components of its own. A slot is named for its role, not for a vendor's
+spelling: `shape-close` is the dismiss glyph, `shape-warning` is what a `warning`
+tone reaches for. The list is declared in `shape.icon_slots`, and every set says
+which of its drawings fills each one, in `slots`:
+
+```php
+'lucide' => [
+    'slots' => [
+        'shape-close' => 'x',
+        'shape-warning' => 'triangle-alert',
+        'shape-loading' => 'loader-circle',
+    ],
+],
+```
+
+Call sites never change: an icon is `<x-shape::icon.shape-close />` whichever set
+drew it, and `triangle-alert` stays free to generate under its own name. To
+repoint one slot, publish the config, change its entry, and run
+`php artisan shape:icon shape-warning --set=lucide --force`. To draw one by hand,
+write `resources/views/shape/icon/shape-warning.blade.php` — `components_path`
+resolves first and the generator will not overwrite it without `--force`, but
+copy the `@blaze(fold: true, memo: true)` front matter off a generated file or it
+silently stops folding.
+
+`shape-loading` is **packaged**: Shape ships its own spinner, a set may name a
+drawing to shadow it, and a set with nothing that reads as a loader says `null`.
+Heroicons says `null` — `arrow-path` is a circular arrow, not a loader.
+
+The slots are not a catalogue to pick from — they are what Shape keeps level with
+your set. Generate your own icons for everything else, under their own names:
+
+```bash
+php artisan shape:icon bell trash --set=lucide
+```
+
+Those names are free. The package ships `shape-arrow-right`, `shape-plus` and
+`shape-trash` for its own README and previews, prefixed precisely so `trash` and
+`plus` are not taken; nothing resolves them and `--replace` leaves them alone.
+`--replace` does not touch what you generate either, so regenerate it yourself
+when you swap sets — `shape:doctor` lists what it finds outside the slots for
+that reason.
 
 A set that declares a `namespace` in `shape.icon_sets` is written into a
 subdirectory instead, for when two sets spell the same name:
@@ -197,9 +235,11 @@ whichever set drew it.
 Run `shape:doctor` in CI once anything has been ejected: it exits non-zero when a
 folded component reads `auth()`, `session()`, `request()`, `config()`, `$errors`,
 `now()`, `@csrf` or a translation helper — each of which is resolved once at
-compile time and then served to every visitor. It also counts how many of the
-icons the library draws a replaced set covers, since a name missed falls back to
-the packaged Heroicon and renders in the wrong set without complaint.
+compile time and then served to every visitor. It also counts how many of
+Shape's slots a replaced set fills, since a slot missed falls back to the
+packaged Heroicon and renders in the wrong set without complaint. Three states,
+and only the last is a finding: **generated** from your set, **packaged** by
+Shape, **missing**.
 
 ## Rules, References, and Templates
 
@@ -230,7 +270,7 @@ Read before executing:
 - do not call `auth()`, `session()`, `config()`, `__()` or `now()` inside an
   ejected component that is annotated `fold: true`
 - do not reach for `<x-shape::icon :name="$name" />` on a hot path; the direct
-  `<x-shape::icon.check />` form is the one that folds and memoizes
+  `<x-shape::icon.shape-plus />` form is the one that folds and memoizes
 - name a `size` on an icon and leave `variant` alone unless the style is the
   point; the small sizes are drawn solid because a stroke does not read at 16px,
   and a call site that names only a size works with any icon set

@@ -1,1 +1,1 @@
-<x-shape::button icon="check" icon-size="xs">Save</x-shape::button>
+<x-shape::button icon="shape-checked" icon-size="xs">Save</x-shape::button>

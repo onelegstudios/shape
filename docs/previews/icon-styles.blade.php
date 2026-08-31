@@ -1,2 +1,2 @@
-<x-shape::icon.check variant="outline" />
-<x-shape::icon.check variant="solid" />
+<x-shape::icon.shape-checked variant="outline" />
+<x-shape::icon.shape-checked variant="solid" />

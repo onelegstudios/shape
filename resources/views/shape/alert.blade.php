@@ -41,10 +41,10 @@
 // Never colour alone — every tone resolves a glyph, so an alert stays readable
 // in greyscale. `:icon="false"` opts out; forgetting isn't possible.
 $glyph = $icon ?? match ($color) {
-    'success' => 'check-circle',
-    'danger' => 'x-circle',
-    'warning' => 'exclamation-triangle',
-    'accent' => 'information-circle',
+    'success' => 'shape-success',
+    'danger' => 'shape-danger',
+    'warning' => 'shape-warning',
+    'accent' => 'shape-info',
     default => null,
 };
 
@@ -81,7 +81,7 @@ $classes = Shape::classes()
             square
             size="sm"
             variant="ghost"
-            icon="x-mark"
+            icon="shape-close"
             icon-size="xs"
             aria-label="Dismiss"
             class="-mr-1.5 -mt-1.5 shrink-0"

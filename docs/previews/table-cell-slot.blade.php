@@ -12,7 +12,7 @@
                 <x-shape::badge label="Paid" color="success" />
             </x-shape::table.cell>
             <x-shape::table.cell align="end">
-                <x-shape::button size="sm" variant="ghost" icon="arrow-right" square aria-label="Open invoice" />
+                <x-shape::button size="sm" variant="ghost" icon="shape-arrow-right" square aria-label="Open invoice" />
             </x-shape::table.cell>
         </x-shape::table.row>
     </x-shape::table.body>

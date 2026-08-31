@@ -55,13 +55,13 @@ it('gives its own defaults zero specificity so caller classes win', function () 
 });
 
 it('renders leading and trailing icons', function () {
-    $html = Blade::render('<x-shape::button icon="plus" icon-trailing="arrow-right">Add</x-shape::button>');
+    $html = Blade::render('<x-shape::button icon="shape-plus" icon-trailing="shape-arrow-right">Add</x-shape::button>');
 
     expect(substr_count($html, 'data-shape-icon'))->toBe(2);
 });
 
 it('sizes itself squarely for icon only buttons', function () {
-    $html = Blade::render('<x-shape::button square icon="trash" aria-label="Delete" />');
+    $html = Blade::render('<x-shape::button square icon="shape-trash" aria-label="Delete" />');
 
     expect($html)
         ->toContain('size-10')

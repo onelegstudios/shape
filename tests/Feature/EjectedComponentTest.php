@@ -41,5 +41,5 @@ it('resolves an ejected component ahead of the packaged one', function () {
 });
 
 it('leaves components that were not ejected coming from the package', function () {
-    expect(Blade::render('<x-shape::icon.check />'))->toContain('data-shape-icon');
+    expect(Blade::render('<x-shape::icon.shape-checked />'))->toContain('data-shape-icon');
 });

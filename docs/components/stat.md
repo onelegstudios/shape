@@ -14,9 +14,9 @@ with no delta leaves a bare glyph with nothing beside it:
 
 | `trend` | Glyph | Default tone |
 | --- | --- | --- |
-| `up` | `arrow-trending-up` | `success` |
-| `down` | `arrow-trending-down` | `danger` |
-| `flat` | `minus` | `neutral` |
+| `up` | `shape-trend-up` | `success` |
+| `down` | `shape-trend-down` | `danger` |
+| `flat` | `shape-trend-flat` | `neutral` |
 
 Three separate drawings rather than one arrow at three angles — never relying on
 colour alone only works if the two directions are distinguishable.

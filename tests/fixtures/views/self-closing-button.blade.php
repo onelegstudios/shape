@@ -1,1 +1,1 @@
-<x-shape::button square icon="trash" aria-label="Delete" />
+<x-shape::button square icon="shape-trash" aria-label="Delete" />

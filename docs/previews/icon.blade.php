@@ -1,3 +1,3 @@
-<x-shape::icon.check />
-<x-shape::icon.arrow-right size="sm" />
-<x-shape::icon.trash size="xs" />
+<x-shape::icon.shape-checked />
+<x-shape::icon.shape-next size="sm" />
+<x-shape::icon.shape-warning size="xs" />

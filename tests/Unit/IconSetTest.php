@@ -46,19 +46,21 @@ function lucide(): IconSet
 }
 
 /**
- * A set that spells things its own way, which is every set that is not
- * Heroicons.
+ * A set that answers Shape's slots with its own spellings, which is every set —
+ * Heroicons included, since it is asked the same question as the rest.
  */
-function aliased(): IconSet
+function slotted(): IconSet
 {
     return IconSet::fromArray('lucide', [
         'styles' => [
             'outline' => ['base' => '{name}.svg'],
         ],
-        'aliases' => [
-            'x-mark' => 'x',
-            'information-circle' => 'info',
-            'close' => 'x',
+        'slots' => [
+            'shape-close' => 'x',
+            'shape-info' => 'info',
+            'shape-indeterminate' => 'minus',
+            'shape-trend-flat' => 'minus',
+            'shape-loading' => null,
         ],
     ], scale());
 }
@@ -203,71 +205,91 @@ it('ships a heroicons set and a single-style set to check the model generalises'
         ->and($single->sizes())->toBe($shipped->sizes());
 });
 
-it('translates one of Shape\'s names into the set\'s own', function () {
-    expect(aliased()->sourceName('x-mark'))->toBe('x')
-        ->and(aliased()->sourceName('information-circle'))->toBe('info');
+it('resolves a slot to the drawing the set fills it with', function () {
+    expect(slotted()->sourceName('shape-close'))->toBe('x')
+        ->and(slotted()->sourceName('shape-info'))->toBe('info');
 });
 
-it('leaves a name the set spells the same way alone', function () {
-    // Which is most of them, and why a set with no `aliases` key needs no
-    // special case anywhere: identity is the default answer.
-    expect(aliased()->sourceName('check'))->toBe('check')
-        ->and(lucide()->sourceName('x-mark'))->toBe('x-mark')
-        ->and(heroicons()->sourceName('x-mark'))->toBe('x-mark');
+it('lets two slots be filled by one drawing', function () {
+    // The checkbox's dash and a flat trend render the same glyph today and are
+    // free to diverge — a set may well want `square-minus` for one and `equal`
+    // for the other. One duplicated file is the price of that being possible.
+    expect(slotted()->sourceName('shape-indeterminate'))->toBe('minus')
+        ->and(slotted()->sourceName('shape-trend-flat'))->toBe('minus');
 });
 
-it('reverses a file back to every name Shape would draw it under', function () {
-    // `--all` walks files, and files carry the set's names. Two of Shape's names
-    // may legitimately be drawn from one file, so the reverse is a list.
-    expect(aliased()->canonicalNames('x'))->toBe(['x-mark', 'close'])
-        ->and(aliased()->canonicalNames('info'))->toBe(['information-circle']);
+it('answers nothing for a slot the set says it has no drawing for', function () {
+    // `null` is an answer. A slot left out of the map has not been answered at
+    // all, and only the first of those is something a run can report as a
+    // decision rather than as an oversight.
+    expect(slotted()->sourceName('shape-loading'))->toBeNull()
+        ->and(slotted()->declares('shape-loading'))->toBeTrue()
+        ->and(slotted()->declares('shape-warning'))->toBeFalse();
 });
 
-it('reverses a file nothing aliases to under its own name', function () {
-    // The ordinary case, and the one `--all` is for: a set's own `bell.svg`
-    // becomes `icon.bell` here.
-    expect(aliased()->canonicalNames('bell'))->toBe(['bell'])
-        ->and(lucide()->canonicalNames('bell'))->toBe(['bell']);
+it('leaves anything outside the slots as itself', function () {
+    // Which covers every icon a user generates — `bell`, `plus`, a set's own
+    // file under `--all` — and is why a set that fills no slots needs no
+    // special case anywhere.
+    expect(slotted()->sourceName('bell'))->toBe('bell')
+        ->and(lucide()->sourceName('bell'))->toBe('bell')
+        ->and(heroicons()->sourceName('trash'))->toBe('trash');
 });
 
-it('reverses a file whose name an alias has already spoken for under nothing', function () {
-    // If `x-mark` means `x.svg` in this set, then a file actually called
-    // `x-mark.svg` is a different drawing with no name left to take. Generating
-    // it would shadow the alias with the wrong glyph, silently.
-    expect(aliased()->canonicalNames('x-mark'))->toBe([])
-        ->and(aliased()->canonicalNames('information-circle'))->toBe([]);
-});
-
-it('refuses an alias that is not a name against a name', function () {
+it('refuses a slot that is not a name against a name', function () {
     expect(fn () => IconSet::fromArray('bad', [
         'styles' => ['outline' => ['base' => '{name}.svg']],
-        'aliases' => ['x-mark' => ['x']],
+        'slots' => ['shape-close' => ['x']],
     ], scale()))->toThrow(InvalidArgumentException::class, 'not a name against a name');
 
     expect(fn () => IconSet::fromArray('bad', [
         'styles' => ['outline' => ['base' => '{name}.svg']],
-        'aliases' => 'x',
+        'slots' => 'x',
     ], scale()))->toThrow(InvalidArgumentException::class, 'not an array');
 });
 
-it('ships aliases that cover every name the library draws', function () {
-    // The shipped Lucide entry is the worked example of a replacement set, so
-    // it has to actually be one. A name Lucide spells differently and this map
-    // misses is a component that keeps its Heroicon after a full replacement.
-    $set = IconSet::fromArray('lucide', config('shape.icon_sets')['lucide'], config('shape.icon_sizes'));
+it('refuses a set that still speaks in aliases', function () {
+    // What a config published before slots existed looks like. Ignoring the key
+    // would leave the set covering no slot at all — a `--replace` that writes
+    // nothing and reports success, which is worse than saying so.
+    expect(fn () => IconSet::fromArray('stale', [
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+        'aliases' => ['x-mark' => 'x'],
+    ], scale()))->toThrow(InvalidArgumentException::class, 'rewrite it as [slots]');
+});
 
-    expect($set->sourceName('x-mark'))->toBe('x')
-        ->and($set->sourceName('check-circle'))->toBe('circle-check')
-        ->and($set->sourceName('x-circle'))->toBe('circle-x')
-        ->and($set->sourceName('exclamation-triangle'))->toBe('triangle-alert')
-        ->and($set->sourceName('information-circle'))->toBe('info')
-        ->and($set->sourceName('arrow-trending-up'))->toBe('trending-up')
-        ->and($set->sourceName('arrow-trending-down'))->toBe('trending-down');
+it('ships two sets that between them fill every declared slot', function () {
+    // Both shipped sets are worked examples and have to actually be ones. A slot
+    // either misses is a component that keeps its Heroicon after a full
+    // replacement — except `shape-loading`, which is packaged and where `null`
+    // is the right answer rather than a gap.
+    $slots = array_keys(config('shape.icon_slots'));
 
-    // The five Lucide happens to agree with Heroicons about.
-    foreach (['check', 'minus', 'chevron-left', 'chevron-right', 'chevron-down'] as $name) {
-        expect($set->sourceName($name))->toBe($name);
+    foreach (['heroicons', 'lucide'] as $name) {
+        $set = IconSet::fromArray($name, config('shape.icon_sets')[$name], config('shape.icon_sizes'));
+
+        foreach ($slots as $slot) {
+            expect($set->declares($slot))->toBeTrue("[{$name}] says nothing about [{$slot}]");
+        }
     }
+
+    $lucide = IconSet::fromArray('lucide', config('shape.icon_sets')['lucide'], config('shape.icon_sizes'));
+
+    expect($lucide->sourceName('shape-close'))->toBe('x')
+        ->and($lucide->sourceName('shape-success'))->toBe('circle-check')
+        ->and($lucide->sourceName('shape-danger'))->toBe('circle-x')
+        ->and($lucide->sourceName('shape-warning'))->toBe('triangle-alert')
+        ->and($lucide->sourceName('shape-info'))->toBe('info')
+        ->and($lucide->sourceName('shape-trend-up'))->toBe('trending-up')
+        ->and($lucide->sourceName('shape-trend-down'))->toBe('trending-down')
+        ->and($lucide->sourceName('shape-loading'))->toBe('loader-circle');
+
+    // Heroicons has nothing that reads as a loader, and says so rather than
+    // shadowing the packaged spinner with a circular arrow.
+    $heroicons = IconSet::fromArray('heroicons', config('shape.icon_sets')['heroicons'], config('shape.icon_sizes'));
+
+    expect($heroicons->sourceName('shape-loading'))->toBeNull()
+        ->and($heroicons->sourceName('shape-close'))->toBe('x-mark');
 });
 
 it('reads the subdirectory a set is written into', function () {

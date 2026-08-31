@@ -24,7 +24,7 @@ There is no `drawer.trigger`. The thing being opened is named in `for`, so one
 trigger covers both:
 
 ```blade
-<x-shape::overlay.trigger for="cart" icon="plus">Cart</x-shape::overlay.trigger>
+<x-shape::overlay.trigger for="cart" icon="shape-plus">Cart</x-shape::overlay.trigger>
 <x-shape::overlay.close for="cart" label="Keep shopping" />
 ```
 

@@ -123,24 +123,34 @@ comments are exempt too, since a comment never runs.
 Components that only memoize are left alone: memoization caches a rendered
 component per prop set at run time, so it sees the request it was rendered in.
 
-It also reports how much of the library a replaced icon set covers, which is a
+It also reports how many of Shape's icon slots a replaced set covers, which is a
 different mistake with the same shape — it has no symptom either:
 
 ```
-  icon set ............................ lucide, 11 of 12 names
-  information-circle ....... missing — falls back to Heroicons
+  icon set ............................ lucide, 12 of 14 slots
+  shape-loading ..... packaged — Shape draws this one, your set need not
+  shape-info ............... missing — falls back to Heroicons
+  outside the slots ........................... bell, compass
 ```
 
-Eleven of twelve renders perfectly. The twelfth resolves to the Heroicon this
-package ships and draws correctly, in the wrong set, on a page now wearing two.
-Both halves are derived — the names out of the components that draw them, the
-coverage out of `components_path` — and the attribution is read from the notice
-each generated file carries, so an icon directory holding two sets says so.
+Thirteen of fourteen renders perfectly. The fourteenth resolves to the Heroicon
+this package ships and draws correctly, in the wrong set, on a page now wearing
+two. Three states rather than two, and only the last is a finding: a slot
+**generated** from your set, a slot **packaged** by Shape because no set is
+asked to fill it, and a slot **missing**. The slots are declared in
+`shape.icon_slots`; the coverage is read out of `components_path`; and the
+attribution comes from the notice each generated file carries, so an icon
+directory holding two sets says so.
 
-The check is silent until something has actually replaced one of those names: an
-application on the packaged icons is not partially covered, and a directory of
-icons that are none of Shape's own is a supplementary set, which is the other
-supported thing to do.
+Icons outside the slots get a line and never a finding. Those are the ones you
+generated yourself: `--replace` does not touch them and should not, but they are
+sitting in the same directory in whatever set drew them, and silence about that
+reads as approval.
+
+The check is silent until something has actually replaced a slot: an application
+on the packaged icons is not partially covered, and a directory of icons that
+are none of Shape's own is a supplementary set, which is the other supported
+thing to do.
 
 It exits non-zero on a finding, so it can sit in CI. `--path=` points it
 somewhere else, and `--package` runs it over the components Shape itself
@@ -223,8 +233,8 @@ php artisan shape:icon --status
 
 ```
 heroicons                       tailwindlabs/heroicons@a7a54a5f8e0b
-  check                                                   unchanged
-  chevron-down                                     redrawn upstream
+  shape-checked                                           unchanged
+  shape-expand                                     redrawn upstream
 ```
 
 Without the record, a component that differs from the current drawing might have
@@ -302,19 +312,33 @@ php artisan vendor:publish --tag="laravel-shape-config"
 A flat directory of SVGs is not a special case — it is a set with one style
 whose only pattern is `{name}.svg`, which is what the shipped `lucide` entry is.
 
-### Names, and replacing Shape's own icons
+### Slots, and replacing Shape's own icons
 
 Writing an icon into `components_path` replaces the packaged one *everywhere*,
 including inside Shape's own components — the service provider registers that
-path first, so `resources/views/shape/icon/check.blade.php` is what a checkbox
-renders. No config, no registration, and no cost to folding.
+path first, so `resources/views/shape/icon/shape-checked.blade.php` is what a
+checkbox renders. No config, no registration, and no cost to folding.
 
 What stood in the way of using that was never the mechanism. It was spelling.
-Shape's components ask for Heroicons' names, and Lucide has `x` rather than
-`x-mark`, `info` rather than `information-circle`, `circle-check` rather than
+Every set decides its own names, and Lucide has `x` where Heroicons has
+`x-mark`, `info` where it has `information-circle`, `circle-check` where it has
 `check-circle`. The matrix generalised across sets; the vocabulary did not.
 
-So a set can also declare what it calls things:
+So Shape asks neither vocabulary. It names the icons it resolves itself for the
+**role** they play — `shape-close` is the dismiss glyph, `shape-warning` is what
+a warning tone reaches for — and asks each set which of its drawings fills each
+one. Those names are **slots**, declared once in `shape.icon_slots`:
+
+```php
+'icon_slots' => [
+    'shape-close' => [],
+    'shape-warning' => [],
+    'shape-loading' => ['class' => 'animate-spin', 'packaged' => true],
+    // …
+],
+```
+
+and answered by every set, Heroicons included:
 
 ```php
 'lucide' => [
@@ -322,42 +346,85 @@ So a set can also declare what it calls things:
     'styles' => [
         'outline' => ['base' => '{name}.svg'],
     ],
-    'aliases' => [
-        'x-mark' => 'x',
-        'information-circle' => 'info',
+    'slots' => [
+        'shape-close' => 'x',
+        'shape-warning' => 'triangle-alert',
+        'shape-loading' => 'loader-circle',
         // …
     ],
 ],
 ```
 
-An alias moves the *source file* and nothing else. `shape:icon x-mark
---set=lucide` reads `x.svg` and writes `x-mark.blade.php`: the close button goes
-on asking for the name it has always asked for, and the drawing behind it
-changes. One direction only, and a name a set spells the same way needs no
-entry — most of them.
+A slot moves the *source file* and nothing else. `shape:icon shape-close
+--set=lucide` reads `x.svg` and writes `shape-close.blade.php`: the close button
+goes on asking for the role it has always asked for, and the drawing behind it
+changes. The filename states the role and the generated header states the
+vendor, so neither has to impersonate the other, and `triangle-alert` stays free
+for you to generate under its own name.
 
-`--replace` is that applied to the whole library at once:
+A set with nothing for a slot says `null`. That is a different thing from
+leaving the entry out — one is an answer and the other is an oversight, and
+`shape:icon` reports them differently.
+
+`--replace` is the whole list at once:
 
 ```bash
 php artisan shape:icon --replace --set=lucide --from=./vendor/lucide/icons
 ```
 
-It generates exactly the twelve names Shape draws in components of its own — the
-checkbox's `check` and `minus`, the pager's chevrons, the select's
-`chevron-down`, the close button's `x-mark`, the four glyphs the tones resolve
-to, and the stat's two trends — and nothing else. That list is read out of the
-markup rather than written down, so a component that gains an icon cannot leave
-a hole in it. On a fresh application `components_path` is empty, so there is
-nothing to `--force` and nothing to eject first.
+It generates exactly the declared slots — the checkbox's tick and dash, the
+pager's chevrons, the select's arrow, the dismiss glyph, the four the tones
+resolve to, the stat's three trends and the spinner — and nothing else. On a
+fresh application `components_path` is empty, so there is nothing to `--force`
+and nothing to eject first.
+
+This package also ships `shape-arrow-right`, `shape-plus` and `shape-trash`, and
+`--replace` leaves them alone. They are not part of the library's vocabulary:
+nothing resolves them, and they exist so the README and the previews render for
+somebody who has configured nothing. They carry the prefix so that `arrow-right`,
+`plus` and `trash` stay free for whatever you generate — reaching for a bare
+`trash` you never generated is a "component not found" rather than a Heroicon
+drawn beside thirteen Lucide slots.
+
+One slot is **packaged**: Shape draws `shape-loading` itself, because Heroicons'
+nearest drawing is `arrow-path` — a circular arrow rather than a loader, and it
+does not read as one spinning. A set that has something better names it and the
+generated file shadows the packaged spinner; a set that says nothing, or `null`,
+leaves the spinner rendering, which there is the designed answer rather than a
+gap. Look at whatever your set offers *spinning* before keeping it.
 
 Nothing above changes what a call site looks like, because none of it reaches
-the component's name. `<x-shape::icon.x-mark />` is `x-mark` whichever set drew
-it.
+the component's name. `<x-shape::icon.shape-close />` is `shape-close` whichever
+set drew it.
 
-`--all` is the one place the translation runs backwards: it walks files, and
-files carry the set's names, so each is written under every Shape name that
-aliases to it. A file nothing aliases to is written under its own name, which is
-how a supplementary set adds icons rather than replacing them.
+To point one slot somewhere else, publish the config, change its entry, and
+regenerate that one name:
+
+```bash
+php artisan vendor:publish --tag=laravel-shape-config
+```
+
+```php
+'shape-warning' => 'octagon-alert',
+```
+
+```bash
+php artisan shape:icon shape-warning --set=lucide --force
+```
+
+That is durable in a way a command-line override would not be: a slot repointed
+on the command line reverts on the next `--replace`. To draw one by hand
+instead, write `resources/views/shape/icon/shape-warning.blade.php` yourself —
+`components_path` resolves first and the generator reports `exists, kept` rather
+than overwriting it without `--force`, so it survives regeneration. Copy the
+`@blaze(fold: true, memo: true)` front matter and the `variant`/`size` props off
+a generated file; a hand-written slot that omits the annotation stops folding
+and says nothing.
+
+`--all` walks the set's own files and writes each under its own name, flat.
+Slots live in a namespace no set uses, so there is nothing to reverse and no
+file that ends up with no name to take — which is how a supplementary set adds
+icons rather than replacing them.
 
 ### Two sets at once
 
@@ -365,9 +432,9 @@ Sets generated into `icon/` share one namespace. Names that don't collide
 coexist there, which is the ordinary supplementary case and wants nothing:
 
 ```
-check .. 4 drawing(s)      # Heroicons
-bell .. 1 drawing(s)       # a second set
-check .. exists, kept      # a collision, refused
+bell .. 4 drawing(s)       # Heroicons
+compass .. 1 drawing(s)    # a second set
+bell .. exists, kept       # a collision, refused
 ```
 
 Refusing is the right default — the alternative is a set silently overwriting

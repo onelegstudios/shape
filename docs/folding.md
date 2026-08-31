@@ -123,12 +123,12 @@ annotation to imply otherwise.
 
 ## Icons
 
-`<x-shape::icon.check />` folds and memoizes. `<x-shape::icon name="check" />`
+`<x-shape::icon.shape-plus />` folds and memoizes. `<x-shape::icon name="shape-plus" />`
 resolves the component at runtime and cannot fold — reach for the direct form in
 loops and tables.
 
 Icons nested inside a component that folds are baked in with it, so
-`<x-shape::button icon="check">` and `<x-shape::badge color="success">` both
+`<x-shape::button icon="shape-plus">` and `<x-shape::badge color="success">` both
 end up as literal SVG in the compiled template.
 
 Both of an icon's props drive which drawing is chosen, so neither can be

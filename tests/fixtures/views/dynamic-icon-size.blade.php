@@ -1,1 +1,1 @@
-<x-shape::icon.check :size="$size" />
+<x-shape::icon.shape-checked :size="$size" />

@@ -1,4 +1,4 @@
-<x-shape::overlay.trigger for="delete-project" variant="subtle" color="danger" icon="trash">
+<x-shape::overlay.trigger for="delete-project" variant="subtle" color="danger" icon="shape-trash">
     Delete project
 </x-shape::overlay.trigger>
 
@@ -17,12 +17,12 @@
     <x-shape::text size="sm">Two items.</x-shape::text>
 </x-shape::drawer>
 
-<x-shape::dropdown.trigger for="row-actions" variant="ghost" square icon="chevron-down" aria-label="Actions" />
+<x-shape::dropdown.trigger for="row-actions" variant="ghost" square icon="shape-expand" aria-label="Actions" />
 
 <x-shape::dropdown name="row-actions">
-    <x-shape::dropdown.item icon="check">Approve</x-shape::dropdown.item>
+    <x-shape::dropdown.item icon="shape-checked">Approve</x-shape::dropdown.item>
     <x-shape::dropdown.item href="/invoices/1">Open</x-shape::dropdown.item>
-    <x-shape::dropdown.item icon="trash" color="danger">Delete</x-shape::dropdown.item>
+    <x-shape::dropdown.item icon="shape-trash" color="danger">Delete</x-shape::dropdown.item>
 </x-shape::dropdown>
 
 <x-shape::popover.trigger for="usage">Usage</x-shape::popover.trigger>
@@ -32,5 +32,5 @@
 </x-shape::popover>
 
 <x-shape::tooltip name="archive-tip" text="Archive this project">
-    <x-shape::button square variant="ghost" icon="check" aria-label="Archive" />
+    <x-shape::button square variant="ghost" icon="shape-checked" aria-label="Archive" />
 </x-shape::tooltip>

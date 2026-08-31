@@ -1,5 +1,5 @@
 <x-shape::table
-    empty-icon="information-circle"
+    empty-icon="shape-info"
     empty-heading="No invoices yet"
     empty-description="They'll appear here as you raise them."
 >

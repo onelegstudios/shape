@@ -20,7 +20,7 @@ ever asks whether it has rows — a `:has()` rule removes the empty state when a
 row appears. Set the copy through their `empty-*` props:
 
 ```blade
-<x-shape::table empty-icon="plus"
+<x-shape::table empty-icon="shape-plus"
                 empty-heading="No invoices yet"
                 empty-description="They'll appear here as you raise them.">
     …

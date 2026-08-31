@@ -31,8 +31,8 @@ drawn solid, because a 1.5px stroke does not read at 16px — which is also why
 Heroicons draws no outline below 24px. Name a style to override that.
 
 ```blade
-<x-shape::icon.check size="sm" />                     {{-- 20px, solid --}}
-<x-shape::icon.check variant="outline" size="sm" />   {{-- 20px, stroked --}}
+<x-shape::icon.shape-checked size="sm" />                     {{-- 20px, solid --}}
+<x-shape::icon.shape-checked variant="outline" size="sm" />   {{-- 20px, stroked --}}
 ```
 
 Each cell that a set draws is a separate drawing at its own size, so nothing is
@@ -41,8 +41,8 @@ one it has is used and sized down; never sized up. Overriding the size with a
 utility works, but prefer the size the drawing was made at:
 
 ```blade
-<x-shape::icon.check size="sm" />      {{-- drawn at 20px --}}
-<x-shape::icon.check class="size-5" />   {{-- 24px drawing squeezed into 20px --}}
+<x-shape::icon.shape-checked size="sm" />      {{-- drawn at 20px --}}
+<x-shape::icon.shape-checked class="size-5" />   {{-- 24px drawing squeezed into 20px --}}
 ```
 
 Sizes and styles are whatever the icon set declares — see
@@ -65,7 +65,7 @@ happens on its own, and the icon picks up the tone.
 When the name is not known until runtime, `<x-shape::icon>` takes it as a prop:
 
 ```blade
-<x-shape::icon :name="$status === 'done' ? 'check-circle' : 'exclamation-triangle'" />
+<x-shape::icon :name="$status === 'done' ? 'shape-success' : 'shape-warning'" />
 ```
 
 This form resolves the component at runtime and cannot fold or memoize. Inside a
@@ -77,27 +77,93 @@ Icons render `aria-hidden="true"`, on the assumption that they sit beside a
 label. When an icon carries meaning on its own, expose it and give it a name:
 
 ```blade
-<x-shape::icon.check-circle aria-hidden="false" role="img" aria-label="Paid" />
+<x-shape::icon.shape-success aria-hidden="false" role="img" aria-label="Paid" />
 ```
 
-## Available icons
+## What Shape draws for you
+
+Fourteen icons are resolved by Shape's own components. These are the **slots** —
+named for the role they play rather than for whatever the set that drew them
+calls it — and they are the list that matters when you swap sets: the list
+`shape:icon --replace` generates and `shape:doctor` checks.
 
 @docs('preview', name: 'icon-gallery')
 
-`arrow-right`, `arrow-trending-down`, `arrow-trending-up`, `check`,
-`check-circle`, `chevron-down`, `chevron-left`, `chevron-right`,
-`exclamation-triangle`, `information-circle`, `loading`, `minus`, `plus`,
-`trash`, `x-circle`, `x-mark`.
+| Slot | Resolved by |
+| --- | --- |
+| `shape-checked` | the [checkbox](checkbox.md) tick |
+| `shape-indeterminate` | the checkbox dash |
+| `shape-prev` | the [pager](pagination.md) going back |
+| `shape-next` | the pager going forward |
+| `shape-expand` | the [select](select.md) arrow |
+| `shape-close` | dismiss, on [alert](alert.md), [toast](../feedback.md) and overlays |
+| `shape-success` | the `success` tone |
+| `shape-danger` | the `danger` tone |
+| `shape-warning` | the `warning` tone |
+| `shape-info` | the `accent` tone |
+| `shape-trend-up` | a [stat](stat.md) that rose |
+| `shape-trend-down` | a stat that fell |
+| `shape-trend-flat` | a stat that did not move |
+| `shape-loading` | nothing — a spinner for you to use; see below |
 
-`loading` spins, and is the one icon that isn't from Heroicons.
+`shape-loading` is the odd one twice over. No component resolves it; it is there
+to be used by your application. And Shape draws it rather than sourcing it from a
+set, because Heroicons' nearest drawing is `arrow-path` — a circular arrow, not a
+loader. Your set may name something better and shadow it; Heroicons deliberately
+does not.
 
-Add your own from a set Shape fetches for you, or from any directory of SVGs in
-any set's layout:
+## Overriding one
+
+The whole set at once is [`--replace`](../tooling.md#slots-and-replacing-shapes-own-icons).
+For one slot, publish the config and change what fills it:
 
 ```bash
-php artisan shape:icon bell --set=lucide
-php artisan shape:icon bell --from=resources/icons
+php artisan vendor:publish --tag=laravel-shape-config
 ```
+
+```php
+'lucide' => [
+    'slots' => [
+        'shape-warning' => 'octagon-alert',
+        // …
+    ],
+],
+```
+
+```bash
+php artisan shape:icon shape-warning --set=lucide --force
+```
+
+Declarative, and it survives the next `--replace` — which a one-off on the
+command line would not.
+
+To draw one yourself, write `resources/views/shape/icon/shape-warning.blade.php`
+into `components_path`. That path resolves first, everywhere, including inside
+Shape's own components, and the generator reports `exists, kept` rather than
+overwriting it without `--force`. Copy the front matter and props off a
+generated file: a hand-written slot missing `@blaze(fold: true, memo: true)`
+stops folding and says nothing about it.
+
+## Every other icon is yours
+
+The fourteen are not a catalogue to pick from. They are what Shape keeps level
+with your set, and nothing else in your interface should come from them.
+
+Icons of your own are generated the same way, from a set Shape fetches for you or
+from any directory of SVGs in any set's layout:
+
+```bash
+php artisan shape:icon bell trash --set=lucide
+php artisan shape:icon bell trash --from=resources/icons
+```
+
+They are then `<x-shape::icon.bell />` and `<x-shape::icon.trash />`, in your set,
+under the names your set uses. Nothing already occupies those names — the three
+drawings this package ships for its own README and previews are prefixed
+`shape-arrow-right`, `shape-plus` and `shape-trash` precisely so that the bare
+ones stay free. `--replace` does not touch what you generate, so regenerate it
+yourself when you swap sets; `shape:doctor` lists what it finds outside the slots
+for exactly that reason.
 
 A whole second set can have a subdirectory, and a namespace, of its own. Say so
 once, on the set:
@@ -129,14 +195,13 @@ whole library draws in is one command:
 php artisan shape:icon --replace --set=lucide
 ```
 
-That generates the twelve names Shape draws in components of its own, under
-those names, from whatever the set calls them. Nothing at a call site changes:
-`<x-shape::icon.x-mark />` is still `x-mark`, and Lucide's `x.svg` is what is
-behind it now.
+That generates the fourteen slots, under their own names, from whatever the set
+calls them. Nothing at a call site changes: `<x-shape::icon.shape-close />` is
+still `shape-close`, and Lucide's `x.svg` is what is behind it now.
 
-A set that spells things its own way says so once, in `aliases` — see
-[Tooling](../tooling.md#names-and-replacing-shapes-own-icons). Cover eleven of
-the twelve and the twelfth quietly keeps its Heroicon, which is why
+Each set says which of its drawings fills each slot, once, in `slots` — see
+[Tooling](../tooling.md#slots-and-replacing-shapes-own-icons). Cover thirteen of
+the fourteen and the fourteenth quietly keeps its Heroicon, which is why
 `shape:doctor` counts them.
 
 ## Reference

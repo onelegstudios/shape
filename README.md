@@ -94,13 +94,13 @@ The token file declares `@source "../views"`, so your Tailwind build scans the
 package's components without further configuration. Shape ships no compiled CSS.
 
 ```blade
-<x-shape::button variant="primary" icon="check">Save changes</x-shape::button>
+<x-shape::button variant="primary" icon="shape-plus">Save changes</x-shape::button>
 
-<x-shape::button variant="subtle" color="danger" icon="trash">Delete</x-shape::button>
+<x-shape::button variant="subtle" color="danger" icon="shape-trash">Delete</x-shape::button>
 
-<x-shape::button as="a" href="/settings" icon-trailing="arrow-right">Settings</x-shape::button>
+<x-shape::button as="a" href="/settings" icon-trailing="shape-arrow-right">Settings</x-shape::button>
 
-<x-shape::icon.check-circle size="sm" />
+<x-shape::icon.shape-plus size="sm" />
 ```
 
 `variant` is hierarchy — where an action sits in the pyramid of importance.

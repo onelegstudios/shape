@@ -12,7 +12,7 @@ use Onelegstudios\Shape\Icons\DirectorySource;
 use Onelegstudios\Shape\Icons\GitHubSource;
 use Onelegstudios\Shape\Icons\IconSource;
 use Onelegstudios\Shape\IconSet;
-use Onelegstudios\Shape\Registry;
+use Onelegstudios\Shape\IconSlots;
 use RuntimeException;
 
 /**
@@ -44,10 +44,15 @@ use RuntimeException;
  * `--replace` is the generator taken to its conclusion. Writing an icon into
  * `components_path` replaces the packaged one everywhere, including inside this
  * library's own components, because that path resolves first — so generating
- * the twelve names the library draws swaps the icon set out from under the whole
- * of it. What made that impossible before aliases was not the mechanism but the
- * vocabulary: a set that spells `x-mark` as `x` can add icons here, and never
- * replace one.
+ * the library's slots swaps the icon set out from under the whole of it. What
+ * made that impossible before slots was not the mechanism but the vocabulary: a
+ * set that spells `x-mark` as `x` could add icons here, and never replace one.
+ *
+ * A slot is that vocabulary made Shape's own. `shape-close` is the dismiss glyph
+ * whoever drew it, and `shape.icon_slots` declares the list while each set says
+ * which of its files fills each one. So the filename states the role, the header
+ * states the vendor, and a set that has nothing for a slot says `null` rather
+ * than leaving a hole nobody can see.
  *
  * A namespace is the other end of the same problem. Two sets written flat share
  * one namespace, and the second to spell `check` is refused rather than allowed
@@ -91,10 +96,11 @@ class IconCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(Filesystem $files, Registry $registry): int
+    public function handle(Filesystem $files): int
     {
         try {
             $set = $this->set();
+            $slots = IconSlots::fromConfig();
             $namespace = $this->namespace($set);
         } catch (InvalidArgumentException $e) {
             $this->components->error($e->getMessage());
@@ -114,9 +120,9 @@ class IconCommand extends Command
 
         if ($this->option('replace') && $namespace !== null) {
             // A namespaced icon replaces nothing: this library asks for
-            // `shape::icon.x-mark`, and a file under `icon/lucide/` answers to
-            // `shape::icon.lucide.x-mark`. The run would write twelve files and
-            // change nothing.
+            // `shape::icon.shape-close`, and a file under `icon/lucide/`
+            // answers to `shape::icon.lucide.shape-close`. The run would write
+            // fourteen files and change nothing.
             $this->components->error("--replace writes over the names Shape draws, which are flat, and [{$set->name}] is written into [icon/{$namespace}/]. Pass --namespace= to write this run flat, or drop --replace.");
 
             return self::FAILURE;
@@ -125,7 +131,7 @@ class IconCommand extends Command
         try {
             $source = $this->source($set, $files);
 
-            return $this->generate($set, $source, $files, $registry, $this->destination($namespace));
+            return $this->generate($set, $slots, $source, $files, $this->destination($namespace));
         } catch (InvalidArgumentException|RuntimeException $e) {
             $this->components->error($e->getMessage());
 
@@ -136,9 +142,9 @@ class IconCommand extends Command
     /**
      * Write one component per name, and record what each was drawn from.
      */
-    protected function generate(IconSet $set, IconSource $source, Filesystem $files, Registry $registry, string $to): int
+    protected function generate(IconSet $set, IconSlots $slots, IconSource $source, Filesystem $files, string $to): int
     {
-        $names = $this->names($set, $source, $registry);
+        $names = $this->names($set, $slots, $source);
 
         if ($names === []) {
             $this->components->error('Name at least one icon, or pass --all.');
@@ -148,12 +154,19 @@ class IconCommand extends Command
 
         $lock = $this->lock($files, $to);
         $written = 0;
+        $unfilled = [];
 
         foreach ($names as $name) {
             $cells = $this->matrix($set, $source, $name);
 
             if ($cells === []) {
-                $this->components->twoColumnDetail("  {$name}", '<fg=red>no SVG found</>');
+                [$report, $error] = $this->unfilled($set, $slots, $name);
+
+                $this->components->twoColumnDetail("  {$name}", $report);
+
+                if ($error !== null) {
+                    $unfilled[$name] = $error;
+                }
 
                 continue;
             }
@@ -167,7 +180,7 @@ class IconCommand extends Command
             }
 
             $files->ensureDirectoryExists(dirname($target));
-            $files->put($target, $this->component($set, $source, $cells));
+            $files->put($target, $this->component($set, $slots, $source, $name, $cells));
 
             $lock[$set->name]['icons'][$name] = $this->digest($source, $cells);
 
@@ -187,7 +200,69 @@ class IconCommand extends Command
             $this->clearCompiledViews();
         }
 
-        return self::SUCCESS;
+        if ($unfilled === []) {
+            return self::SUCCESS;
+        }
+
+        foreach ($unfilled as $message) {
+            $this->components->error($message);
+        }
+
+        return self::FAILURE;
+    }
+
+    /**
+     * What to say about a name that produced no drawing, and whether to fail.
+     *
+     * An ordinary name reads as it always did: `shape:icon bicycle` asking for a
+     * drawing the set has not got is a typo, reported and shrugged off, because
+     * nothing in the library was depending on it.
+     *
+     * A slot is not that. Every one of them is resolved by a component, so a
+     * slot this run could not fill is a component that goes on drawing the
+     * packaged Heroicon on a page otherwise wearing somebody else's set — the
+     * silence `shape:doctor` exists for, arriving one step earlier. The error
+     * names the set and the config key, because the answer to most of these is
+     * an entry in `slots` rather than anything to do with this command.
+     *
+     * The exception is a packaged slot. Shape draws `shape-loading` itself, so a
+     * set with nothing to fill it has answered correctly and the fallback is the
+     * designed outcome.
+     *
+     * @return array{0: string, 1: string|null}
+     */
+    protected function unfilled(IconSet $set, IconSlots $slots, string $name): array
+    {
+        if (! $slots->has($name)) {
+            return ['<fg=red>no SVG found</>', null];
+        }
+
+        $key = "shape.icon_sets.{$set->name}.slots";
+
+        if ($slots->isPackaged($name)) {
+            return ['<fg=gray>packaged by Shape</>', null];
+        }
+
+        if (! $set->declares($name)) {
+            return [
+                '<fg=red>unfilled</>',
+                "Icon set [{$set->name}] says nothing about slot [{$name}], so nothing was written for it and the component that resolves it keeps the icon this package ships. Name the drawing that fills it in [{$key}], or say null there if this set has none.",
+            ];
+        }
+
+        $drawn = $set->sourceName($name);
+
+        if ($drawn === null) {
+            return [
+                '<fg=yellow>no drawing in ['.$set->name.']</>',
+                null,
+            ];
+        }
+
+        return [
+            '<fg=red>no SVG found</>',
+            "Icon set [{$set->name}] fills slot [{$name}] from [{$drawn}], and there is no such drawing. Correct it in [{$key}].",
+        ];
     }
 
     /**
@@ -438,11 +513,16 @@ class IconCommand extends Command
      * Keyed the way the generated component switches on it, so that assembling
      * the arms afterwards is a grouping and nothing more.
      *
-     * `$name` is Shape's name for the drawing throughout; only the path it is
-     * substituted into takes the set's own spelling of it. That asymmetry is the
-     * point of an alias — `x-mark` reads `x.svg` and is still written to
-     * `x-mark.blade.php`, so the checkbox and the close button keep asking for
-     * the names they have always asked for.
+     * `$name` is the name the component is written under throughout; only the
+     * path it is substituted into takes the set's own spelling. That asymmetry
+     * is the point of a slot — `shape-close` reads `x.svg` under Lucide and
+     * `x-mark.svg` under Heroicons, and is written to `shape-close.blade.php`
+     * either way, so the close button asks for a role and gets whichever set is
+     * installed.
+     *
+     * Nothing, when the set answers `null`: it has been asked about the slot and
+     * has no drawing for it, which the caller reports rather than treats as a
+     * missing file.
      *
      * @return array<string, string>
      */
@@ -450,6 +530,10 @@ class IconCommand extends Command
     {
         $cells = [];
         $drawn = $set->sourceName($name);
+
+        if ($drawn === null) {
+            return [];
+        }
 
         foreach ($set->styles() as $style) {
             foreach ($set->sizes() as $size) {
@@ -479,13 +563,19 @@ class IconCommand extends Command
      *
      * @param  array<string, string>  $cells
      */
-    protected function component(IconSet $set, IconSource $source, array $cells): string
+    protected function component(IconSet $set, IconSlots $slots, IconSource $source, string $name, array $cells): string
     {
         $body = count(array_unique($cells)) === 1
             ? $this->svg($source->get((string) reset($cells)))
             : $this->switch($set, $source, $cells);
 
         $notice = $this->header($set, $source);
+
+        // `shrink-0` is every icon's, and a slot may add to it. The spin on
+        // `shape-loading` belongs to the slot rather than to the set that drew
+        // it — every set's loader spins — so it is declared once in
+        // `shape.icon_slots` and baked in here, like everything else.
+        $classes = $slots->classFor($name);
 
         return <<<BLADE
         @blaze(fold: true, memo: true)
@@ -497,7 +587,7 @@ class IconCommand extends Command
         ])
 
         @php
-        {$this->resolution($set)}\$classes = Shape::classes('shrink-0')
+        {$this->resolution($set)}\$classes = Shape::classes('{$classes}')
             ->add(match (\$size) {
         {$this->classes($set)}
             });
@@ -722,21 +812,27 @@ class IconCommand extends Command
     }
 
     /**
-     * The icons to generate, as Shape's names for them.
+     * The names to write components under.
      *
-     * Three ways to arrive at that list, and they differ in what has to be
-     * translated. Names on the command line are already Shape's. `--replace` is
-     * the list the library draws itself, derived from the markup so that a
-     * component gaining an icon does not quietly leave a hole here. `--all` is
-     * the odd one: what it finds are *files*, which are the set's names, and
-     * they have to come back through the alias map before they can be written.
+     * Three ways to arrive at that list. Names on the command line are taken as
+     * given. `--replace` is the library's declared slots, which is what makes it
+     * a complete answer: a slot no component happens to draw is still generated,
+     * and `shape-loading` is exactly that.
+     *
+     * `--all` walks the set's own files and writes each under its own name,
+     * flat. It used to have to run the alias map backwards, and the hairy case
+     * was a file whose name was itself an alias key — a Heroicons-named
+     * `check-circle.svg` sitting beside Lucide's `circle-check.svg` would have
+     * shadowed the alias with the wrong glyph, so it was written under nothing.
+     * Slots live in a namespace no set uses, so that case cannot arise and there
+     * is nothing left to reverse.
      *
      * @return list<string>
      */
-    protected function names(IconSet $set, IconSource $source, Registry $registry): array
+    protected function names(IconSet $set, IconSlots $slots, IconSource $source): array
     {
         if ($this->option('replace')) {
-            return $registry->icons();
+            return $slots->names();
         }
 
         if (! $this->option('all')) {
@@ -750,11 +846,7 @@ class IconCommand extends Command
 
         foreach ($set->directories() as $directory) {
             foreach ($source->names($directory) as $file) {
-                // A file may answer to more than one of Shape's names, or —
-                // when its own name is spoken for by an alias — to none.
-                foreach ($set->canonicalNames($file) as $name) {
-                    $names[] = $name;
-                }
+                $names[] = $file;
             }
         }
 

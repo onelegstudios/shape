@@ -19,9 +19,9 @@ use InvalidArgumentException;
  * One axis of that matrix belongs to the library rather than to the set. The
  * size scale is declared once, in `shape.icon_sizes`, and every set is measured
  * against it — otherwise `<x-shape::icon.bell size="sm" />` and
- * `<x-shape::icon.check size="sm" />` could render at different sizes because
- * the icons came from different sets, which is exactly what a supplementary set
- * invites. A set says only which cells it draws.
+ * `<x-shape::icon.shape-plus size="sm" />` could render at different sizes
+ * because the icons came from different sets, which is exactly what a
+ * supplementary set invites. A set says only which cells it draws.
  *
  * This is a compile-time thing. `shape:icon` reads it while writing a component
  * and bakes every value it decides — the size class, the preferred style, the
@@ -40,7 +40,7 @@ final class IconSet
      *
      * @param  non-empty-array<string, array{class: string, prefer?: string}>  $sizes  The library's scale, in ascending order; the last is the default.
      * @param  non-empty-array<string, array<string, string>>  $styles  Style, then the sizes it draws its own glyph at.
-     * @param  array<string, string>  $aliases  Shape's name for a drawing, against this set's own spelling of it.
+     * @param  array<string, string|null>  $slots  Shape's slots, against this set's own spelling of the drawing that fills each; null where the set has none.
      * @param  string  $ref  Only meaningful with a repo; ignored otherwise.
      * @param  string  $path  The subdirectory of the repository the drawings live in, if any.
      * @param  string|null  $namespace  The subdirectory of the components path this set is written into, if it wants one of its own.
@@ -50,7 +50,7 @@ final class IconSet
         public readonly string $notice,
         private readonly array $sizes,
         private readonly array $styles,
-        private readonly array $aliases = [],
+        private readonly array $slots = [],
         public readonly ?string $repo = null,
         public readonly string $ref = 'main',
         public readonly string $path = '',
@@ -79,6 +79,14 @@ final class IconSet
         // exists to prevent.
         if (array_key_exists('sizes', $definition)) {
             throw new InvalidArgumentException("Icon set [{$name}] declares its own [sizes]. The size scale belongs to the library now — move it to [icon_sizes] in config/shape.php.");
+        }
+
+        // And a config published before slots existed has this one. An alias
+        // keyed `exclamation-triangle` says nothing about where the drawing is
+        // used, and ignoring the key would leave the set covering no slot at
+        // all — a `--replace` that writes nothing and reports success.
+        if (array_key_exists('aliases', $definition)) {
+            throw new InvalidArgumentException("Icon set [{$name}] declares [aliases]. Shape asks for slots now, not for another set's spellings — rewrite it as [slots], keyed by the slot names in [icon_slots].");
         }
 
         $scale = self::scale($sizes);
@@ -117,7 +125,7 @@ final class IconSet
             is_string($notice) ? $notice : '',
             $scale,
             $styles,
-            self::aliases($name, $definition['aliases'] ?? []),
+            self::slots($name, $definition),
             $repo,
             $ref ?? 'main',
             trim($path ?? '', '/'),
@@ -155,27 +163,35 @@ final class IconSet
     }
 
     /**
-     * The set's own spellings, keyed by the name Shape draws them under.
+     * Which of this set's drawings fills each of Shape's slots.
      *
      * Read the same way as everything else here — checked rather than assumed,
      * because this half of the config is the half a consumer writes by hand.
      *
-     * @return array<string, string>
+     * `null` is a value and not an omission. A set saying `null` has been asked
+     * the question and has no drawing for it; a set saying nothing has not been
+     * asked. Only the first is something `shape:icon` can report as a decision
+     * rather than as a hole.
+     *
+     * @param  array<mixed>  $definition
+     * @return array<string, string|null>
      */
-    private static function aliases(string $name, mixed $aliases): array
+    private static function slots(string $name, array $definition): array
     {
-        if (! is_array($aliases)) {
-            throw new InvalidArgumentException("Icon set [{$name}] has an [aliases] that is not an array.");
+        $slots = $definition['slots'] ?? [];
+
+        if (! is_array($slots)) {
+            throw new InvalidArgumentException("Icon set [{$name}] has a [slots] that is not an array.");
         }
 
         $map = [];
 
-        foreach ($aliases as $canonical => $source) {
-            if (! is_string($canonical) || ! is_string($source) || $canonical === '' || $source === '') {
-                throw new InvalidArgumentException("Icon set [{$name}] has an alias that is not a name against a name.");
+        foreach ($slots as $slot => $source) {
+            if (! is_string($slot) || $slot === '' || ($source !== null && (! is_string($source) || $source === ''))) {
+                throw new InvalidArgumentException("Icon set [{$name}] has a slot that is not a name against a name.");
             }
 
-            $map[$canonical] = $source;
+            $map[$slot] = $source;
         }
 
         return $map;
@@ -301,55 +317,41 @@ final class IconSet
     }
 
     /**
-     * This set's own spelling of a name Shape draws under.
+     * The drawing this set fills one of Shape's slots with.
      *
      * The matrix model generalised across sets; the vocabulary did not. Lucide
      * has `x` where Heroicons has `x-mark`, `info` where it has
-     * `information-circle`, `circle-check` where it has `check-circle`. Without
-     * a translation, swapping a set can add icons to this library but can never
-     * replace the ones it draws itself, because the component a checkbox renders
-     * is `icon.check` and nothing else.
+     * `information-circle`, `circle-check` where it has `check-circle`. Shape
+     * asks neither of those questions: it asks which drawing fills
+     * `shape-close`, and writes the answer to `shape-close.blade.php`. The
+     * source moves and the slot does not, which is what lets a set be swapped
+     * under the whole library without any filename claiming a vendor it is not.
      *
-     * So an alias moves the *source* file only. `shape:icon x-mark --set=lucide`
-     * reads `x.svg` and writes `x-mark.blade.php`: the call sites inside this
-     * library keep asking for the name they have always asked for, and the
-     * drawing behind it changes. That is the whole feature.
+     * Three answers, and the difference between the last two is the point:
      *
-     * Identity when the set declares none, which is every set that happens to
-     * spell things the way Heroicons does.
+     * - A slot the set names resolves to that drawing.
+     * - A slot the set names `null` resolves to nothing. The set has been asked
+     *   and has no drawing for it, which `shape:icon` can report as a decision.
+     * - Anything the set says nothing about is itself. That covers every icon
+     *   outside the slots — `bell`, `plus`, a set's own file under `--all` — and
+     *   it is also how a set that has simply not been asked about a slot is told
+     *   apart from one that answered `null`.
      */
-    public function sourceName(string $name): string
+    public function sourceName(string $name): ?string
     {
-        return $this->aliases[$name] ?? $name;
+        return array_key_exists($name, $this->slots) ? $this->slots[$name] : $name;
     }
 
     /**
-     * The names Shape would draw one of this set's files under, for `--all`.
+     * Whether this set has been asked about a slot at all.
      *
-     * The reverse of `sourceName`, and it is not a function: two Shape names may
-     * legitimately be drawn from one file, so this answers with a list. Three
-     * cases, and the third is the one worth naming:
-     *
-     * - A file something aliases to is written under every name that aliases it.
-     * - A file nothing aliases to is written under its own name — a set's own
-     *   `bell.svg` is `icon.bell` here, which is what `--all` is for.
-     * - A file whose name is itself an alias *key* is written under nothing. If
-     *   `check-circle` means `circle-check.svg` in this set, then a
-     *   `check-circle.svg` sitting beside it is a different drawing with no
-     *   Shape name left to take — generating it would quietly shadow the alias
-     *   with the wrong glyph.
-     *
-     * @return list<string>
+     * A slot missing from the map is an oversight and a slot mapped to `null` is
+     * an answer, so the two cannot be one method. Only `shape.icon_slots` knows
+     * which names are slots; this only knows what the set said about them.
      */
-    public function canonicalNames(string $source): array
+    public function declares(string $slot): bool
     {
-        $names = array_keys($this->aliases, $source, true);
-
-        if ($names !== []) {
-            return $names;
-        }
-
-        return isset($this->aliases[$source]) ? [] : [$source];
+        return array_key_exists($slot, $this->slots);
     }
 
     /**

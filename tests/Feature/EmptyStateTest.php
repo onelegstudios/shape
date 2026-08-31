@@ -37,7 +37,7 @@ it('omits the parts it was not given', function () {
 });
 
 it('renders an icon when named', function () {
-    expect(Blade::render('<x-shape::empty icon="x-circle" heading="No invoices" />'))
+    expect(Blade::render('<x-shape::empty icon="shape-danger" heading="No invoices" />'))
         ->toContain('data-shape-icon');
 });
 

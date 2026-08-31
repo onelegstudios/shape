@@ -22,10 +22,11 @@ use RuntimeException;
  * trade — so the scan lives in the test suite instead, where it fails the build
  * if the JSON and the markup ever disagree.
  *
- * `icons()` is the one thing here that does read the views, and for the same
- * reason inverted: which icons the library draws is a detail of the markup that
- * nobody would remember to write down twice. It is called by two console
- * commands and never by a request.
+ * `icons()` is the one thing here that does read the views, and it reads them
+ * to check rather than to decide: which slots the library resolves is declared
+ * in `shape.icon_slots`, and this is what catches a component that has started
+ * drawing one nobody declared. It is called by a console command and a test, and
+ * never by a request.
  */
 final class Registry
 {
@@ -103,27 +104,31 @@ final class Registry
     }
 
     /**
-     * The icon names the library draws in components of its own.
+     * The slots the library resolves in components of its own.
      *
-     * A fact about this library, not about any icon set: twelve names are baked
-     * into the markup of the checkbox, the pager, the select, the overlay close,
-     * the three tone maps and the stat, and a replacement set that covers eleven
-     * of them leaves the twelfth resolving to the packaged Heroicon. That is a
-     * page with two icon sets on it and nothing anywhere that says so, which is
-     * why `shape:icon --replace` generates this list and `shape:doctor` checks
-     * it.
+     * Read out of the markup, and no longer the source of truth for anything.
+     * `shape.icon_slots` declares the list `shape:icon --replace` generates and
+     * `shape:doctor` checks; this is the assertion that the declaration and the
+     * markup have not drifted apart. Derived must be a subset of declared: a
+     * component that starts drawing a slot nobody declared has to fail loudly
+     * rather than resolve quietly to whatever the package happens to ship.
      *
-     * Read out of the markup rather than typed out here, because a list typed
-     * out here is a list that is right until the next component gains an icon.
-     * The manifest supplies both halves: the `icon` component's files are the
-     * vocabulary, and every other component's files are where it is spoken.
+     * The inversion is what lets a declared slot exist that no component draws.
+     * `shape-loading` is one — grep `resources/views/shape` and nothing renders
+     * a spinner, because the button has no loading state and the icon exists to
+     * be used by an application — so a derived list could never contain it, and
+     * `--replace` would never generate it.
      *
-     * A name counts if it appears as a static tag or as a quoted literal — the
-     * two forms in the library, one being `<x-shape::icon.check />` and the
-     * other the `'success' => 'check-circle'` arms that a tone resolves through.
-     * Deliberately the broader reading of the two: a literal that coincides with
-     * an icon name without being one costs a component nobody needed, and a name
-     * missed costs the silence this whole check exists to break.
+     * A slot counts if it appears as a static tag or as a quoted literal: the
+     * two forms in this library, one being `<x-shape::icon.shape-checked />` and
+     * the other the `'success' => 'shape-success'` arms a tone resolves through.
+     * Read against the icons the package actually ships, because that is the
+     * whole of what the check is about: resolving quietly to the package is only
+     * possible for a name the package has a drawing for. A slot drawn with no
+     * file behind it is Blade's "unable to locate component", which is loud
+     * already. And `shape-` is this library's prefix for more than icons —
+     * `confirm` defaults its modal name to `shape-confirm` — so the prefix alone
+     * is not enough to tell a slot from anything else wearing it.
      *
      * @return list<string>
      */
@@ -136,6 +141,10 @@ final class Registry
         $drawn = [];
 
         foreach ($this->vocabulary() as $name) {
+            if (! str_starts_with($name, 'shape-')) {
+                continue;
+            }
+
             $pattern = '/<x-shape::icon\.'.preg_quote($name, '/').'(?![\w-])|([\'"])'.preg_quote($name, '/').'\1/';
 
             foreach ($this->all() as $component) {
@@ -159,11 +168,22 @@ final class Registry
     }
 
     /**
-     * Every icon this package ships a component for.
+     * Every icon this package ships a component for, across both tiers.
+     *
+     * Slots and the three examples together. `shape-arrow-right`, `shape-plus`
+     * and `shape-trash` are not part of the library's vocabulary — nothing
+     * resolves them, and they ship so that the README and the previews render
+     * for somebody who has configured nothing. `--replace` leaves them alone,
+     * which is correct: they are not Shape's to keep level with your set.
+     *
+     * They carry the prefix so the bare names stay free. An application that
+     * wants a trash can generates `trash` from its own set, and reaching for one
+     * it never generated is a "component not found" rather than a Heroicon
+     * quietly drawn beside thirteen Lucide slots.
      *
      * @return list<string>
      */
-    private function vocabulary(): array
+    public function vocabulary(): array
     {
         $names = [];
 

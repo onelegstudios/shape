@@ -32,7 +32,7 @@
         type="button"
         square
         variant="ghost"
-        icon="x-mark"
+        icon="shape-close"
         icon-size="sm"
         aria-label="Close"
         command="close"

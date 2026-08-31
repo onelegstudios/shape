@@ -55,7 +55,7 @@ it('lets a caller opt out of the icon', function () {
 });
 
 it('lets a caller name an icon of its own', function () {
-    expect(Blade::render('<x-shape::badge label="New" icon="plus" />'))
+    expect(Blade::render('<x-shape::badge label="New" icon="shape-plus" />'))
         ->toContain('data-shape-icon');
 });
 
