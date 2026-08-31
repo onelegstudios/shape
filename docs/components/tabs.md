@@ -75,7 +75,7 @@ panel.
 | `tabs.tab` | `for` | — | the panel's `name` |
 | | `href` | — | makes it a link instead |
 | | `selected` | `false` | |
-| | `icon` | — | any icon name |
+| | `icon` | — | any [icon](icon.md) name |
 | | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | | `as` | resolved from `href` | `button`, `a`, `div` |
 | `tabs.panel` | `name` | — | matched by a tab's `for` |

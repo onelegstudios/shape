@@ -44,23 +44,33 @@ php artisan shape:eject modal
 ```
 
 ```
-modal .............................................. requested
-  modal/index.blade.php ................................ ejected
 heading ................................... required by modal
   heading.blade.php .................................... ejected
+icon ..................................... required by button
+  icon/index.blade.php ................................. ejected
+  icon/shape-arrow-right.blade.php ..................... ejected
+  …
+  icon/shape-warning.blade.php ......................... ejected
+button .................................. required by overlay
+  button/element.blade.php ............................. ejected
+  button/index.blade.php ............................... ejected
 overlay ................................... required by modal
   overlay/close.blade.php .............................. ejected
-button .................................. required by overlay
-  button/index.blade.php ............................... ejected
-icon ..................................... required by button
-  icon/check.blade.php ................................. ejected
+  overlay/footer.blade.php ............................. ejected
+  overlay/trigger.blade.php ............................ ejected
+text ...................................... required by modal
+  text.blade.php ....................................... ejected
+modal .............................................. requested
+  modal/index.blade.php ................................ ejected
 ```
 
 A modal is a `<dialog>` that composes a heading, a text, and a close button that
 is itself a button wrapping an icon. Ejecting the modal alone would leave you
 owning the outer shell and none of the parts you probably wanted to change,
 which is the worst of both arrangements — so the command follows the dependency
-graph. `--bare` opts out of that, if the outer file really is all you want.
+graph. Icons come as a directory: a button resolves whichever name it was given,
+so there is no subset of them the command could know to take. `--bare` opts out
+of the whole walk, if the outer file really is all you want.
 
 Ejected components land in `shape.components_path`, which Shape registers ahead
 of its own views. Nothing else has to change: `<x-shape::modal>` is now your
@@ -390,7 +400,7 @@ One slot is **packaged**: Shape draws `shape-loading` itself, because Heroicons'
 nearest drawing is `arrow-path` — a circular arrow rather than a loader, and it
 does not read as one spinning. A set that has something better names it and the
 generated file shadows the packaged spinner; a set that says nothing, or `null`,
-leaves the spinner rendering, which there is the designed answer rather than a
+leaves the spinner rendering, which is the designed answer there rather than a
 gap. Look at whatever your set offers *spinning* before keeping it.
 
 Nothing above changes what a call site looks like, because none of it reaches

@@ -104,7 +104,7 @@ If a message is still true after someone has read it, it is an
 | `color` | `neutral` | `accent`, `success`, `warning`, `danger` |
 | `heading` | — | the line in bold |
 | `description` | — | a second line under it |
-| `icon` | resolved from `color` | any icon name, or `false` for none |
+| `icon` | resolved from `color` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `dismissible` | `true` | `false` removes the close button |
 

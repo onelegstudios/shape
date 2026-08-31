@@ -6,18 +6,23 @@ now, what changes, what is already settled, and how it is tested.
 | | Task | Depends on | State |
 | --- | --- | --- | --- |
 | 01 | [Icon slots, so Shape's own names stop impersonating a vendor](01-icon-slots.md) | — | **landed** |
-| 02 | [Stop the docs promising a catalogue](02-docs-vocabulary.md) | 01 | open |
+| 02 | [Stop the docs promising a catalogue](02-docs-vocabulary.md) | 01 | **landed** |
 
 01 renamed the twelve icons the library draws itself, promoted the spinner to a
 fourteenth slot, and turned `aliases` into a per-set `slots` map under a declared
-`icon_slots` list. 02 rewrites the documentation that currently presents those
+`icon_slots` list. 02 rewrote the documentation that presented those
 icons, plus three example ones, as a single flat catalogue.
 
-01 carried the docs far enough that nothing in them is now false: every renamed
+01 carried the docs far enough that nothing in them was false: every renamed
 name was moved, `docs/tooling.md` describes slots rather than aliases, and
 `docs/components/icon.md` gained the two-tier split and the override section.
-What 02 still owns is the editorial pass over the rest — the preview set, the
-tone tables' surrounding prose, and whether `icon-gallery` stays a gallery.
+02 did the editorial pass over the rest. `icon-gallery` is gone — a preview is
+printed as its own example, so a strip of fourteen icons was the catalogue
+picture quoted back as code, above a table that says more. The icon page now
+opens on generation rather than on "call the one you want by name", and the two
+places that had gone on naming icons 01 renamed — the `shape:eject` transcript in
+`docs/tooling.md` and the workbench gallery, which 500s — are fixed and, in the
+workbench's case, now tested.
 
 ## The problem, in one paragraph
 

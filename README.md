@@ -243,6 +243,12 @@ hand-edit* an instruction you can follow rather than one that asks for a
 checkout nobody mentioned. `--from` reads a local directory instead, and
 `--status` reports which drawings have moved upstream since.
 
+Fourteen of those components are the ones Shape's own components draw — the
+*slots*, named `shape-close` and `shape-warning` for the role they play rather
+than for whichever vendor drew them. `shape:icon --replace --set=lucide`
+regenerates that fourteen from another set without a call site changing. Every
+other icon your interface needs is one you generate, under its own name.
+
 `shape:doctor` checks ejected components for request-scoped state. A folded
 component is pre-rendered while Blade compiles, so `auth()`, `session()`,
 `config()` or a translation inside one is resolved once and then served to

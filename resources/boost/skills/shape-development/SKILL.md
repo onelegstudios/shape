@@ -117,7 +117,7 @@ also the only form Blaze will memoize:
 ```blade
 <x-shape::table.cell :value="$invoice->number" />   {{-- folds --}}
 <x-shape::badge label="Paid" color="success" />     {{-- folds and memoizes --}}
-<x-shape::icon.shape-plus />                              {{-- folds; <x-shape::icon :name="$n" /> cannot --}}
+<x-shape::icon.bell />                              {{-- folds; <x-shape::icon :name="$n" /> cannot --}}
 ```
 
 ### 5. Feedback from the server
@@ -208,7 +208,10 @@ drawing to shadow it, and a set with nothing that reads as a loader says `null`.
 Heroicons says `null` — `arrow-path` is a circular arrow, not a loader.
 
 The slots are not a catalogue to pick from — they are what Shape keeps level with
-your set. Generate your own icons for everything else, under their own names:
+your set. The package's own README and previews name `shape-*` icons because
+those are the drawings it ships and its documentation has to render for a reader
+who has generated nothing; an application's call sites should not copy that.
+Generate your own icons for everything else, under their own names:
 
 ```bash
 php artisan shape:icon bell trash --set=lucide
@@ -270,7 +273,10 @@ Read before executing:
 - do not call `auth()`, `session()`, `config()`, `__()` or `now()` inside an
   ejected component that is annotated `fold: true`
 - do not reach for `<x-shape::icon :name="$name" />` on a hot path; the direct
-  `<x-shape::icon.shape-plus />` form is the one that folds and memoizes
+  `<x-shape::icon.bell />` form is the one that folds and memoizes
+- do not put a `shape-*` name in an application's own markup; those fourteen are
+  Shape's slots, and an icon of your own is one you generated
+  (`php artisan shape:icon bell`), under the name its set uses
 - name a `size` on an icon and leave `variant` alone unless the style is the
   point; the small sizes are drawn solid because a stroke does not read at 16px,
   and a call site that names only a size works with any icon set

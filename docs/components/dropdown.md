@@ -54,7 +54,7 @@ looks like it didn't fire. Opt out per item with `data-shape-keep-open`.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `icon` | — | any icon name |
+| `icon` | — | any [icon](icon.md) name |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
 | `as` | resolved from `href` | `button`, `a`, `div` |

@@ -84,7 +84,7 @@
                 <x-shape::button variant="subtle" color="danger" icon="shape-trash">Delete project</x-shape::button>
                 <x-shape::button variant="primary" color="danger">Yes, delete it</x-shape::button>
                 <x-shape::button variant="primary" color="accent" icon="shape-checked">Approve</x-shape::button>
-                <x-shape::button variant="subtle" color="success" icon="check-circle">Paid</x-shape::button>
+                <x-shape::button variant="subtle" color="success" icon="shape-checked">Paid</x-shape::button>
             </div>
         </section>
 
@@ -122,10 +122,12 @@
         <section class="space-y-4">
             <h2 class="text-sm font-medium uppercase tracking-wider text-shape-500">Icons</h2>
             <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                The slots Shape resolves itself, read out of <code class="text-xs">shape.icon_slots</code> —
+                these are what <code class="text-xs">shape:icon --replace</code> regenerates in your set.
                 Each variant is a drawing made at its own size. Nothing is scaled.
             </p>
             <div class="flex flex-wrap items-end gap-6 text-shape-700 dark:text-shape-300">
-                @foreach (['check', 'check-circle', 'x-mark', 'exclamation-triangle', 'shape-arrow-right', 'shape-plus', 'shape-trash', 'chevron-down', 'loading'] as $icon)
+                @foreach (array_keys(config('shape.icon_slots')) as $icon)
                     <div class="flex flex-col items-center gap-2">
                         <x-shape::icon :name="$icon" />
                         <span class="text-[11px] text-shape-500">{{ $icon }}</span>

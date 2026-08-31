@@ -90,7 +90,7 @@ is saying it does something, and most rows don't. The ones that do say so:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `empty` | `true` | render the built-in empty state |
-| `empty-icon` | — | icon name for it |
+| `empty-icon` | — | any [icon](icon.md) name |
 | `empty-heading` | `Nothing here yet` | |
 | `empty-description` | — | |
 

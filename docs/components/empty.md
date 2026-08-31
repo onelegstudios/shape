@@ -36,7 +36,7 @@ equivalent.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `icon` | — | any icon name |
+| `icon` | — | any [icon](icon.md) name |
 | `icon-size` | `base` | `xs`, `sm`, `base` |
 | `heading` | — | the headline |
 | `description` | — | one line of supporting copy |

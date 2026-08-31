@@ -1,7 +1,10 @@
 # Icon
 
-One component per icon, from [Heroicons](https://heroicons.com). Call the one
-you want by name.
+Every icon is a component of its own, generated from an icon set. Shape ships
+fourteen, and they are the fourteen its own components draw — a checkbox's tick,
+a pager's chevrons, the glyph a `danger` tone reaches for. Every other icon your
+interface needs, you generate with `shape:icon`, from
+[Heroicons](https://heroicons.com) or from whatever set you already use.
 
 @docs('preview', name: 'icon')
 
@@ -87,8 +90,6 @@ named for the role they play rather than for whatever the set that drew them
 calls it — and they are the list that matters when you swap sets: the list
 `shape:icon --replace` generates and `shape:doctor` checks.
 
-@docs('preview', name: 'icon-gallery')
-
 | Slot | Resolved by |
 | --- | --- |
 | `shape-checked` | the [checkbox](checkbox.md) tick |
@@ -147,7 +148,10 @@ stops folding and says nothing about it.
 ## Every other icon is yours
 
 The fourteen are not a catalogue to pick from. They are what Shape keeps level
-with your set, and nothing else in your interface should come from them.
+with your set, and nothing else in your interface should come from them. Where a
+preview on this site names one — a `shape-plus` on a button, a `shape-trash` in a
+dropdown — it is because the site has to render for a reader who has generated
+nothing, not because that is what a call site of yours would say.
 
 Icons of your own are generated the same way, from a set Shape fetches for you or
 from any directory of SVGs in any set's layout:

@@ -62,7 +62,7 @@ the fact.
 | --- | --- | --- |
 | `color` | `neutral` | `accent`, `success`, `warning`, `danger` |
 | `heading` | — | a title above the body |
-| `icon` | resolved from `color` | any icon name, or `false` for none |
+| `icon` | resolved from `color` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `dismissible` | `false` | adds a close button |
 

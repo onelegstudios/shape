@@ -50,7 +50,7 @@ it is:
 | `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `size` | `base` | `sm`, `base` |
-| `icon` | resolved from `color` | any icon name, or `false` to omit |
+| `icon` | resolved from `color` | any [icon](icon.md) name, or `false` to omit |
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
 
 There is no slot: Blaze memoizes a component only when it has none and is called

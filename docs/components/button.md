@@ -38,6 +38,11 @@ the text up too.
 
 @docs('preview', name: 'button-icons')
 
+The names there are `shape-*` because those are the drawings this package ships,
+and a preview has to render for a reader who has generated nothing. In an
+application they would be names of your own: `php artisan shape:icon plus
+arrow-right`, then `icon="plus"`. See [Icon](icon.md).
+
 `icon-size` picks how big the drawing is: `xs` is 16px, `sm` — the default — is
 20px, and `base` is 24px. The style is left to the icon, which draws the small
 sizes solid because a stroke does not read at 16px.
@@ -101,8 +106,8 @@ without `!important`:
 | `variant` | `outline` | `primary`, `outline`, `subtle`, `ghost` |
 | `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
 | `size` | `base` | `sm`, `base`, `lg` |
-| `icon` | — | any icon name, rendered before the label |
-| `icon-trailing` | — | any icon name, rendered after the label |
+| `icon` | — | any [icon](icon.md) name, rendered before the label |
+| `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `square` | `false` | drops the horizontal padding, for icon-only buttons |
 | `as` | `button` | `button`, `a`, `div` |

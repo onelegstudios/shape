@@ -43,7 +43,7 @@ in one class.
 | --- | --- | --- |
 | `as` | `ul` | any list element — `ol` for a ranked list |
 | `empty` | `true` | render the built-in empty state |
-| `empty-icon` | — | icon name for it |
+| `empty-icon` | — | any [icon](icon.md) name |
 | `empty-heading` | `Nothing here yet` | |
 | `empty-description` | — | |
 
