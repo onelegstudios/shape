@@ -227,13 +227,21 @@ php artisan shape:install       # import the tokens, register the script
 php artisan shape:eject modal   # a component, and everything it composes
 php artisan shape:eject --status
 php artisan shape:doctor        # the mistake that costs a fold and says nothing
-php artisan shape:icon --all --from=./resources/svg
+php artisan shape:icon --all    # an icon set, fetched and turned into components
+php artisan shape:icon --status
 ```
 
 `shape:eject` follows a dependency graph — a modal arrives with the heading, the
 text and the close button inside it — and records what the package held at the
 moment it copied each file, so `--status` can tell a component you edited from
 one the package has changed underneath you.
+
+`shape:icon` generates icon components from a set of SVGs. A set declares the
+repository that draws it, so the command fetches it, caches it, and writes the
+resolved commit into every file — which is what makes *Regenerate; don't
+hand-edit* an instruction you can follow rather than one that asks for a
+checkout nobody mentioned. `--from` reads a local directory instead, and
+`--status` reports which drawings have moved upstream since.
 
 `shape:doctor` checks ejected components for request-scoped state. A folded
 component is pre-rendered while Blade compiles, so `auth()`, `session()`,

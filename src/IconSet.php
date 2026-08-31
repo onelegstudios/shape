@@ -41,6 +41,8 @@ final class IconSet
      * @param  non-empty-array<string, array{class: string, prefer?: string}>  $sizes  The library's scale, in ascending order; the last is the default.
      * @param  non-empty-array<string, array<string, string>>  $styles  Style, then the sizes it draws its own glyph at.
      * @param  array<string, string>  $aliases  Shape's name for a drawing, against this set's own spelling of it.
+     * @param  string  $ref  Only meaningful with a repo; ignored otherwise.
+     * @param  string  $path  The subdirectory of the repository the drawings live in, if any.
      */
     private function __construct(
         public readonly string $name,
@@ -48,6 +50,9 @@ final class IconSet
         private readonly array $sizes,
         private readonly array $styles,
         private readonly array $aliases = [],
+        public readonly ?string $repo = null,
+        public readonly string $ref = 'main',
+        public readonly string $path = '',
     ) {}
 
     /**
@@ -101,12 +106,19 @@ final class IconSet
 
         $notice = $definition['notice'] ?? null;
 
+        $repo = self::text($name, $definition, 'repo');
+        $ref = self::text($name, $definition, 'ref');
+        $path = self::text($name, $definition, 'path');
+
         return new self(
             $name,
             is_string($notice) ? $notice : '',
             $scale,
             $styles,
             self::aliases($name, $definition['aliases'] ?? []),
+            $repo,
+            $ref ?? 'main',
+            trim($path ?? '', '/'),
         );
     }
 
@@ -135,6 +147,31 @@ final class IconSet
         }
 
         return $map;
+    }
+
+    /**
+     * One optional string key of a set, checked rather than assumed.
+     *
+     * `repo`, `ref` and `path` are the three that say where a set can be
+     * fetched from, and all three arrive from a config file a consumer is
+     * invited to edit. A misspelling that surfaced as a type error inside an
+     * HTTP call would be a poor way to learn that `ref` was written as an array.
+     *
+     * @param  array<mixed>  $definition
+     */
+    private static function text(string $name, array $definition, string $key): ?string
+    {
+        $value = $definition[$key] ?? null;
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (! is_string($value) || $value === '') {
+            throw new InvalidArgumentException("Icon set [{$name}] has a [{$key}] that is not a name.");
+        }
+
+        return $value;
     }
 
     /**

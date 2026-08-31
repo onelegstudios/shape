@@ -61,6 +61,15 @@ return [
     | still written to `x-mark.blade.php` — so the call sites stay as they are
     | and the drawing behind them changes. One direction only.
     |
+    | `repo`, `ref` and `path` are where the drawings can be had. Without them a
+    | set can only be generated from a directory somebody already has, which
+    | made "Regenerate; don't hand-edit" ask for a checkout nobody had been told
+    | to make — Heroicons is not a dependency of this package. With them,
+    | `shape:icon` fetches the set once, caches it under `storage/framework`, and
+    | pins the resolved commit into every file it writes. `--from` still wins
+    | when given, and stays the way to read a local folder or a set with no
+    | upstream at all.
+    |
     | None of this is read at run time. It is spent while `shape:icon` writes a
     | component, and every value it decides is a literal in the generated file —
     | which is what keeps those files foldable.
@@ -70,6 +79,9 @@ return [
     'icon_sets' => [
 
         'heroicons' => [
+            'repo' => 'tailwindlabs/heroicons',
+            'ref' => 'master',
+            'path' => 'optimized',
             'notice' => 'Heroicons (https://heroicons.com), MIT licensed.',
             'styles' => [
                 'solid' => [
@@ -84,6 +96,9 @@ return [
         ],
 
         'lucide' => [
+            'repo' => 'lucide-icons/lucide',
+            'ref' => 'main',
+            'path' => 'icons',
             'notice' => 'Lucide (https://lucide.dev), ISC licensed.',
             'styles' => [
                 'outline' => [

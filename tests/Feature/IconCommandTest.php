@@ -155,10 +155,78 @@ it('keeps an icon that is already there unless forced', function () {
     expect(file_get_contents($this->destination.'/icon/check.blade.php'))->toContain('@blaze');
 });
 
-it('needs a directory to read from', function () {
-    $this->artisan('shape:icon', ['icons' => ['check']])
+it('needs somewhere to read a set that says nothing about where it is drawn', function () {
+    // A set with no `repo` has no upstream to fetch, which is the normal case
+    // for a folder of drawings somebody made themselves. `--from` is the only
+    // way to read one, and saying so beats fetching nothing from nowhere.
+    config()->set('shape.icon_sets.homemade', [
+        'notice' => '',
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+    ]);
+
+    $this->artisan('shape:icon', ['icons' => ['check'], '--set' => 'homemade'])
         ->expectsOutputToContain('Pass --from')
         ->assertFailed();
+});
+
+it('records what each icon was drawn from, beside the icons', function () {
+    $this->artisan('shape:icon', ['icons' => ['check'], '--from' => $this->heroicons])->assertSuccessful();
+
+    $lock = json_decode((string) file_get_contents($this->destination.'/icon/shape-icons.json'), true);
+
+    expect($lock)->toHaveKey('heroicons')
+        ->and($lock['heroicons']['icons'])->toHaveKey('check');
+
+    // A `--from` directory was not fetched from the set's repository, so the
+    // record does not claim it was. Pinning a component to a commit nobody read
+    // it at would be worse than not pinning it.
+    expect($lock['heroicons'])->not->toHaveKey('repo')
+        ->and($lock['heroicons'])->not->toHaveKey('commit');
+});
+
+it('reports an icon whose drawing has moved since it was generated', function () {
+    // Without the record, a component that differs from the current drawing
+    // might have been hand-edited or might have been overtaken upstream, and
+    // only the second is a reason to regenerate.
+    $from = sys_get_temp_dir().'/shape-icons-upstream-'.getmypid();
+
+    exec('rm -rf '.escapeshellarg($from));
+    exec('cp -R '.escapeshellarg($this->heroicons).' '.escapeshellarg($from));
+
+    $this->artisan('shape:icon', ['icons' => ['check'], '--from' => $from])->assertSuccessful();
+
+    $this->artisan('shape:icon', ['--status' => true, '--from' => $from])
+        ->expectsOutputToContain('unchanged')
+        ->assertSuccessful();
+
+    file_put_contents(
+        $from.'/24/solid/check.svg',
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 1 L2 2" /></svg>',
+    );
+
+    $this->artisan('shape:icon', ['--status' => true, '--from' => $from])
+        ->expectsOutputToContain('redrawn upstream')
+        ->assertSuccessful();
+
+    exec('rm -rf '.escapeshellarg($from));
+});
+
+it('will not go to the network to check icons that came from a directory', function () {
+    // The lockfile records no upstream for a `--from` run, and reaching for the
+    // set's repository instead would compare the icons against drawings they
+    // never came from. `TestCase` forbids stray requests, so a run that tried
+    // would fail here rather than quietly succeeding.
+    $this->artisan('shape:icon', ['icons' => ['check'], '--from' => $this->heroicons])->assertSuccessful();
+
+    $this->artisan('shape:icon', ['--status' => true])
+        ->expectsOutputToContain('pass --from to check')
+        ->assertSuccessful();
+});
+
+it('has nothing to report before anything has been generated', function () {
+    $this->artisan('shape:icon', ['--status' => true])
+        ->expectsOutputToContain('No icons have been generated')
+        ->assertSuccessful();
 });
 
 it('reads a name through the alias and writes it under Shape\'s', function () {

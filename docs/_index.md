@@ -140,6 +140,6 @@ Four commands, none of them required: `shape:install` writes the import and the
 script registration for you,
 `shape:eject` hands you a component and everything it composes, `shape:doctor`
 checks an ejected component for the global state that would cost it its fold,
-and `shape:icon` generates icon components from a directory of SVGs. See
+and `shape:icon` fetches an icon set and generates components from it. See
 [Tooling](tooling.md), which also covers the documentation site you are probably
 reading this on.

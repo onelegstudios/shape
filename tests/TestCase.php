@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Onelegstudios\Shape\Tests;
 
+use Illuminate\Support\Facades\Http;
 use Onelegstudios\Shape\Facades\Shape as ShapeFacade;
 use Onelegstudios\Shape\ShapeServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -17,6 +18,26 @@ abstract class TestCase extends Orchestra
      * this from `beforeAll` rather than reaching for the config at run time.
      */
     public static ?string $componentsPath = null;
+
+    /**
+     * No test in this suite reaches the network.
+     *
+     * `shape:icon` can fetch an icon set from GitHub, and the components it
+     * generates are committed — so CI has no reason to fetch and every reason
+     * not to: a suite that quietly depends on GitHub being up is one that fails
+     * for reasons having nothing to do with the change under test.
+     *
+     * Stated here rather than left to discipline. Any request no test has
+     * explicitly faked throws `StrayRequestException` naming the URL it tried,
+     * which turns "this test went to the network" from something nobody notices
+     * into something that cannot be merged.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Http::preventStrayRequests();
+    }
 
     protected function defineEnvironment($app): void
     {

@@ -154,11 +154,25 @@ register and no Livewire dependency in the package.
 php artisan shape:eject modal      # + heading, text, overlay, button, icon
 php artisan shape:eject --status   # what has drifted since an upgrade
 php artisan shape:doctor           # fold safety of ejected components
+php artisan shape:icon bell        # one icon from the configured set
+php artisan shape:icon --all --set=lucide
+php artisan shape:icon --replace --set=lucide
+php artisan shape:icon --all --set=lucide --namespace=lucide
 php artisan shape:icon --all --from=./resources/svg
-php artisan shape:icon bell --set=lucide --from=./vendor/lucide/icons
-php artisan shape:icon --replace --set=lucide --from=./vendor/lucide/icons
-php artisan shape:icon --all --set=lucide --from=./vendor/lucide/icons --namespace=lucide
 ```
+
+Each set in `shape.icon_sets` declares the repository that draws it (`repo`,
+`ref`, `path`), so `shape:icon` fetches it and caches it under
+`storage/framework/shape/icons`. Nothing needs cloning first, and nothing is read
+at run time — a generated component is a Blade file with the drawing baked in.
+
+- `--from` reads a local directory instead, and still wins when given; use it for
+  a designer's folder or a set with no upstream.
+- `--ref` reads a different branch, tag or commit than the set declares.
+- `--offline` works only from what has already been fetched and fails by name
+  rather than reaching for the network — use it in CI.
+- `--status` reports which icons have been redrawn upstream since they were
+  generated, from the `shape-icons.json` written beside them.
 
 `--replace` generates the icons Shape draws in its own components, under Shape's
 names, from whatever the set calls them — the set's own spellings are declared

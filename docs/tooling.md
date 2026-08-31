@@ -148,12 +148,88 @@ Every icon in Shape is generated. The header on each file says
 *Regenerate; don't hand-edit*, and this is what regenerates them.
 
 ```bash
-php artisan shape:icon check arrow-right --from=vendor/heroicons/heroicons/optimized
+php artisan shape:icon check arrow-right
+php artisan shape:icon --all
+php artisan shape:icon bell --set=lucide
+php artisan shape:icon --replace --set=lucide
+php artisan shape:icon --all --set=lucide --namespace=lucide
 php artisan shape:icon --all --from=./resources/svg
-php artisan shape:icon bell --set=lucide --from=./vendor/lucide/icons
-php artisan shape:icon --replace --set=lucide --from=./vendor/lucide/icons
-php artisan shape:icon --all --set=lucide --from=./vendor/lucide/icons --namespace=lucide
 ```
+
+### Where the drawings come from
+
+A set says which repository draws it, and `shape:icon` fetches it:
+
+```php
+'heroicons' => [
+    'repo' => 'tailwindlabs/heroicons',
+    'ref' => 'master',
+    'path' => 'optimized',
+    'notice' => 'Heroicons (https://heroicons.com), MIT licensed.',
+    'styles' => [/* … */],
+],
+```
+
+Heroicons is not a dependency of this package, and asking you to clone it before
+the header's instruction could be followed was not a workflow. So the set is
+fetched once, cached under `storage/framework/shape/icons`, and read from there
+afterwards. Nothing about it is read at run time; a generated component is bytes
+on disk.
+
+Two ways in, chosen by the shape of the run. `--all` and `--replace` take the
+whole set as one tarball, which is also the only form that can list a directory.
+A handful of names on the command line takes one raw file per drawing instead,
+because downloading a repository to answer `shape:icon bell` is the wrong trade.
+
+```bash
+php artisan shape:icon bell --set=lucide --ref=v0.544.0
+php artisan shape:icon --all --offline
+php artisan shape:icon --all --from=./resources/svg
+```
+
+`--ref` reads a different branch, tag or commit. `--offline` works from what has
+already been fetched and fails, loudly and by name, rather than reaching for the
+network — which is how CI generates without depending on GitHub being up.
+
+`--from` still wins whenever it is given, and stays the way to read a local
+checkout, a folder a designer handed over, or a set with no upstream at all.
+
+### Knowing what a file was drawn from
+
+Every generated component carries its licence notice and, when it was fetched,
+the commit it was read at:
+
+```blade
+{{-- Heroicons (https://heroicons.com), MIT licensed. tailwindlabs/heroicons@a7a54a5f8e0b. Regenerate; don't hand-edit. --}}
+```
+
+A ref is usually a branch, so recording `master` would say nothing about which
+drawing is actually in the file. The resolved commit comes out of the archive
+itself and costs no extra request.
+
+`shape-icons.json` is written beside the components — the same trade
+`shape:eject` makes with `shape-eject.json`, one layer further out. It records
+the set, the ref, the commit and a digest per icon, which is what lets
+`--status` tell the interesting case from the ordinary one:
+
+```bash
+php artisan shape:icon --status
+```
+
+```
+heroicons                       tailwindlabs/heroicons@a7a54a5f8e0b
+  check                                                   unchanged
+  chevron-down                                     redrawn upstream
+```
+
+Without the record, a component that differs from the current drawing might have
+been hand-edited or might have been overtaken upstream, and only the second is a
+reason to regenerate.
+
+A licence travels with the drawings it covers. Font Awesome Free is CC BY 4.0
+and Material is Apache 2.0, and generated components carry an attribution
+requirement you inherit by redistributing them — so a fetched set keeps the
+repository's own `LICENSE` beside its cache rather than a paraphrase of it.
 
 ### What a set is
 

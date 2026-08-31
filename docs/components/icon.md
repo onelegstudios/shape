@@ -91,17 +91,18 @@ label. When an icon carries meaning on its own, expose it and give it a name:
 
 `loading` spins, and is the one icon that isn't from Heroicons.
 
-Add your own from any directory of SVGs, in any set's layout:
+Add your own from a set Shape fetches for you, or from any directory of SVGs in
+any set's layout:
 
 ```bash
+php artisan shape:icon bell --set=lucide
 php artisan shape:icon bell --from=resources/icons
-php artisan shape:icon bell --set=lucide --from=vendor/lucide/icons
 ```
 
 A whole second set can have a subdirectory, and a namespace, of its own:
 
 ```bash
-php artisan shape:icon --all --set=lucide --from=vendor/lucide/icons --namespace=lucide
+php artisan shape:icon --all --set=lucide --namespace=lucide
 ```
 
 ```blade
@@ -117,7 +118,7 @@ everywhere, including inside Shape's own components — so swapping the set the
 whole library draws in is one command:
 
 ```bash
-php artisan shape:icon --replace --set=lucide --from=vendor/lucide/icons
+php artisan shape:icon --replace --set=lucide
 ```
 
 That generates the twelve names Shape draws in components of its own, under

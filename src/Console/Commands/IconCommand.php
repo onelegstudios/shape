@@ -7,11 +7,15 @@ namespace Onelegstudios\Shape\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use InvalidArgumentException;
+use Onelegstudios\Shape\Icons\DirectorySource;
+use Onelegstudios\Shape\Icons\GitHubSource;
+use Onelegstudios\Shape\Icons\IconSource;
 use Onelegstudios\Shape\IconSet;
 use Onelegstudios\Shape\Registry;
+use RuntimeException;
 
 /**
- * Turn a directory of SVGs into icon components.
+ * Turn a set of SVGs into icon components.
  *
  * Every icon in this library is a generated file, and generating them is what
  * makes the set cheap to grow and what keeps the header on each one —
@@ -20,16 +24,23 @@ use Onelegstudios\Shape\Registry;
  * What a set looks like is declared in `shape.icon_sets`, measured against the
  * scale in `shape.icon_sizes`, and parsed by `IconSet`: a matrix of styles
  * against sizes, mostly sparse. This command is the part that walks that
- * matrix, reads whichever cells the source directory actually holds, and writes
- * one component per name with the answers baked in.
+ * matrix, reads whichever cells the set actually holds, and writes one
+ * component per name with the answers baked in.
  *
  * The alternative, which WireUI takes, is a Composer package per icon set. That
  * is a version matrix to maintain for what is fundamentally a code generator,
  * and it puts the set a consumer actually wants — theirs — furthest out of
- * reach. This reads whatever directory it is pointed at, in whatever layout the
+ * reach. This reads whatever set it is pointed at, in whatever layout the
  * manifest describes.
  *
- * `--replace` is that taken to its conclusion. Writing an icon into
+ * Where the bytes come from is not this command's business. An `IconSource`
+ * answers for a path, and it is either a directory somebody already has
+ * (`--from`) or a repository fetched and cached on their behalf. That second
+ * one is what makes the header's instruction followable: Heroicons is not a
+ * dependency of this package, so before it, regenerating meant cloning
+ * something nobody had been told to clone.
+ *
+ * `--replace` is the generator taken to its conclusion. Writing an icon into
  * `components_path` replaces the packaged one everywhere, including inside this
  * library's own components, because that path resolves first — so generating
  * the twelve names the library draws swaps the icon set out from under the whole
@@ -50,18 +61,21 @@ class IconCommand extends Command
      */
     protected $signature = 'shape:icon
         {icons?* : The icon names to generate}
-        {--set=heroicons : The icon set the source directory holds}
-        {--from= : The directory to read SVGs from}
+        {--set=heroicons : The icon set to read}
+        {--from= : A directory to read SVGs from, instead of fetching the set}
+        {--ref= : The branch, tag or commit to fetch, overriding the set\'s own}
+        {--offline : Work from what has already been fetched, and fail rather than fetch}
         {--to= : Where to write the components}
         {--namespace= : Write into a subdirectory, so a set has a namespace of its own}
-        {--all : Generate every icon in the source directory}
+        {--all : Generate every icon in the set}
         {--replace : Generate exactly the icons Shape draws itself}
+        {--status : Report which generated icons have been redrawn upstream}
         {--force : Overwrite icons that already exist}';
 
     /**
      * The command description.
      */
-    protected $description = 'Generate Shape icon components from a directory of SVGs.';
+    protected $description = 'Generate Shape icon components from a set of SVGs.';
 
     /**
      * Execute the console command.
@@ -75,6 +89,10 @@ class IconCommand extends Command
             $this->components->error($e->getMessage());
 
             return self::FAILURE;
+        }
+
+        if ($this->option('status')) {
+            return $this->status($files, $this->destination($namespace));
         }
 
         if ($this->option('replace') && ((array) $this->argument('icons') !== [] || $this->option('all'))) {
@@ -93,17 +111,23 @@ class IconCommand extends Command
             return self::FAILURE;
         }
 
-        $from = $this->source();
+        try {
+            $source = $this->source($set, $files);
 
-        if ($from === null) {
-            $this->components->error('Pass --from with the directory to read SVGs from.');
+            return $this->generate($set, $source, $files, $registry, $this->destination($namespace));
+        } catch (InvalidArgumentException|RuntimeException $e) {
+            $this->components->error($e->getMessage());
 
             return self::FAILURE;
         }
+    }
 
-        $to = $this->destination($namespace);
-
-        $names = $this->names($set, $files, $registry, $from);
+    /**
+     * Write one component per name, and record what each was drawn from.
+     */
+    protected function generate(IconSet $set, IconSource $source, Filesystem $files, Registry $registry, string $to): int
+    {
+        $names = $this->names($set, $source, $registry);
 
         if ($names === []) {
             $this->components->error('Name at least one icon, or pass --all.');
@@ -111,10 +135,11 @@ class IconCommand extends Command
             return self::FAILURE;
         }
 
+        $lock = $this->lock($files, $to);
         $written = 0;
 
         foreach ($names as $name) {
-            $cells = $this->matrix($set, $files, $from, $name);
+            $cells = $this->matrix($set, $source, $name);
 
             if ($cells === []) {
                 $this->components->twoColumnDetail("  {$name}", '<fg=red>no SVG found</>');
@@ -131,17 +156,223 @@ class IconCommand extends Command
             }
 
             $files->ensureDirectoryExists(dirname($target));
-            $files->put($target, $this->component($set, $files, $cells));
+            $files->put($target, $this->component($set, $source, $cells));
+
+            $lock[$set->name]['icons'][$name] = $this->digest($source, $cells);
 
             $written++;
 
             $this->components->twoColumnDetail("  {$name}", '<fg=green>'.count(array_unique($cells)).' drawing(s)</>');
         }
 
+        if ($written > 0) {
+            $this->pin($set, $source, $files, $to, $lock);
+        }
+
         $this->newLine();
         $this->components->info("{$written} icon(s) written to {$to}.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Report which generated icons have been redrawn since they were generated.
+     *
+     * The lockfile records what each icon was drawn from, which is the only way
+     * to tell the interesting case apart from the ordinary one. A component that
+     * differs from the current upstream drawing might have been hand-edited, or
+     * upstream might have moved underneath it; without the record both look the
+     * same, and only the second is a reason to regenerate.
+     *
+     * This is the same trade `shape:eject --status` makes against the package,
+     * one layer further out — there, the package is upstream; here, the icon set
+     * is.
+     */
+    protected function status(Filesystem $files, string $to): int
+    {
+        $lock = $this->lock($files, $to);
+
+        if ($lock === []) {
+            $this->components->info("No icons have been generated into {$to}.");
+
+            return self::SUCCESS;
+        }
+
+        $stale = 0;
+
+        foreach ($lock as $name => $record) {
+            $this->components->twoColumnDetail("<fg=default>{$name}</>", $this->pinned($record));
+
+            // Icons generated from a directory record no upstream, and this
+            // command does not know which directory it was. Reaching for the
+            // set's repository instead would compare them against drawings they
+            // never came from, over a network nobody asked it to use.
+            if (! isset($record['repo']) && $this->fetched()) {
+                $this->components->twoColumnDetail('  generated from a directory', '<fg=gray>pass --from to check</>');
+
+                continue;
+            }
+
+            try {
+                $set = $this->set($name);
+                $source = $this->source($set, $files);
+            } catch (InvalidArgumentException|RuntimeException $e) {
+                $this->components->twoColumnDetail('  '.$e->getMessage(), '<fg=yellow>not checked</>');
+
+                continue;
+            }
+
+            foreach ($record['icons'] as $icon => $digest) {
+                [$state, $counts] = $this->state($set, $source, $files, $to, $icon, $digest);
+
+                $stale += $counts;
+
+                $this->components->twoColumnDetail("  {$icon}", $state);
+            }
+        }
+
+        $this->newLine();
+
+        if ($stale > 0) {
+            $this->components->warn("{$stale} icon(s) have been redrawn upstream. Regenerate them with --force.");
+        } else {
+            $this->components->info('Every generated icon is level with the set it came from.');
+        }
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * How one recorded icon stands against the set as it is now.
+     *
+     * @return array{0: string, 1: int}
+     */
+    protected function state(IconSet $set, IconSource $source, Filesystem $files, string $to, string $icon, string $digest): array
+    {
+        if (! $files->exists($to.'/'.$icon.'.blade.php')) {
+            return ['<fg=gray>gone</>', 0];
+        }
+
+        $cells = $this->matrix($set, $source, $icon);
+
+        if ($cells === []) {
+            return ['<fg=yellow>no longer in the set</>', 1];
+        }
+
+        return $this->digest($source, $cells) === $digest
+            ? ['<fg=green>unchanged</>', 0]
+            : ['<fg=yellow>redrawn upstream</>', 1];
+    }
+
+    /**
+     * What one drawing is, boiled down to something comparable.
+     *
+     * Over the cells rather than over the generated component, because the
+     * question `--status` answers is whether *upstream* moved. A component
+     * regenerated by a later version of this command would differ byte for byte
+     * while the drawing behind it had not changed at all.
+     *
+     * @param  array<string, string>  $cells
+     */
+    protected function digest(IconSource $source, array $cells): string
+    {
+        $parts = [];
+
+        foreach ($cells as $cell => $path) {
+            $parts[] = $cell.' '.hash('sha256', $source->get($path));
+        }
+
+        return hash('sha256', implode("\n", $parts));
+    }
+
+    /**
+     * Record the set, the ref, the resolved commit, and a digest per icon.
+     *
+     * Written beside the components, the way `shape:eject` writes
+     * `shape-eject.json` beside the ones it copies. Keyed by set, because two
+     * sets can legitimately write into one directory — a primary one flat and a
+     * supplementary one namespaced — and each is pinned to its own upstream.
+     *
+     * @param  array<string, array{repo?: string, ref?: string, commit?: string, icons: array<string, string>}>  $lock
+     */
+    protected function pin(IconSet $set, IconSource $source, Filesystem $files, string $to, array $lock): void
+    {
+        // Only when the run actually used the set's upstream. A `--from`
+        // directory that happens to belong to a set with a `repo` was not
+        // fetched from it, and recording otherwise would pin a component to a
+        // commit nobody read it at.
+        $record = $this->fetched()
+            ? array_filter([
+                'repo' => $set->repo,
+                'ref' => $this->ref($set),
+                'commit' => $source->revision(),
+            ], fn (?string $value): bool => $value !== null && $value !== '')
+            : [];
+
+        ksort($lock[$set->name]['icons']);
+
+        $lock[$set->name] = [...$record, 'icons' => $lock[$set->name]['icons']];
+
+        ksort($lock);
+
+        $files->ensureDirectoryExists($to);
+        $files->put(
+            $to.'/'.$this->lockName(),
+            json_encode($lock, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n",
+        );
+    }
+
+    /**
+     * What was recorded for one set, as one line.
+     *
+     * @param  array{repo?: string, ref?: string, commit?: string, icons: array<string, string>}  $record
+     */
+    protected function pinned(array $record): string
+    {
+        $repo = $record['repo'] ?? null;
+        $commit = $record['commit'] ?? null;
+
+        if ($repo === null) {
+            return '<fg=gray>a directory</>';
+        }
+
+        return '<fg=gray>'.$repo.'@'.($commit === null ? ($record['ref'] ?? '?') : substr($commit, 0, 12)).'</>';
+    }
+
+    /**
+     * What has been generated into this directory before, if anything.
+     *
+     * @return array<string, array{repo?: string, ref?: string, commit?: string, icons: array<string, string>}>
+     */
+    protected function lock(Filesystem $files, string $to): array
+    {
+        $path = $to.'/'.$this->lockName();
+
+        if (! $files->exists($path)) {
+            return [];
+        }
+
+        $decoded = json_decode($files->get($path), true);
+
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        $lock = [];
+
+        foreach ($decoded as $name => $record) {
+            if (is_string($name) && is_array($record) && is_array($record['icons'] ?? null)) {
+                /** @var array{repo?: string, ref?: string, commit?: string, icons: array<string, string>} $record */
+                $lock[$name] = $record;
+            }
+        }
+
+        return $lock;
+    }
+
+    protected function lockName(): string
+    {
+        return 'shape-icons.json';
     }
 
     /**
@@ -158,10 +389,10 @@ class IconCommand extends Command
      *
      * @return array<string, string>
      */
-    protected function matrix(IconSet $set, Filesystem $files, string $from, string $name): array
+    protected function matrix(IconSet $set, IconSource $source, string $name): array
     {
         $cells = [];
-        $source = $set->sourceName($name);
+        $drawn = $set->sourceName($name);
 
         foreach ($set->styles() as $style) {
             foreach ($set->sizes() as $size) {
@@ -171,9 +402,9 @@ class IconCommand extends Command
                     continue;
                 }
 
-                $path = $from.'/'.str_replace('{name}', $source, $pattern);
+                $path = str_replace('{name}', $drawn, $pattern);
 
-                if ($files->exists($path)) {
+                if ($source->has($path)) {
                     $cells["{$style}:{$size}"] = $path;
                 }
             }
@@ -191,13 +422,13 @@ class IconCommand extends Command
      *
      * @param  array<string, string>  $cells
      */
-    protected function component(IconSet $set, Filesystem $files, array $cells): string
+    protected function component(IconSet $set, IconSource $source, array $cells): string
     {
         $body = count(array_unique($cells)) === 1
-            ? $this->svg($files->get((string) reset($cells)))
-            : $this->switch($set, $files, $cells);
+            ? $this->svg($source->get((string) reset($cells)))
+            : $this->switch($set, $source, $cells);
 
-        $notice = $set->notice === '' ? '' : $set->notice.' ';
+        $notice = $this->header($set, $source);
 
         return <<<BLADE
         @blaze(fold: true, memo: true)
@@ -218,6 +449,32 @@ class IconCommand extends Command
         {$body}
 
         BLADE;
+    }
+
+    /**
+     * What the file says about where it came from, before the instruction.
+     *
+     * The licence notice was always here, and it has to be: Font Awesome Free is
+     * CC BY 4.0 and Material is Apache 2.0, and a consumer redistributing
+     * generated components inherits the attribution those ask for.
+     *
+     * The commit joins it when there is one to state. A fetched set is fetched
+     * at a ref, and a ref is usually a branch — so recording `master` would say
+     * nothing about which drawing ended up in the file. The resolved commit
+     * makes each generated component traceable on its own, without the lockfile
+     * beside it. A `--from` directory has no revision to state, and says nothing.
+     */
+    protected function header(IconSet $set, IconSource $source): string
+    {
+        $revision = $source->revision();
+
+        $stamp = $revision === null || $set->repo === null
+            ? ''
+            : $set->repo.'@'.substr($revision, 0, 12).'.';
+
+        $notice = trim($set->notice.' '.$stamp);
+
+        return $notice === '' ? '' : $notice.' ';
     }
 
     /**
@@ -314,7 +571,7 @@ class IconCommand extends Command
      *
      * @param  array<string, string>  $cells
      */
-    protected function switch(IconSet $set, Filesystem $files, array $cells): string
+    protected function switch(IconSet $set, IconSource $source, array $cells): string
     {
         $fallthrough = $cells[$set->styleFor($set->defaultSize()).':'.$set->defaultSize()]
             ?? (string) reset($cells);
@@ -338,10 +595,10 @@ class IconCommand extends Command
             $out[] = ($out === []
                 ? "<?php switch (\$variant.':'.\$size): {$labels} ?>"
                 : "<?php break; {$labels} ?>")
-                ."\n".$this->svg($files->get($path));
+                ."\n".$this->svg($source->get((string) $path));
         }
 
-        $out[] = "<?php break; default: ?>\n".$this->svg($files->get($fallthrough));
+        $out[] = "<?php break; default: ?>\n".$this->svg($source->get($fallthrough));
 
         return implode("\n", $out)."\n<?php endswitch; ?>";
     }
@@ -419,7 +676,7 @@ class IconCommand extends Command
      *
      * @return list<string>
      */
-    protected function names(IconSet $set, Filesystem $files, Registry $registry, string $from): array
+    protected function names(IconSet $set, IconSource $source, Registry $registry): array
     {
         if ($this->option('replace')) {
             return $registry->icons();
@@ -435,19 +692,11 @@ class IconCommand extends Command
         $names = [];
 
         foreach ($set->directories() as $directory) {
-            $path = rtrim("{$from}/{$directory}", '/');
-
-            if (! $files->isDirectory($path)) {
-                continue;
-            }
-
-            foreach ($files->files($path) as $file) {
-                if ($file->getExtension() === 'svg') {
-                    // A file may answer to more than one of Shape's names, or —
-                    // when its own name is spoken for by an alias — to none.
-                    foreach ($set->canonicalNames($file->getFilenameWithoutExtension()) as $name) {
-                        $names[] = $name;
-                    }
+            foreach ($source->names($directory) as $file) {
+                // A file may answer to more than one of Shape's names, or —
+                // when its own name is spoken for by an alias — to none.
+                foreach ($set->canonicalNames($file) as $name) {
+                    $names[] = $name;
                 }
             }
         }
@@ -460,12 +709,14 @@ class IconCommand extends Command
     }
 
     /**
-     * The set the source directory is laid out in.
+     * The set to read, and the layout to read it in.
      */
-    protected function set(): IconSet
+    protected function set(?string $name = null): IconSet
     {
-        $name = $this->option('set');
-        $name = is_string($name) && $name !== '' ? $name : 'heroicons';
+        if ($name === null) {
+            $option = $this->option('set');
+            $name = is_string($option) && $option !== '' ? $option : 'heroicons';
+        }
 
         $sets = config('shape.icon_sets');
 
@@ -478,11 +729,74 @@ class IconCommand extends Command
         return IconSet::fromArray($name, $sets[$name], config('shape.icon_sizes'));
     }
 
-    protected function source(): ?string
+    /**
+     * Where this run reads drawings from.
+     *
+     * `--from` wins whenever it is given, and stays the way to generate from a
+     * local checkout, from a designer's folder, or from a set with no upstream
+     * at all. Otherwise the set says which repository draws it and this fetches
+     * it — which is the difference between "regenerate this" being an
+     * instruction and being a suggestion.
+     */
+    protected function source(IconSet $set, Filesystem $files): IconSource
+    {
+        if (! $this->fetched()) {
+            /** @var string $from */
+            $from = $this->option('from');
+
+            return new DirectorySource($files, rtrim($from, '/'));
+        }
+
+        if ($set->repo === null) {
+            throw new InvalidArgumentException("Icon set [{$set->name}] says nothing about where it is drawn, so there is nothing to fetch. Pass --from with the directory to read SVGs from, or give the set a [repo].");
+        }
+
+        return new GitHubSource(
+            $files,
+            $set->name,
+            $set->repo,
+            $this->ref($set),
+            $set->path,
+            $this->cache(),
+            (bool) $this->option('offline'),
+            // One request for the whole set, rather than one per drawing. Both
+            // of these walk far more of it than a raw fetch per file could pay
+            // for: `--replace` alone is twelve names over six cells.
+            (bool) $this->option('all') || (bool) $this->option('replace'),
+        );
+    }
+
+    /**
+     * Whether this run reads the set's upstream rather than a local directory.
+     */
+    protected function fetched(): bool
     {
         $from = $this->option('from');
 
-        return is_string($from) && $from !== '' ? rtrim($from, '/') : null;
+        return ! is_string($from) || $from === '';
+    }
+
+    /**
+     * The ref to read the set at — the one asked for, or the one it declares.
+     */
+    protected function ref(IconSet $set): string
+    {
+        $ref = $this->option('ref');
+
+        return is_string($ref) && $ref !== '' ? $ref : $set->ref;
+    }
+
+    /**
+     * Where fetched sets are kept.
+     *
+     * Under `storage/framework`, beside the other things the framework caches on
+     * an application's behalf, because that is what this is: a copy of somebody
+     * else's repository that exists only to save fetching it twice. Nothing here
+     * is read at render time and nothing is lost by deleting it.
+     */
+    protected function cache(): string
+    {
+        return storage_path('framework/shape/icons');
     }
 
     /**
