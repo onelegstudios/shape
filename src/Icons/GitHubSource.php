@@ -184,7 +184,7 @@ final class GitHubSource implements IconSource
         $this->files->ensureDirectoryExists(dirname($archive));
         $this->files->put($archive, $response->body());
 
-        $commit = $this->commit($response->body());
+        $commit = $this->commit($archive);
 
         $this->unpack($archive);
         $this->files->delete($archive);
@@ -309,16 +309,25 @@ final class GitHubSource implements IconSource
      * `git archive` writes it into the pax global header as a comment, which
      * GitHub's tarballs carry, so the resolved SHA is already in the bytes and
      * costs no second request to a rate-limited API.
+     *
+     * It is in the first block of them, which is why this reads the file as a
+     * stream and stops: a set is a repository, a repository can be fifty
+     * megabytes unpacked, and inflating all of it to look at two kilobytes is
+     * how this exhausted a default `memory_limit` on Lucide.
      */
     private function commit(string $archive): ?string
     {
-        $decoded = @gzdecode($archive);
+        $handle = @gzopen($archive, 'rb');
 
-        if (! is_string($decoded)) {
+        if ($handle === false) {
             return null;
         }
 
-        return preg_match('/comment=([0-9a-f]{40})/', substr($decoded, 0, 2048), $matches) === 1
+        $header = (string) gzread($handle, 2048);
+
+        gzclose($handle);
+
+        return preg_match('/comment=([0-9a-f]{40})/', $header, $matches) === 1
             ? $matches[1]
             : null;
     }
