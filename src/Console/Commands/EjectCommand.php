@@ -6,6 +6,7 @@ namespace Onelegstudios\Shape\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Onelegstudios\Shape\Console\Commands\Concerns\ClearsCompiledViews;
 use Onelegstudios\Shape\Registry;
 
 /**
@@ -25,6 +26,8 @@ use Onelegstudios\Shape\Registry;
  */
 class EjectCommand extends Command
 {
+    use ClearsCompiledViews;
+
     /**
      * The command signature.
      */
@@ -110,6 +113,7 @@ class EjectCommand extends Command
     protected function eject(Registry $registry, Filesystem $files, string $destination, array $requested, array $resolved): int
     {
         $manifest = $this->manifest($files, $destination);
+        $ejected = 0;
         $skipped = 0;
 
         foreach ($resolved as $name) {
@@ -135,6 +139,8 @@ class EjectCommand extends Command
 
                 $manifest[$name][$file] = (string) $this->checksum($source);
 
+                $ejected++;
+
                 $this->components->twoColumnDetail("  {$file}", '<fg=green>ejected</>');
             }
         }
@@ -151,6 +157,10 @@ class EjectCommand extends Command
 
         if ($skipped > 0) {
             $this->components->warn("{$skipped} file(s) were already there and were kept. Pass --force to overwrite them.");
+        }
+
+        if ($ejected > 0) {
+            $this->clearCompiledViews();
         }
 
         return self::SUCCESS;

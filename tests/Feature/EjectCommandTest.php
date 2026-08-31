@@ -185,4 +185,36 @@ describe('status', function () {
             ->expectsOutputToContain('gone')
             ->assertSuccessful();
     });
+
+    it('throws away the compiled views after ejecting', function () {
+        // An ejected component resolves ahead of the packaged one, so every
+        // compiled view that inlined the packaged version is now an answer about
+        // a file that is no longer the one being asked about.
+        $compiled = (string) config('view.compiled');
+
+        file_put_contents($compiled.'/stale.php', 'stale');
+
+        $this->artisan('shape:eject', ['components' => ['separator']])
+            ->expectsOutputToContain('Compiled views cleared')
+            ->assertSuccessful();
+
+        expect($compiled.'/stale.php')->not->toBeFile();
+    });
+
+    it('leaves the compiled views alone when everything was already there', function () {
+        $this->artisan('shape:eject', ['components' => ['separator']])->assertSuccessful();
+
+        $compiled = (string) config('view.compiled');
+
+        file_put_contents($compiled.'/stale.php', 'stale');
+
+        $this->artisan('shape:eject', ['components' => ['separator']])
+            ->expectsOutputToContain('exists, kept')
+            ->doesntExpectOutputToContain('Compiled views cleared')
+            ->assertSuccessful();
+
+        expect(file_get_contents($compiled.'/stale.php'))->toBe('stale');
+
+        unlink($compiled.'/stale.php');
+    });
 });

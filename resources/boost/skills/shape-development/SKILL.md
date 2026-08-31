@@ -160,6 +160,11 @@ php artisan shape:icon --replace --set=lucide
 php artisan shape:icon --all --from=./resources/svg
 ```
 
+A run of `shape:icon` or `shape:eject` that writes anything clears the compiled
+views and says so, because a generated component is a file and a compiled view is
+a cached answer about a file — leaving the second behind serves stale markup, or
+markup inlined from a component that no longer exists, without raising an error.
+
 Each set in `shape.icon_sets` declares the repository that draws it (`repo`,
 `ref`, `path`), so `shape:icon` fetches it and caches it under
 `storage/framework/shape/icons`. Nothing needs cloning first, and nothing is read

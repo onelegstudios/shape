@@ -7,6 +7,7 @@ namespace Onelegstudios\Shape\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use InvalidArgumentException;
+use Onelegstudios\Shape\Console\Commands\Concerns\ClearsCompiledViews;
 use Onelegstudios\Shape\Icons\DirectorySource;
 use Onelegstudios\Shape\Icons\GitHubSource;
 use Onelegstudios\Shape\Icons\IconSource;
@@ -64,6 +65,8 @@ use RuntimeException;
  */
 class IconCommand extends Command
 {
+    use ClearsCompiledViews;
+
     /**
      * The command signature.
      */
@@ -179,6 +182,10 @@ class IconCommand extends Command
 
         $this->newLine();
         $this->components->info("{$written} icon(s) written to {$to}.");
+
+        if ($written > 0) {
+            $this->clearCompiledViews();
+        }
 
         return self::SUCCESS;
     }

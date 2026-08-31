@@ -67,6 +67,11 @@ of its own views. Nothing else has to change: `<x-shape::modal>` is now your
 file. A file that is already there is kept and reported, unless you pass
 `--force`.
 
+A run that ejects anything clears the compiled views, and says so — an ejected
+component resolves ahead of the packaged one, so every compiled view that inlined
+the packaged version is now an answer about a file that is no longer the one
+being asked about.
+
 `vendor:publish --tag="laravel-shape-components"` still does the whole library
 at once.
 
@@ -442,6 +447,14 @@ The alternative — a Composer package per icon set, which is WireUI's approach 
 is a version matrix to maintain for what is fundamentally a code generator, and
 it puts the set you actually want furthest out of reach. This reads whatever
 directory you point it at, in whatever layout you describe.
+
+A run that writes anything clears the compiled views, and says so. A Blade
+component is a file and a compiled view is a cached answer about a file, so
+generating a component while an answer about the old one is still cached is the
+ordinary staleness problem — except that it raises no error. What reaches a page
+is stale markup, and under a folding compiler it can be markup inlined from a
+component that no longer exists. It costs one recompile, which is what editing
+any Blade file by hand costs. `shape:eject` does the same.
 
 ## The documentation site
 

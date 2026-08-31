@@ -530,3 +530,36 @@ it('reports on a namespaced set that the run did not name', function () {
         ->doesntExpectOutputToContain('No icons have been generated')
         ->assertSuccessful();
 });
+
+it('throws away the compiled views after writing an icon', function () {
+    // A generated component is a file, and a compiled view is a cached answer
+    // about a file. Leaving the second behind after writing the first is how a
+    // component that no longer exists goes on rendering — and, under a folding
+    // compiler, how a fragment of a template that was never meant to be output
+    // reaches a page. Neither raises an error, so neither is noticed.
+    $compiled = (string) config('view.compiled');
+
+    file_put_contents($compiled.'/stale.php', 'stale');
+
+    $this->artisan('shape:icon', ['icons' => ['check'], '--from' => $this->heroicons])
+        ->expectsOutputToContain('Compiled views cleared')
+        ->assertSuccessful();
+
+    expect($compiled.'/stale.php')->not->toBeFile();
+});
+
+it('leaves the compiled views alone when it wrote nothing', function () {
+    // Nothing was written, so nothing cached about the components can have gone
+    // stale, and throwing the cache away would be a cost with no reason.
+    $compiled = (string) config('view.compiled');
+
+    file_put_contents($compiled.'/stale.php', 'stale');
+
+    $this->artisan('shape:icon', ['icons' => ['bicycle'], '--from' => $this->heroicons])
+        ->doesntExpectOutputToContain('Compiled views cleared')
+        ->assertSuccessful();
+
+    expect(file_get_contents($compiled.'/stale.php'))->toBe('stale');
+
+    unlink($compiled.'/stale.php');
+});
