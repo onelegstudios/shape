@@ -408,7 +408,7 @@ files rather than letting the second quietly overwrite the first.
 
 ### The sets that ship
 
-Six, each checked against the repository it names and each answering every
+Seven, each checked against the repository it names and each answering every
 slot, so `--replace --set=…` is a complete answer for any of them:
 
 | | Styles | Grid | |
@@ -419,6 +419,7 @@ slot, so `--replace --set=…` is a complete answer for any of them:
 | `phosphor` | outline, solid | 256 | `regular` and `fill`, two of its six weights |
 | `bootstrap-icons` | outline, solid | 16 | `solid` is the `-fill` half of a flat directory, suffixed or infixed; half its names have one |
 | `remix-icon` | outline, solid | 24 | Filed by category, so it is flattened on the way in; 1,539 names drawn both ways, and 151 editor glyphs drawn neither |
+| `material-symbols` | outline, solid | 24 | Weight 400 outlined, read from the `@material-symbols` mirror; 3,903 names, spelled with underscores |
 
 The grid is what the drawings are drawn on, not what they render at: every set is
 measured against `icon_sizes`, and every generated icon emits the same size
@@ -428,10 +429,38 @@ Shape's own spinner stays — and neither its `solid` nor Tabler's covers the wh
 set, so a name outside one renders its outline drawing at every size. For
 Bootstrap that is mostly line art a fill would have drawn identically.
 
-Anything else is an entry you write, and the five beside `heroicons` are worked
+Anything else is an entry you write, and the six beside `heroicons` are worked
 examples to write it from: one flat directory, a directory per style, a style
 named in both the directory and the filename, a style that is a suffix inside
-one directory, and a set filed by category that is flattened before it is read.
+one directory, a set filed by category that is flattened before it is read, and
+a set read from a mirror because its own repository is shaped for a font.
+
+`material-symbols` is the one that is read differently. Its repository carries
+seven weights across three families plus the fonts built from them, and
+unpacking an archive means holding all of it in memory at once — which is fatal
+rather than slow, at any `memory_limit` you are likely to have. So the set
+declares `'archive' => false` and is read one drawing at a time: naming icons is
+two requests each, `--replace` is twenty-eight, and both are quick.
+
+`--all` is what that costs. There is no listing without the archive, so it is
+refused with a sentence rather than attempted:
+
+```
+ERROR  Icon set [material-symbols] is read one drawing at a time, because its
+repository is too large to fetch whole — so there is no listing for --all to
+walk. Name the icons you want, use --replace for Shape's own, or pass --from
+with a local checkout.
+```
+
+A local directory lists fine, so `--from` is the way to have `--all` anyway;
+`npm i @material-symbols/svg-400` is the shortest route to one. Google's own
+repository is not read directly at all, because it files each symbol as a
+directory of 168 variants — a layout no pattern can place a name into.
+
+Any set can say `'archive' => false`; it is the flag for a repository that is
+too big to pull whole. And whatever a set says, an archive larger than the
+memory left to unpack it in is reported with its size and the limit, rather than
+killing the process partway through.
 
 ### Slots, and replacing Shape's own icons
 

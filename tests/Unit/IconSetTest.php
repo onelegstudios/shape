@@ -433,7 +433,7 @@ it('ships the one set whose layout has to be collapsed before it can be read', f
         ->and($remix->path)->toBe('icons');
 
     // Every other shipped set is read where it lies.
-    foreach (['heroicons', 'lucide', 'tabler', 'phosphor', 'bootstrap-icons'] as $name) {
+    foreach (['heroicons', 'lucide', 'tabler', 'phosphor', 'bootstrap-icons', 'material-symbols'] as $name) {
         $set = IconSet::fromArray($name, config('shape.icon_sets')[$name], config('shape.icon_sizes'));
 
         expect($set->flatten)->toBeFalse("[{$name}] should be read where it lies");
@@ -450,6 +450,24 @@ it('ships the one set whose layout has to be collapsed before it can be read', f
     expect($remix->nameFor('', 'check-line'))->toBe('check')
         ->and($remix->nameFor('', 'check-fill'))->toBe('check')
         ->and($remix->nameFor('', 'bold'))->toBe('bold');
+});
+
+it('reads Material Symbols from one weight of the mirror rather than from the variants', function () {
+    // Google's own repository files a symbol as a directory of 168 variants,
+    // which is the layout `flatten` cannot help with either — every family
+    // repeats the same filenames. The mirror is one weight to a directory, so
+    // the ordinary flat patterns read it and a name is a path again.
+    $material = IconSet::fromArray('material-symbols', config('shape.icon_sets')['material-symbols'], config('shape.icon_sizes'));
+
+    expect($material->path)->toBe('svg/400/outlined')
+        ->and($material->flatten)->toBeFalse()
+        ->and($material->paths('outline', 'base', 'check_circle'))->toBe(['check_circle.svg'])
+        ->and($material->paths('solid', 'base', 'check_circle'))->toBe(['check_circle-fill.svg']);
+
+    // The style is a suffix in one directory, so `--all` reads the pair as one
+    // icon rather than as an icon named for its own marker.
+    expect($material->nameFor('', 'check_circle'))->toBe('check_circle')
+        ->and($material->nameFor('', 'check_circle-fill'))->toBe('check_circle');
 });
 
 it('reads the subdirectory a set is written into', function () {

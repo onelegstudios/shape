@@ -493,6 +493,78 @@ return [
             ],
         ],
 
+        'material-symbols' => [
+            // Not Google's own repository. That one files every symbol as a
+            // directory of its own holding 168 variants — four optical sizes
+            // against fill, three grades and seven weights — three times over
+            // for outlined, rounded and sharp. The name is a directory there,
+            // which no pattern can place a name into, and the whole of it is
+            // five gigabytes.
+            //
+            // This is the mirror the `@material-symbols` npm packages are built
+            // from: the same Apache 2.0 drawings, one weight and family to a
+            // directory, rebuilt from upstream by a bot that checks daily and
+            // usually publishes the same day.
+            'repo' => 'marella/material-symbols',
+            'ref' => 'main',
+            // Weight 400, outlined. `rounded` and `sharp` sit beside it and the
+            // other weights are `svg/100` through `svg/700`, so a library that
+            // wants a lighter or rounder Material changes this line and nothing
+            // else.
+            'path' => 'svg/400/outlined',
+            'notice' => 'Material Symbols (https://fonts.google.com/icons), Apache 2.0 licensed.',
+            // Read one drawing at a time, because the repository holding them
+            // cannot be pulled whole: seven weights across three families, plus
+            // the fonts built from them, is gigabytes — and unpacking asks PHP
+            // to hold all of it in memory at once, which is fatal rather than
+            // slow. So `shape:icon check_circle` is two requests and quick, and
+            // `--replace` is twenty-eight and no worse.
+            //
+            // `--all` is what that costs: there is no listing without the
+            // archive, so it is refused with a sentence saying as much. Pass
+            // `--from` with a local checkout to have it anyway — a directory
+            // lists fine, and `npm i @material-symbols/svg-400` is the shortest
+            // way to get one.
+            'archive' => false,
+            // 3,903 names, each drawn both ways, so the sparse matrix never
+            // fires. Material spells them with underscores, which the generated
+            // components keep: `<x-shape::icon.check_circle />`.
+            'styles' => [
+                'outline' => [
+                    'base' => '{name}.svg',
+                ],
+                'solid' => [
+                    'base' => '{name}-fill.svg',
+                ],
+            ],
+            'slots' => [
+                'shape-checked' => 'check',
+                'shape-indeterminate' => 'remove',
+                // All three from one family. Material draws no `chevron_down`
+                // to go with `chevron_left` and `chevron_right`, and the glyph
+                // that answers for it is spelled `keyboard_arrow_down` — so the
+                // trio is taken from there rather than matching two of the three
+                // and hoping the third sits at the same weight.
+                'shape-prev' => 'keyboard_arrow_left',
+                'shape-next' => 'keyboard_arrow_right',
+                'shape-expand' => 'keyboard_arrow_down',
+                'shape-close' => 'close',
+                'shape-success' => 'check_circle',
+                // The crossed circle. `error` is Material's circled exclamation,
+                // which is the warning glyph's meaning in the danger glyph's
+                // shape.
+                'shape-danger' => 'cancel',
+                'shape-warning' => 'warning',
+                'shape-info' => 'info',
+                'shape-trend-up' => 'trending_up',
+                'shape-trend-down' => 'trending_down',
+                'shape-trend-flat' => 'trending_flat',
+                // Material's own spinner, and the one its guidelines reach for:
+                // an arc, which is what reads as motion when the slot spins it.
+                'shape-loading' => 'progress_activity',
+            ],
+        ],
+
     ],
 
 ];

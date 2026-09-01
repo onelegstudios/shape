@@ -69,6 +69,7 @@ final class GitHubSource implements IconSource
      * @param  bool  $offline  Refuse to fetch, and answer from the cache or not at all.
      * @param  bool  $whole  Whether this run wants the entire set, which is one request rather than one per drawing.
      * @param  bool  $flatten  Whether the set's own subdirectories under `path` are collapsed into one on the way in.
+     * @param  bool  $archive  Whether the repository can be pulled whole, or is too large to be read that way.
      */
     public function __construct(
         private readonly Filesystem $files,
@@ -80,6 +81,7 @@ final class GitHubSource implements IconSource
         private readonly bool $offline = false,
         private readonly bool $whole = false,
         private readonly bool $flatten = false,
+        private readonly bool $archive = true,
     ) {
         // Checked here rather than at the first read, because failing loudly is
         // the entire point of the flag. A run that quietly generated nothing
@@ -119,6 +121,14 @@ final class GitHubSource implements IconSource
      */
     public function names(string $directory): array
     {
+        // A set whose repository cannot be pulled whole has no listing at all,
+        // and the caller is expected to have said so before asking. Refused
+        // rather than attempted, because attempting it is the fatal this flag
+        // exists to prevent.
+        if (! $this->archive) {
+            throw new RuntimeException("Icon set [{$this->set}] is read one drawing at a time, so there is nothing to list. Name the icons you want, or pass --from with a local checkout.");
+        }
+
         // There is no listing a raw file fetch can answer, so this is the one
         // call that always costs the whole set.
         $this->fetchSet();
@@ -258,6 +268,8 @@ final class GitHubSource implements IconSource
             throw new RuntimeException("Unpacking [{$this->set}] needs PHP's phar extension, which is not loaded. Pass --from with a local checkout instead.");
         }
 
+        $this->affordable($archive);
+
         try {
             $iterator = new RecursiveIteratorIterator(new PharData($archive));
         } catch (Throwable $e) {
@@ -305,6 +317,56 @@ final class GitHubSource implements IconSource
         if ($written === 0) {
             throw new RuntimeException("The archive for [{$this->set}] at [{$this->ref}] held nothing under [{$this->path}].");
         }
+    }
+
+    /**
+     * Refuse an archive PHP has no room to open.
+     *
+     * `PharData` reads the whole thing into memory to build its manifest, so an
+     * archive larger than what is left of `memory_limit` does not fail — the
+     * process is killed mid-unpack, and what a reader gets is a stack trace
+     * inside a constructor rather than a reason. This is the same fact, said
+     * first and in numbers.
+     *
+     * Compared against the compressed size, which is the optimistic reading:
+     * what has to fit is the archive expanded. So this fires only where the
+     * attempt was hopeless, and stays quiet for every set that fits.
+     */
+    private function affordable(string $archive): void
+    {
+        $limit = $this->limit();
+
+        if ($limit === null) {
+            return;
+        }
+
+        $size = (int) $this->files->size($archive);
+        $spare = $limit - memory_get_usage(true);
+
+        if ($size <= $spare) {
+            return;
+        }
+
+        $megabytes = static fn (int $bytes): string => number_format($bytes / 1048576, 0).'MB';
+
+        throw new RuntimeException("The archive for [{$this->set}] is {$megabytes($size)} and PHP has about {$megabytes(max($spare, 0))} left of its memory_limit to unpack it in, which is not enough — unpacking reads the whole archive into memory. Name the icons you want instead of --all, raise memory_limit, or pass --from with a local checkout.");
+    }
+
+    /**
+     * What is left of `memory_limit`, or null where there is no limit.
+     */
+    private function limit(): ?int
+    {
+        $limit = trim((string) ini_get('memory_limit'));
+
+        if ($limit === '' || $limit === '-1') {
+            return null;
+        }
+
+        $units = ['k' => 1024, 'm' => 1048576, 'g' => 1073741824];
+        $suffix = strtolower(substr($limit, -1));
+
+        return (int) $limit * ($units[$suffix] ?? 1);
     }
 
     /**

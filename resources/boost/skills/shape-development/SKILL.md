@@ -182,12 +182,23 @@ Each set in `shape.icon_sets` declares the repository that draws it (`repo`,
 `storage/framework/shape/icons`. Nothing needs cloning first, and nothing is read
 at run time — a generated component is a Blade file with the drawing baked in.
 
-Six sets ship, each answering every slot: `heroicons` (the default),
-`lucide`, `tabler`, `phosphor`, `bootstrap-icons` and `remix-icon`. Publish the
-config to add another; the five beside `heroicons` are the layouts to copy from —
-one flat directory, a directory per style, a style named in both the directory
-and the filename, a style marked inside one flat directory, and a set filed by
-category.
+Seven sets ship, each answering every slot: `heroicons` (the default),
+`lucide`, `tabler`, `phosphor`, `bootstrap-icons`, `remix-icon` and
+`material-symbols`. Publish the config to add another; the six beside
+`heroicons` are the layouts to copy from — one flat directory, a directory per
+style, a style named in both the directory and the filename, a style marked
+inside one flat directory, a set filed by category, and a set read from a mirror.
+
+`material-symbols` reads weight 400 outlined from the `@material-symbols` mirror
+(`svg/400/outlined`), because Google files each symbol as a directory of 168
+variants. Its names use underscores: `<x-shape::icon.check_circle />`.
+
+It declares `'archive' => false`: the repository is too large to unpack in
+memory, so it is read one drawing at a time. Naming icons and `--replace` both
+work and are quick. `--all` is refused for it — use `--from` with a local
+checkout (`npm i @material-symbols/svg-400`) if the app really wants every
+symbol. Use the same flag for any set whose repository is too big to pull
+whole.
 
 A set's `styles` gives each cell a path with the name in it, so a directory
 layout and a filename convention are one declaration. `{name}` is the whole name.

@@ -45,6 +45,7 @@ final class IconSet
      * @param  string  $path  The subdirectory of the repository the drawings live in, if any.
      * @param  string|null  $namespace  The subdirectory of the components path this set is written into, if it wants one of its own.
      * @param  bool  $flatten  Whether the set's own subdirectories under `path` are collapsed into one when it is fetched.
+     * @param  bool  $archive  Whether the repository can be pulled whole, or has to be read a drawing at a time.
      */
     private function __construct(
         public readonly string $name,
@@ -57,6 +58,7 @@ final class IconSet
         public readonly string $path = '',
         public readonly ?string $namespace = null,
         public readonly bool $flatten = false,
+        public readonly bool $archive = true,
     ) {}
 
     /**
@@ -133,7 +135,44 @@ final class IconSet
             trim($path ?? '', '/'),
             self::namespace($name, $definition),
             self::flatten($name, $definition),
+            self::archive($name, $definition),
         );
+    }
+
+    /**
+     * Whether this set's repository can be pulled whole.
+     *
+     * Nearly every set's can, and that is the cheap way to read one: an archive
+     * is a single request where a drawing at a time is hundreds, and it is the
+     * only thing that can answer `--all`, because a raw file fetch has no
+     * listing in it.
+     *
+     * Some repositories are too big to be read that way at all. The Material
+     * Symbols mirror is one: it carries seven weights across three families plus
+     * the fonts built from them, and unpacking asks PHP to hold the whole
+     * archive in memory at once — which is not slow but fatal, at any
+     * `memory_limit` a consumer is likely to have.
+     *
+     * A set that says `false` here is read a drawing at a time. Naming icons
+     * works, and so does `--replace`, which is fourteen slots rather than the
+     * thousands `--all` would be. `--all` is what is actually lost, and it is
+     * refused with a sentence rather than attempted and killed.
+     *
+     * @param  array<mixed>  $definition
+     */
+    private static function archive(string $name, array $definition): bool
+    {
+        $archive = $definition['archive'] ?? true;
+
+        if (! is_bool($archive)) {
+            throw new InvalidArgumentException("Icon set [{$name}] has an [archive] that is not true or false.");
+        }
+
+        if (! $archive && ($definition['flatten'] ?? false) === true) {
+            throw new InvalidArgumentException("Icon set [{$name}] says [flatten] and [archive => false] together. Flattening is something done to an archive on the way in, so a set that is never pulled whole cannot be flattened.");
+        }
+
+        return $archive;
     }
 
     /**

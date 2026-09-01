@@ -345,6 +345,36 @@ it('writes nothing outside the directory it unpacks into', function () {
         ->and(is_link($this->cache.'/heroicons/master/optimized/link.svg'))->toBeFalse();
 });
 
+it('refuses --all for a set that cannot be pulled whole, before fetching anything', function () {
+    // What this used to do was pull a repository measured in gigabytes and be
+    // killed unpacking it, with a stack trace inside `PharData::__construct`
+    // where the reason should be. `TestCase` forbids stray requests, so a run
+    // that reached for the archive would fail here rather than pass.
+    Http::fake();
+
+    $this->artisan('shape:icon', ['--all' => true, '--set' => 'material-symbols'])
+        ->expectsOutputToContain('one drawing at a time')
+        ->assertFailed();
+
+    Http::assertNothingSent();
+});
+
+it('replaces from a set that cannot be pulled whole, a drawing at a time', function () {
+    // The half that still works, and the reason the flag is not simply "this
+    // set is unsupported": fourteen slots is twenty-eight raw fetches, against
+    // an archive PHP cannot open at all.
+    Http::fake([
+        'raw.githubusercontent.com/*' => Http::response('<svg viewBox="0 0 24 24"><path d="M0 0" /></svg>'),
+        'api.github.com/*' => Http::response($this->commit),
+    ]);
+
+    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'material-symbols'])->assertSuccessful();
+
+    expect($this->destination.'/icon/shape-close.blade.php')->toBeFile();
+
+    Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'codeload'));
+});
+
 it('keeps the fetched sets out of the consumer\'s history', function () {
     // Thousands of files nobody wrote, under a storage path Laravel's own
     // ignore rules do not reach. The pattern covers the file itself, so there

@@ -129,6 +129,36 @@ it('generates an icon that renders across the whole matrix', function () {
         ->toContain('size-4');
 });
 
+it('generates an icon whose name is spelled with underscores', function () {
+    // Material Symbols spells every name that way, and the generated component
+    // keeps the set's spelling rather than translating it — so the call site is
+    // `<x-shape::icon.check_circle />`, and this is the assertion that it parses
+    // and resolves as one.
+    $from = sys_get_temp_dir().'/shape-icons-underscore-'.getmypid();
+
+    exec('rm -rf '.escapeshellarg($from));
+    mkdir($from, 0777, true);
+
+    file_put_contents($from.'/check_circle.svg', '<svg viewBox="0 0 24 24"><path d="M0 0" data-drawn="check_circle" /></svg>');
+    file_put_contents($from.'/check_circle-fill.svg', '<svg viewBox="0 0 24 24"><path d="M1 1" data-drawn="check_circle-fill" /></svg>');
+
+    $this->artisan('shape:icon', [
+        'icons' => ['check_circle'],
+        '--set' => 'material-symbols',
+        '--from' => $from,
+    ])->assertSuccessful();
+
+    expect(Blade::render('<x-shape::icon.check_circle />'))
+        ->toContain('data-shape-icon')
+        ->toContain('data-drawn="check_circle"');
+
+    // And the suffix is a style rather than a name, the way it is in Bootstrap.
+    expect(Blade::render('<x-shape::icon.check_circle variant="solid" />'))
+        ->toContain('data-drawn="check_circle-fill"');
+
+    exec('rm -rf '.escapeshellarg($from));
+});
+
 it('drops the attributes that describe how a drawing is used', function () {
     $this->artisan('shape:icon', ['icons' => ['spinner'], '--set' => 'lucide', '--from' => $this->flat])->assertSuccessful();
 

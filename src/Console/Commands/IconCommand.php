@@ -133,6 +133,18 @@ class IconCommand extends Command
             return self::FAILURE;
         }
 
+        // `--all` is a listing, and a listing is the one thing a drawing-at-a-
+        // time source cannot produce. Said here, before anything is fetched,
+        // because the alternative is what this used to do: pull a repository
+        // measured in gigabytes and be killed unpacking it, with a stack trace
+        // where the reason should be. A local checkout still lists fine, so
+        // `--from` is the way to have this run anyway.
+        if ($this->option('all') && ! $set->archive && $this->fetched()) {
+            $this->components->error("Icon set [{$set->name}] is read one drawing at a time, because its repository is too large to fetch whole — so there is no listing for --all to walk. Name the icons you want, use --replace for Shape's own, or pass --from with a local checkout.");
+
+            return self::FAILURE;
+        }
+
         try {
             $source = $this->source($set, $files);
 
@@ -959,8 +971,13 @@ class IconCommand extends Command
             // under something their names do not say — a category — so there is
             // no path a raw fetch could ask for until the archive is in hand and
             // collapsed, whether the run wanted one icon or all of them.
-            (bool) $this->option('all') || (bool) $this->option('replace') || $set->flatten,
+            //
+            // A set whose repository cannot be pulled whole is the other way
+            // round: `--replace` goes back to a drawing at a time, which is
+            // twenty-eight requests against an archive PHP cannot hold.
+            ($set->archive && ((bool) $this->option('all') || (bool) $this->option('replace'))) || $set->flatten,
             $set->flatten,
+            $set->archive,
         );
     }
 
