@@ -367,19 +367,20 @@ slot, so `--replace --set=…` is a complete answer for any of them:
 | `lucide` | outline | 24 | One style, one flat directory |
 | `tabler` | outline, solid | 24 | `solid` is upstream's `filled`, which draws about a fifth of what `outline` does; a name it hasn't got falls back |
 | `phosphor` | outline, solid | 256 | `regular` and `fill`, two of its six weights |
-| `bootstrap-icons` | outline | 16 | No style axis — its filled drawings are separate names, so the tone slots name them directly |
+| `bootstrap-icons` | outline, solid | 16 | `solid` is the `-fill` half of a flat directory; half its names have one |
 
 The grid is what the drawings are drawn on, not what they render at: every set is
 measured against `icon_sizes`, and every generated icon emits the same size
 `match`. Two of them are worth knowing about before you swap:
 `bootstrap-icons` has no loader to spin — it says `null` for `shape-loading` and
-Shape's own spinner stays — and Tabler's `filled` is a stylistic counterpart
-rather than an optically corrected small size, so a name outside it renders its
-outline drawing at every size.
+Shape's own spinner stays — and neither its `solid` nor Tabler's covers the whole
+set, so a name outside one renders its outline drawing at every size. For
+Bootstrap that is mostly line art a fill would have drawn identically.
 
 Anything else is an entry you write, and the four beside `heroicons` are worked
-examples to write it from: a flat directory, two directories, a weight in the
-filename, and a set whose filled drawings are names rather than a style.
+examples to write it from: one flat directory, a directory per style, a style
+named in both the directory and the filename, and a style that is a suffix
+inside one directory.
 
 ### Slots, and replacing Shape's own icons
 

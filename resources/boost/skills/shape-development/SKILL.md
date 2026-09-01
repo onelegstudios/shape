@@ -184,9 +184,9 @@ at run time — a generated component is a Blade file with the drawing baked in.
 
 Five sets ship, each answering every slot: `heroicons` (the default),
 `lucide`, `tabler`, `phosphor` and `bootstrap-icons`. Publish the config to add
-another; the four beside `heroicons` are the layouts to copy from — a flat
-directory, a directory per style, the style in the filename, and a set whose
-filled drawings are separate names.
+another; the four beside `heroicons` are the layouts to copy from — one flat
+directory, a directory per style, a style named in both the directory and the
+filename, and a style that is a suffix inside one directory.
 
 - `--from` reads a local directory instead, and still wins when given; use it for
   a designer's folder or a set with no upstream.

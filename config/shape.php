@@ -344,16 +344,31 @@ return [
             'ref' => 'main',
             'path' => 'icons',
             'notice' => 'Bootstrap Icons (https://icons.getbootstrap.com), MIT licensed.',
-            // One style, because Bootstrap has no style axis: its filled
-            // drawings are separate icons with names of their own —
-            // `check-circle-fill` sits beside `check-circle` and covers perhaps
-            // two thirds of the set. Declaring a `solid` style over that suffix
-            // would promise a second cell for every name and produce one for
-            // most, so the slots below name the filled drawing directly where a
-            // filled drawing is the right one, and `--all` writes both names.
+            // A style by suffix in one flat directory: `check-circle-fill.svg`
+            // sits beside `check-circle.svg`, so the pattern says so and
+            // `--all` reads the pair as one icon in two styles.
+            //
+            // Half the set — 701 of 1,408 names — has a fill. Most of what does
+            // not is line art with no interior to fill (every arrow, chevron and
+            // sort glyph) or a brand logo that is already solid, where the
+            // fallback to the outline drawing at every size is not a compromise
+            // but the same picture. The rest genuinely has no fill drawn, and
+            // renders its outline small, which is the sparse matrix again.
+            //
+            // Two things this spelling cannot say. Bootstrap fills a compound
+            // name in the middle — `building-fill-down` is the fill of
+            // `building-down` — and those thirty-five arrive as names of their
+            // own instead of as cells. And `person-lines-fill` is the one fill
+            // with no plain drawing behind it, so `--all` writes it under
+            // `person-lines`, a name Bootstrap has not got. Both are reachable
+            // by their own spelling: `{name}.svg` matches a fill name too, so
+            // `shape:icon check-circle-fill` still generates it.
             'styles' => [
                 'outline' => [
                     'base' => '{name}.svg',
+                ],
+                'solid' => [
+                    'base' => '{name}-fill.svg',
                 ],
             ],
             'slots' => [
@@ -367,13 +382,10 @@ return [
                 'shape-next' => 'chevron-right',
                 'shape-expand' => 'chevron-down',
                 'shape-close' => 'x-lg',
-                // The tones want a filled glyph at the small sizes they render
-                // at, and this is the set where that is a name rather than a
-                // style.
-                'shape-success' => 'check-circle-fill',
-                'shape-danger' => 'x-circle-fill',
-                'shape-warning' => 'exclamation-triangle-fill',
-                'shape-info' => 'info-circle-fill',
+                'shape-success' => 'check-circle',
+                'shape-danger' => 'x-circle',
+                'shape-warning' => 'exclamation-triangle',
+                'shape-info' => 'info-circle',
                 'shape-trend-up' => 'graph-up-arrow',
                 'shape-trend-down' => 'graph-down-arrow',
                 'shape-trend-flat' => 'dash-lg',
