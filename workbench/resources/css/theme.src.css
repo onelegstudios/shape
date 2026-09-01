@@ -21,9 +21,16 @@
 | The token half is the three blocks, restated. Twice: once to turn the tokens
 | dark when the reader asks for dark on a light system, and once to turn them
 | back when the reader asks for light on a dark one — that second half is the
-| one the media query would otherwise win outright. Both selectors carry an
-| extra attribute, so they outrank the originals on specificity and need no
-| layer of their own beyond the one they are correcting.
+| one the media query would otherwise win outright.
+|
+| Each restatement has to go in the layer its original is in, and that is not
+| the same layer for all three. The surface contract is `@layer base` in
+| shape.css; the tone block and the progress track are `@layer components`.
+| Layer order is consulted before specificity, so a tone override written in
+| `base` loses to the plain `[data-shape-tone]` in `components` however many
+| attributes it carries — the page would turn dark around buttons that stayed
+| light. Inside the right layer the extra attribute is enough to win, so none of
+| this needs a layer of its own beyond the one it is correcting.
 |
 | Three states, matching what a reader can actually mean: `dark`, `light`, and
 | no attribute at all for "whatever this machine says".
@@ -51,14 +58,24 @@
         color-scheme: light;
     }
 
-    /* The surface contract. */
+    /* The surface contract, the first of the three. */
     :root[data-theme='dark'] {
         --shape-fg: var(--color-shape-50);
         --shape-fg-muted: var(--color-shape-400);
         --shape-ring: var(--color-shape-accent-500);
     }
 
-    /* The tone block. */
+    @media (prefers-color-scheme: dark) {
+        :root[data-theme='light'] {
+            --shape-fg: var(--color-shape-900);
+            --shape-fg-muted: var(--color-shape-600);
+            --shape-ring: var(--color-shape-accent-600);
+        }
+    }
+}
+
+@layer components {
+    /* The tone block, the second. */
     [data-theme='dark'] [data-shape-tone] {
         --shape-tone: var(--color-shape-100);
         --shape-tone-hover: white;
@@ -107,18 +124,24 @@
         --shape-tone-tint-hover: var(--color-shape-warning-900);
     }
 
+    /* The progress track, the third. */
+    [data-theme='dark'] [data-shape-progress],
+    [data-theme='dark'] [data-shape-progress]::-webkit-progress-bar {
+        background: var(--color-shape-800);
+    }
+
+    [data-theme='dark'] [data-shape-progress]:indeterminate {
+        background:
+            linear-gradient(90deg, transparent, var(--shape-tone), transparent) no-repeat -40% 0 / 40% 100%,
+            var(--color-shape-800);
+    }
+
     /*
     | And back again. Everything above this point is what shape.css would have
     | done on a dark machine anyway; these are the values it would not have,
     | for the reader who is on one and asked for light regardless.
     */
     @media (prefers-color-scheme: dark) {
-        :root[data-theme='light'] {
-            --shape-fg: var(--color-shape-900);
-            --shape-fg-muted: var(--color-shape-600);
-            --shape-ring: var(--color-shape-accent-600);
-        }
-
         [data-theme='light'] [data-shape-tone] {
             --shape-tone: var(--color-shape-900);
             --shape-tone-hover: var(--color-shape-800);
@@ -166,23 +189,7 @@
             --shape-tone-tint: var(--color-shape-warning-100);
             --shape-tone-tint-hover: var(--color-shape-warning-200);
         }
-    }
-}
 
-@layer components {
-    /* The progress track, the third of the three. */
-    [data-theme='dark'] [data-shape-progress],
-    [data-theme='dark'] [data-shape-progress]::-webkit-progress-bar {
-        background: var(--color-shape-800);
-    }
-
-    [data-theme='dark'] [data-shape-progress]:indeterminate {
-        background:
-            linear-gradient(90deg, transparent, var(--shape-tone), transparent) no-repeat -40% 0 / 40% 100%,
-            var(--color-shape-800);
-    }
-
-    @media (prefers-color-scheme: dark) {
         [data-theme='light'] [data-shape-progress],
         [data-theme='light'] [data-shape-progress]::-webkit-progress-bar {
             background: var(--color-shape-200);

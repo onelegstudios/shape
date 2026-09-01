@@ -324,12 +324,26 @@ the import:
 }
 ```
 
-…and the same for the tone block, which is the larger of the two and can be
-lifted verbatim out of `shape.css`. This is the one place where theming means
-restating something Shape already says rather than overriding it. If you find
-yourself doing it, publishing the stylesheet
-(`vendor:publish --tag="laravel-shape-css"`) and rewriting the three media
-queries in place is the tidier trade — at the cost of owning the file.
+…and the same for the tone block and the progress track, which can both be
+lifted verbatim out of `shape.css`.
+
+Restate each block in the layer its original is in, and note that the three are
+not all in the same one. The surface contract above is `@layer base`; the tone
+block and the progress track are `@layer components`. Layer order is consulted
+before specificity, so a tone restatement written in `base` loses to the plain
+`[data-shape-tone]` in `components` however many attributes you give it — the
+symptom is a page that turns dark around buttons and badges that stay light.
+In the right layer the extra attribute is enough to win on its own.
+
+This is the one place where theming means restating something Shape already says
+rather than overriding it. If you find yourself doing it, publishing the
+stylesheet (`vendor:publish --tag="laravel-shape-css"`) and rewriting the three
+media queries in place is the tidier trade — at the cost of owning the file.
+
+`workbench/resources/css/theme.src.css` in this repository is the whole thing
+written out, including the second half a toggle needs but the media query hides:
+a reader on a dark machine who asks for light needs the light values restated
+too, since `prefers-color-scheme: dark` is still matching.
 
 ## When tokens are not enough
 
