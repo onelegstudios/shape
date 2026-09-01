@@ -851,7 +851,16 @@ class IconCommand extends Command
 
         foreach ($set->directories() as $directory) {
             foreach ($source->names($directory) as $file) {
-                $names[] = $file;
+                // The set's own patterns decide what a listed file is called,
+                // because a listing is filenames and a filename is not always a
+                // name: Phosphor's `assets/fill/heart-fill.svg` is the fill
+                // drawing of `heart`, and a file no pattern accounts for is not
+                // this set's to write at all.
+                $name = $set->nameFor($directory, $file);
+
+                if ($name !== null) {
+                    $names[] = $name;
+                }
             }
         }
 

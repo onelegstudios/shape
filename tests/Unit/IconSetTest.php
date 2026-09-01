@@ -46,6 +46,20 @@ function lucide(): IconSet
 }
 
 /**
+ * A set that puts the style in the filename as well as the directory, which is
+ * what Phosphor does and what a pattern — rather than a directory — is for.
+ */
+function suffixed(): IconSet
+{
+    return IconSet::fromArray('phosphor', [
+        'styles' => [
+            'outline' => ['base' => 'regular/{name}.svg'],
+            'solid' => ['base' => 'fill/{name}-fill.svg'],
+        ],
+    ], scale());
+}
+
+/**
  * A set that answers Shape's slots with its own spellings, which is every set —
  * Heroicons included, since it is asked the same question as the rest.
  */
@@ -143,6 +157,50 @@ it('derives the directories to walk from the patterns themselves', function () {
     // source directory itself — which is a consequence of the model rather than
     // a case written for it.
     expect(lucide()->directories())->toBe(['']);
+});
+
+it('reads a listed file back through the pattern that named it', function () {
+    // The other half of `directories()`: that says where to look, and this says
+    // what a file found there is called. For Phosphor those are two questions —
+    // `fill/heart-fill.svg` is the fill drawing of `heart`, and writing it under
+    // `heart-fill` would produce a component whose every other cell resolves to
+    // `heart-fill-fill.svg`.
+    expect(suffixed()->nameFor('fill', 'heart-fill'))->toBe('heart')
+        ->and(suffixed()->nameFor('regular', 'heart'))->toBe('heart')
+        ->and(heroicons()->nameFor('24/outline', 'bell'))->toBe('bell')
+        ->and(lucide()->nameFor('', 'bell'))->toBe('bell');
+});
+
+it('has no name for a file the set does not account for', function () {
+    // A drawing in the fill directory that is not a fill drawing is not this
+    // set's to write, and neither is anything in a directory it never named.
+    expect(suffixed()->nameFor('fill', 'heart'))->toBeNull()
+        ->and(suffixed()->nameFor('thin', 'heart-thin'))->toBeNull();
+
+    // Nor is a file matched by a pattern that names nothing. A pattern with no
+    // `{name}` in it resolves to the same drawing whatever is asked for, which
+    // is a typo in a hand-written set rather than an icon called `logo`.
+    $fixed = IconSet::fromArray('fixed', [
+        'styles' => ['outline' => ['base' => 'logo.svg']],
+    ], scale());
+
+    expect($fixed->nameFor('', 'logo'))->toBeNull();
+});
+
+it('reads a suffixed file as the drawing it is rather than as a name', function () {
+    // Both patterns match, because a flat set that draws its solid style by
+    // suffix looks at `heart-fill` twice: `{name}` reads it as an icon called
+    // `heart-fill`, and `{name}-fill` reads it as the fill drawing of `heart`.
+    // The shortest answer is the second, which is the one that is true.
+    $flat = IconSet::fromArray('bootstrap', [
+        'styles' => [
+            'outline' => ['base' => '{name}.svg'],
+            'solid' => ['base' => '{name}-fill.svg'],
+        ],
+    ], scale());
+
+    expect($flat->nameFor('', 'heart-fill'))->toBe('heart')
+        ->and($flat->nameFor('', 'heart'))->toBe('heart');
 });
 
 it('refuses a set that draws nothing', function () {

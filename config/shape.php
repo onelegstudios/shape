@@ -252,6 +252,140 @@ return [
             ],
         ],
 
+        'tabler' => [
+            'repo' => 'tabler/tabler-icons',
+            'ref' => 'main',
+            'path' => 'icons',
+            'notice' => 'Tabler Icons (https://tabler.io/icons), MIT licensed.',
+            'styles' => [
+                'outline' => [
+                    'base' => 'outline/{name}.svg',
+                ],
+                // Upstream calls this directory `filled`. The style is named for
+                // what the scale asks for rather than for what the directory is
+                // called, because `prefer => 'solid'` is answered by a style
+                // spelled `solid` and by nothing else. It draws a fifth of what
+                // `outline` draws — no `minus`, and of the chevrons only two of
+                // the four — and a name it has nothing for falls back to the
+                // outline drawing at every size, which is the sparse matrix
+                // doing its job rather than a gap. The two are close enough that
+                // it does not show: Tabler's filled chevron is the outline one
+                // with its 2px stroke converted to a path, and only the glyphs
+                // that can be solid, like `circle-check`, are drawn solid.
+                'solid' => [
+                    'base' => 'filled/{name}.svg',
+                ],
+            ],
+            'slots' => [
+                'shape-checked' => 'check',
+                'shape-indeterminate' => 'minus',
+                'shape-prev' => 'chevron-left',
+                'shape-next' => 'chevron-right',
+                'shape-expand' => 'chevron-down',
+                'shape-close' => 'x',
+                'shape-success' => 'circle-check',
+                'shape-danger' => 'circle-x',
+                'shape-warning' => 'alert-triangle',
+                'shape-info' => 'info-circle',
+                'shape-trend-up' => 'trending-up',
+                'shape-trend-down' => 'trending-down',
+                'shape-trend-flat' => 'minus',
+                // Of the five drawings Tabler calls a loader, this is the one
+                // that is an arc rather than a dial or a dashed disc, so it is
+                // the one that reads as motion when the slot spins it.
+                'shape-loading' => 'loader-2',
+            ],
+        ],
+
+        'phosphor' => [
+            'repo' => 'phosphor-icons/core',
+            'ref' => 'main',
+            'path' => 'assets',
+            'notice' => 'Phosphor Icons (https://phosphoricons.com), MIT licensed.',
+            // Six weights upstream, and the two the scale asks for are `regular`
+            // and `fill`. The other four are a weight axis the library has no
+            // word for; a set that wanted `thin` everywhere would swap it in
+            // here rather than have Shape grow a third axis to hold it.
+            //
+            // Phosphor puts the weight in the filename as well as the directory,
+            // which is why a pattern is a path and not a directory: `--all` runs
+            // it backwards to read `heart-fill.svg` as the fill drawing of
+            // `heart` rather than as an icon called `heart-fill`.
+            'styles' => [
+                'outline' => [
+                    'base' => 'regular/{name}.svg',
+                ],
+                'solid' => [
+                    'base' => 'fill/{name}-fill.svg',
+                ],
+            ],
+            'slots' => [
+                'shape-checked' => 'check',
+                'shape-indeterminate' => 'minus',
+                // Phosphor draws no `chevron`; the glyph other sets spell that
+                // way is a `caret` here, and it is the same drawing.
+                'shape-prev' => 'caret-left',
+                'shape-next' => 'caret-right',
+                'shape-expand' => 'caret-down',
+                'shape-close' => 'x',
+                'shape-success' => 'check-circle',
+                'shape-danger' => 'x-circle',
+                'shape-warning' => 'warning',
+                'shape-info' => 'info',
+                'shape-trend-up' => 'trend-up',
+                'shape-trend-down' => 'trend-down',
+                'shape-trend-flat' => 'minus',
+                'shape-loading' => 'spinner-gap',
+            ],
+        ],
+
+        'bootstrap-icons' => [
+            'repo' => 'twbs/icons',
+            'ref' => 'main',
+            'path' => 'icons',
+            'notice' => 'Bootstrap Icons (https://icons.getbootstrap.com), MIT licensed.',
+            // One style, because Bootstrap has no style axis: its filled
+            // drawings are separate icons with names of their own —
+            // `check-circle-fill` sits beside `check-circle` and covers perhaps
+            // two thirds of the set. Declaring a `solid` style over that suffix
+            // would promise a second cell for every name and produce one for
+            // most, so the slots below name the filled drawing directly where a
+            // filled drawing is the right one, and `--all` writes both names.
+            'styles' => [
+                'outline' => [
+                    'base' => '{name}.svg',
+                ],
+            ],
+            'slots' => [
+                // Bootstrap draws the bare glyphs twice, inset and full-bleed.
+                // The inset ones sit in about two thirds of the box, which looks
+                // shy beside every other set at the same size, so the tick, the
+                // dash and the dismiss glyph are all the `-lg` drawing.
+                'shape-checked' => 'check-lg',
+                'shape-indeterminate' => 'dash-lg',
+                'shape-prev' => 'chevron-left',
+                'shape-next' => 'chevron-right',
+                'shape-expand' => 'chevron-down',
+                'shape-close' => 'x-lg',
+                // The tones want a filled glyph at the small sizes they render
+                // at, and this is the set where that is a name rather than a
+                // style.
+                'shape-success' => 'check-circle-fill',
+                'shape-danger' => 'x-circle-fill',
+                'shape-warning' => 'exclamation-triangle-fill',
+                'shape-info' => 'info-circle-fill',
+                'shape-trend-up' => 'graph-up-arrow',
+                'shape-trend-down' => 'graph-down-arrow',
+                'shape-trend-flat' => 'dash-lg',
+                // Bootstrap's spinners are CSS rather than drawings, so there is
+                // no ring to spin here. This is the `null` case for real: the
+                // set has been asked and has nothing, and the slot is packaged,
+                // so a `--replace` onto Bootstrap keeps Shape's own spinner and
+                // says so.
+                'shape-loading' => null,
+            ],
+        ],
+
     ],
 
 ];

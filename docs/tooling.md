@@ -349,6 +349,38 @@ php artisan vendor:publish --tag="laravel-shape-config"
 A flat directory of SVGs is not a special case — it is a set with one style
 whose only pattern is `{name}.svg`, which is what the shipped `lucide` entry is.
 
+A pattern is a path and not a directory because a filename is not always a name.
+Phosphor puts the weight in both: `regular/heart.svg` and `fill/heart-fill.svg`
+are one icon drawn twice. `--all` reads the pattern backwards to see that —
+`{name}-fill` against `heart-fill` is `heart` — so the two land in one component
+instead of fifteen hundred icons arriving beside fifteen hundred `-fill` ones
+whose other cell is never there. A file no pattern accounts for is skipped.
+
+### The sets that ship
+
+Five, each checked against the repository it names and each answering every
+slot, so `--replace --set=…` is a complete answer for any of them:
+
+| | Styles | Grid | |
+| --- | --- | --- | --- |
+| `heroicons` | outline, solid | 24, with solid also drawn at 16 and 20 | The default, and what this package's own drawings came from |
+| `lucide` | outline | 24 | One style, one flat directory |
+| `tabler` | outline, solid | 24 | `solid` is upstream's `filled`, which draws about a fifth of what `outline` does; a name it hasn't got falls back |
+| `phosphor` | outline, solid | 256 | `regular` and `fill`, two of its six weights |
+| `bootstrap-icons` | outline | 16 | No style axis — its filled drawings are separate names, so the tone slots name them directly |
+
+The grid is what the drawings are drawn on, not what they render at: every set is
+measured against `icon_sizes`, and every generated icon emits the same size
+`match`. Two of them are worth knowing about before you swap:
+`bootstrap-icons` has no loader to spin — it says `null` for `shape-loading` and
+Shape's own spinner stays — and Tabler's `filled` is a stylistic counterpart
+rather than an optically corrected small size, so a name outside it renders its
+outline drawing at every size.
+
+Anything else is an entry you write, and the four beside `heroicons` are worked
+examples to write it from: a flat directory, two directories, a weight in the
+filename, and a set whose filled drawings are names rather than a style.
+
 ### Slots, and replacing Shape's own icons
 
 Writing an icon into `components_path` replaces the packaged one *everywhere*,

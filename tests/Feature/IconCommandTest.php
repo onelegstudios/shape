@@ -33,6 +33,10 @@ beforeEach(function () {
     // A flat set filling every slot the way Lucide fills it, so that a
     // replacement can actually be checked end to end.
     $this->lucide = __DIR__.'/../fixtures/icons-lucide';
+
+    // A set that puts the style in the filename as well as the directory, the
+    // way Phosphor does.
+    $this->phosphor = __DIR__.'/../fixtures/icons-phosphor';
 });
 
 /**
@@ -271,10 +275,13 @@ it('says which key to write when no set is configured to read', function () {
 });
 
 it('reports a configured set that is not one of the sets', function () {
-    config()->set('shape.icon_set', 'phosphor');
+    // Named for something no set will ever be called, rather than for a set the
+    // package has not shipped yet — the second is a test that starts passing for
+    // the wrong reason on the day it does ship.
+    config()->set('shape.icon_set', 'imaginary');
 
     $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $this->heroicons])
-        ->expectsOutputToContain('No icon set named [phosphor]')
+        ->expectsOutputToContain('No icon set named [imaginary]')
         ->assertFailed();
 });
 
@@ -434,6 +441,45 @@ it('spins the loading slot, and nothing else', function () {
     }
 });
 
+it('answers every slot from every set the package ships', function () {
+    // A set in the shipped config is a promise that `--replace --set=…`
+    // completes, and the way that promise breaks quietly is an oversight rather
+    // than a gap: `null` is an answer and a missing key is not, and only the
+    // second fails the run — on the machine of whoever typed it first.
+    $missing = [];
+
+    /** @var array<string, mixed> $sets */
+    $sets = config('shape.icon_sets');
+
+    foreach ($sets as $name => $definition) {
+        $set = IconSet::fromArray((string) $name, $definition, config('shape.icon_sizes'));
+
+        foreach (IconSlots::fromConfig()->names() as $slot) {
+            if (! $set->declares($slot)) {
+                $missing[] = "{$name}.{$slot}";
+            }
+        }
+    }
+
+    expect($missing)->toBe([]);
+});
+
+it('ships every set with somewhere to fetch it and a licence to carry', function () {
+    // The two things a set has to have to be worth shipping: `shape:icon` can
+    // reach it without a checkout the reader was never told to make, and every
+    // component it writes states whose drawing it is. A set with neither belongs
+    // in the docs as an example rather than in the config as an entry.
+    /** @var array<string, mixed> $sets */
+    $sets = config('shape.icon_sets');
+
+    foreach ($sets as $name => $definition) {
+        $set = IconSet::fromArray((string) $name, $definition, config('shape.icon_sizes'));
+
+        expect($set->repo)->not->toBeNull()
+            ->and($set->notice)->not->toBe('');
+    }
+});
+
 it('names the set and the config key for a slot the set says nothing about', function () {
     // The error is where a user finds out that repointing a slot is a thing they
     // can do, so it has to say where — a bare "no SVG found" per name sent them
@@ -536,6 +582,30 @@ it('writes every file it discovers flat, under its own name', function () {
     expect(written())->toBe($files)
         ->and($this->destination.'/icon/circle-check.blade.php')->toBeFile()
         ->and($this->destination.'/icon/shape-success.blade.php')->not->toBeFile();
+});
+
+it('reads a suffixed filename as the drawing it is, not as a name of its own', function () {
+    // Phosphor's `fill/check-fill.svg` is the fill drawing of `check`. Walking
+    // the listing for names would write it as `check-fill`, whose outline cell
+    // resolves to `regular/check-fill.svg` and is never there — so `--all` runs
+    // the pattern backwards instead, and a file no pattern accounts for is
+    // skipped rather than named.
+    // Read through the shipped `phosphor` entry rather than a set written for
+    // the test, so this covers the config the package promises as well as the
+    // command that reads it.
+    $this->artisan('shape:icon', ['--set' => 'phosphor', '--from' => $this->phosphor, '--all' => true])
+        ->assertSuccessful();
+
+    expect(written())->toBe(['check', 'heart']);
+
+    // And the two drawings land in the one component, which is the point of
+    // reading them as the same name: the small sizes get the fill and the
+    // default size gets the regular.
+    expect(file_get_contents($this->destination.'/icon/check.blade.php'))
+        ->toContain('data-drawn="check-fill"')
+        ->toContain('data-drawn="check"')
+        ->and(file_get_contents($this->destination.'/icon/heart.blade.php'))
+        ->toContain('data-drawn="heart"');
 });
 
 it('generates a set\'s own name for a drawing outside the slots', function () {

@@ -397,13 +397,68 @@ final class IconSet
 
         foreach ($this->styles as $drawn) {
             foreach ($drawn as $pattern) {
-                $directory = trim(dirname($pattern), '.');
-
-                $directories[] = trim($directory, '/');
+                $directories[] = self::directory($pattern);
             }
         }
 
         return array_values(array_unique($directories));
+    }
+
+    /**
+     * The name a file found in one of those directories is written under.
+     *
+     * `directories()` says where to look and this says what a file found there
+     * is called, because for some sets those are two questions rather than one.
+     * Phosphor puts the weight in the filename — `assets/fill/heart-fill.svg` is
+     * the fill drawing of `heart`, not an icon called `heart-fill` — so reading
+     * a listing as names would write fifteen hundred components whose every
+     * other cell resolves to `heart-fill-fill.svg` and is never there.
+     *
+     * Running the pattern backwards is that same declaration read the other way:
+     * `{name}-fill` against `heart-fill` is `heart`. A file no pattern matches is
+     * not this set's to write, which is `null` and a skip rather than a name.
+     *
+     * The shortest answer wins where one directory holds two patterns, which is
+     * a flat set that draws its solid style by suffix: `{name}` reads
+     * `heart-fill` as itself and `{name}-fill` reads it as `heart`, and the
+     * second is the drawing it actually is.
+     */
+    public function nameFor(string $directory, string $file): ?string
+    {
+        $names = [];
+
+        foreach ($this->styles as $drawn) {
+            foreach ($drawn as $pattern) {
+                // A pattern with no `{name}` in it names no icon — it is the
+                // same file whatever is asked for, so there is nothing in a
+                // listing for it to have drawn.
+                if (self::directory($pattern) !== $directory || ! str_contains($pattern, '{name}')) {
+                    continue;
+                }
+
+                $expression = '/^'.str_replace(
+                    preg_quote('{name}', '/'),
+                    '(.+)',
+                    preg_quote(pathinfo($pattern, PATHINFO_FILENAME), '/'),
+                ).'$/';
+
+                if (preg_match($expression, $file, $matches) === 1) {
+                    $names[] = $matches[1];
+                }
+            }
+        }
+
+        usort($names, fn (string $a, string $b): int => strlen($a) <=> strlen($b));
+
+        return $names[0] ?? null;
+    }
+
+    /**
+     * The directory half of a pattern, which is empty for a flat set.
+     */
+    private static function directory(string $pattern): string
+    {
+        return trim(trim(dirname($pattern), '.'), '/');
     }
 
     /**

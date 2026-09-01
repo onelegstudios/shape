@@ -246,8 +246,10 @@ checkout nobody mentioned. `--from` reads a local directory instead, and
 Fourteen of those components are the ones Shape's own components draw — the
 *slots*, named `shape-close` and `shape-warning` for the role they play rather
 than for whichever vendor drew them. `shape:icon --replace --set=lucide`
-regenerates that fourteen from another set without a call site changing. Every
-other icon your interface needs is one you generate, under its own name.
+regenerates that fourteen from another set without a call site changing.
+Heroicons, Lucide, Tabler, Phosphor and Bootstrap Icons ship as sets, and any
+directory of SVGs is one. Every other icon your interface needs is one you
+generate, under its own name.
 
 `shape:doctor` checks ejected components for request-scoped state. A folded
 component is pre-rendered while Blade compiles, so `auth()`, `session()`,

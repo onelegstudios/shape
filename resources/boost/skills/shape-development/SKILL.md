@@ -182,6 +182,12 @@ Each set in `shape.icon_sets` declares the repository that draws it (`repo`,
 `storage/framework/shape/icons`. Nothing needs cloning first, and nothing is read
 at run time — a generated component is a Blade file with the drawing baked in.
 
+Five sets ship, each answering every slot: `heroicons` (the default),
+`lucide`, `tabler`, `phosphor` and `bootstrap-icons`. Publish the config to add
+another; the four beside `heroicons` are the layouts to copy from — a flat
+directory, a directory per style, the style in the filename, and a set whose
+filled drawings are separate names.
+
 - `--from` reads a local directory instead, and still wins when given; use it for
   a designer's folder or a set with no upstream.
 - `--ref` reads a different branch, tag or commit than the set declares.
