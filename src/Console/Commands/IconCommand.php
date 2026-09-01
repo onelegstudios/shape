@@ -67,6 +67,11 @@ use RuntimeException;
  * exactly the collision the subdirectory existed to prevent. `--namespace`
  * survives as the override for a one-off run, and `--namespace=` as the way to
  * say flat out loud.
+ *
+ * Which set is read at all is the same kind of fact, and is declared the same
+ * way: `shape.icon_set` names it, so an application that has moved the library
+ * onto Lucide says so once instead of on every run it ever types. `--set` is
+ * the override for the run that means it.
  */
 class IconCommand extends Command
 {
@@ -77,7 +82,7 @@ class IconCommand extends Command
      */
     protected $signature = 'shape:icon
         {icons?* : The icon names to generate}
-        {--set=heroicons : The icon set to read}
+        {--set= : The icon set to read, overriding the configured one}
         {--from= : A directory to read SVGs from, instead of fetching the set}
         {--ref= : The branch, tag or commit to fetch, overriding the set\'s own}
         {--offline : Work from what has already been fetched, and fail rather than fetch}
@@ -862,10 +867,7 @@ class IconCommand extends Command
      */
     protected function set(?string $name = null): IconSet
     {
-        if ($name === null) {
-            $option = $this->option('set');
-            $name = is_string($option) && $option !== '' ? $option : 'heroicons';
-        }
+        $name ??= $this->configured();
 
         $sets = config('shape.icon_sets');
 
@@ -876,6 +878,37 @@ class IconCommand extends Command
         // Two keys, because the two axes belong to different people: the scale
         // is the library's and the drawings are the set's.
         return IconSet::fromArray($name, $sets[$name], config('shape.icon_sizes'));
+    }
+
+    /**
+     * The set a run reads when the command line names none.
+     *
+     * Declared in `shape.icon_set`, for the reason a set's `namespace` is
+     * declared beside it: which set is yours is true of the application, and a
+     * flag is true of one run. An application that has moved the library onto
+     * Lucide had to say `--set=lucide` on every run forever, and the run that
+     * forgot wrote a Heroicon into a directory of Lucide ones — under a slot
+     * name, which says nothing about who drew it. Saying it once here is what
+     * makes `shape:icon --replace` a replacement rather than a re-mixing.
+     *
+     * `--set` stays the override, and a supplementary set — read once, written
+     * into a namespace of its own — is exactly the one-off run it is for.
+     */
+    protected function configured(): string
+    {
+        $option = $this->option('set');
+
+        if (is_string($option) && $option !== '') {
+            return $option;
+        }
+
+        $default = config('shape.icon_set');
+
+        if (! is_string($default) || $default === '') {
+            throw new InvalidArgumentException('No default icon set is configured. Add [icon_set] to config/shape.php — it names which of [icon_sets] a run reads when --set says nothing.');
+        }
+
+        return $default;
     }
 
     /**

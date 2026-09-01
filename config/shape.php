@@ -101,6 +101,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Icon Set
+    |--------------------------------------------------------------------------
+    |
+    | Which of the sets below `shape:icon` reads when a run does not say. It is
+    | `heroicons` because that is what the icons this package ships were drawn
+    | from; an application that has moved the library onto another set answers
+    | this question once here rather than in every command it ever types.
+    |
+    | It belongs here for the reason `namespace` does, one entry down: which set
+    | is yours is true of the application, not of a run. `--set` typed on one
+    | run and forgotten on the next is how a components directory ends up
+    | holding two vendors, and the icons that name a slot say nothing about
+    | which drew them. Set this, and `shape:icon --replace` stays a replacement.
+    |
+    | `--set` is still the override, and reading a supplementary set is exactly
+    | the one-off run it is for.
+    |
+    */
+
+    'icon_set' => 'heroicons',
+
+    /*
+    |--------------------------------------------------------------------------
     | Icon Sets
     |--------------------------------------------------------------------------
     |

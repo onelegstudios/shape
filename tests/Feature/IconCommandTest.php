@@ -227,6 +227,57 @@ it('needs somewhere to read a set that says nothing about where it is drawn', fu
         ->assertFailed();
 });
 
+it('reads the set the config names when a run does not say', function () {
+    // The reason the setting exists. An application that has moved the library
+    // onto Lucide types `shape:icon shape-close` and gets Lucide's drawing —
+    // rather than typing `--set=lucide` on every run forever, with the run that
+    // forgets writing a Heroicon under a slot name that says nothing about who
+    // drew it.
+    config()->set('shape.icon_set', 'lucide');
+
+    $this->artisan('shape:icon', ['icons' => ['shape-close'], '--from' => $this->lucide])
+        ->assertSuccessful();
+
+    expect(file_get_contents($this->destination.'/icon/shape-close.blade.php'))
+        ->toContain('data-drawn="x"')
+        ->toContain('Lucide');
+});
+
+it('lets --set read another set for the one run that asks', function () {
+    // Which is what a supplementary set is: read once, beside a library wearing
+    // something else. The flag still wins, and it wins for that run only.
+    config()->set('shape.icon_set', 'lucide');
+
+    $from = heroiconsFixture();
+
+    $this->artisan('shape:icon', ['icons' => ['shape-close'], '--set' => 'heroicons', '--from' => $from])
+        ->assertSuccessful();
+
+    expect(file_get_contents($this->destination.'/icon/shape-close.blade.php'))
+        ->toContain('data-drawn="x-mark"');
+
+    exec('rm -rf '.escapeshellarg($from));
+});
+
+it('says which key to write when no set is configured to read', function () {
+    // A published config from before this key existed has no `icon_set`, and
+    // falling back to Heroicons for it would generate the one set the
+    // application had most likely moved off.
+    config()->set('shape.icon_set', null);
+
+    $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $this->heroicons])
+        ->expectsOutputToContain('[icon_set]')
+        ->assertFailed();
+});
+
+it('reports a configured set that is not one of the sets', function () {
+    config()->set('shape.icon_set', 'phosphor');
+
+    $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $this->heroicons])
+        ->expectsOutputToContain('No icon set named [phosphor]')
+        ->assertFailed();
+});
+
 it('records what each icon was drawn from, beside the icons', function () {
     $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $this->heroicons])->assertSuccessful();
 

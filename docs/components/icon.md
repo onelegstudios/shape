@@ -157,7 +157,7 @@ Icons of your own are generated the same way, from a set Shape fetches for you o
 from any directory of SVGs in any set's layout:
 
 ```bash
-php artisan shape:icon bell trash --set=lucide
+php artisan shape:icon bell trash
 php artisan shape:icon bell trash --from=resources/icons
 ```
 
@@ -202,6 +202,17 @@ php artisan shape:icon --replace --set=lucide
 That generates the fourteen slots, under their own names, from whatever the set
 calls them. Nothing at a call site changes: `<x-shape::icon.shape-close />` is
 still `shape-close`, and Lucide's `x.svg` is what is behind it now.
+
+Then say which set is yours, once, so no later run has to:
+
+```php
+'icon_set' => 'lucide',
+```
+
+Every `shape:icon` without `--set` reads that one. A flag is remembered for the
+run it is typed on, and the run that forgets it writes a Heroicon into a
+directory of Lucide drawings — under a slot name, which is a role and says
+nothing about who drew it.
 
 Each set says which of its drawings fills each slot, once, in `slots` — see
 [Tooling](../tooling.md#slots-and-replacing-shapes-own-icons). Cover thirteen of

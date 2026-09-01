@@ -175,10 +175,37 @@ Every icon in Shape is generated. The header on each file says
 ```bash
 php artisan shape:icon check arrow-right
 php artisan shape:icon --all
+php artisan shape:icon --replace
 php artisan shape:icon bell --set=lucide
-php artisan shape:icon --replace --set=lucide
 php artisan shape:icon --all --from=./resources/svg
 php artisan shape:icon --status
+```
+
+### Which set a run reads
+
+`shape.icon_set` names it, and every run without `--set` reads that one:
+
+```php
+'icon_set' => 'lucide',
+```
+
+```bash
+php artisan shape:icon --replace
+php artisan shape:icon bell trash
+```
+
+It belongs in the config for the reason a set's `namespace` does. Which set is
+yours is true of the application; a flag is true of one run. An application on
+Lucide that had to type `--set=lucide` forever only had to forget once, and the
+run that forgot wrote a Heroicon into a directory of Lucide drawings — under a
+slot name, which is a role and says nothing about who drew it. Set it, and
+`shape:icon --replace` is a replacement rather than a re-mixing.
+
+`--set` is still the override, and reading a supplementary set is exactly the
+one-off it is for:
+
+```bash
+php artisan shape:icon bell --set=heroicons
 ```
 
 ### Where the drawings come from

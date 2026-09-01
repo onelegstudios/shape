@@ -155,8 +155,8 @@ php artisan shape:eject modal      # + heading, text, overlay, button, icon
 php artisan shape:eject --status   # what has drifted since an upgrade
 php artisan shape:doctor           # fold safety of ejected components
 php artisan shape:icon bell        # one icon from the configured set
-php artisan shape:icon --all --set=lucide
-php artisan shape:icon --replace --set=lucide
+php artisan shape:icon --all
+php artisan shape:icon --replace   # regenerate Shape's own icons in that set
 php artisan shape:icon --all --from=./resources/svg
 ```
 
@@ -164,6 +164,18 @@ A run of `shape:icon` or `shape:eject` that writes anything clears the compiled
 views and says so, because a generated component is a file and a compiled view is
 a cached answer about a file — leaving the second behind serves stale markup, or
 markup inlined from a component that no longer exists, without raising an error.
+
+`shape.icon_set` names which of the sets a run reads when `--set` says nothing.
+Set it once when the application moves the library onto another set:
+
+```php
+'icon_set' => 'lucide',
+```
+
+Which set is yours is true of the application, not of a run: a `--set` forgotten
+on one run writes a Heroicon into a directory of Lucide drawings, under a slot
+name that says nothing about who drew it. `--set` stays the override for a
+one-off, such as reading a supplementary set.
 
 Each set in `shape.icon_sets` declares the repository that draws it (`repo`,
 `ref`, `path`), so `shape:icon` fetches it and caches it under
@@ -197,7 +209,7 @@ which of its drawings fills each one, in `slots`:
 Call sites never change: an icon is `<x-shape::icon.shape-close />` whichever set
 drew it, and `triangle-alert` stays free to generate under its own name. To
 repoint one slot, publish the config, change its entry, and run
-`php artisan shape:icon shape-warning --set=lucide --force`. To draw one by hand,
+`php artisan shape:icon shape-warning --force`. To draw one by hand,
 write `resources/views/shape/icon/shape-warning.blade.php` — `components_path`
 resolves first and the generator will not overwrite it without `--force`, but
 copy the `@blaze(fold: true, memo: true)` front matter off a generated file or it
@@ -214,7 +226,7 @@ who has generated nothing; an application's call sites should not copy that.
 Generate your own icons for everything else, under their own names:
 
 ```bash
-php artisan shape:icon bell trash --set=lucide
+php artisan shape:icon bell trash
 ```
 
 Those names are free. The package ships `shape-arrow-right`, `shape-plus` and
