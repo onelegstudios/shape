@@ -53,6 +53,168 @@ beforeEach(function () {
     ];
 });
 
+/**
+ * An archive shaped the way a set that files its drawings by category is,
+ * wrapped in the one top-level directory GitHub's tarballs carry.
+ *
+ * Built here rather than committed: unlike the hostile fixture, there is nothing
+ * about it `PharData` refuses to write, and a reader can see what is in it.
+ *
+ * @param  array<string, string>  $files
+ */
+function nestedArchive(array $files): string
+{
+    // A path of its own per archive: `PharData` caches by filename for the life
+    // of the process, so a second archive written to a path already read would
+    // hand back the first one.
+    $path = sys_get_temp_dir().'/shape-icons-nested-'.getmypid().'-'.uniqid();
+
+    $archive = new PharData($path.'.tar');
+
+    foreach ($files as $entry => $contents) {
+        $archive->addFromString('RemixIcon-master/'.$entry, $contents);
+    }
+
+    $archive->compress(Phar::GZ);
+
+    $tarball = (string) file_get_contents($path.'.tar.gz');
+
+    unset($archive);
+
+    @unlink($path.'.tar');
+    @unlink($path.'.tar.gz');
+
+    return $tarball;
+}
+
+/**
+ * A set whose drawings are filed under something their names do not say, which
+ * is the layout no pattern can express and the reason `flatten` exists.
+ *
+ * Named afresh each time, because a set's name is its cache directory and
+ * `PharData` holds every archive it has opened by filename for the life of the
+ * process — so a second test unpacking a second archive at one path would be
+ * handed the first one back.
+ *
+ * @param  array<string, array<string, string>>  $styles
+ */
+function nestedSet(bool $flatten = true, ?array $styles = null): string
+{
+    $name = 'remix-'.uniqid();
+
+    config()->set('shape.icon_sets.'.$name, [
+        'repo' => 'Remix-Design/RemixIcon',
+        'ref' => 'master',
+        'path' => 'icons',
+        'flatten' => $flatten,
+        'notice' => 'Remix Icon (https://remixicon.com), Remix Icon License v1.0.',
+        'styles' => $styles ?? [
+            'outline' => ['base' => '{name}-line.svg'],
+            'solid' => ['base' => '{name}-fill.svg'],
+        ],
+    ]);
+
+    return $name;
+}
+
+it('reads a set that files its drawings by category', function () {
+    // The layout a pattern cannot express: `close-line` is under `System` and
+    // nothing about the name says so. Flattening answers it on the way in, so
+    // what the pattern reads is an ordinary flat set.
+    $set = nestedSet();
+
+    Http::fake(['codeload.github.com/*' => Http::response(nestedArchive([
+        'icons/System/close-line.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" data-drawn="close-line" /></svg>',
+        'icons/System/close-fill.svg' => '<svg viewBox="0 0 24 24"><path d="M1 1" data-drawn="close-fill" /></svg>',
+        'icons/User & Faces/user-line.svg' => '<svg viewBox="0 0 24 24"><path d="M2 2" data-drawn="user-line" /></svg>',
+        'License' => 'Remix Icon License v1.0',
+    ]))]);
+
+    $this->artisan('shape:icon', ['icons' => ['close'], '--set' => $set])->assertSuccessful();
+
+    expect(file_get_contents($this->destination.'/icon/close.blade.php'))
+        ->toContain('data-drawn="close-line"')
+        ->toContain('data-drawn="close-fill"')
+        ->toContain('Remix Icon');
+
+    // The categories are gone from the cache, and the licence is not among the
+    // drawings — it belongs to the repository rather than to the set. It is
+    // kept whatever case the repository spells it in: Remix Icon's is `License`,
+    // and it is the one file that states the terms the drawings arrive under.
+    $root = $this->cache.'/'.$set.'/master';
+
+    expect($root.'/icons/close-line.svg')->toBeFile()
+        ->and($root.'/icons/user-line.svg')->toBeFile()
+        ->and($root.'/License')->toBeFile()
+        ->and(file_exists($root.'/icons/System/close-line.svg'))->toBeFalse();
+});
+
+it('fetches the whole of a flattening set even for one name', function () {
+    // There is no path a raw fetch could ask for. Where a drawing sits is a
+    // category the name says nothing about, so the archive has to be in hand
+    // before anything can be found in it — whether the run wanted one icon or
+    // all of them.
+    $set = nestedSet();
+
+    Http::fake(['codeload.github.com/*' => Http::response(nestedArchive([
+        'icons/System/close-line.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" /></svg>',
+    ]))]);
+
+    $this->artisan('shape:icon', ['icons' => ['close'], '--set' => $set])->assertSuccessful();
+
+    Http::assertSentCount(1);
+    Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'raw.githubusercontent'));
+});
+
+it('walks a flattened set under its own names', function () {
+    $set = nestedSet();
+
+    Http::fake(['codeload.github.com/*' => Http::response(nestedArchive([
+        'icons/System/close-line.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" /></svg>',
+        'icons/System/close-fill.svg' => '<svg viewBox="0 0 24 24"><path d="M1 1" /></svg>',
+        'icons/User & Faces/user-line.svg' => '<svg viewBox="0 0 24 24"><path d="M2 2" /></svg>',
+    ]))]);
+
+    // `--all` reads the flattened directory the way it reads any flat set: the
+    // style suffix is the set's own, so `close-line` and `close-fill` are one
+    // icon in two styles rather than two icons.
+    $this->artisan('shape:icon', ['--all' => true, '--set' => $set])->assertSuccessful();
+
+    expect($this->destination.'/icon/close.blade.php')->toBeFile()
+        ->and($this->destination.'/icon/user.blade.php')->toBeFile()
+        ->and(file_exists($this->destination.'/icon/close-line.blade.php'))->toBeFalse();
+});
+
+it('refuses to flatten a set whose filenames are not unique', function () {
+    // The one way flattening can lose a drawing, and it would lose it silently:
+    // the second write wins and the set is quietly an icon short.
+    $set = nestedSet();
+
+    Http::fake(['codeload.github.com/*' => Http::response(nestedArchive([
+        'icons/System/close-line.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" /></svg>',
+        'icons/Editor/close-line.svg' => '<svg viewBox="0 0 24 24"><path d="M1 1" /></svg>',
+    ]))]);
+
+    $this->artisan('shape:icon', ['icons' => ['close'], '--set' => $set])
+        ->expectsOutputToContain('cannot be read flat')
+        ->assertFailed();
+});
+
+it('keeps a set that says nothing about flattening as the repository lays it out', function () {
+    // The default, and what every set configured today does: a layout a pattern
+    // can express is read where it is, rather than moved.
+    $set = nestedSet(flatten: false, styles: ['outline' => ['base' => 'System/{name}-line.svg']]);
+
+    Http::fake(['codeload.github.com/*' => Http::response(nestedArchive([
+        'icons/System/close-line.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" /></svg>',
+    ]))]);
+
+    $this->artisan('shape:icon', ['--all' => true, '--set' => $set])->assertSuccessful();
+
+    expect($this->cache.'/'.$set.'/master/icons/System/close-line.svg')->toBeFile()
+        ->and($this->destination.'/icon/close.blade.php')->toBeFile();
+});
+
 it('generates from a set it fetched rather than one somebody had to clone', function () {
     // The whole point of the change. Heroicons is not a Composer dependency of
     // this package, so before this, "Regenerate; don't hand-edit" asked for a
@@ -181,6 +343,18 @@ it('writes nothing outside the directory it unpacks into', function () {
     // survive as a symlink.
     expect($this->cache.'/heroicons/master/optimized/24/solid/check.svg')->toBeFile()
         ->and(is_link($this->cache.'/heroicons/master/optimized/link.svg'))->toBeFalse();
+});
+
+it('keeps the fetched sets out of the consumer\'s history', function () {
+    // Thousands of files nobody wrote, under a storage path Laravel's own
+    // ignore rules do not reach. The pattern covers the file itself, so there
+    // is nothing to commit rather than one stray `.gitignore` to explain.
+    Http::fake(['codeload.github.com/*' => Http::response($this->archive)]);
+
+    $this->artisan('shape:icon', ['--all' => true])->assertSuccessful();
+
+    expect($this->cache.'/.gitignore')->toBeFile()
+        ->and(file_get_contents($this->cache.'/.gitignore'))->toBe("*\n");
 });
 
 it('fails loudly when --offline is asked to work from a cache that is cold', function () {

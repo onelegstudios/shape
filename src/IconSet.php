@@ -44,6 +44,7 @@ final class IconSet
      * @param  string  $ref  Only meaningful with a repo; ignored otherwise.
      * @param  string  $path  The subdirectory of the repository the drawings live in, if any.
      * @param  string|null  $namespace  The subdirectory of the components path this set is written into, if it wants one of its own.
+     * @param  bool  $flatten  Whether the set's own subdirectories under `path` are collapsed into one when it is fetched.
      */
     private function __construct(
         public readonly string $name,
@@ -55,6 +56,7 @@ final class IconSet
         public readonly string $ref = 'main',
         public readonly string $path = '',
         public readonly ?string $namespace = null,
+        public readonly bool $flatten = false,
     ) {}
 
     /**
@@ -130,7 +132,41 @@ final class IconSet
             $ref ?? 'main',
             trim($path ?? '', '/'),
             self::namespace($name, $definition),
+            self::flatten($name, $definition),
         );
+    }
+
+    /**
+     * Whether this set's own layout has to be collapsed before it can be read.
+     *
+     * A pattern places a name into a path, which covers every set whose layout
+     * is a fact about the style and the size — `24/solid/{name}.svg` is the same
+     * two directories for every drawing in it. It cannot cover a set that files
+     * its drawings by something the name says nothing about: Remix Icon nests by
+     * category, so `close-line` is under `System` and there is no pattern that
+     * knows that without being told each name's category one at a time.
+     *
+     * Flattening answers it where the pattern cannot. The set is fetched whole
+     * and unpacked into one directory by filename, and what is left on disk is
+     * an ordinary flat set that `{name}-line.svg` reads the way it reads Lucide.
+     * The cost is that a drawing can no longer be fetched on its own — nothing
+     * can say where one file is without the archive in hand — so a set that
+     * declares this always pulls the whole of itself.
+     *
+     * It is the set's own property rather than a flag, for the reason
+     * `namespace` is: how a set is laid out is true of the set on every run.
+     *
+     * @param  array<mixed>  $definition
+     */
+    private static function flatten(string $name, array $definition): bool
+    {
+        $flatten = $definition['flatten'] ?? false;
+
+        if (! is_bool($flatten)) {
+            throw new InvalidArgumentException("Icon set [{$name}] has a [flatten] that is not true or false.");
+        }
+
+        return $flatten;
     }
 
     /**

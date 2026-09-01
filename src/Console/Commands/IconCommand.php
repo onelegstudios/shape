@@ -954,7 +954,13 @@ class IconCommand extends Command
             // One request for the whole set, rather than one per drawing. Both
             // of these walk far more of it than a raw fetch per file could pay
             // for: `--replace` alone is twelve names over six cells.
-            (bool) $this->option('all') || (bool) $this->option('replace'),
+            //
+            // A flattening set has no choice about it. Its drawings are filed
+            // under something their names do not say — a category — so there is
+            // no path a raw fetch could ask for until the archive is in hand and
+            // collapsed, whether the run wanted one icon or all of them.
+            (bool) $this->option('all') || (bool) $this->option('replace') || $set->flatten,
+            $set->flatten,
         );
     }
 

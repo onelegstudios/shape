@@ -182,11 +182,12 @@ Each set in `shape.icon_sets` declares the repository that draws it (`repo`,
 `storage/framework/shape/icons`. Nothing needs cloning first, and nothing is read
 at run time — a generated component is a Blade file with the drawing baked in.
 
-Five sets ship, each answering every slot: `heroicons` (the default),
-`lucide`, `tabler`, `phosphor` and `bootstrap-icons`. Publish the config to add
-another; the four beside `heroicons` are the layouts to copy from — one flat
-directory, a directory per style, a style named in both the directory and the
-filename, and a style marked inside one flat directory.
+Six sets ship, each answering every slot: `heroicons` (the default),
+`lucide`, `tabler`, `phosphor`, `bootstrap-icons` and `remix-icon`. Publish the
+config to add another; the five beside `heroicons` are the layouts to copy from —
+one flat directory, a directory per style, a style named in both the directory
+and the filename, a style marked inside one flat directory, and a set filed by
+category.
 
 A set's `styles` gives each cell a path with the name in it, so a directory
 layout and a filename convention are one declaration. `{name}` is the whole name.
@@ -209,6 +210,28 @@ file behind it wins:
 `--all` reads those patterns backwards to decide what a listed file is called, so
 `person-fill-x.svg` lands in the solid cell of `person-x` instead of arriving as
 an icon named for its own marker. A file no pattern accounts for is skipped.
+
+A pattern needs the path to be a fact about the style and the size. Add
+`'flatten' => true` for a set that files its drawings by something the name does
+not say — Remix Icon nests by category, so `close-line.svg` is under `System`.
+The set is then unpacked into one directory by filename and read as a flat set:
+
+```php
+'remix-icon' => [
+    'path' => 'icons',
+    'flatten' => true,
+    'styles' => [
+        // The bare spelling is the fallback: 151 editor glyphs carry no marker.
+        'outline' => ['base' => ['{name}-line.svg', '{name}.svg']],
+        'solid' => ['base' => '{name}-fill.svg'],
+    ],
+],
+```
+
+Such a set always fetches the whole of itself, even for one named icon, because
+nothing can say where a single drawing is until the archive is in hand. Its
+filenames must be unique across its directories; `shape:icon` names both files
+and fails rather than letting one overwrite the other.
 
 - `--from` reads a local directory instead, and still wins when given; use it for
   a designer's folder or a set with no upstream.

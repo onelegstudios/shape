@@ -6,6 +6,7 @@ namespace Onelegstudios\Shape\Icons;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Http;
+use Phar;
 use PharData;
 use RecursiveIteratorIterator;
 use RuntimeException;
@@ -67,6 +68,7 @@ final class GitHubSource implements IconSource
      * @param  string  $base  Where fetched sets are cached, usually under `storage/framework`.
      * @param  bool  $offline  Refuse to fetch, and answer from the cache or not at all.
      * @param  bool  $whole  Whether this run wants the entire set, which is one request rather than one per drawing.
+     * @param  bool  $flatten  Whether the set's own subdirectories under `path` are collapsed into one on the way in.
      */
     public function __construct(
         private readonly Filesystem $files,
@@ -77,6 +79,7 @@ final class GitHubSource implements IconSource
         private readonly string $base,
         private readonly bool $offline = false,
         private readonly bool $whole = false,
+        private readonly bool $flatten = false,
     ) {
         // Checked here rather than at the first read, because failing loudly is
         // the entire point of the flag. A run that quietly generated nothing
@@ -187,7 +190,12 @@ final class GitHubSource implements IconSource
         $commit = $this->commit($archive);
 
         $this->unpack($archive);
-        $this->files->delete($archive);
+
+        // Not `unlink`. PHP keeps every archive it has opened in memory, keyed
+        // by the filename, for the life of the process — so deleting the file
+        // and fetching a second set to the same path unpacks the first one
+        // again. This is the call that forgets it as well as removes it.
+        Phar::unlinkArchive($archive);
 
         $this->remember($commit, complete: true);
     }
@@ -258,6 +266,7 @@ final class GitHubSource implements IconSource
 
         $root = $this->root();
         $written = 0;
+        $from = [];
 
         foreach ($iterator as $file) {
             $entry = str_replace('\\', '/', $iterator->getSubPathname());
@@ -275,8 +284,20 @@ final class GitHubSource implements IconSource
                 continue;
             }
 
-            $this->files->ensureDirectoryExists(dirname($root.'/'.$within));
-            $this->files->put($root.'/'.$within, (string) $file->getContent());
+            $target = $this->target($within);
+
+            // Two drawings landing on one filename is the one way flattening can
+            // lose a drawing, and it would lose it silently — the second write
+            // wins and the set is quietly one icon short. Which two files
+            // collided is the whole of what a reader needs to fix it.
+            if (isset($from[$target]) && $from[$target] !== $within) {
+                throw new RuntimeException("Flattening [{$this->set}] would put [{$within}] and [{$from[$target]}] in the same place. The set's filenames are not unique across its directories, so it cannot be read flat.");
+            }
+
+            $from[$target] = $within;
+
+            $this->files->ensureDirectoryExists(dirname($root.'/'.$target));
+            $this->files->put($root.'/'.$target, (string) $file->getContent());
 
             $written++;
         }
@@ -284,6 +305,26 @@ final class GitHubSource implements IconSource
         if ($written === 0) {
             throw new RuntimeException("The archive for [{$this->set}] at [{$this->ref}] held nothing under [{$this->path}].");
         }
+    }
+
+    /**
+     * Where one entry of the archive is written, relative to the cache root.
+     *
+     * The repository's own layout, ordinarily. A flattening set drops whatever
+     * directories it files its drawings under and keeps the filename, so that
+     * `icons/System/close-line.svg` lands as `icons/close-line.svg` and the set
+     * on disk is one `{name}-line.svg` deep — which is a layout a pattern can
+     * express, where nesting by category is not.
+     *
+     * Only under the set's own `path`. A licence sits at the root of the
+     * repository rather than among the drawings, and moving it in beside them
+     * would file it as though it were one.
+     */
+    private function target(string $within): string
+    {
+        return $this->flatten && $this->path !== '' && str_starts_with($within, $this->path.'/')
+            ? $this->path.'/'.basename($within)
+            : $within;
     }
 
     /**
@@ -296,7 +337,10 @@ final class GitHubSource implements IconSource
      */
     private function wanted(string $within): bool
     {
-        if (str_starts_with(basename($within), 'LICENSE')) {
+        // Whatever case it is written in. Remix Icon's is `License`, and a
+        // check that only knew `LICENSE` dropped the one file in the archive
+        // that states the terms the drawings arrive under.
+        if (str_starts_with(strtoupper(basename($within)), 'LICENSE')) {
             return true;
         }
 
@@ -371,6 +415,8 @@ final class GitHubSource implements IconSource
      */
     private function remember(?string $commit, bool $complete): void
     {
+        $this->ignore();
+
         $meta = array_filter([
             'repo' => $this->repo,
             'ref' => $this->ref,
@@ -383,6 +429,27 @@ final class GitHubSource implements IconSource
 
         /** @var array{repo?: string, ref?: string, commit?: string, complete?: bool} $meta */
         $this->meta = $meta;
+    }
+
+    /**
+     * Keep the cache out of the consumer's history.
+     *
+     * This is a copy of somebody else's repository that exists to save fetching
+     * it twice, and a set is thousands of files nobody wrote — none of it is a
+     * change to their application. Laravel ignores its own storage directories
+     * this way; the pattern covers the file itself as well, so there is nothing
+     * here to commit at all rather than one stray `.gitignore` to explain.
+     */
+    private function ignore(): void
+    {
+        $path = rtrim($this->base, '/').'/.gitignore';
+
+        if ($this->files->exists($path)) {
+            return;
+        }
+
+        $this->files->ensureDirectoryExists(dirname($path));
+        $this->files->put($path, "*\n");
     }
 
     /**

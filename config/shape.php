@@ -151,6 +151,16 @@ return [
     | when given, and stays the way to read a local folder or a set with no
     | upstream at all.
     |
+    | `flatten` is for a set whose drawings are filed under something their names
+    | do not say. A pattern places a name into a path, which covers every layout
+    | that is a fact about the style and the size — but Remix Icon nests by
+    | category, so `close-line` is under `System` and nothing about the name says
+    | so. A set that declares this is unpacked into one directory by filename,
+    | and what the patterns then read is an ordinary flat set. The cost is that a
+    | single drawing can no longer be fetched on its own, so such a set always
+    | pulls the whole of itself; and its filenames have to be unique across its
+    | directories, which `shape:icon` checks rather than assumes.
+    |
     | `namespace` gives a set a subdirectory of the components path, and with it
     | a namespace of its own: `icon/lucide/bell.blade.php` is
     | `<x-shape::icon.lucide.bell />`, and a flat `bell` from another set is no
@@ -408,6 +418,78 @@ return [
                 // so a `--replace` onto Bootstrap keeps Shape's own spinner and
                 // says so.
                 'shape-loading' => null,
+            ],
+        ],
+
+        'remix-icon' => [
+            'repo' => 'Remix-Design/RemixIcon',
+            'ref' => 'master',
+            'path' => 'icons',
+            // Filed by category — `close-line.svg` is under `System` and
+            // `user-line.svg` under `User & Faces` — which is a layout no
+            // pattern can place a name into, because the name does not say
+            // which of the twenty folders it is in. Flattened on the way in, so
+            // what the patterns below read is an ordinary flat set. The 3,229
+            // drawings have no filename in common across those folders, which is
+            // what makes that safe; `shape:icon` checks rather than assumes it.
+            'flatten' => true,
+            // Not Apache 2.0, as it was until January 2026. The current licence
+            // asks for no attribution at all — Shape states it anyway, the way
+            // it states every other set's — and restricts selling the drawings
+            // on as an icon pack, which a component in an application is not.
+            'notice' => 'Remix Icon (https://remixicon.com), Remix Icon License v1.0.',
+            // The most symmetrical set here: 1,539 names drawn both ways, with
+            // nothing drawn one way only, so the sparse matrix never fires.
+            //
+            // The bare spelling is the second candidate because 151 drawings —
+            // every one of them an editor glyph, `bold` and `italic` and the
+            // alignments — carry no marker at all, having no interior to fill.
+            // Without it they are unreachable: `shape:icon bold` would look for
+            // `bold-line.svg` and find nothing. It costs the suffixed names
+            // nothing, since the shortest reading of a listed file wins and
+            // `{name}-line.svg` reads `check-line.svg` as `check` where the bare
+            // pattern reads it as `check-line`.
+            'styles' => [
+                'outline' => [
+                    'base' => [
+                        '{name}-line.svg',
+                        // `ai-generate-2` is the one name drawn both ways round:
+                        // this reaches the bare file for the other 150, and for
+                        // that one the `-line` drawing above answers first.
+                        '{name}.svg',
+                    ],
+                ],
+                'solid' => [
+                    'base' => '{name}-fill.svg',
+                ],
+            ],
+            'slots' => [
+                'shape-checked' => 'check',
+                'shape-indeterminate' => 'subtract',
+                // Remix draws no chevron either. The small arrows — `-s`, for
+                // the size rather than for a direction — are the glyph the other
+                // sets spell `chevron`.
+                'shape-prev' => 'arrow-left-s',
+                'shape-next' => 'arrow-right-s',
+                'shape-expand' => 'arrow-down-s',
+                'shape-close' => 'close',
+                'shape-success' => 'checkbox-circle',
+                'shape-danger' => 'close-circle',
+                // The triangle. `error-warning` is Remix's circled exclamation,
+                // which is the danger glyph's shape wearing the warning's
+                // meaning — two tones would then differ only in colour.
+                'shape-warning' => 'alert',
+                'shape-info' => 'information',
+                // Remix draws no trend line, so the trio is three arrows at
+                // three angles rather than two arrows and a dash: read together
+                // in a row of stats, they are one family.
+                'shape-trend-up' => 'arrow-right-up',
+                'shape-trend-down' => 'arrow-right-down',
+                'shape-trend-flat' => 'arrow-right',
+                // Ten loaders here, and this is the arc: `loader` and `loader-3`
+                // are spoked dials, which strobe rather than turn when the slot
+                // spins them.
+                'shape-loading' => 'loader-4',
             ],
         ],
 

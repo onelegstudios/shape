@@ -375,9 +375,40 @@ matters where both exist: Bootstrap draws `person-check-fill` filled through and
 `person-fill-check` as a filled person wearing an outline tick, so the suffix
 goes first.
 
+### A layout no pattern can place a name into
+
+A pattern works because the path is a fact about the style and the size:
+`24/solid/{name}.svg` is the same two directories for every drawing in
+Heroicons. Some sets file their drawings by something the name says nothing
+about. Remix Icon nests by category, so `close-line.svg` is under `System` and
+`user-line.svg` under `User & Faces`, and no pattern knows which of the twenty
+folders a name is in without being told one name at a time.
+
+`flatten` answers it before the patterns ever see it. The set is fetched whole
+and unpacked into a single directory by filename, so what is read is an ordinary
+flat set:
+
+```php
+'remix-icon' => [
+    'path' => 'icons',
+    'flatten' => true,
+    'styles' => [
+        'outline' => ['base' => ['{name}-line.svg', '{name}.svg']],
+        'solid' => ['base' => '{name}-fill.svg'],
+    ],
+],
+```
+
+Two things follow. Such a set always fetches the whole of itself, even for one
+named icon, because nothing can say where a single drawing is until the archive
+is in hand — which is a tarball rather than three thousand requests, and it is
+cached like any other. And its filenames have to be unique across its own
+directories: `shape:icon` checks that while unpacking and names both colliding
+files rather than letting the second quietly overwrite the first.
+
 ### The sets that ship
 
-Five, each checked against the repository it names and each answering every
+Six, each checked against the repository it names and each answering every
 slot, so `--replace --set=…` is a complete answer for any of them:
 
 | | Styles | Grid | |
@@ -387,6 +418,7 @@ slot, so `--replace --set=…` is a complete answer for any of them:
 | `tabler` | outline, solid | 24 | `solid` is upstream's `filled`, which draws about a fifth of what `outline` does; a name it hasn't got falls back |
 | `phosphor` | outline, solid | 256 | `regular` and `fill`, two of its six weights |
 | `bootstrap-icons` | outline, solid | 16 | `solid` is the `-fill` half of a flat directory, suffixed or infixed; half its names have one |
+| `remix-icon` | outline, solid | 24 | Filed by category, so it is flattened on the way in; 1,539 names drawn both ways, and 151 editor glyphs drawn neither |
 
 The grid is what the drawings are drawn on, not what they render at: every set is
 measured against `icon_sizes`, and every generated icon emits the same size
@@ -396,10 +428,10 @@ Shape's own spinner stays — and neither its `solid` nor Tabler's covers the wh
 set, so a name outside one renders its outline drawing at every size. For
 Bootstrap that is mostly line art a fill would have drawn identically.
 
-Anything else is an entry you write, and the four beside `heroicons` are worked
+Anything else is an entry you write, and the five beside `heroicons` are worked
 examples to write it from: one flat directory, a directory per style, a style
-named in both the directory and the filename, and a style that is a suffix
-inside one directory.
+named in both the directory and the filename, a style that is a suffix inside
+one directory, and a set filed by category that is flattened before it is read.
 
 ### Slots, and replacing Shape's own icons
 

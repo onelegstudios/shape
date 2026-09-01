@@ -423,6 +423,35 @@ it('ships two sets that between them fill every declared slot', function () {
         ->and($heroicons->sourceName('shape-close'))->toBe('x-mark');
 });
 
+it('ships the one set whose layout has to be collapsed before it can be read', function () {
+    // Remix Icon files its drawings by category, so the name says nothing about
+    // which of the twenty folders it is in. The flag is what makes the flat
+    // patterns below true of the set on disk.
+    $remix = IconSet::fromArray('remix-icon', config('shape.icon_sets')['remix-icon'], config('shape.icon_sizes'));
+
+    expect($remix->flatten)->toBeTrue()
+        ->and($remix->path)->toBe('icons');
+
+    // Every other shipped set is read where it lies.
+    foreach (['heroicons', 'lucide', 'tabler', 'phosphor', 'bootstrap-icons'] as $name) {
+        $set = IconSet::fromArray($name, config('shape.icon_sets')[$name], config('shape.icon_sizes'));
+
+        expect($set->flatten)->toBeFalse("[{$name}] should be read where it lies");
+    }
+
+    // The bare spelling is the fallback candidate, for the 151 editor glyphs
+    // that carry no style marker because they have no interior to fill.
+    expect($remix->paths('outline', 'base', 'bold'))->toBe(['bold-line.svg', 'bold.svg'])
+        ->and($remix->paths('solid', 'base', 'bold'))->toBe(['bold-fill.svg']);
+
+    // And it costs the suffixed names nothing, because the shortest reading of
+    // a listed file wins: `check-line.svg` is `check` drawn as a line, not an
+    // icon called `check-line`.
+    expect($remix->nameFor('', 'check-line'))->toBe('check')
+        ->and($remix->nameFor('', 'check-fill'))->toBe('check')
+        ->and($remix->nameFor('', 'bold'))->toBe('bold');
+});
+
 it('reads the subdirectory a set is written into', function () {
     $set = IconSet::fromArray('lucide', [
         'namespace' => 'lucide',
