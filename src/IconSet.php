@@ -39,7 +39,7 @@ final class IconSet
      * always there to be reached for.
      *
      * @param  non-empty-array<string, array{class: string, prefer?: string}>  $sizes  The library's scale, in ascending order; the last is the default.
-     * @param  non-empty-array<string, array<string, string>>  $styles  Style, then the sizes it draws its own glyph at.
+     * @param  non-empty-array<string, array<string, non-empty-list<string>>>  $styles  Style, then the sizes it draws its own glyph at, each a list of candidate patterns.
      * @param  array<string, string|null>  $slots  Shape's slots, against this set's own spelling of the drawing that fills each; null where the set has none.
      * @param  string  $ref  Only meaningful with a repo; ignored otherwise.
      * @param  string  $path  The subdirectory of the repository the drawings live in, if any.
@@ -97,8 +97,8 @@ final class IconSet
                 throw new InvalidArgumentException("Icon set [{$name}] has a style without any drawings.");
             }
 
-            foreach ($patterns as $size => $pattern) {
-                if (! is_string($size) || ! is_string($pattern)) {
+            foreach ($patterns as $size => $cell) {
+                if (! is_string($size)) {
                     throw new InvalidArgumentException("Icon set [{$name}] has a drawing without a path.");
                 }
 
@@ -106,7 +106,7 @@ final class IconSet
                     throw new InvalidArgumentException("Icon set [{$name}] draws [{$style}] at [{$size}], which is not one of the library's sizes.");
                 }
 
-                $styles[$style][$size] = $pattern;
+                $styles[$style][$size] = self::drawings($name, $cell);
             }
         }
 
@@ -131,6 +131,57 @@ final class IconSet
             trim($path ?? '', '/'),
             self::namespace($name, $definition),
         );
+    }
+
+    /**
+     * The patterns one cell of the matrix may be drawn by, in the order they
+     * are tried.
+     *
+     * One string is the ordinary case and stays one string in the config file.
+     * A list is for a set that spells the same cell two ways, where the first
+     * pattern that has a file behind it wins — Bootstrap draws its fill either
+     * as a suffix or as an infix, and only the file itself says which.
+     *
+     * Each pattern places the name one of two ways, checked here so that a
+     * misspelling is a sentence about the config rather than a component full
+     * of `{tail}`:
+     *
+     * - `{name}` is the whole name, and is what nearly every set wants.
+     * - `{head}` and `{tail}` are the name split at its last hyphen, and only
+     *   ever appear together. That is the pair Bootstrap needs: `person-fill-x`
+     *   is the fill of `person-x`, because the marker attaches to the glyph and
+     *   not to the badge hanging off it.
+     * - Neither is a fixed file, which is the same drawing whatever is asked
+     *   for. Allowed, and named by nothing in a listing.
+     *
+     * @return non-empty-list<string>
+     */
+    private static function drawings(string $name, mixed $cell): array
+    {
+        $patterns = is_array($cell) ? array_values($cell) : [$cell];
+
+        if ($patterns === []) {
+            throw new InvalidArgumentException("Icon set [{$name}] has a drawing without a path.");
+        }
+
+        foreach ($patterns as $pattern) {
+            if (! is_string($pattern) || $pattern === '') {
+                throw new InvalidArgumentException("Icon set [{$name}] has a drawing without a path.");
+            }
+
+            $head = str_contains($pattern, '{head}');
+            $tail = str_contains($pattern, '{tail}');
+
+            if ($head !== $tail) {
+                throw new InvalidArgumentException("Icon set [{$name}] has a drawing at [{$pattern}] with only half of the split. A pattern that splits a name uses [{head}] and [{tail}] together, like [{head}-fill-{tail}.svg].");
+            }
+
+            if ($head && str_contains($pattern, '{name}')) {
+                throw new InvalidArgumentException("Icon set [{$name}] has a drawing at [{$pattern}] that places the name twice. Use [{name}] for the whole name, or [{head}] and [{tail}] for the name split at its last hyphen.");
+            }
+        }
+
+        return $patterns;
     }
 
     /**
@@ -355,15 +406,46 @@ final class IconSet
     }
 
     /**
-     * Where one cell of the matrix is drawn, relative to the source directory.
+     * Where one name could be drawn for one cell of the matrix, relative to the
+     * source directory, in the order the files should be looked for.
+     *
+     * Usually one path, and more only where a cell declares more than one
+     * pattern. Which of them is the drawing is not a question this can answer —
+     * only the source knows which file is there — so it hands back every
+     * candidate and the caller takes the first that exists.
+     *
+     * Empty where the cell has nothing to offer: a style that draws nothing at
+     * all, or a pattern that splits a name with no hyphen in it to split.
+     *
+     * @return list<string>
+     */
+    public function paths(string $style, string $size, string $name): array
+    {
+        $paths = [];
+
+        foreach ($this->patterns($style, $size) as $pattern) {
+            $path = self::place($pattern, $name);
+
+            if ($path !== null) {
+                $paths[] = $path;
+            }
+        }
+
+        return $paths;
+    }
+
+    /**
+     * How one cell of the matrix is spelled.
      *
      * A style that has no drawing of its own at this size borrows its largest,
      * which is then scaled down by the size class. Never scaled up: the fallback
      * is the largest declared rather than the nearest, because a 16px glyph
      * stretched to 24px looks like a mistake and a 24px one shrunk to 16px looks
      * like a smaller icon.
+     *
+     * @return list<string>
      */
-    public function pattern(string $style, string $size): ?string
+    public function patterns(string $style, string $size): array
     {
         $drawn = $this->styles[$style] ?? [];
 
@@ -371,7 +453,7 @@ final class IconSet
             return $drawn[$size];
         }
 
-        $largest = null;
+        $largest = [];
 
         foreach ($this->sizes() as $candidate) {
             if (isset($drawn[$candidate])) {
@@ -380,6 +462,37 @@ final class IconSet
         }
 
         return $largest;
+    }
+
+    /**
+     * One pattern with a name put into it, or null where the name cannot fill
+     * it.
+     *
+     * The split half is the only way that happens: `{head}-fill-{tail}.svg`
+     * needs a name with a hyphen in it, and `bell` has not got one, so the set
+     * has no such drawing for it rather than a path with an empty half.
+     */
+    private static function place(string $pattern, string $name): ?string
+    {
+        if (str_contains($pattern, '{name}')) {
+            return str_replace('{name}', $name, $pattern);
+        }
+
+        if (! str_contains($pattern, '{head}')) {
+            return $pattern;
+        }
+
+        $cut = strrpos($name, '-');
+
+        if ($cut === false) {
+            return null;
+        }
+
+        return str_replace(
+            ['{head}', '{tail}'],
+            [substr($name, 0, $cut), substr($name, $cut + 1)],
+            $pattern,
+        );
     }
 
     /**
@@ -396,8 +509,10 @@ final class IconSet
         $directories = [];
 
         foreach ($this->styles as $drawn) {
-            foreach ($drawn as $pattern) {
-                $directories[] = self::directory($pattern);
+            foreach ($drawn as $patterns) {
+                foreach ($patterns as $pattern) {
+                    $directories[] = self::directory($pattern);
+                }
             }
         }
 
@@ -415,8 +530,10 @@ final class IconSet
      * other cell resolves to `heart-fill-fill.svg` and is never there.
      *
      * Running the pattern backwards is that same declaration read the other way:
-     * `{name}-fill` against `heart-fill` is `heart`. A file no pattern matches is
-     * not this set's to write, which is `null` and a skip rather than a name.
+     * `{name}-fill` against `heart-fill` is `heart`, and a split pattern reads
+     * the same way — `{head}-fill-{tail}` against `person-fill-x` is `person-x`.
+     * A file no pattern matches is not this set's to write, which is `null` and
+     * a skip rather than a name.
      *
      * The shortest answer wins where one directory holds two patterns, which is
      * a flat set that draws its solid style by suffix: `{name}` reads
@@ -428,22 +545,13 @@ final class IconSet
         $names = [];
 
         foreach ($this->styles as $drawn) {
-            foreach ($drawn as $pattern) {
-                // A pattern with no `{name}` in it names no icon — it is the
-                // same file whatever is asked for, so there is nothing in a
-                // listing for it to have drawn.
-                if (self::directory($pattern) !== $directory || ! str_contains($pattern, '{name}')) {
-                    continue;
-                }
+            foreach ($drawn as $patterns) {
+                foreach ($patterns as $pattern) {
+                    $name = self::read($directory, $pattern, $file);
 
-                $expression = '/^'.str_replace(
-                    preg_quote('{name}', '/'),
-                    '(.+)',
-                    preg_quote(pathinfo($pattern, PATHINFO_FILENAME), '/'),
-                ).'$/';
-
-                if (preg_match($expression, $file, $matches) === 1) {
-                    $names[] = $matches[1];
+                    if ($name !== null) {
+                        $names[] = $name;
+                    }
                 }
             }
         }
@@ -451,6 +559,47 @@ final class IconSet
         usort($names, fn (string $a, string $b): int => strlen($a) <=> strlen($b));
 
         return $names[0] ?? null;
+    }
+
+    /**
+     * One pattern run backwards over one filename.
+     *
+     * `{tail}` is a single segment and `{head}` is the rest, which is what makes
+     * this the exact inverse of the split `place()` does: it cuts a name at its
+     * last hyphen, so the half after the marker can hold no hyphen of its own.
+     */
+    private static function read(string $directory, string $pattern, string $file): ?string
+    {
+        if (self::directory($pattern) !== $directory) {
+            return null;
+        }
+
+        $quoted = preg_quote(pathinfo($pattern, PATHINFO_FILENAME), '/');
+
+        if (str_contains($pattern, '{name}')) {
+            $expression = str_replace(preg_quote('{name}', '/'), '(.+)', $quoted);
+
+            return preg_match('/^'.$expression.'$/', $file, $matches) === 1
+                ? $matches[1]
+                : null;
+        }
+
+        // A pattern that places no name names no icon — it is the same file
+        // whatever is asked for, so there is nothing in a listing for it to have
+        // drawn.
+        if (! str_contains($pattern, '{head}')) {
+            return null;
+        }
+
+        $expression = str_replace(
+            [preg_quote('{head}', '/'), preg_quote('{tail}', '/')],
+            ['(.+)', '([^-]+)'],
+            $quoted,
+        );
+
+        return preg_match('/^'.$expression.'$/', $file, $matches) === 1
+            ? $matches[1].'-'.$matches[2]
+            : null;
     }
 
     /**

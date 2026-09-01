@@ -186,7 +186,29 @@ Five sets ship, each answering every slot: `heroicons` (the default),
 `lucide`, `tabler`, `phosphor` and `bootstrap-icons`. Publish the config to add
 another; the four beside `heroicons` are the layouts to copy from — one flat
 directory, a directory per style, a style named in both the directory and the
-filename, and a style that is a suffix inside one directory.
+filename, and a style marked inside one flat directory.
+
+A set's `styles` gives each cell a path with the name in it, so a directory
+layout and a filename convention are one declaration. `{name}` is the whole name.
+`{head}` and `{tail}` are the name split at its last hyphen and only appear
+together, for a set that puts its marker inside a name rather than on the end. A
+cell may hold a list instead of one path, tried in order, and the first with a
+file behind it wins:
+
+```php
+'bootstrap-icons' => [
+    'styles' => [
+        'outline' => ['base' => '{name}.svg'],
+        // `check-circle-fill.svg`, but `person-fill-x.svg` — Bootstrap hangs a
+        // badge off a glyph and fills the glyph, not the badge.
+        'solid' => ['base' => ['{name}-fill.svg', '{head}-fill-{tail}.svg']],
+    ],
+],
+```
+
+`--all` reads those patterns backwards to decide what a listed file is called, so
+`person-fill-x.svg` lands in the solid cell of `person-x` instead of arriving as
+an icon named for its own marker. A file no pattern accounts for is skipped.
 
 - `--from` reads a local directory instead, and still wins when given; use it for
   a designer's folder or a set with no upstream.

@@ -37,6 +37,10 @@ beforeEach(function () {
     // A set that puts the style in the filename as well as the directory, the
     // way Phosphor does.
     $this->phosphor = __DIR__.'/../fixtures/icons-phosphor';
+
+    // A flat set whose style marker is a suffix on most names and an infix on
+    // the ones that hang a badge off a glyph, the way Bootstrap does.
+    $this->bootstrap = __DIR__.'/../fixtures/icons-bootstrap';
 });
 
 /**
@@ -606,6 +610,34 @@ it('reads a suffixed filename as the drawing it is, not as a name of its own', f
         ->toContain('data-drawn="check"')
         ->and(file_get_contents($this->destination.'/icon/heart.blade.php'))
         ->toContain('data-drawn="heart"');
+});
+
+it('reads a marker inside a filename as the drawing it is, not as a name of its own', function () {
+    // Bootstrap hangs a badge off a glyph and fills the glyph, so `person-fill-x`
+    // is the fill of `person-x`. Read as a name it would be an icon called
+    // `person-fill-x` whose *outline* cell holds a filled drawing — the fill
+    // leaking into the outline style under a name that says so.
+    //
+    // Read through the shipped `bootstrap-icons` entry rather than a set written
+    // for the test, so this covers the config the package promises as well as
+    // the command that reads it.
+    $this->artisan('shape:icon', ['--set' => 'bootstrap-icons', '--from' => $this->bootstrap, '--all' => true])
+        ->assertSuccessful();
+
+    expect(written())->toBe(['heart', 'person-check', 'person-x']);
+
+    // The pair lands in one component, outline and fill in their own cells.
+    expect(file_get_contents($this->destination.'/icon/person-x.blade.php'))
+        ->toContain('data-drawn="person-x"')
+        ->toContain('data-drawn="person-fill-x"');
+
+    // And where a name is spelled both ways the suffix wins, because that is the
+    // drawing that is filled through: `person-check-fill` is solid, where
+    // `person-fill-check` is a filled person wearing an outline tick.
+    expect(file_get_contents($this->destination.'/icon/person-check.blade.php'))
+        ->toContain('data-drawn="person-check"')
+        ->toContain('data-drawn="person-check-fill"')
+        ->not->toContain('data-drawn="person-fill-check"');
 });
 
 it('generates a set\'s own name for a drawing outside the slots', function () {

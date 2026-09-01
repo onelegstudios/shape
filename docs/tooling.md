@@ -356,6 +356,25 @@ are one icon drawn twice. `--all` reads the pattern backwards to see that —
 instead of fifteen hundred icons arriving beside fifteen hundred `-fill` ones
 whose other cell is never there. A file no pattern accounts for is skipped.
 
+Two spellings beyond `{name}`, both for sets that don't put the marker on the
+end. `{head}` and `{tail}` are the name split at its last hyphen, and only ever
+appear together: Bootstrap hangs a badge off a glyph and fills the glyph, so
+`person-fill-x` is the fill of `person-x`, and `{head}-fill-{tail}.svg` says so
+in both directions. And a cell may hold a list rather than one path, tried in
+order, for a set that spells the same cell two ways:
+
+```php
+'solid' => [
+    'base' => ['{name}-fill.svg', '{head}-fill-{tail}.svg'],
+],
+```
+
+Which of them is the drawing is the source's answer, not the set's — the first
+candidate with a file behind it is the cell, and a cell with none is empty. Order
+matters where both exist: Bootstrap draws `person-check-fill` filled through and
+`person-fill-check` as a filled person wearing an outline tick, so the suffix
+goes first.
+
 ### The sets that ship
 
 Five, each checked against the repository it names and each answering every
@@ -367,7 +386,7 @@ slot, so `--replace --set=…` is a complete answer for any of them:
 | `lucide` | outline | 24 | One style, one flat directory |
 | `tabler` | outline, solid | 24 | `solid` is upstream's `filled`, which draws about a fifth of what `outline` does; a name it hasn't got falls back |
 | `phosphor` | outline, solid | 256 | `regular` and `fill`, two of its six weights |
-| `bootstrap-icons` | outline, solid | 16 | `solid` is the `-fill` half of a flat directory; half its names have one |
+| `bootstrap-icons` | outline, solid | 16 | `solid` is the `-fill` half of a flat directory, suffixed or infixed; half its names have one |
 
 The grid is what the drawings are drawn on, not what they render at: every set is
 measured against `icon_sizes`, and every generated icon emits the same size

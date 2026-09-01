@@ -348,27 +348,40 @@ return [
             // sits beside `check-circle.svg`, so the pattern says so and
             // `--all` reads the pair as one icon in two styles.
             //
-            // Half the set — 701 of 1,408 names — has a fill. Most of what does
+            // Half the set — 702 of 1,374 names — has a fill. Most of what does
             // not is line art with no interior to fill (every arrow, chevron and
             // sort glyph) or a brand logo that is already solid, where the
             // fallback to the outline drawing at every size is not a compromise
             // but the same picture. The rest genuinely has no fill drawn, and
             // renders its outline small, which is the sparse matrix again.
             //
-            // Two things this spelling cannot say. Bootstrap fills a compound
-            // name in the middle — `building-fill-down` is the fill of
-            // `building-down` — and those thirty-five arrive as names of their
-            // own instead of as cells. And `person-lines-fill` is the one fill
-            // with no plain drawing behind it, so `--all` writes it under
-            // `person-lines`, a name Bootstrap has not got. Both are reachable
-            // by their own spelling: `{name}.svg` matches a fill name too, so
-            // `shape:icon check-circle-fill` still generates it.
+            // `person-lines-fill` is the one fill with no plain drawing behind
+            // it, so `--all` writes it under `person-lines`, a name Bootstrap
+            // has not got. It is still reachable by its own spelling, because
+            // `{name}.svg` matches a fill name too: `shape:icon person-lines-fill`
+            // generates it.
             'styles' => [
                 'outline' => [
                     'base' => '{name}.svg',
                 ],
                 'solid' => [
-                    'base' => '{name}-fill.svg',
+                    'base' => [
+                        '{name}-fill.svg',
+                        // Bootstrap hangs a badge off a glyph — `person-x`,
+                        // `shield-check`, `building-down` — and fills the glyph
+                        // rather than the badge, so on thirty-five names the
+                        // marker lands before the last segment instead of after
+                        // it. Without this they arrive as icons named
+                        // `person-fill-x`, whose outline cell holds a filled
+                        // drawing: the fill leaking into the outline style under
+                        // a name that says so.
+                        //
+                        // Second, because three names have both files and the
+                        // suffix is the right one of the two: `person-check-fill`
+                        // is filled through, where `person-fill-check` is a
+                        // filled person wearing an outline tick.
+                        '{head}-fill-{tail}.svg',
+                    ],
                 ],
             ],
             'slots' => [

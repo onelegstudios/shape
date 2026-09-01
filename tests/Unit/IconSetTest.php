@@ -79,6 +79,21 @@ function slotted(): IconSet
     ], scale());
 }
 
+/**
+ * A flat set whose solid style is spelled two ways, which is what Bootstrap
+ * does: the fill marker is a suffix on most names and an infix on the ones that
+ * hang a badge off a glyph.
+ */
+function split(): IconSet
+{
+    return IconSet::fromArray('bootstrap-icons', [
+        'styles' => [
+            'outline' => ['base' => '{name}.svg'],
+            'solid' => ['base' => ['{name}-fill.svg', '{head}-fill-{tail}.svg']],
+        ],
+    ], scale());
+}
+
 it('reads the styles off a set and the sizes off the library', function () {
     expect(heroicons()->sizes())->toBe(['xs', 'sm', 'base'])
         ->and(heroicons()->styles())->toBe(['solid', 'outline'])
@@ -128,21 +143,39 @@ it('falls back to the only style there is when nothing states a preference', fun
 });
 
 it('resolves a cell the set actually draws', function () {
-    expect(heroicons()->pattern('solid', 'xs'))->toBe('16/solid/{name}.svg')
-        ->and(heroicons()->pattern('solid', 'base'))->toBe('24/solid/{name}.svg')
-        ->and(heroicons()->pattern('outline', 'base'))->toBe('24/outline/{name}.svg');
+    expect(heroicons()->paths('solid', 'xs', 'bell'))->toBe(['16/solid/bell.svg'])
+        ->and(heroicons()->paths('solid', 'base', 'bell'))->toBe(['24/solid/bell.svg'])
+        ->and(heroicons()->paths('outline', 'base', 'bell'))->toBe(['24/outline/bell.svg']);
 });
 
 it('borrows the largest drawing a style has for a cell it does not draw', function () {
     // Heroicons has no 16px or 20px outline. Both cells resolve to the 24px one
     // and are scaled down by the size class — never scaled up, which is why the
     // fallback is the largest drawing rather than the nearest.
-    expect(heroicons()->pattern('outline', 'xs'))->toBe('24/outline/{name}.svg')
-        ->and(heroicons()->pattern('outline', 'sm'))->toBe('24/outline/{name}.svg');
+    expect(heroicons()->paths('outline', 'xs', 'bell'))->toBe(['24/outline/bell.svg'])
+        ->and(heroicons()->paths('outline', 'sm', 'bell'))->toBe(['24/outline/bell.svg']);
 });
 
 it('has nothing to resolve for a style it does not have', function () {
-    expect(heroicons()->pattern('duotone', 'base'))->toBeNull();
+    expect(heroicons()->paths('duotone', 'base', 'bell'))->toBe([]);
+});
+
+it('offers every spelling of a cell, in the order they are declared', function () {
+    // Which of them is the drawing is the source's answer and not the set's, so
+    // both are handed back and the first with a file behind it wins. The order
+    // is the config's: Bootstrap draws `person-check-fill` filled through and
+    // `person-fill-check` as a filled person wearing an outline tick, and the
+    // suffix is the one that belongs in the solid cell.
+    expect(split()->paths('solid', 'base', 'person-check'))
+        ->toBe(['person-check-fill.svg', 'person-fill-check.svg'])
+        ->and(split()->paths('outline', 'base', 'person-check'))->toBe(['person-check.svg']);
+});
+
+it('skips a split spelling for a name with nothing to split', function () {
+    // `{head}-fill-{tail}` cuts a name at its last hyphen, and `heart` has no
+    // hyphen to cut, so the set has no such drawing for it rather than a path
+    // with an empty half.
+    expect(split()->paths('solid', 'base', 'heart'))->toBe(['heart-fill.svg']);
 });
 
 it('wraps a size class the way the rest of the library wraps an overridable one', function () {
@@ -201,6 +234,46 @@ it('reads a suffixed file as the drawing it is rather than as a name', function 
 
     expect($flat->nameFor('', 'heart-fill'))->toBe('heart')
         ->and($flat->nameFor('', 'heart'))->toBe('heart');
+});
+
+it('reads a file whose marker sits inside the name as the drawing it is', function () {
+    // The thirty-five Bootstrap names that hang a badge off a filled glyph.
+    // Without the split spelling `person-fill-x` reads as a name of its own, and
+    // the component written under it holds a filled drawing in its outline cell.
+    expect(split()->nameFor('', 'person-fill-x'))->toBe('person-x')
+        ->and(split()->nameFor('', 'building-fill-down'))->toBe('building-down')
+        ->and(split()->nameFor('', 'shield-fill-check'))->toBe('shield-check');
+
+    // Both spellings of the same name land on the same component, which is the
+    // point: one `person-check`, drawn solid by whichever file is there.
+    expect(split()->nameFor('', 'person-check-fill'))->toBe('person-check')
+        ->and(split()->nameFor('', 'person-check'))->toBe('person-check');
+});
+
+it('reads the tail of a split as one segment, which is what the split cut', function () {
+    // `place()` cuts at the last hyphen, so the half after the marker holds no
+    // hyphen of its own and reading it back is the exact inverse. Without that
+    // anchor `person-fill-x-circle` would read as `person-x-circle`, a name
+    // whose fill drawing is somewhere else entirely.
+    expect(split()->nameFor('', 'person-fill-x-circle'))->toBe('person-fill-x-circle');
+});
+
+it('refuses a spelling that places only half of a split', function () {
+    expect(fn () => IconSet::fromArray('bad', [
+        'styles' => ['solid' => ['base' => '{head}-fill.svg']],
+    ], scale()))->toThrow(InvalidArgumentException::class, 'only half of the split');
+});
+
+it('refuses a spelling that places the name twice', function () {
+    expect(fn () => IconSet::fromArray('bad', [
+        'styles' => ['solid' => ['base' => '{name}-{head}-{tail}.svg']],
+    ], scale()))->toThrow(InvalidArgumentException::class, 'places the name twice');
+});
+
+it('refuses a cell with no spelling at all', function () {
+    expect(fn () => IconSet::fromArray('bad', [
+        'styles' => ['solid' => ['base' => []]],
+    ], scale()))->toThrow(InvalidArgumentException::class, 'drawing without a path');
 });
 
 it('refuses a set that draws nothing', function () {

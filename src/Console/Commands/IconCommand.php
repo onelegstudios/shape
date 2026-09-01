@@ -542,16 +542,17 @@ class IconCommand extends Command
 
         foreach ($set->styles() as $style) {
             foreach ($set->sizes() as $size) {
-                $pattern = $set->pattern($style, $size);
+                // A cell may be spelled more than one way, and only the source
+                // says which of them is a drawing: Bootstrap fills `person-x` as
+                // `person-fill-x` and `check-circle` as `check-circle-fill`, so
+                // the first candidate with a file behind it is the cell, and a
+                // cell with none is empty rather than wrong.
+                foreach ($set->paths($style, $size, $drawn) as $path) {
+                    if ($source->has($path)) {
+                        $cells["{$style}:{$size}"] = $path;
 
-                if ($pattern === null) {
-                    continue;
-                }
-
-                $path = str_replace('{name}', $drawn, $pattern);
-
-                if ($source->has($path)) {
-                    $cells["{$style}:{$size}"] = $path;
+                        break;
+                    }
                 }
             }
         }
