@@ -210,7 +210,7 @@ it('walks a flattened set under its own names', function () {
     // `--all` reads the flattened directory the way it reads any flat set: the
     // style suffix is the set's own, so `close-line` and `close-fill` are one
     // icon in two styles rather than two icons.
-    $this->artisan('shape:icon', ['--all' => true, '--set' => $set])->assertSuccessful();
+    $this->artisan('shape:icon:all', ['--set' => $set])->assertSuccessful();
 
     expect($this->destination.'/icon/close.blade.php')->toBeFile()
         ->and($this->destination.'/icon/user.blade.php')->toBeFile()
@@ -241,7 +241,7 @@ it('keeps a set that says nothing about flattening as the repository lays it out
         'icons/System/close-line.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" /></svg>',
     ]))]);
 
-    $this->artisan('shape:icon', ['--all' => true, '--set' => $set])->assertSuccessful();
+    $this->artisan('shape:icon:all', ['--set' => $set])->assertSuccessful();
 
     expect($this->cache.'/'.$set.'/master/icons/System/close-line.svg')->toBeFile()
         ->and($this->destination.'/icon/close.blade.php')->toBeFile();
@@ -253,7 +253,7 @@ it('generates from a set it fetched rather than one somebody had to clone', func
     // checkout nobody had been told to make.
     Http::fake(['codeload.github.com/*' => Http::response($this->archive)]);
 
-    $this->artisan('shape:icon', ['--all' => true])->assertSuccessful();
+    $this->artisan('shape:icon:all')->assertSuccessful();
 
     expect($this->destination.'/icon/check.blade.php')->toBeFile();
 
@@ -268,7 +268,7 @@ it('asks for the whole set in one request', function () {
     // does not finish.
     Http::fake(['codeload.github.com/*' => Http::response($this->archive)]);
 
-    $this->artisan('shape:icon', ['--all' => true])->assertSuccessful();
+    $this->artisan('shape:icon:all')->assertSuccessful();
 
     Http::assertSentCount(1);
     Http::assertSent(fn ($request): bool => $request->url() === 'https://codeload.github.com/tailwindlabs/heroicons/tar.gz/master');
@@ -280,7 +280,7 @@ it('pins the resolved commit into every file it writes', function () {
     // out of the archive's own pax header, which costs no second request.
     Http::fake(['codeload.github.com/*' => Http::response($this->archive)]);
 
-    $this->artisan('shape:icon', ['--all' => true])->assertSuccessful();
+    $this->artisan('shape:icon:all')->assertSuccessful();
 
     expect(file_get_contents($this->destination.'/icon/check.blade.php'))
         ->toContain('Heroicons (https://heroicons.com), MIT licensed.')
@@ -337,7 +337,7 @@ it('unpacks the set and the licence, and not the rest of the repository', functi
     // repository's own words are worth more than a paraphrase.
     Http::fake(['codeload.github.com/*' => Http::response($this->archive)]);
 
-    $this->artisan('shape:icon', ['--all' => true])->assertSuccessful();
+    $this->artisan('shape:icon:all')->assertSuccessful();
 
     $root = $this->cache.'/hero/master';
 
@@ -353,7 +353,7 @@ it('writes nothing outside the directory it unpacks into', function () {
     // `/etc/shape-escaped.svg`, and a symlink pointing at `/etc/passwd`.
     Http::fake(['codeload.github.com/*' => Http::response($this->hostile)]);
 
-    $this->artisan('shape:icon', ['--all' => true])->assertSuccessful();
+    $this->artisan('shape:icon:all')->assertSuccessful();
 
     $escaped = [];
 
@@ -399,14 +399,14 @@ function unpackableSet(): string
     return $name;
 }
 
-it('refuses --all for a set that cannot be pulled whole, before fetching anything', function () {
+it('refuses shape:icon:all for a set that cannot be pulled whole, before fetching anything', function () {
     // What this used to do was pull a repository measured in gigabytes and be
     // killed unpacking it, with a stack trace inside `PharData::__construct`
     // where the reason should be. `TestCase` forbids stray requests, so a run
     // that reached for the archive would fail here rather than pass.
     Http::fake();
 
-    $this->artisan('shape:icon', ['--all' => true, '--set' => unpackableSet()])
+    $this->artisan('shape:icon:all', ['--set' => unpackableSet()])
         ->expectsOutputToContain('one drawing at a time')
         ->assertFailed();
 
@@ -422,7 +422,7 @@ it('replaces from a set that cannot be pulled whole, a drawing at a time', funct
         'api.github.com/*' => Http::response($this->commit),
     ]);
 
-    $this->artisan('shape:icon', ['--replace' => true, '--set' => unpackableSet()])->assertSuccessful();
+    $this->artisan('shape:icon:replace', ['--set' => unpackableSet()])->assertSuccessful();
 
     expect($this->destination.'/icon/shape-close.blade.php')->toBeFile();
 
@@ -435,7 +435,7 @@ it('keeps the fetched sets out of the consumer\'s history', function () {
     // is nothing to commit rather than one stray `.gitignore` to explain.
     Http::fake(['codeload.github.com/*' => Http::response($this->archive)]);
 
-    $this->artisan('shape:icon', ['--all' => true])->assertSuccessful();
+    $this->artisan('shape:icon:all')->assertSuccessful();
 
     expect($this->cache.'/.gitignore')->toBeFile()
         ->and(file_get_contents($this->cache.'/.gitignore'))->toBe("*\n");
@@ -459,11 +459,11 @@ it('fails loudly when --offline is asked to work from a cache that is cold', fun
 it('works from a warm cache without asking for anything', function () {
     Http::fake(['codeload.github.com/*' => Http::response($this->archive)]);
 
-    $this->artisan('shape:icon', ['--all' => true])->assertSuccessful();
+    $this->artisan('shape:icon:all')->assertSuccessful();
 
     Http::fake();
 
-    $this->artisan('shape:icon', ['--all' => true, '--offline' => true, '--force' => true])
+    $this->artisan('shape:icon:all', ['--offline' => true, '--force' => true])
         ->assertSuccessful();
 
     Http::assertNothingSent();
@@ -474,7 +474,7 @@ it('works from a warm cache without asking for anything', function () {
 it('reads the ref it was asked for rather than the one the set declares', function () {
     Http::fake(['codeload.github.com/*' => Http::response($this->archive)]);
 
-    $this->artisan('shape:icon', ['--all' => true, '--ref' => 'v2.1.5'])->assertSuccessful();
+    $this->artisan('shape:icon:all', ['--ref' => 'v2.1.5'])->assertSuccessful();
 
     Http::assertSent(fn ($request): bool => $request->url() === 'https://codeload.github.com/tailwindlabs/heroicons/tar.gz/v2.1.5');
 
@@ -484,7 +484,7 @@ it('reads the ref it was asked for rather than the one the set declares', functi
 it('says so when GitHub will not answer', function () {
     Http::fake(['codeload.github.com/*' => Http::response('', 404)]);
 
-    $this->artisan('shape:icon', ['--all' => true])
+    $this->artisan('shape:icon:all')
         ->expectsOutputToContain('404')
         ->assertFailed();
 });

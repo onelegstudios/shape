@@ -7,6 +7,7 @@ use Onelegstudios\Shape\IconSet;
 use Onelegstudios\Shape\IconSlots;
 use Onelegstudios\Shape\Registry;
 use Onelegstudios\Shape\Tests\TestCase;
+use Symfony\Component\Console\Exception\InvalidOptionException;
 
 beforeAll(function () {
     TestCase::$componentsPath = sys_get_temp_dir().'/shape-icons-'.getmypid();
@@ -225,17 +226,6 @@ it('sizes a one-style set by the same scale as every other', function () {
         ->toBe($arms('shape-checked'));
 });
 
-it('finds every icon in the source directory', function () {
-    // Under its own name: `--all` walks the set's files, and a file is what the
-    // set calls it. Filling a slot is the other operation.
-    $this->artisan('shape:icon', ['--from' => $this->heroicons, '--all' => true])
-        ->expectsOutputToContain('check')
-        ->assertSuccessful();
-
-    expect($this->destination.'/icon/check.blade.php')->toBeFile()
-        ->and($this->destination.'/icon/shape-checked.blade.php')->not->toBeFile();
-});
-
 it('says so when a name has no drawing', function () {
     $this->artisan('shape:icon', ['icons' => ['bicycle'], '--from' => $this->heroicons])
         ->expectsOutputToContain('no SVG found')
@@ -347,51 +337,6 @@ it('records what each icon was drawn from, beside the icons', function () {
         ->and($lock['hero'])->not->toHaveKey('commit');
 });
 
-it('reports an icon whose drawing has moved since it was generated', function () {
-    // Without the record, a component that differs from the current drawing
-    // might have been hand-edited or might have been overtaken upstream, and
-    // only the second is a reason to regenerate.
-    $from = sys_get_temp_dir().'/shape-icons-upstream-'.getmypid();
-
-    exec('rm -rf '.escapeshellarg($from));
-    exec('cp -R '.escapeshellarg($this->heroicons).' '.escapeshellarg($from));
-
-    $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $from])->assertSuccessful();
-
-    $this->artisan('shape:icon', ['--status' => true, '--from' => $from])
-        ->expectsOutputToContain('unchanged')
-        ->assertSuccessful();
-
-    file_put_contents(
-        $from.'/24/solid/check.svg',
-        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 1 L2 2" /></svg>',
-    );
-
-    $this->artisan('shape:icon', ['--status' => true, '--from' => $from])
-        ->expectsOutputToContain('redrawn upstream')
-        ->assertSuccessful();
-
-    exec('rm -rf '.escapeshellarg($from));
-});
-
-it('will not go to the network to check icons that came from a directory', function () {
-    // The lockfile records no upstream for a `--from` run, and reaching for the
-    // set's repository instead would compare the icons against drawings they
-    // never came from. `TestCase` forbids stray requests, so a run that tried
-    // would fail here rather than quietly succeeding.
-    $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $this->heroicons])->assertSuccessful();
-
-    $this->artisan('shape:icon', ['--status' => true])
-        ->expectsOutputToContain('pass --from to check')
-        ->assertSuccessful();
-});
-
-it('has nothing to report before anything has been generated', function () {
-    $this->artisan('shape:icon', ['--status' => true])
-        ->expectsOutputToContain('No icons have been generated')
-        ->assertSuccessful();
-});
-
 it('reads a slot through the set and writes it under the slot\'s name', function () {
     // The asymmetry that makes a replacement possible at all. Lucide has no
     // `x-mark.svg`; it has `x.svg`. The drawing comes from there, and the file
@@ -434,63 +379,6 @@ it('fills a slot the set spells the same way from that spelling', function () {
 
     expect(file_get_contents($this->destination.'/icon/shape-checked.blade.php'))
         ->toContain('data-drawn="check"');
-});
-
-it('generates exactly the slots the library declares', function () {
-    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'lucide', '--from' => $this->lucide])
-        ->assertSuccessful();
-
-    $slots = IconSlots::fromConfig()->names();
-
-    sort($slots);
-
-    expect(written())->toBe($slots)->toHaveCount(14);
-});
-
-it('leaves the three examples alone, because they are not the library\'s', function () {
-    // `shape-arrow-right`, `shape-plus` and `shape-trash` ship so the README and
-    // the previews render. Nothing resolves them and the documentation does not
-    // offer them as a catalogue, so `--replace` skipping them is the design: an
-    // application that wants a trash can generates its own.
-    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'lucide', '--from' => $this->lucide])
-        ->assertSuccessful();
-
-    foreach (['shape-arrow-right', 'shape-plus', 'shape-trash'] as $example) {
-        expect($this->destination.'/icon/'.$example.'.blade.php')->not->toBeFile();
-    }
-});
-
-it('writes thirteen slots from heroicons and leaves the packaged one alone', function () {
-    // Heroicons has nothing that reads as a loader, says so with `null`, and the
-    // spinner this package draws goes on resolving. That is the state a
-    // Heroicons user is in permanently, and it is not a gap.
-    $from = heroiconsFixture();
-
-    $this->artisan('shape:icon', ['--replace' => true, '--from' => $from])
-        ->expectsOutputToContain('packaged by Shape')
-        ->assertSuccessful();
-
-    expect(written())->toHaveCount(13)
-        ->and($this->destination.'/icon/shape-loading.blade.php')->not->toBeFile();
-
-    exec('rm -rf '.escapeshellarg($from));
-});
-
-it('spins the loading slot, and nothing else', function () {
-    // The spin belongs to the slot rather than to the set that drew it — every
-    // set's loader spins — so it is declared once in `icon_slots` and baked into
-    // whichever drawing fills it.
-    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'lucide', '--from' => $this->lucide])
-        ->assertSuccessful();
-
-    expect(file_get_contents($this->destination.'/icon/shape-loading.blade.php'))
-        ->toContain("Shape::classes('shrink-0 animate-spin')")
-        ->toContain('data-drawn="loader-circle"');
-
-    foreach (array_diff(written(), ['shape-loading']) as $slot) {
-        expect(file_get_contents($this->destination.'/icon/'.$slot.'.blade.php'))
-            ->toContain("Shape::classes('shrink-0')");
-    }
 });
 
 it('answers every slot from every set the package ships', function () {
@@ -540,7 +428,7 @@ it('names the set and the config key for a slot the set says nothing about', fun
     // looking for a missing file instead.
     config()->set('shape.icon_sets.lucide.slots', ['shape-checked' => 'check']);
 
-    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'lucide', '--from' => $this->lucide])
+    $this->artisan('shape:icon:replace', ['--set' => 'lucide', '--from' => $this->lucide])
         ->expectsOutputToContain('says nothing about slot [shape-close]')
         ->expectsOutputToContain('shape.icon_sets.lucide.slots')
         ->assertFailed();
@@ -571,7 +459,7 @@ it('fills every slot from a set that spells them differently', function () {
     // still drawing a Heroicon. Each file has to have come from Lucide's own
     // spelling of whatever fills the slot it is written under, and to say so in
     // its header — the filename says the role and the notice says the vendor.
-    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'lucide', '--from' => $this->lucide])
+    $this->artisan('shape:icon:replace', ['--set' => 'lucide', '--from' => $this->lucide])
         ->assertSuccessful();
 
     $set = IconSet::fromArray('lucide', config('shape.icon_sets')['lucide'], config('shape.icon_sizes'));
@@ -603,108 +491,6 @@ it('resolves thirteen of the fourteen slots in components of its own', function 
         'shape-trend-up',
         'shape-warning',
     ]);
-});
-
-it('will not be told which icons to replace', function () {
-    // `--replace` already knows. Taking names as well would let one be quietly
-    // dropped from the list that has to be complete to mean anything.
-    $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--replace' => true, '--from' => $this->lucide])
-        ->expectsOutputToContain('already knows')
-        ->assertFailed();
-
-    $this->artisan('shape:icon', ['--replace' => true, '--all' => true, '--from' => $this->lucide])
-        ->expectsOutputToContain('already knows')
-        ->assertFailed();
-});
-
-it('writes every file it discovers flat, under its own name', function () {
-    // `--all` used to run the slot map backwards, and the hairy case was a file
-    // whose name an entry had already spoken for: it was written under nothing,
-    // because generating it would have shadowed the entry with the wrong glyph.
-    // Slots live in a namespace no set uses, so nothing is reversed and nothing
-    // is dropped — every file arrives under the name the set gave it.
-    config()->set('shape.icon_set', 'lucide');
-
-    $this->artisan('shape:icon', ['--from' => $this->lucide, '--all' => true])
-        ->assertSuccessful();
-
-    $files = array_map(
-        fn (string $path): string => basename($path, '.svg'),
-        glob($this->lucide.'/*.svg') ?: [],
-    );
-
-    sort($files);
-
-    expect(written())->toBe($files)
-        ->and($this->destination.'/icon/circle-check.blade.php')->toBeFile()
-        ->and($this->destination.'/icon/shape-success.blade.php')->not->toBeFile();
-});
-
-it('reads a suffixed filename as the drawing it is, not as a name of its own', function () {
-    // Phosphor's `fill/check-fill.svg` is the fill drawing of `check`. Walking
-    // the listing for names would write it as `check-fill`, whose outline cell
-    // resolves to `regular/check-fill.svg` and is never there — so `--all` runs
-    // the pattern backwards instead, and a file no pattern accounts for is
-    // skipped rather than named.
-    // Read through the shipped `phosphor` entry rather than a set written for
-    // the test, so this covers the config the package promises as well as the
-    // command that reads it.
-    config()->set('shape.icon_set', 'phosphor');
-
-    $this->artisan('shape:icon', ['--from' => $this->phosphor, '--all' => true])
-        ->assertSuccessful();
-
-    expect(written())->toBe(['check', 'heart']);
-
-    // And the two drawings land in the one component, which is the point of
-    // reading them as the same name: the small sizes get the fill and the
-    // default size gets the regular.
-    expect(file_get_contents($this->destination.'/icon/check.blade.php'))
-        ->toContain('data-drawn="check-fill"')
-        ->toContain('data-drawn="check"')
-        ->and(file_get_contents($this->destination.'/icon/heart.blade.php'))
-        ->toContain('data-drawn="heart"');
-});
-
-it('reads a marker inside a filename as the drawing it is, not as a name of its own', function () {
-    // Bootstrap hangs a badge off a glyph and fills the glyph, so `person-fill-x`
-    // is the fill of `person-x`. Read as a name it would be an icon called
-    // `person-fill-x` whose *outline* cell holds a filled drawing — the fill
-    // leaking into the outline style under a name that says so.
-    //
-    // Read through the shipped `bootstrap` entry rather than a set written
-    // for the test, so this covers the config the package promises as well as
-    // the command that reads it.
-    config()->set('shape.icon_set', 'bootstrap');
-
-    $this->artisan('shape:icon', ['--from' => $this->bootstrap, '--all' => true])
-        ->assertSuccessful();
-
-    expect(written())->toBe(['heart', 'person-check', 'person-x']);
-
-    // The pair lands in one component, outline and fill in their own cells.
-    expect(file_get_contents($this->destination.'/icon/person-x.blade.php'))
-        ->toContain('data-drawn="person-x"')
-        ->toContain('data-drawn="person-fill-x"');
-
-    // And where a name is spelled both ways the suffix wins, because that is the
-    // drawing that is filled through: `person-check-fill` is solid, where
-    // `person-fill-check` is a filled person wearing an outline tick.
-    expect(file_get_contents($this->destination.'/icon/person-check.blade.php'))
-        ->toContain('data-drawn="person-check"')
-        ->toContain('data-drawn="person-check-fill"')
-        ->not->toContain('data-drawn="person-fill-check"');
-});
-
-it('generates a set\'s own name for a drawing outside the slots', function () {
-    // The ordinary case: a name that is nobody's slot is written as the set
-    // spells it, which is how a set adds icons rather than replacing them.
-    config()->set('shape.icon_set', 'lucide');
-
-    $this->artisan('shape:icon', ['--from' => $this->flat, '--all' => true])
-        ->assertSuccessful();
-
-    expect($this->destination.'/icon/spinner.blade.php')->toBeFile();
 });
 
 it('writes a set that is not the library\'s own under its own name', function () {
@@ -739,24 +525,6 @@ it('writes a set that is not the library\'s own under its own name', function ()
     expect($this->destination.'/icon/spinner.blade.php')->toBeFile();
 });
 
-it('keeps a replacement flat, whichever set draws it', function () {
-    // `--replace` is one set standing in for the library's own for the length of
-    // a run, and the names it writes are flat by definition — `shape::icon.
-    // shape-close` is what the close button asks for, and a file under
-    // `icon/lucide/` answers to something else. So the subdirectory a
-    // supplementary set gets is not applied here, or the documented way to
-    // move the library onto another set would be an error rather than a
-    // replacement.
-    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'lucide', '--from' => $this->lucide])
-        ->assertSuccessful();
-
-    expect($this->destination.'/icon/shape-close.blade.php')->toBeFile()
-        ->and($this->destination.'/icon/lucide')->not->toBeDirectory();
-
-    expect(file_get_contents($this->destination.'/icon/shape-close.blade.php'))
-        ->toContain('data-drawn="x"');
-});
-
 it('refuses a supplementary set whose name is not a namespace', function () {
     // The name stands in for a `namespace`, so it is held to what a namespace
     // has to be — this is the value that decides where a file is written. Said
@@ -774,24 +542,6 @@ it('refuses a supplementary set whose name is not a namespace', function () {
     ])->expectsOutputToContain('is not the set named in')->assertFailed();
 
     expect($this->destination.'/icon/spinner.blade.php')->not->toBeFile();
-});
-
-it('reports on a set that landed under its own name', function () {
-    // `--status` walks the directories the config accounts for, and a set that
-    // was never given a `namespace` is now one of them. Reading only the flat
-    // lockfile would answer "nothing has been generated" for a set sitting right
-    // there, which reads like a clean bill of health rather than a blind spot.
-    $this->artisan('shape:icon', [
-        'icons' => ['shape-checked'],
-        '--set' => 'lucide',
-        '--from' => $this->lucide,
-    ])->assertSuccessful();
-
-    $this->artisan('shape:icon', ['--status' => true, '--from' => $this->lucide])
-        ->expectsOutputToContain('icon/lucide')
-        ->expectsOutputToContain('shape-checked')
-        ->doesntExpectOutputToContain('No icons have been generated')
-        ->assertSuccessful();
 });
 
 it('writes a namespaced set into a subdirectory of its own', function () {
@@ -863,21 +613,6 @@ it('refuses a namespace that would write outside the components path', function 
     expect(dirname($this->destination).'/escape')->not->toBeDirectory();
 });
 
-it('will not namespace the icons it replaces', function () {
-    // A namespaced icon replaces nothing: the library asks for
-    // `shape::icon.shape-close`, and a file under `icon/lucide/` answers to
-    // `shape::icon.lucide.shape-close`. The run would write fourteen files and
-    // change nothing at all.
-    $this->artisan('shape:icon', [
-        '--replace' => true,
-        '--set' => 'lucide',
-        '--from' => $this->lucide,
-        '--namespace' => 'lucide',
-    ])->expectsOutputToContain('Pass --namespace= to write this run flat')->assertFailed();
-
-    expect($this->destination.'/icon/lucide')->not->toBeDirectory();
-});
-
 it('writes a set into the subdirectory the set itself declares', function () {
     // The regression this key exists for. A namespace typed on the command line
     // is remembered for exactly one run: the next `shape:icon shape-checked
@@ -936,8 +671,7 @@ it('writes flat for a run that says flat out loud', function () {
     expect($this->destination.'/icon/shape-checked.blade.php')->toBeFile()
         ->and($this->destination.'/icon/lucide')->not->toBeDirectory();
 
-    $this->artisan('shape:icon', [
-        '--replace' => true,
+    $this->artisan('shape:icon:replace', [
         '--set' => 'lucide',
         '--from' => $this->lucide,
         '--namespace' => '',
@@ -961,26 +695,6 @@ it('refuses a set whose declared namespace would write outside the components pa
     }
 
     expect(dirname($this->destination).'/escape')->not->toBeDirectory();
-});
-
-it('reports on a namespaced set that the run did not name', function () {
-    // `--status` is asked what is stale, not what is stale in one directory. A
-    // set keeps its lockfile beside its own components, so reading only the flat
-    // one answered "nothing has been generated" for a set sitting right there —
-    // which reads like a clean bill of health rather than like a blind spot.
-    config()->set('shape.icon_sets.lucide.namespace', 'lucide');
-
-    $this->artisan('shape:icon', [
-        'icons' => ['shape-checked'],
-        '--set' => 'lucide',
-        '--from' => $this->lucide,
-    ])->assertSuccessful();
-
-    $this->artisan('shape:icon', ['--status' => true, '--from' => $this->lucide])
-        ->expectsOutputToContain('icon/lucide')
-        ->expectsOutputToContain('shape-checked')
-        ->doesntExpectOutputToContain('No icons have been generated')
-        ->assertSuccessful();
 });
 
 it('throws away the compiled views after writing an icon', function () {
@@ -1014,4 +728,290 @@ it('leaves the compiled views alone when it wrote nothing', function () {
     expect(file_get_contents($compiled.'/stale.php'))->toBe('stale');
 
     unlink($compiled.'/stale.php');
+});
+
+describe('shape:icon:all', function () {
+    it('finds every icon in the source directory', function () {
+        // Under its own name: `--all` walks the set's files, and a file is what the
+        // set calls it. Filling a slot is the other operation.
+        $this->artisan('shape:icon:all', ['--from' => $this->heroicons])
+            ->expectsOutputToContain('check')
+            ->assertSuccessful();
+
+        expect($this->destination.'/icon/check.blade.php')->toBeFile()
+            ->and($this->destination.'/icon/shape-checked.blade.php')->not->toBeFile();
+    });
+
+    it('writes every file it discovers flat, under its own name', function () {
+        // `--all` used to run the slot map backwards, and the hairy case was a file
+        // whose name an entry had already spoken for: it was written under nothing,
+        // because generating it would have shadowed the entry with the wrong glyph.
+        // Slots live in a namespace no set uses, so nothing is reversed and nothing
+        // is dropped — every file arrives under the name the set gave it.
+        config()->set('shape.icon_set', 'lucide');
+
+        $this->artisan('shape:icon:all', ['--from' => $this->lucide])
+            ->assertSuccessful();
+
+        $files = array_map(
+            fn (string $path): string => basename($path, '.svg'),
+            glob($this->lucide.'/*.svg') ?: [],
+        );
+
+        sort($files);
+
+        expect(written())->toBe($files)
+            ->and($this->destination.'/icon/circle-check.blade.php')->toBeFile()
+            ->and($this->destination.'/icon/shape-success.blade.php')->not->toBeFile();
+    });
+
+    it('reads a suffixed filename as the drawing it is, not as a name of its own', function () {
+        // Phosphor's `fill/check-fill.svg` is the fill drawing of `check`. Walking
+        // the listing for names would write it as `check-fill`, whose outline cell
+        // resolves to `regular/check-fill.svg` and is never there — so `--all` runs
+        // the pattern backwards instead, and a file no pattern accounts for is
+        // skipped rather than named.
+        // Read through the shipped `phosphor` entry rather than a set written for
+        // the test, so this covers the config the package promises as well as the
+        // command that reads it.
+        config()->set('shape.icon_set', 'phosphor');
+
+        $this->artisan('shape:icon:all', ['--from' => $this->phosphor])
+            ->assertSuccessful();
+
+        expect(written())->toBe(['check', 'heart']);
+
+        // And the two drawings land in the one component, which is the point of
+        // reading them as the same name: the small sizes get the fill and the
+        // default size gets the regular.
+        expect(file_get_contents($this->destination.'/icon/check.blade.php'))
+            ->toContain('data-drawn="check-fill"')
+            ->toContain('data-drawn="check"')
+            ->and(file_get_contents($this->destination.'/icon/heart.blade.php'))
+            ->toContain('data-drawn="heart"');
+    });
+
+    it('reads a marker inside a filename as the drawing it is, not as a name of its own', function () {
+        // Bootstrap hangs a badge off a glyph and fills the glyph, so `person-fill-x`
+        // is the fill of `person-x`. Read as a name it would be an icon called
+        // `person-fill-x` whose *outline* cell holds a filled drawing — the fill
+        // leaking into the outline style under a name that says so.
+        //
+        // Read through the shipped `bootstrap` entry rather than a set written
+        // for the test, so this covers the config the package promises as well as
+        // the command that reads it.
+        config()->set('shape.icon_set', 'bootstrap');
+
+        $this->artisan('shape:icon:all', ['--from' => $this->bootstrap])
+            ->assertSuccessful();
+
+        expect(written())->toBe(['heart', 'person-check', 'person-x']);
+
+        // The pair lands in one component, outline and fill in their own cells.
+        expect(file_get_contents($this->destination.'/icon/person-x.blade.php'))
+            ->toContain('data-drawn="person-x"')
+            ->toContain('data-drawn="person-fill-x"');
+
+        // And where a name is spelled both ways the suffix wins, because that is the
+        // drawing that is filled through: `person-check-fill` is solid, where
+        // `person-fill-check` is a filled person wearing an outline tick.
+        expect(file_get_contents($this->destination.'/icon/person-check.blade.php'))
+            ->toContain('data-drawn="person-check"')
+            ->toContain('data-drawn="person-check-fill"')
+            ->not->toContain('data-drawn="person-fill-check"');
+    });
+
+    it('generates a set\'s own name for a drawing outside the slots', function () {
+        // The ordinary case: a name that is nobody's slot is written as the set
+        // spells it, which is how a set adds icons rather than replacing them.
+        config()->set('shape.icon_set', 'lucide');
+
+        $this->artisan('shape:icon:all', ['--from' => $this->flat])
+            ->assertSuccessful();
+
+        expect($this->destination.'/icon/spinner.blade.php')->toBeFile();
+    });
+});
+
+describe('shape:icon:replace', function () {
+    it('generates exactly the slots the library declares', function () {
+        $this->artisan('shape:icon:replace', ['--set' => 'lucide', '--from' => $this->lucide])
+            ->assertSuccessful();
+
+        $slots = IconSlots::fromConfig()->names();
+
+        sort($slots);
+
+        expect(written())->toBe($slots)->toHaveCount(14);
+    });
+
+    it('leaves the three examples alone, because they are not the library\'s', function () {
+        // `shape-arrow-right`, `shape-plus` and `shape-trash` ship so the README and
+        // the previews render. Nothing resolves them and the documentation does not
+        // offer them as a catalogue, so `--replace` skipping them is the design: an
+        // application that wants a trash can generates its own.
+        $this->artisan('shape:icon:replace', ['--set' => 'lucide', '--from' => $this->lucide])
+            ->assertSuccessful();
+
+        foreach (['shape-arrow-right', 'shape-plus', 'shape-trash'] as $example) {
+            expect($this->destination.'/icon/'.$example.'.blade.php')->not->toBeFile();
+        }
+    });
+
+    it('writes thirteen slots from heroicons and leaves the packaged one alone', function () {
+        // Heroicons has nothing that reads as a loader, says so with `null`, and the
+        // spinner this package draws goes on resolving. That is the state a
+        // Heroicons user is in permanently, and it is not a gap.
+        $from = heroiconsFixture();
+
+        $this->artisan('shape:icon:replace', ['--from' => $from])
+            ->expectsOutputToContain('packaged by Shape')
+            ->assertSuccessful();
+
+        expect(written())->toHaveCount(13)
+            ->and($this->destination.'/icon/shape-loading.blade.php')->not->toBeFile();
+
+        exec('rm -rf '.escapeshellarg($from));
+    });
+
+    it('spins the loading slot, and nothing else', function () {
+        // The spin belongs to the slot rather than to the set that drew it — every
+        // set's loader spins — so it is declared once in `icon_slots` and baked into
+        // whichever drawing fills it.
+        $this->artisan('shape:icon:replace', ['--set' => 'lucide', '--from' => $this->lucide])
+            ->assertSuccessful();
+
+        expect(file_get_contents($this->destination.'/icon/shape-loading.blade.php'))
+            ->toContain("Shape::classes('shrink-0 animate-spin')")
+            ->toContain('data-drawn="loader-circle"');
+
+        foreach (array_diff(written(), ['shape-loading']) as $slot) {
+            expect(file_get_contents($this->destination.'/icon/'.$slot.'.blade.php'))
+                ->toContain("Shape::classes('shrink-0')");
+        }
+    });
+
+    it('keeps a replacement flat, whichever set draws it', function () {
+        // `--replace` is one set standing in for the library's own for the length of
+        // a run, and the names it writes are flat by definition — `shape::icon.
+        // shape-close` is what the close button asks for, and a file under
+        // `icon/lucide/` answers to something else. So the subdirectory a
+        // supplementary set gets is not applied here, or the documented way to
+        // move the library onto another set would be an error rather than a
+        // replacement.
+        $this->artisan('shape:icon:replace', ['--set' => 'lucide', '--from' => $this->lucide])
+            ->assertSuccessful();
+
+        expect($this->destination.'/icon/shape-close.blade.php')->toBeFile()
+            ->and($this->destination.'/icon/lucide')->not->toBeDirectory();
+
+        expect(file_get_contents($this->destination.'/icon/shape-close.blade.php'))
+            ->toContain('data-drawn="x"');
+    });
+
+    it('will not namespace the icons it replaces', function () {
+        // A namespaced icon replaces nothing: the library asks for
+        // `shape::icon.shape-close`, and a file under `icon/lucide/` answers to
+        // `shape::icon.lucide.shape-close`. The run would write fourteen files and
+        // change nothing at all.
+        $this->artisan('shape:icon:replace', [
+            '--set' => 'lucide',
+            '--from' => $this->lucide,
+            '--namespace' => 'lucide',
+        ])->expectsOutputToContain('Pass --namespace= to write this run flat')->assertFailed();
+
+        expect($this->destination.'/icon/lucide')->not->toBeDirectory();
+    });
+});
+
+describe('shape:icon:status', function () {
+    it('reports an icon whose drawing has moved since it was generated', function () {
+        // Without the record, a component that differs from the current drawing
+        // might have been hand-edited or might have been overtaken upstream, and
+        // only the second is a reason to regenerate.
+        $from = sys_get_temp_dir().'/shape-icons-upstream-'.getmypid();
+
+        exec('rm -rf '.escapeshellarg($from));
+        exec('cp -R '.escapeshellarg($this->heroicons).' '.escapeshellarg($from));
+
+        $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $from])->assertSuccessful();
+
+        $this->artisan('shape:icon:status', ['--from' => $from])
+            ->expectsOutputToContain('unchanged')
+            ->assertSuccessful();
+
+        file_put_contents(
+            $from.'/24/solid/check.svg',
+            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 1 L2 2" /></svg>',
+        );
+
+        $this->artisan('shape:icon:status', ['--from' => $from])
+            ->expectsOutputToContain('redrawn upstream')
+            ->assertSuccessful();
+
+        exec('rm -rf '.escapeshellarg($from));
+    });
+
+    it('will not go to the network to check icons that came from a directory', function () {
+        // The lockfile records no upstream for a `--from` run, and reaching for the
+        // set's repository instead would compare the icons against drawings they
+        // never came from. `TestCase` forbids stray requests, so a run that tried
+        // would fail here rather than quietly succeeding.
+        $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $this->heroicons])->assertSuccessful();
+
+        $this->artisan('shape:icon:status')
+            ->expectsOutputToContain('pass --from to check')
+            ->assertSuccessful();
+    });
+
+    it('has nothing to report before anything has been generated', function () {
+        $this->artisan('shape:icon:status')
+            ->expectsOutputToContain('No icons have been generated')
+            ->assertSuccessful();
+    });
+
+    it('reports on a set that landed under its own name', function () {
+        // `--status` walks the directories the config accounts for, and a set that
+        // was never given a `namespace` is now one of them. Reading only the flat
+        // lockfile would answer "nothing has been generated" for a set sitting right
+        // there, which reads like a clean bill of health rather than a blind spot.
+        $this->artisan('shape:icon', [
+            'icons' => ['shape-checked'],
+            '--set' => 'lucide',
+            '--from' => $this->lucide,
+        ])->assertSuccessful();
+
+        $this->artisan('shape:icon:status', ['--from' => $this->lucide])
+            ->expectsOutputToContain('icon/lucide')
+            ->expectsOutputToContain('shape-checked')
+            ->doesntExpectOutputToContain('No icons have been generated')
+            ->assertSuccessful();
+    });
+
+    it('reports on a namespaced set that the run did not name', function () {
+        // `--status` is asked what is stale, not what is stale in one directory. A
+        // set keeps its lockfile beside its own components, so reading only the flat
+        // one answered "nothing has been generated" for a set sitting right there —
+        // which reads like a clean bill of health rather than like a blind spot.
+        config()->set('shape.icon_sets.lucide.namespace', 'lucide');
+
+        $this->artisan('shape:icon', [
+            'icons' => ['shape-checked'],
+            '--set' => 'lucide',
+            '--from' => $this->lucide,
+        ])->assertSuccessful();
+
+        $this->artisan('shape:icon:status', ['--from' => $this->lucide])
+            ->expectsOutputToContain('icon/lucide')
+            ->expectsOutputToContain('shape-checked')
+            ->doesntExpectOutputToContain('No icons have been generated')
+            ->assertSuccessful();
+    });
+
+    it('carries no option for a run that cannot overwrite anything', function () {
+        // What the split buys: an option a command cannot act on is not on it,
+        // and the console refuses it rather than this command having to say so.
+        expect(fn () => $this->artisan('shape:icon:status', ['--force' => true])->run())
+            ->toThrow(InvalidOptionException::class);
+    });
 });

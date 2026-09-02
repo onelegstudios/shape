@@ -28,5 +28,8 @@ it('registers its artisan commands', function (string $command) {
     'shape:doctor',
     'shape:eject',
     'shape:icon',
+    'shape:icon:all',
+    'shape:icon:replace',
+    'shape:icon:status',
     'shape:install',
 ]);

@@ -9,7 +9,10 @@ use Illuminate\Support\ServiceProvider;
 use Livewire\Blaze\Blaze;
 use Onelegstudios\Shape\Console\Commands\DoctorCommand;
 use Onelegstudios\Shape\Console\Commands\EjectCommand;
+use Onelegstudios\Shape\Console\Commands\IconAllCommand;
 use Onelegstudios\Shape\Console\Commands\IconCommand;
+use Onelegstudios\Shape\Console\Commands\IconReplaceCommand;
+use Onelegstudios\Shape\Console\Commands\IconStatusCommand;
 use Onelegstudios\Shape\Console\Commands\InstallCommand;
 use Onelegstudios\Shape\Http\Middleware\RescueFeedbackFromNavigate;
 
@@ -70,7 +73,10 @@ class ShapeServiceProvider extends ServiceProvider
         $this->commands([
             DoctorCommand::class,
             EjectCommand::class,
+            IconAllCommand::class,
             IconCommand::class,
+            IconReplaceCommand::class,
+            IconStatusCommand::class,
             InstallCommand::class,
         ]);
     }
