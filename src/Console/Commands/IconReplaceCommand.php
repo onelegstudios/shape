@@ -46,7 +46,7 @@ class IconReplaceCommand extends Command
         {--ref= : The branch, tag or commit to fetch, overriding the set\'s own}
         {--offline : Work from what has already been fetched, and fail rather than fetch}
         {--to= : Where to write the components}
-        {--namespace= : Override the set\'s own subdirectory; empty writes flat}
+        {--namespace= : Empty writes a namespaced set flat, which is the only value this takes}
         {--force : Overwrite icons that already exist}';
 
     /**
