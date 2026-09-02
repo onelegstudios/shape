@@ -57,17 +57,19 @@ use RuntimeException;
  *
  * A namespace is the other end of the same problem. Two sets written flat share
  * one namespace, and the second to spell `check` is refused rather than allowed
- * to overwrite the first; a subdirectory gives each set its own. It is not the
- * default, and shouldn't be: the primary set stays flat so that a call site has
- * one spelling for an icon whichever set drew it.
+ * to overwrite the first; a subdirectory gives each set its own. The set the
+ * library is on stays flat, so that a call site has one spelling for an icon
+ * whichever set drew it. Every other set is a supplementary one — read for what
+ * the library's set has not got — and is written under its own name, because
+ * flat is precisely where it would collide.
  *
  * Which subdirectory is the set's own answer, declared as `namespace` in
- * `shape.icon_sets` beside everything else that is true of it. A flag alone was
- * not enough: it is remembered only for the run it is typed on, so the next run
- * without it wrote a second copy flat and pinned it in a second lockfile —
- * exactly the collision the subdirectory existed to prevent. `--namespace`
- * survives as the override for a one-off run, and `--namespace=` as the way to
- * say flat out loud.
+ * `shape.icon_sets` beside everything else that is true of it, and its own name
+ * where it declares none. A flag alone was not enough: it is remembered only for
+ * the run it is typed on, so the next run without it wrote a second copy flat
+ * and pinned it in a second lockfile — exactly the collision the subdirectory
+ * existed to prevent. `--namespace` survives as the override for a one-off run,
+ * and `--namespace=` as the way to say flat out loud.
  *
  * Which set is read at all is the same kind of fact, and is declared the same
  * way: `shape.icon_set` names it, so an application that has moved the library
@@ -1064,34 +1066,101 @@ class IconCommand extends Command
      * `<x-shape::icon.lucide.bell />`, and a flat `bell` is no longer in its
      * way.
      *
-     * The set answers this, and the flag only overrides it. A flag on its own
-     * is remembered by nobody: the run after it, without the flag, would write
-     * a second copy flat and pin it in a second lockfile, which is the
+     * The set answers this — with its `namespace`, or with its own name where it
+     * declares none — and the flag only overrides it. A flag on its own is
+     * remembered by nobody: the run after it, without the flag, would write a
+     * second copy elsewhere and pin it in a second lockfile, which is the
      * collision the subdirectory was for. `--namespace=` with nothing after it
      * is the way to say flat out loud, for the one run that means it.
      *
-     * Three states, so all three are distinguishable: the option absent is
-     * null and defers to the set, the option empty is "flat", and anything
-     * else is one kebab-case segment, checked — `--namespace=../..` is the one
-     * way this can write outside the components path.
+     * Three states, so all three are distinguishable: the option absent defers
+     * to the set, the option empty is "flat", and anything else is one
+     * kebab-case segment, checked — `--namespace=../..` is the one way this can
+     * write outside the components path.
      */
     protected function namespace(IconSet $set): ?string
     {
         $namespace = $this->option('namespace');
 
-        if ($namespace === null) {
-            return $set->namespace;
-        }
-
         if ($namespace === '') {
             return null;
         }
 
-        if (preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $namespace) !== 1) {
-            throw new InvalidArgumentException("[{$namespace}] is not a namespace. Pass one lower-case segment, like --namespace=lucide.");
+        if (is_string($namespace)) {
+            if (! $this->isSegment($namespace)) {
+                throw new InvalidArgumentException("[{$namespace}] is not a namespace. Pass one lower-case segment, like --namespace=lucide.");
+            }
+
+            return $namespace;
         }
 
-        return $namespace;
+        // `--replace` is one set standing in for the library's own, whatever
+        // `icon_set` says, and the names it writes are flat by definition — so
+        // the subdirectory below is not applied to it, or `shape:icon --replace
+        // --set=lucide` would be refused rather than be a replacement. A set
+        // that declares a namespace of its own still lands in it, and is still
+        // told that a namespaced icon replaces nothing.
+        if ($this->option('replace') && $set->namespace === null) {
+            return null;
+        }
+
+        return $this->subdirectory($set);
+    }
+
+    /**
+     * Where a set lives when neither the flag nor the set itself says.
+     *
+     * A set that is not the one `shape.icon_set` names is a supplementary set:
+     * read for the icons the library's own set has not got, and written beside
+     * them rather than among them. So it is written under its own name, which
+     * is the answer a `namespace` would have given and the name the set is
+     * already known by — `shape:icon bell --set=lucide` puts a Lucide bell in
+     * `icon/lucide/bell.blade.php` and leaves `icon/bell.blade.php` to the set
+     * the library is on.
+     *
+     * Flat is still the default for the set that *is* the library's, and that
+     * is the whole of the distinction: one spelling at every call site for the
+     * icons that come from the set the application chose, and a namespace for
+     * the ones that came from somewhere else. A supplementary set that wants a
+     * different subdirectory declares `namespace`, and a run that wants none
+     * says `--namespace=`.
+     *
+     * A set whose name is not a namespace is told so rather than quietly
+     * written flat, since flat is where it would collide.
+     */
+    protected function subdirectory(IconSet $set): ?string
+    {
+        if ($set->namespace !== null) {
+            return $set->namespace;
+        }
+
+        $default = config('shape.icon_set');
+
+        // Nothing to be supplementary to. A library with no set of its own has
+        // no primary namespace to keep clear, so a run writes where it always
+        // wrote.
+        if (! is_string($default) || $default === '' || $default === $set->name) {
+            return null;
+        }
+
+        if (! $this->isSegment($set->name)) {
+            throw new InvalidArgumentException("Icon set [{$set->name}] is not the set named in [shape.icon_set], so it is written into a subdirectory of its own — and its name is not one. Give it a [namespace] of one lower-case segment in [shape.icon_sets.{$set->name}], or pass --namespace= to write this run flat.");
+        }
+
+        return $set->name;
+    }
+
+    /**
+     * Whether a namespace is one segment this command can safely write into.
+     *
+     * The one check that keeps a generated component inside the components
+     * path, so it is made of every namespace whatever said it: the flag, the
+     * set's own `namespace` — checked where the set is parsed — and the set's
+     * name standing in for one.
+     */
+    protected function isSegment(string $namespace): bool
+    {
+        return preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $namespace) === 1;
     }
 
     /**
@@ -1118,7 +1187,7 @@ class IconCommand extends Command
 
         foreach (is_array($sets) ? $sets : [] as $name => $definition) {
             try {
-                $namespace = $this->set((string) $name)->namespace;
+                $namespace = $this->subdirectory($this->set((string) $name));
             } catch (InvalidArgumentException) {
                 continue;
             }

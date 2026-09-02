@@ -248,8 +248,11 @@ Fourteen of those components are the ones Shape's own components draw — the
 than for whichever vendor drew them. `shape:icon --replace --set=lucide`
 regenerates that fourteen from another set without a call site changing.
 Heroicons, Lucide, Tabler, Phosphor and Bootstrap Icons ship as sets, and any
-directory of SVGs is one. Every other icon your interface needs is one you
-generate, under its own name.
+directory of SVGs is one. A set other than the one `shape.icon_set` names is
+supplementary — read for what the library's set has not got, and written into a
+subdirectory named after it, where it cannot land on top of the icons the
+application is wearing: `<x-shape::icon.lucide.bell />`. Every other icon your
+interface needs is one you generate, under whatever the set calls it.
 
 `shape:doctor` checks ejected components for request-scoped state. A folded
 component is pre-rendered while Blade compiles, so `auth()`, `session()`,

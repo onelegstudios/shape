@@ -122,12 +122,18 @@ function archiveWith(string $prefix, array $files): string
  * process — so a second test unpacking a second archive at one path would be
  * handed the first one back.
  *
+ * And named as the library's own, so that what it generates is written flat: a
+ * set that is not the one `icon_set` names goes into a subdirectory of its own,
+ * which is a fact about where these tests look rather than about the source they
+ * are exercising.
+ *
  * @param  array<string, array<string, string>>  $styles
  */
 function nestedSet(bool $flatten = true, ?array $styles = null): string
 {
     $name = 'remix-'.uniqid();
 
+    config()->set('shape.icon_set', $name);
     config()->set('shape.icon_sets.'.$name, [
         'repo' => 'Remix-Design/RemixIcon',
         'ref' => 'master',
@@ -487,6 +493,10 @@ it('says so when GitHub will not answer', function () {
  * A set read from the npm registry, and the two responses that serves it: the
  * package document, then the tarball it points at.
  *
+ * Named as the library's own for the reason `nestedSet()` is: a set that is not
+ * the one `icon_set` names is written into a subdirectory, and where the file
+ * lands is not what these tests are about.
+ *
  * @param  array<string, string>  $files
  * @return array{0: string, 1: array<string, mixed>}
  */
@@ -495,6 +505,7 @@ function published(array $files, string $version = '0.47.0'): array
     $name = 'published-'.uniqid();
     $tarball = packageArchive($files);
 
+    config()->set('shape.icon_set', $name);
     config()->set('shape.icon_sets.'.$name, [
         'npm' => '@material-symbols/svg-400',
         'version' => 'latest',

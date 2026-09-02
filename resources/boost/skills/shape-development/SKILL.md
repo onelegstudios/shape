@@ -177,6 +177,13 @@ on one run writes a Heroicon into a directory of Lucide drawings, under a slot
 name that says nothing about who drew it. `--set` stays the override for a
 one-off, such as reading a supplementary set.
 
+A set other than the one `icon_set` names is that supplementary set, and is
+written into a subdirectory named after it rather than flat — so its icons are
+reached as `<x-shape::icon.lucide.bell />` and cannot land on top of the ones the
+library is wearing. A set that wants a different subdirectory declares
+`namespace`; `--replace` writes flat whichever set it reads, because the slot
+names it replaces are flat by definition.
+
 Each set in `shape.icon_sets` declares where its drawings are had — a published
 package (`npm`, `version`, `path`) or the repository that draws it (`repo`,
 `ref`, `path`) — so `shape:icon` fetches it and caches it under

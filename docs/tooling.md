@@ -205,8 +205,13 @@ slot name, which is a role and says nothing about who drew it. Set it, and
 one-off it is for:
 
 ```bash
-php artisan shape:icon bell --set=heroicons
+php artisan shape:icon bell --set=hero
 ```
+
+A set read that way is written under its own name — `icon/hero/bell.blade.php`,
+reached as `<x-shape::icon.hero.bell />` — rather than flat among the drawings
+the library is wearing. [Two sets at once](#two-sets-at-once) is the whole of
+that story.
 
 ### Where the drawings come from
 
@@ -601,31 +606,13 @@ icons rather than replacing them.
 
 ### Two sets at once
 
-Sets generated into `icon/` share one namespace. Names that don't collide
-coexist there, which is the ordinary supplementary case and wants nothing:
-
-```
-bell .. 4 drawing(s)       # Heroicons
-compass .. 1 drawing(s)    # a second set
-bell .. exists, kept       # a collision, refused
-```
-
-Refusing is the right default — the alternative is a set silently overwriting
-another set's drawings — but it leaves no way to keep both. Give the set a
-`namespace`, and it gets a subdirectory and a namespace of its own:
-
-```php
-'lucide' => [
-    'namespace' => 'lucide',
-    'notice' => 'Lucide (https://lucide.dev), ISC licensed.',
-    'styles' => [
-        'outline' => ['base' => '{name}.svg'],
-    ],
-],
-```
+The set `shape.icon_set` names is written flat, into `icon/`, so that a call
+site has one spelling for an icon whichever set drew it. Every other set is a
+supplementary one — read for what the library's set has not got — and is written
+into a subdirectory named after it:
 
 ```bash
-php artisan shape:icon --all --set=lucide --from=./vendor/lucide/icons
+php artisan shape:icon bell --set=lucide
 ```
 
 ```
@@ -635,19 +622,61 @@ resources/views/shape/icon/lucide/bell.blade.php
 → <x-shape::button icon="lucide.bell">
 ```
 
-It belongs in the config rather than only on the command line because where a
-set lives is true of the set, not of the run that generated it. A flag is
-remembered for one run: the next `shape:icon bell --set=lucide` without it would
-write a second copy flat, into the namespace the first was moved out of to avoid
-a collision, and pin it in a second lockfile — silently, because the "exists,
-kept" check only looks in the directory the run resolved to.
+Flat is where two sets collide. Sharing `icon/` works for as long as the names
+don't overlap, and the run that overlaps is refused rather than allowed to
+overwrite a drawing somebody else's set put there:
+
+```
+bell .. 4 drawing(s)       # Heroicons
+compass .. 1 drawing(s)    # a second set
+bell .. exists, kept       # a collision, refused
+```
+
+Refusing is the right answer to a collision and a poor way to find out about
+one, since the second set has nowhere to go and half of it is already written.
+So the subdirectory is not something to remember: the set that is not yours is
+kept out of the way by default, and `icon/bell.blade.php` stays the library's to
+give.
+
+A set that should be found under something other than its own name says so, and
+it says so in the config rather than on the command line, because where a set
+lives is true of the set and not of the run that generated it:
+
+```php
+'lucide' => [
+    'namespace' => 'lucide-icons',
+    'notice' => 'Lucide (https://lucide.dev), ISC licensed.',
+    'styles' => [
+        'outline' => ['base' => '{name}.svg'],
+    ],
+],
+```
+
+A flag is remembered for one run: `shape:icon bell --set=lucide --namespace=x`
+and then the same command without it wrote a second copy somewhere else, and
+pinned it in a second lockfile — silently, because the "exists, kept" check only
+looks in the directory the run resolved to.
 
 `--namespace` is still there as the override for a one-off run, and
 `--namespace=` with nothing after it is the way to say a run is flat about a set
-that normally isn't — which is what `--replace` needs, since it writes over
-names that are flat by definition. One lower-case segment either way:
-`../..` is refused rather than allowed to write outside the components path,
-whether it comes from the flag or from the set.
+that normally isn't. One lower-case segment either way: `../..` is refused
+rather than allowed to write outside the components path, whether it comes from
+the flag, from the set's `namespace`, or from the set's name standing in for
+one.
+
+`--replace` is the exception, and needs none of this. It is one set standing in
+for the library's own for the length of a run, and the names it writes are flat
+by definition — `shape::icon.shape-close` is what the close button asks for, and
+a file under `icon/lucide/` answers to something else. So it writes flat
+whichever set it reads:
+
+```bash
+php artisan shape:icon --replace --set=lucide
+```
+
+A set that declares a `namespace` is the one case that refuses, with a sentence
+saying so, since a namespaced replacement would write fourteen files and change
+nothing.
 
 `--status` reports every directory that holds a lockfile, not just the one the
 run resolved to, so a namespaced set is not a blind spot:
@@ -662,10 +691,11 @@ every generated file carries its own `@blaze` front matter and that is what
 Blaze reads. `shape:eject`, `shape:doctor` and Tailwind's `@source` all recurse
 already.
 
-Reach for a namespace when two sets genuinely collide, and not before. Flat is
-better for the ordinary case of Heroicons plus the gaps: one spelling at every
-call site, and no collisions by construction — which is why neither shipped set
-declares one. Note that a bare set name is a component that doesn't exist —
+Reach for a `namespace` only to rename the subdirectory a supplementary set
+already has, which is why no shipped set declares one. Flat belongs to the set
+the library is on and to nothing else: one spelling at every call site for the
+icons an application actually reaches for, and no collisions by construction.
+Note that a bare set name is a component that doesn't exist —
 `<x-shape::icon name="lucide" />` raises Blade's usual "unable to locate" error
 rather than rendering nothing, because Blade resolves a directory to an `index`
 view.

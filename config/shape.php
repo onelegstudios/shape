@@ -116,7 +116,10 @@ return [
     | which drew them. Set this, and `shape:icon --replace` stays a replacement.
     |
     | `--set` is still the override, and reading a supplementary set is exactly
-    | the one-off run it is for.
+    | the one-off run it is for. A set read that way is written into a
+    | subdirectory named after it rather than flat, so a one-off run cannot land
+    | on top of the icons the library is wearing; `namespace`, below, is how a
+    | set asks for a different one.
     |
     */
 
@@ -164,12 +167,17 @@ return [
     | `namespace` gives a set a subdirectory of the components path, and with it
     | a namespace of its own: `icon/lucide/bell.blade.php` is
     | `<x-shape::icon.lucide.bell />`, and a flat `bell` from another set is no
-    | longer in its way. Leave it unset for the primary set — flat is the
-    | default so that a call site has one spelling for an icon whichever set
-    | drew it — and set it on a supplementary set that would otherwise collide.
+    | longer in its way. Most sets need not name one. The set `icon_set` names is
+    | written flat, so that a call site has one spelling for an icon whichever
+    | set drew it; every other set is a supplementary one, read for what that set
+    | has not got, and is written under its own name already — because flat is
+    | exactly where it would collide. Name a subdirectory here for a set that
+    | should be found under something other than its own name.
+    |
     | It belongs here rather than only on the command line because where a set
     | lives is true of the set: a `--namespace` flag is remembered for one run,
-    | and the next run without it writes a second copy flat.
+    | and the next run without it writes a second copy flat. `--namespace=`,
+    | with nothing after it, is still how a run says it is flat out loud.
     |
     | None of this is read at run time. It is spent while `shape:icon` writes a
     | component, and every value it decides is a literal in the generated file —
@@ -226,12 +234,13 @@ return [
             // fonts and a sprite sheet beside the drawings, which makes it the
             // only package here larger than the repository behind it — 6.2MB
             // against 5.0MB — so there is nothing to move it for.
-            // Uncomment to write this set into `icon/lucide/` instead of flat,
-            // so it can keep a name Heroicons already spells:
-            // `<x-shape::icon.lucide.bell />`. It is off here because this is
-            // the worked example of a *replacement* set, and `--replace`
-            // writes over Shape's own names, which are flat by definition.
-            // 'namespace' => 'lucide',
+            //
+            // No `namespace`, and none needed: while `icon_set` is `hero` this
+            // is a supplementary set, so it is written into `icon/lucide/`
+            // under its own name and keeps a spelling Heroicons already has —
+            // `<x-shape::icon.lucide.bell />`. Naming one here would only move
+            // it somewhere else. `shape:icon --replace --set=lucide` is flat
+            // regardless, because a replacement writes over Shape's own names.
             'repo' => 'lucide-icons/lucide',
             'ref' => 'main',
             'path' => 'icons',
