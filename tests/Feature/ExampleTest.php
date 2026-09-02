@@ -27,6 +27,8 @@ it('registers its artisan commands', function (string $command) {
 })->with([
     'shape:doctor',
     'shape:eject',
+    'shape:eject:all',
+    'shape:eject:status',
     'shape:icon',
     'shape:icon:all',
     'shape:icon:replace',

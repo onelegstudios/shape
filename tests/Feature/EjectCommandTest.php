@@ -77,13 +77,6 @@ it('ejects only what was named when told to', function () {
         ->and(file_exists(ejected('button/index.blade.php')))->toBeFalse();
 });
 
-it('ejects the whole library', function () {
-    $this->artisan('shape:eject', ['--all' => true])->assertSuccessful();
-
-    expect(ejected('table/cell.blade.php'))->toBeFile()
-        ->and(ejected('tooltip/index.blade.php'))->toBeFile();
-});
-
 it('resolves an ejected component ahead of the packaged one', function () {
     // The whole point of the destination, proven end to end rather than assumed:
     // the file the command wrote is the file that renders.
@@ -134,13 +127,22 @@ it('refuses a component it does not have', function () {
 
 it('asks for a component when given none', function () {
     $this->artisan('shape:eject')
-        ->expectsOutputToContain('Name at least one component')
+        ->expectsOutputToContain('Name at least one component, or run shape:eject:all.')
         ->assertFailed();
+});
+
+describe('all', function () {
+    it('ejects the whole library', function () {
+        $this->artisan('shape:eject:all')->assertSuccessful();
+
+        expect(ejected('table/cell.blade.php'))->toBeFile()
+            ->and(ejected('tooltip/index.blade.php'))->toBeFile();
+    });
 });
 
 describe('status', function () {
     it('has nothing to say before anything is ejected', function () {
-        $this->artisan('shape:eject', ['--status' => true])
+        $this->artisan('shape:eject:status')
             ->expectsOutputToContain('Nothing has been ejected')
             ->assertSuccessful();
     });
@@ -148,7 +150,7 @@ describe('status', function () {
     it('reports an untouched component as level with the package', function () {
         $this->artisan('shape:eject', ['components' => ['separator']])->assertSuccessful();
 
-        $this->artisan('shape:eject', ['--status' => true])
+        $this->artisan('shape:eject:status')
             ->expectsOutputToContain('unchanged')
             ->expectsOutputToContain('level with the package')
             ->assertSuccessful();
@@ -161,7 +163,7 @@ describe('status', function () {
 
         // Locally edited: the file differs from what was recorded, and the
         // package still holds exactly what was recorded.
-        $this->artisan('shape:eject', ['--status' => true])
+        $this->artisan('shape:eject:status')
             ->expectsOutputToContain('edited here')
             ->assertSuccessful();
 
@@ -170,7 +172,7 @@ describe('status', function () {
         // an untouched component, and the only case worth reading a diff for.
         writeEjectManifest(['separator' => ['separator.blade.php' => sha1_file(ejected('separator.blade.php'))]]);
 
-        $this->artisan('shape:eject', ['--status' => true])
+        $this->artisan('shape:eject:status')
             ->expectsOutputToContain('the package moved')
             ->expectsOutputToContain('Compare them before re-ejecting')
             ->assertSuccessful();
@@ -181,7 +183,7 @@ describe('status', function () {
 
         unlink(ejected('separator.blade.php'));
 
-        $this->artisan('shape:eject', ['--status' => true])
+        $this->artisan('shape:eject:status')
             ->expectsOutputToContain('gone')
             ->assertSuccessful();
     });

@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Blaze\Blaze;
 use Onelegstudios\Shape\Console\Commands\DoctorCommand;
+use Onelegstudios\Shape\Console\Commands\EjectAllCommand;
 use Onelegstudios\Shape\Console\Commands\EjectCommand;
+use Onelegstudios\Shape\Console\Commands\EjectStatusCommand;
 use Onelegstudios\Shape\Console\Commands\IconAllCommand;
 use Onelegstudios\Shape\Console\Commands\IconCommand;
 use Onelegstudios\Shape\Console\Commands\IconReplaceCommand;
@@ -72,7 +74,9 @@ class ShapeServiceProvider extends ServiceProvider
 
         $this->commands([
             DoctorCommand::class,
+            EjectAllCommand::class,
             EjectCommand::class,
+            EjectStatusCommand::class,
             IconAllCommand::class,
             IconCommand::class,
             IconReplaceCommand::class,
