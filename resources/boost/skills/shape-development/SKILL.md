@@ -151,19 +151,28 @@ register and no Livewire dependency in the package.
    of the packaged one.
 
 ```bash
-php artisan shape:eject modal      # + heading, text, overlay, button, icon
-php artisan shape:eject --status   # what has drifted since an upgrade
-php artisan shape:doctor           # fold safety of ejected components
-php artisan shape:icon bell        # one icon from the configured set
-php artisan shape:icon --all
-php artisan shape:icon --replace   # regenerate Shape's own icons in that set
-php artisan shape:icon --all --from=./resources/svg
+php artisan shape:eject modal       # + heading, text, overlay, button, icon
+php artisan shape:eject:all         # every component the package ships
+php artisan shape:eject:status      # what has drifted since an upgrade
+php artisan shape:doctor            # fold safety of ejected components
+php artisan shape:icon bell         # the icons named, from the configured set
+php artisan shape:icon:all          # every icon the set draws
+php artisan shape:icon:replace      # regenerate Shape's own icons in that set
+php artisan shape:icon:status       # which drawings have moved upstream
+php artisan shape:icon:all --from=./resources/svg
 ```
 
-A run of `shape:icon` or `shape:eject` that writes anything clears the compiled
-views and says so, because a generated component is a file and a compiled view is
-a cached answer about a file — leaving the second behind serves stale markup, or
-markup inlined from a component that no longer exists, without raising an error.
+Which names a run writes is what separates the siblings, so it is the command
+rather than an option: no icon or eject command takes a mode flag standing for
+*all*, *replace* or *status*, and inventing one is an error rather than a
+no-op. The shared options — `--set`, `--from`, `--ref`, `--offline`, `--to`,
+`--namespace`, `--force` — are on each icon command that can use them, and
+`--bare` is on `shape:eject` alone.
+
+An eject or icon run that writes anything clears the compiled views and says so,
+because a generated component is a file and a compiled view is a cached answer
+about a file — leaving the second behind serves stale markup, or markup inlined
+from a component that no longer exists, without raising an error.
 
 `shape.icon_set` names which of the sets a run reads when `--set` says nothing.
 Set it once when the application moves the library onto another set:
@@ -181,8 +190,8 @@ A set other than the one `icon_set` names is that supplementary set, and is
 written into a subdirectory named after it rather than flat — so its icons are
 reached as `<x-shape::icon.lucide.bell />` and cannot land on top of the ones the
 library is wearing. A set that wants a different subdirectory declares
-`namespace`; `--replace` writes flat whichever set it reads, because the slot
-names it replaces are flat by definition.
+`namespace`; `shape:icon:replace` writes flat whichever set it reads, because
+the slot names it replaces are flat by definition.
 
 Each set in `shape.icon_sets` declares where its drawings are had — a published
 package (`npm`, `version`, `path`) or the repository that draws it (`repo`,
@@ -221,7 +230,8 @@ here, 1.2MB against 32MB for Tabler. Versions are pinned into generated
 components instead of commits, and the registry's sha512 is verified.
 
 `'archive' => false` is the other lever: read a set one drawing at a time when
-its repository is too large to unpack. It costs `--all`, which needs a listing.
+its repository is too large to unpack. It costs `shape:icon:all`, which needs a
+listing.
 
 A set's `styles` gives each cell a path with the name in it, so a directory
 layout and a filename convention are one declaration. `{name}` is the whole name.
@@ -241,9 +251,10 @@ file behind it wins:
 ],
 ```
 
-`--all` reads those patterns backwards to decide what a listed file is called, so
-`person-fill-x.svg` lands in the solid cell of `person-x` instead of arriving as
-an icon named for its own marker. A file no pattern accounts for is skipped.
+`shape:icon:all` reads those patterns backwards to decide what a listed file is
+called, so `person-fill-x.svg` lands in the solid cell of `person-x` instead of
+arriving as an icon named for its own marker. A file no pattern accounts for is
+skipped.
 
 A pattern needs the path to be a fact about the style and the size. Add
 `'flatten' => true` for a set that files its drawings by something the name does
@@ -272,10 +283,11 @@ and fails rather than letting one overwrite the other.
 - `--ref` reads a different branch, tag or commit than the set declares.
 - `--offline` works only from what has already been fetched and fails by name
   rather than reaching for the network — use it in CI.
-- `--status` reports which icons have been redrawn upstream since they were
-  generated, from the `shape-icons.json` written beside them.
+- `shape:icon:status` reports which icons have been redrawn upstream since they
+  were generated, from the `shape-icons.json` written beside them, and reports
+  every directory holding one rather than only the directory a run resolved to.
 
-`--replace` generates Shape's icon **slots** — the icons it resolves in
+`shape:icon:replace` generates Shape's icon **slots** — the icons it resolves in
 components of its own. A slot is named for its role, not for a vendor's
 spelling: `shape-close` is the dismiss glyph, `shape-warning` is what a `warning`
 tone reaches for. The list is declared in `shape.icon_slots`, and every set says
@@ -316,8 +328,8 @@ php artisan shape:icon bell trash
 
 Those names are free. The package ships `shape-arrow-right`, `shape-plus` and
 `shape-trash` for its own README and previews, prefixed precisely so `trash` and
-`plus` are not taken; nothing resolves them and `--replace` leaves them alone.
-`--replace` does not touch what you generate either, so regenerate it yourself
+`plus` are not taken; nothing resolves them and `shape:icon:replace` leaves them
+alone. It does not touch what you generate either, so regenerate that yourself
 when you swap sets — `shape:doctor` lists what it finds outside the slots for
 that reason.
 
@@ -327,10 +339,11 @@ subdirectory instead, for when two sets spell the same name:
 exactly as a top-level icon does. It belongs on the set rather than on the
 command line — where a set lives is true of the set, and a `--namespace` flag is
 remembered only for the run it is typed on, so the next run without it writes a
-second copy flat. The flag survives as a per-run override, and `--namespace=`
-says a run is flat about a set that normally isn't, which is what `--replace`
-needs. Keep the primary set flat so a call site has one spelling for an icon
-whichever set drew it.
+second copy flat. The flag survives as a per-run override on `shape:icon` and
+`shape:icon:all`, and `--namespace=` says a run is flat about a set that normally
+isn't — on `shape:icon:replace` that empty value is the only one it takes, and a
+set declaring a `namespace` is refused outright. Keep the primary set flat so a
+call site has one spelling for an icon whichever set drew it.
 
 Run `shape:doctor` in CI once anything has been ejected: it exits non-zero when a
 folded component reads `auth()`, `session()`, `request()`, `config()`, `$errors`,
@@ -348,7 +361,7 @@ Read before executing:
 - `vendor/onelegstudios/laravel-shape/docs/_index.md` — every component, with its tier
 - `vendor/onelegstudios/laravel-shape/docs/folding.md` — what keeps a call site on the fold path
 - `vendor/onelegstudios/laravel-shape/docs/forms.md` — the field shorthand and name resolution
-- `vendor/onelegstudios/laravel-shape/docs/tooling.md` — the four commands
+- `vendor/onelegstudios/laravel-shape/docs/tooling.md` — the nine commands
 - `vendor/onelegstudios/laravel-shape/resources/registry.json` — components, files, dependencies, tiers
 
 ## Examples

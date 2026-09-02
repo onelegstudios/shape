@@ -205,9 +205,9 @@ it('names both sets when an icon directory is wearing two', function () {
 
 it('reports the icons outside the slots without calling them a problem', function () {
     // The extras, and anything the application has generated for itself.
-    // `--replace` skips them correctly — nothing in Shape resolves them — but
-    // they are in the same directory in whatever set drew them, and silence
-    // about that reads as approval.
+    // `shape:icon:replace` skips them correctly — nothing in Shape resolves
+    // them — but they are in the same directory in whatever set drew them, and
+    // silence about that reads as approval.
     writeIcons(IconSlots::fromConfig()->names());
     writeIcons(['trash', 'bell']);
 

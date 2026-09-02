@@ -223,29 +223,38 @@ which is what `#[On]` already listens for. See
 ## Commands
 
 ```bash
-php artisan shape:install       # import the tokens, register the script
-php artisan shape:eject modal   # a component, and everything it composes
-php artisan shape:eject --status
-php artisan shape:doctor        # the mistake that costs a fold and says nothing
-php artisan shape:icon --all    # an icon set, fetched and turned into components
-php artisan shape:icon --status
+php artisan shape:install          # import the tokens, register the script
+php artisan shape:doctor           # the mistake that costs a fold, silently
+
+php artisan shape:eject modal      # a component, and everything it composes
+php artisan shape:eject:all        # the whole library at once
+php artisan shape:eject:status     # what has moved since you copied it
+
+php artisan shape:icon bell trash  # the icons you ask for, by name
+php artisan shape:icon:all         # every icon the set draws
+php artisan shape:icon:replace     # the fourteen Shape draws itself
+php artisan shape:icon:status      # what has been redrawn upstream
 ```
+
+Ejecting and generating each come in three or four, because which files a run
+writes is what separates them — an argument the command is named for rather
+than a mode flag it takes.
 
 `shape:eject` follows a dependency graph — a modal arrives with the heading, the
 text and the close button inside it — and records what the package held at the
-moment it copied each file, so `--status` can tell a component you edited from
-one the package has changed underneath you.
+moment it copied each file, so `shape:eject:status` can tell a component you
+edited from one the package has changed underneath you.
 
 `shape:icon` generates icon components from a set of SVGs. A set declares the
 repository that draws it, so the command fetches it, caches it, and writes the
 resolved commit into every file — which is what makes *Regenerate; don't
 hand-edit* an instruction you can follow rather than one that asks for a
 checkout nobody mentioned. `--from` reads a local directory instead, and
-`--status` reports which drawings have moved upstream since.
+`shape:icon:status` reports which drawings have moved upstream since.
 
 Fourteen of those components are the ones Shape's own components draw — the
 *slots*, named `shape-close` and `shape-warning` for the role they play rather
-than for whichever vendor drew them. `shape:icon --replace --set=lucide`
+than for whichever vendor drew them. `shape:icon:replace --set=lucide`
 regenerates that fourteen from another set without a call site changing.
 Heroicons, Lucide, Tabler, Phosphor and Bootstrap Icons ship as sets, and any
 directory of SVGs is one. A set other than the one `shape.icon_set` names is

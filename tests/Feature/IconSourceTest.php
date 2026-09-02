@@ -207,8 +207,8 @@ it('walks a flattened set under its own names', function () {
         'icons/User & Faces/user-line.svg' => '<svg viewBox="0 0 24 24"><path d="M2 2" /></svg>',
     ]))]);
 
-    // `--all` reads the flattened directory the way it reads any flat set: the
-    // style suffix is the set's own, so `close-line` and `close-fill` are one
+    // `shape:icon:all` reads the flattened directory the way it reads any flat
+    // set: the style suffix is the set's own, so `close-line` and `close-fill` are one
     // icon in two styles rather than two icons.
     $this->artisan('shape:icon:all', ['--set' => $set])->assertSuccessful();
 
@@ -263,9 +263,9 @@ it('generates from a set it fetched rather than one somebody had to clone', func
 });
 
 it('asks for the whole set in one request', function () {
-    // Rate limits are the reason. `--all` over a set of a thousand drawings is
-    // one request as a tarball and a thousand as raw files, and the second one
-    // does not finish.
+    // Rate limits are the reason. `shape:icon:all` over a set of a thousand
+    // drawings is one request as a tarball and a thousand as raw files, and the
+    // second one does not finish.
     Http::fake(['codeload.github.com/*' => Http::response($this->archive)]);
 
     $this->artisan('shape:icon:all')->assertSuccessful();

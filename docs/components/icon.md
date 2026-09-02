@@ -88,7 +88,7 @@ label. When an icon carries meaning on its own, expose it and give it a name:
 Fourteen icons are resolved by Shape's own components. These are the **slots** —
 named for the role they play rather than for whatever the set that drew them
 calls it — and they are the list that matters when you swap sets: the list
-`shape:icon --replace` generates and `shape:doctor` checks.
+`shape:icon:replace` generates and `shape:doctor` checks.
 
 | Slot | Resolved by |
 | --- | --- |
@@ -115,8 +115,9 @@ does not.
 
 ## Overriding one
 
-The whole set at once is [`--replace`](../tooling.md#slots-and-replacing-shapes-own-icons).
-For one slot, publish the config and change what fills it:
+The whole list at once is
+[`shape:icon:replace`](../tooling.md#slots-and-replacing-shapes-own-icons). For
+one slot, publish the config and change what fills it:
 
 ```bash
 php artisan vendor:publish --tag=laravel-shape-config
@@ -135,8 +136,8 @@ php artisan vendor:publish --tag=laravel-shape-config
 php artisan shape:icon shape-warning --set=lucide --force
 ```
 
-Declarative, and it survives the next `--replace` — which a one-off on the
-command line would not.
+Declarative, and it survives the next `shape:icon:replace` — which a one-off on
+the command line would not.
 
 To draw one yourself, write `resources/views/shape/icon/shape-warning.blade.php`
 into `components_path`. That path resolves first, everywhere, including inside
@@ -159,15 +160,19 @@ from any directory of SVGs in any set's layout:
 ```bash
 php artisan shape:icon bell trash
 php artisan shape:icon bell trash --from=resources/icons
+php artisan shape:icon:all --set=lucide
 ```
+
+The last of those is the set entire, which is the same generator asked for every
+name it draws rather than the ones you typed.
 
 They are then `<x-shape::icon.bell />` and `<x-shape::icon.trash />`, in your set,
 under the names your set uses. Nothing already occupies those names — the three
 drawings this package ships for its own README and previews are prefixed
 `shape-arrow-right`, `shape-plus` and `shape-trash` precisely so that the bare
-ones stay free. `--replace` does not touch what you generate, so regenerate it
-yourself when you swap sets; `shape:doctor` lists what it finds outside the slots
-for exactly that reason.
+ones stay free. `shape:icon:replace` does not touch what you generate, so
+regenerate it yourself when you swap sets; `shape:doctor` lists what it finds
+outside the slots for exactly that reason.
 
 A whole second set can have a subdirectory, and a namespace, of its own. Say so
 once, on the set:
@@ -180,7 +185,7 @@ once, on the set:
 ```
 
 ```bash
-php artisan shape:icon --all --set=lucide
+php artisan shape:icon:all --set=lucide
 ```
 
 ```blade
@@ -196,7 +201,7 @@ everywhere, including inside Shape's own components — so swapping the set the
 whole library draws in is one command:
 
 ```bash
-php artisan shape:icon --replace --set=lucide
+php artisan shape:icon:replace --set=lucide
 ```
 
 That generates the fourteen slots, under their own names, from whatever the set

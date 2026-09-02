@@ -85,7 +85,7 @@ The guides cover what several components share:
 | [Overlays](overlays.md) | What the five overlays share: the script, the naming convention, what the platform supplies |
 | [Feedback](feedback.md) | Server to browser, and why that needs no Livewire component |
 | [Data display](data.md) | What the table, the list and the pager share, and what a component costs per row |
-| [Tooling](tooling.md) | The four commands and the manifest they read |
+| [Tooling](tooling.md) | The nine commands and the manifests they read |
 | [Folding](folding.md) | What Blaze does, and the call sites that keep a component on the fold path |
 
 ## JavaScript
@@ -128,18 +128,21 @@ php artisan shape:eject modal
 
 A modal composes a heading, a text and a close button, so all four arrive
 together — ejecting the shell without the parts you wanted to change is the
-worst of both arrangements. `vendor:publish --tag="laravel-shape-components"`
-still takes the whole library at once.
+worst of both arrangements. `shape:eject:all` and
+`vendor:publish --tag="laravel-shape-components"` each take the whole library at
+once.
 
 Ejected components resolve ahead of the packaged ones. The location is
 configurable with `shape.components_path`.
 
 ## Tooling
 
-Four commands, none of them required: `shape:install` writes the import and the
-script registration for you,
-`shape:eject` hands you a component and everything it composes, `shape:doctor`
-checks an ejected component for the global state that would cost it its fold,
-and `shape:icon` fetches an icon set and generates components from it. See
+Nine commands in four families, none of them required: `shape:install` writes
+the import and the script registration for you, `shape:eject` hands you a
+component and everything it composes, `shape:doctor` checks an ejected component
+for the global state that would cost it its fold, and `shape:icon` fetches an
+icon set and generates components from it. Ejecting and generating each have
+siblings for the whole of something — `shape:eject:all`, `shape:icon:all`,
+`shape:icon:replace` — and a `:status` apiece for what has moved since. See
 [Tooling](tooling.md), which also covers the documentation site you are probably
 reading this on.

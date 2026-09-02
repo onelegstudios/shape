@@ -360,8 +360,8 @@ it('answers nothing for a slot the set says it has no drawing for', function () 
 
 it('leaves anything outside the slots as itself', function () {
     // Which covers every icon a user generates — `bell`, `plus`, a set's own
-    // file under `--all` — and is why a set that fills no slots needs no
-    // special case anywhere.
+    // file under `shape:icon:all` — and is why a set that fills no slots needs
+    // no special case anywhere.
     expect(slotted()->sourceName('bell'))->toBe('bell')
         ->and(lucide()->sourceName('bell'))->toBe('bell')
         ->and(heroicons()->sourceName('trash'))->toBe('trash');
@@ -381,8 +381,8 @@ it('refuses a slot that is not a name against a name', function () {
 
 it('refuses a set that still speaks in aliases', function () {
     // What a config published before slots existed looks like. Ignoring the key
-    // would leave the set covering no slot at all — a `--replace` that writes
-    // nothing and reports success, which is worse than saying so.
+    // would leave the set covering no slot at all — a `shape:icon:replace` that
+    // writes nothing and reports success, which is worse than saying so.
     expect(fn () => IconSet::fromArray('stale', [
         'styles' => ['outline' => ['base' => '{name}.svg']],
         'aliases' => ['x-mark' => 'x'],
@@ -468,8 +468,8 @@ it('reads Material Symbols from the published package rather than the repository
         ->and($material->paths('outline', 'base', 'check_circle'))->toBe(['check_circle.svg'])
         ->and($material->paths('solid', 'base', 'check_circle'))->toBe(['check_circle-fill.svg']);
 
-    // The style is a suffix in one directory, so `--all` reads the pair as one
-    // icon rather than as an icon named for its own marker.
+    // The style is a suffix in one directory, so `shape:icon:all` reads the pair
+    // as one icon rather than as an icon named for its own marker.
     expect($material->nameFor('', 'check_circle'))->toBe('check_circle')
         ->and($material->nameFor('', 'check_circle-fill'))->toBe('check_circle');
 });

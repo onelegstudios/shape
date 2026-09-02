@@ -86,10 +86,10 @@ it('spins the loading icon', function () {
 });
 
 it('renders every slot it declares', function () {
-    // The declared list is what `--replace` generates and what `shape:doctor`
-    // checks, so a slot the package itself cannot render is a hole in both. One
-    // test rather than a dataset: a dataset closure is resolved before the
-    // application boots, and the list lives in its config.
+    // The declared list is what `shape:icon:replace` generates and what
+    // `shape:doctor` checks, so a slot the package itself cannot render is a
+    // hole in both. One test rather than a dataset: a dataset closure is
+    // resolved before the application boots, and the list lives in its config.
     foreach (IconSlots::fromConfig()->names() as $slot) {
         expect(Blade::render("<x-shape::icon.{$slot} />"))->toContain('<svg');
     }
@@ -97,8 +97,8 @@ it('renders every slot it declares', function () {
 
 it('ships the three its own examples use', function (string $icon) {
     // Resolved by no component: the README and the previews render these, which
-    // is the only reason they are files. Not slots — `--replace` leaves them
-    // alone — and not offered as a catalogue either.
+    // is the only reason they are files. Not slots — `shape:icon:replace` leaves
+    // them alone — and not offered as a catalogue either.
     expect(Blade::render("<x-shape::icon.{$icon} />"))->toContain('<svg');
 })->with(['shape-arrow-right', 'shape-plus', 'shape-trash']);
 

@@ -382,7 +382,7 @@ it('fills a slot the set spells the same way from that spelling', function () {
 });
 
 it('answers every slot from every set the package ships', function () {
-    // A set in the shipped config is a promise that `--replace --set=…`
+    // A set in the shipped config is a promise that `shape:icon:replace --set=…`
     // completes, and the way that promise breaks quietly is an oversight rather
     // than a gap: `null` is an answer and a missing key is not, and only the
     // second fails the run — on the machine of whoever typed it first.
@@ -475,7 +475,8 @@ it('resolves thirteen of the fourteen slots in components of its own', function 
     // Derived from the markup rather than typed out, so this guards the
     // derivation rather than restating it. `shape-loading` is the fourteenth and
     // is not here: nothing in the library renders a spinner, which is exactly
-    // why the list `--replace` works from is declared rather than scanned.
+    // why the list `shape:icon:replace` works from is declared rather than
+    // scanned.
     expect((new Registry)->icons())->toBe([
         'shape-checked',
         'shape-close',
@@ -658,7 +659,8 @@ it('lets one run override the subdirectory its set declares', function () {
 
 it('writes flat for a run that says flat out loud', function () {
     // `--namespace=` with nothing after it. The one way to say "this run is
-    // flat" about a set that normally is not, which is what `--replace` needs.
+    // flat" about a set that normally is not, which is what
+    // `shape:icon:replace` needs.
     config()->set('shape.icon_sets.lucide.namespace', 'lucide');
 
     $this->artisan('shape:icon', [
@@ -732,8 +734,8 @@ it('leaves the compiled views alone when it wrote nothing', function () {
 
 describe('shape:icon:all', function () {
     it('finds every icon in the source directory', function () {
-        // Under its own name: `--all` walks the set's files, and a file is what the
-        // set calls it. Filling a slot is the other operation.
+        // Under its own name: `shape:icon:all` walks the set's files, and a file
+        // is what the set calls it. Filling a slot is the other operation.
         $this->artisan('shape:icon:all', ['--from' => $this->heroicons])
             ->expectsOutputToContain('check')
             ->assertSuccessful();
@@ -743,9 +745,10 @@ describe('shape:icon:all', function () {
     });
 
     it('writes every file it discovers flat, under its own name', function () {
-        // `--all` used to run the slot map backwards, and the hairy case was a file
-        // whose name an entry had already spoken for: it was written under nothing,
-        // because generating it would have shadowed the entry with the wrong glyph.
+        // The command used to run the slot map backwards, and the hairy case was
+        // a file whose name an entry had already spoken for: it was written
+        // under nothing, because generating it would have shadowed the entry
+        // with the wrong glyph.
         // Slots live in a namespace no set uses, so nothing is reversed and nothing
         // is dropped — every file arrives under the name the set gave it.
         config()->set('shape.icon_set', 'lucide');
@@ -768,9 +771,9 @@ describe('shape:icon:all', function () {
     it('reads a suffixed filename as the drawing it is, not as a name of its own', function () {
         // Phosphor's `fill/check-fill.svg` is the fill drawing of `check`. Walking
         // the listing for names would write it as `check-fill`, whose outline cell
-        // resolves to `regular/check-fill.svg` and is never there — so `--all` runs
-        // the pattern backwards instead, and a file no pattern accounts for is
-        // skipped rather than named.
+        // resolves to `regular/check-fill.svg` and is never there — so
+        // `shape:icon:all` runs the pattern backwards instead, and a file no
+        // pattern accounts for is skipped rather than named.
         // Read through the shipped `phosphor` entry rather than a set written for
         // the test, so this covers the config the package promises as well as the
         // command that reads it.
@@ -848,8 +851,8 @@ describe('shape:icon:replace', function () {
     it('leaves the three examples alone, because they are not the library\'s', function () {
         // `shape-arrow-right`, `shape-plus` and `shape-trash` ship so the README and
         // the previews render. Nothing resolves them and the documentation does not
-        // offer them as a catalogue, so `--replace` skipping them is the design: an
-        // application that wants a trash can generates its own.
+        // offer them as a catalogue, so `shape:icon:replace` skipping them is the
+        // design: an application that wants a trash can generates its own.
         $this->artisan('shape:icon:replace', ['--set' => 'lucide', '--from' => $this->lucide])
             ->assertSuccessful();
 
@@ -892,8 +895,8 @@ describe('shape:icon:replace', function () {
     });
 
     it('keeps a replacement flat, whichever set draws it', function () {
-        // `--replace` is one set standing in for the library's own for the length of
-        // a run, and the names it writes are flat by definition — `shape::icon.
+        // The command is one set standing in for the library's own for the length
+        // of a run, and the names it writes are flat by definition — `shape::icon.
         // shape-close` is what the close button asks for, and a file under
         // `icon/lucide/` answers to something else. So the subdirectory a
         // supplementary set gets is not applied here, or the documented way to
@@ -971,8 +974,8 @@ describe('shape:icon:status', function () {
     });
 
     it('reports on a set that landed under its own name', function () {
-        // `--status` walks the directories the config accounts for, and a set that
-        // was never given a `namespace` is now one of them. Reading only the flat
+        // The command walks the directories the config accounts for, and a set
+        // that was never given a `namespace` is now one of them. Reading only the flat
         // lockfile would answer "nothing has been generated" for a set sitting right
         // there, which reads like a clean bill of health rather than a blind spot.
         $this->artisan('shape:icon', [
@@ -989,7 +992,7 @@ describe('shape:icon:status', function () {
     });
 
     it('reports on a namespaced set that the run did not name', function () {
-        // `--status` is asked what is stale, not what is stale in one directory. A
+        // It is asked what is stale, not what is stale in one directory. A
         // set keeps its lockfile beside its own components, so reading only the flat
         // one answered "nothing has been generated" for a set sitting right there —
         // which reads like a clean bill of health rather than like a blind spot.

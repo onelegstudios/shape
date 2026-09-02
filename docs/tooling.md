@@ -1,8 +1,9 @@
 # Tooling
 
-Four commands, and none of them is required to use the library. Shape is
-seventy Blade files and a stylesheet; what follows is what turns that into
-something you can install, take pieces out of, and keep honest afterwards.
+Nine commands in four families, and none of them is required to use the
+library. Shape is seventy Blade files and a stylesheet; what follows is what
+turns that into something you can install, take pieces out of, and keep honest
+afterwards.
 
 ```bash
 php artisan shape:install     # the two lines this package needs
@@ -40,8 +41,12 @@ colour, radius and density; utilities cover the one-off; ejecting hands you the
 file.
 
 ```bash
-php artisan shape:eject modal
+php artisan shape:eject modal   # a component, and everything it composes
+php artisan shape:eject:all     # every component in the library
+php artisan shape:eject:status  # what has moved since you copied it
 ```
+
+The first of those prints what it took, and why each file is in the list:
 
 ```
 heading ................................... required by modal
@@ -82,17 +87,20 @@ component resolves ahead of the packaged one, so every compiled view that inline
 the packaged version is now an answer about a file that is no longer the one
 being asked about.
 
-`vendor:publish --tag="laravel-shape-components"` still does the whole library
-at once.
+`shape:eject:all` takes the whole library, on the same terms: the same
+`--force`, the same report, and the same record written beside the files.
+`vendor:publish --tag="laravel-shape-components"` still copies all of it too,
+and is the one way in that writes no record — so what it hands you is a
+directory `shape:eject:status` can say nothing about afterwards.
 
-### After an upgrade
+### `shape:eject:status`
 
-Ejecting writes a `shape-eject.json` next to the components, recording what the
-package held at the moment each file was copied. That record is the only thing
-that can tell two situations apart later:
+The command for after an upgrade. Ejecting writes a `shape-eject.json` next to
+the components, recording what the package held at the moment each file was
+copied. That record is the only thing that can tell two situations apart later:
 
 ```bash
-php artisan shape:eject --status
+php artisan shape:eject:status
 ```
 
 | | |
@@ -153,9 +161,9 @@ attribution comes from the notice each generated file carries, so an icon
 directory holding two sets says so.
 
 Icons outside the slots get a line and never a finding. Those are the ones you
-generated yourself: `--replace` does not touch them and should not, but they are
-sitting in the same directory in whatever set drew them, and silence about that
-reads as approval.
+generated yourself: `shape:icon:replace` does not touch them and should not,
+but they are sitting in the same directory in whatever set drew them, and
+silence about that reads as approval.
 
 The check is silent until something has actually replaced a slot: an application
 on the packaged icons is not partially covered, and a directory of icons that
@@ -170,15 +178,23 @@ held to the rule it publishes.
 ## `shape:icon`
 
 Every icon in Shape is generated. The header on each file says
-*Regenerate; don't hand-edit*, and this is what regenerates them.
+*Regenerate; don't hand-edit*, and these four are what regenerate them.
 
 ```bash
-php artisan shape:icon check arrow-right
-php artisan shape:icon --all
-php artisan shape:icon --replace
+php artisan shape:icon check arrow-right  # the names you ask for
+php artisan shape:icon:all                # every icon the set draws
+php artisan shape:icon:replace            # the icons Shape draws itself
+php artisan shape:icon:status             # what has been redrawn upstream
+```
+
+Which names a run writes is the whole difference between them, so it is the
+argument each one is named for rather than a flag it takes. Everything else —
+which set, where the drawings come from, where the components land — is shared,
+and is the rest of this section:
+
+```bash
 php artisan shape:icon bell --set=lucide
-php artisan shape:icon --all --from=./resources/svg
-php artisan shape:icon --status
+php artisan shape:icon:all --from=./resources/svg
 ```
 
 ### Which set a run reads
@@ -190,7 +206,7 @@ php artisan shape:icon --status
 ```
 
 ```bash
-php artisan shape:icon --replace
+php artisan shape:icon:replace
 php artisan shape:icon bell trash
 ```
 
@@ -199,7 +215,7 @@ yours is true of the application; a flag is true of one run. An application on
 Lucide that had to type `--set=lucide` forever only had to forget once, and the
 run that forgot wrote a Heroicon into a directory of Lucide drawings — under a
 slot name, which is a role and says nothing about who drew it. Set it, and
-`shape:icon --replace` is a replacement rather than a re-mixing.
+`shape:icon:replace` is a replacement rather than a re-mixing.
 
 `--set` is still the override, and reading a supplementary set is exactly the
 one-off it is for:
@@ -233,15 +249,16 @@ fetched once, cached under `storage/framework/shape/icons`, and read from there
 afterwards. Nothing about it is read at run time; a generated component is bytes
 on disk.
 
-Two ways in, chosen by the shape of the run. `--all` and `--replace` take the
-whole set as one tarball, which is also the only form that can list a directory.
-A handful of names on the command line takes one raw file per drawing instead,
-because downloading a repository to answer `shape:icon bell` is the wrong trade.
+Two ways in, chosen by which command is running. `shape:icon:all` and
+`shape:icon:replace` take the whole set as one tarball, which is also the only
+form that can list a directory. `shape:icon` takes one raw file per drawing
+instead, because downloading a repository to answer `shape:icon bell` is the
+wrong trade.
 
 ```bash
 php artisan shape:icon bell --set=lucide --ref=v0.544.0
-php artisan shape:icon --all --offline
-php artisan shape:icon --all --from=./resources/svg
+php artisan shape:icon:all --offline
+php artisan shape:icon:all --from=./resources/svg
 ```
 
 `--ref` reads a different branch, tag or commit. `--offline` works from what has
@@ -265,12 +282,12 @@ drawing is actually in the file. The resolved commit comes out of the archive
 itself and costs no extra request.
 
 `shape-icons.json` is written beside the components — the same trade
-`shape:eject` makes with `shape-eject.json`, one layer further out. It records
-the set, the ref, the commit and a digest per icon, which is what lets
-`--status` tell the interesting case from the ordinary one:
+`shape:eject:status` makes with `shape-eject.json`, one layer further out. It
+records the set, the ref, the commit and a digest per icon, which is what lets
+`shape:icon:status` tell the interesting case from the ordinary one:
 
 ```bash
-php artisan shape:icon --status
+php artisan shape:icon:status
 ```
 
 ```
@@ -356,10 +373,11 @@ whose only pattern is `{name}.svg`, which is what the shipped `lucide` entry is.
 
 A pattern is a path and not a directory because a filename is not always a name.
 Phosphor puts the weight in both: `regular/heart.svg` and `fill/heart-fill.svg`
-are one icon drawn twice. `--all` reads the pattern backwards to see that —
-`{name}-fill` against `heart-fill` is `heart` — so the two land in one component
-instead of fifteen hundred icons arriving beside fifteen hundred `-fill` ones
-whose other cell is never there. A file no pattern accounts for is skipped.
+are one icon drawn twice. `shape:icon:all` reads the pattern backwards to see
+that — `{name}-fill` against `heart-fill` is `heart` — so the two land in one
+component instead of fifteen hundred icons arriving beside fifteen hundred
+`-fill` ones whose other cell is never there. A file no pattern accounts for is
+skipped.
 
 Two spellings beyond `{name}`, both for sets that don't put the marker on the
 end. `{head}` and `{tail}` are the name split at its last hyphen, and only ever
@@ -414,7 +432,7 @@ files rather than letting the second quietly overwrite the first.
 ### The sets that ship
 
 Seven, each checked against the repository it names and each answering every
-slot, so `--replace --set=…` is a complete answer for any of them:
+slot, so `shape:icon:replace --set=…` is a complete answer for any of them:
 
 | | Styles | Grid | |
 | --- | --- | --- | --- |
@@ -485,10 +503,10 @@ replaces. `--ref` names a version for a published set, the way it names a branch
 for a repository.
 
 A set that says `'archive' => false` is read one drawing at a time instead —
-that is the flag for a repository too large to unpack, and it costs `--all`,
-which has no listing without an archive. Whatever a set says, an archive larger
-than the memory left to open it in is reported with its size and the limit
-rather than killing the process partway through.
+that is the flag for a repository too large to unpack, and it costs
+`shape:icon:all`, which has no listing without an archive. Whatever a set says,
+an archive larger than the memory left to open it in is reported with its size
+and the limit rather than killing the process partway through.
 
 ### Slots, and replacing Shape's own icons
 
@@ -544,10 +562,10 @@ A set with nothing for a slot says `null`. That is a different thing from
 leaving the entry out — one is an answer and the other is an oversight, and
 `shape:icon` reports them differently.
 
-`--replace` is the whole list at once:
+`shape:icon:replace` is the whole list at once:
 
 ```bash
-php artisan shape:icon --replace --set=lucide --from=./vendor/lucide/icons
+php artisan shape:icon:replace --set=lucide --from=./vendor/lucide/icons
 ```
 
 It generates exactly the declared slots — the checkbox's tick and dash, the
@@ -557,12 +575,12 @@ fresh application `components_path` is empty, so there is nothing to `--force`
 and nothing to eject first.
 
 This package also ships `shape-arrow-right`, `shape-plus` and `shape-trash`, and
-`--replace` leaves them alone. They are not part of the library's vocabulary:
-nothing resolves them, and they exist so the README and the previews render for
-somebody who has configured nothing. They carry the prefix so that `arrow-right`,
-`plus` and `trash` stay free for whatever you generate — reaching for a bare
-`trash` you never generated is a "component not found" rather than a Heroicon
-drawn beside thirteen Lucide slots.
+`shape:icon:replace` leaves them alone. They are not part of the library's
+vocabulary: nothing resolves them, and they exist so the README and the previews
+render for somebody who has configured nothing. They carry the prefix so that
+`arrow-right`, `plus` and `trash` stay free for whatever you generate — reaching
+for a bare `trash` you never generated is a "component not found" rather than a
+Heroicon drawn beside thirteen Lucide slots.
 
 One slot is **packaged**: Shape draws `shape-loading` itself, because Heroicons'
 nearest drawing is `arrow-path` — a circular arrow rather than a loader, and it
@@ -591,7 +609,7 @@ php artisan shape:icon shape-warning --set=lucide --force
 ```
 
 That is durable in a way a command-line override would not be: a slot repointed
-on the command line reverts on the next `--replace`. To draw one by hand
+on the command line reverts on the next `shape:icon:replace`. To draw one by hand
 instead, write `resources/views/shape/icon/shape-warning.blade.php` yourself —
 `components_path` resolves first and the generator reports `exists, kept` rather
 than overwriting it without `--force`, so it survives regeneration. Copy the
@@ -599,10 +617,10 @@ than overwriting it without `--force`, so it survives regeneration. Copy the
 a generated file; a hand-written slot that omits the annotation stops folding
 and says nothing.
 
-`--all` walks the set's own files and writes each under its own name, flat.
-Slots live in a namespace no set uses, so there is nothing to reverse and no
-file that ends up with no name to take — which is how a supplementary set adds
-icons rather than replacing them.
+`shape:icon:all` walks the set's own files and writes each under its own name,
+flat. Slots live in a namespace no set uses, so there is nothing to reverse and
+no file that ends up with no name to take — which is how a supplementary set
+adds icons rather than replacing them.
 
 ### Two sets at once
 
@@ -657,32 +675,33 @@ and then the same command without it wrote a second copy somewhere else, and
 pinned it in a second lockfile — silently, because the "exists, kept" check only
 looks in the directory the run resolved to.
 
-`--namespace` is still there as the override for a one-off run, and
-`--namespace=` with nothing after it is the way to say a run is flat about a set
-that normally isn't. One lower-case segment either way: `../..` is refused
-rather than allowed to write outside the components path, whether it comes from
-the flag, from the set's `namespace`, or from the set's name standing in for
-one.
+`--namespace` is still there on `shape:icon` and `shape:icon:all` as the
+override for a one-off run, and `--namespace=` with nothing after it is the way
+to say a run is flat about a set that normally isn't. One lower-case segment
+either way: `../..` is refused rather than allowed to write outside the
+components path, whether it comes from the flag, from the set's `namespace`, or
+from the set's name standing in for one.
 
-`--replace` is the exception, and needs none of this. It is one set standing in
-for the library's own for the length of a run, and the names it writes are flat
-by definition — `shape::icon.shape-close` is what the close button asks for, and
-a file under `icon/lucide/` answers to something else. So it writes flat
-whichever set it reads:
+`shape:icon:replace` is the exception, and needs none of this. It is one set
+standing in for the library's own for the length of a run, and the names it
+writes are flat by definition — `shape::icon.shape-close` is what the close
+button asks for, and a file under `icon/lucide/` answers to something else. So
+it writes flat whichever set it reads:
 
 ```bash
-php artisan shape:icon --replace --set=lucide
+php artisan shape:icon:replace --set=lucide
 ```
 
-A set that declares a `namespace` is the one case that refuses, with a sentence
-saying so, since a namespaced replacement would write fourteen files and change
-nothing.
+Its `--namespace` therefore takes one value, the empty one, which is how a run
+says *flat* about a set that normally isn't. A set that declares a `namespace`
+is the one case that refuses outright, with a sentence saying so, since a
+namespaced replacement would write fourteen files and change nothing.
 
-`--status` reports every directory that holds a lockfile, not just the one the
-run resolved to, so a namespaced set is not a blind spot:
+`shape:icon:status` reports every directory that holds a lockfile, not just the
+one the run resolved to, so a namespaced set is not a blind spot:
 
 ```bash
-php artisan shape:icon --status
+php artisan shape:icon:status
 ```
 
 Nesting is a path and nothing else: a namespaced icon folds exactly as a

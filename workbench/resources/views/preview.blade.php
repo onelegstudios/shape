@@ -274,7 +274,7 @@
                         <h3 class="font-medium tracking-tight">Icons</h3>
                         <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
                             The slots Shape resolves itself, read out of <code class="text-xs">shape.icon_slots</code> &mdash;
-                            these are what <code class="text-xs">shape:icon --replace</code> regenerates in your set.
+                            these are what <code class="text-xs">shape:icon:replace</code> regenerates in your set.
                             Each variant is a drawing made at its own size. Nothing is scaled.
                         </p>
                     </div>
