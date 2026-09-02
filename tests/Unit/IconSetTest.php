@@ -452,14 +452,18 @@ it('ships the one set whose layout has to be collapsed before it can be read', f
         ->and($remix->nameFor('', 'bold'))->toBe('bold');
 });
 
-it('reads Material Symbols from one weight of the mirror rather than from the variants', function () {
+it('reads Material Symbols from the published package rather than the repository', function () {
     // Google's own repository files a symbol as a directory of 168 variants,
-    // which is the layout `flatten` cannot help with either — every family
-    // repeats the same filenames. The mirror is one weight to a directory, so
-    // the ordinary flat patterns read it and a name is a path again.
+    // which is a layout no pattern can place a name into — and the mirror of it
+    // is 2.8GB, which cannot be unpacked in memory at all. The package is the
+    // same drawings without the project that produces them: 1.8MB, one weight
+    // and family to a directory, which the ordinary flat patterns read.
     $material = IconSet::fromArray('material-symbols', config('shape.icon_sets')['material-symbols'], config('shape.icon_sizes'));
 
-    expect($material->path)->toBe('svg/400/outlined')
+    expect($material->npm)->toBe('@material-symbols/svg-400')
+        ->and($material->repo)->toBeNull()
+        ->and($material->version)->toBe('latest')
+        ->and($material->path)->toBe('outlined')
         ->and($material->flatten)->toBeFalse()
         ->and($material->paths('outline', 'base', 'check_circle'))->toBe(['check_circle.svg'])
         ->and($material->paths('solid', 'base', 'check_circle'))->toBe(['check_circle-fill.svg']);
@@ -468,6 +472,29 @@ it('reads Material Symbols from one weight of the mirror rather than from the va
     // icon rather than as an icon named for its own marker.
     expect($material->nameFor('', 'check_circle'))->toBe('check_circle')
         ->and($material->nameFor('', 'check_circle-fill'))->toBe('check_circle');
+});
+
+it('reads Tabler from the package rather than the repository', function () {
+    // Same drawings, 1.2MB against 32MB. The package also carries a second copy
+    // of the outline set filed by category, which `path` drops: what is read is
+    // the flat `icons/` tree, so the patterns are the ones they always were.
+    $tabler = IconSet::fromArray('tabler', config('shape.icon_sets')['tabler'], config('shape.icon_sizes'));
+
+    expect($tabler->npm)->toBe('@tabler/icons')
+        ->and($tabler->repo)->toBeNull()
+        ->and($tabler->path)->toBe('icons')
+        ->and($tabler->paths('outline', 'base', 'circle-check'))->toBe(['outline/circle-check.svg'])
+        ->and($tabler->paths('solid', 'base', 'circle-check'))->toBe(['filled/circle-check.svg']);
+});
+
+it('refuses a set that names both a repository and a package', function () {
+    // Not a spare source: nobody could say which of them a generated component
+    // was drawn from, and the header names one of them.
+    expect(fn () => IconSet::fromArray('bad', [
+        'repo' => 'marella/material-symbols',
+        'npm' => '@material-symbols/svg-400',
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+    ], scale()))->toThrow(InvalidArgumentException::class, 'both a [repo] and an [npm]');
 });
 
 it('reads the subdirectory a set is written into', function () {

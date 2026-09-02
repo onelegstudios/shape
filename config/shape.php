@@ -180,9 +180,11 @@ return [
     'icon_sets' => [
 
         'heroicons' => [
-            'repo' => 'tailwindlabs/heroicons',
-            'ref' => 'master',
-            'path' => 'optimized',
+            // The package publishes the `optimized/` drawings at its root, byte
+            // for byte, which is why there is no `path` here and why the icons
+            // this library ships regenerate identically from it.
+            'npm' => 'heroicons',
+            'version' => 'latest',
             'notice' => 'Heroicons (https://heroicons.com), MIT licensed.',
             'styles' => [
                 'solid' => [
@@ -220,6 +222,10 @@ return [
         ],
 
         'lucide' => [
+            // The one set still read from its repository. `lucide-static` ships
+            // fonts and a sprite sheet beside the drawings, which makes it the
+            // only package here larger than the repository behind it — 6.2MB
+            // against 5.0MB — so there is nothing to move it for.
             // Uncomment to write this set into `icon/lucide/` instead of flat,
             // so it can keep a name Heroicons already spells:
             // `<x-shape::icon.lucide.bell />`. It is off here because this is
@@ -263,8 +269,12 @@ return [
         ],
 
         'tabler' => [
-            'repo' => 'tabler/tabler-icons',
-            'ref' => 'main',
+            // The package rather than the repository: 1.2MB against 32MB, for
+            // the same drawings. It carries a second copy of the outline set
+            // filed by category, which `path` drops on the way in — the flat
+            // `icons/` tree beside it is the one the patterns below read.
+            'npm' => '@tabler/icons',
+            'version' => 'latest',
             'path' => 'icons',
             'notice' => 'Tabler Icons (https://tabler.io/icons), MIT licensed.',
             'styles' => [
@@ -308,8 +318,8 @@ return [
         ],
 
         'phosphor' => [
-            'repo' => 'phosphor-icons/core',
-            'ref' => 'main',
+            'npm' => '@phosphor-icons/core',
+            'version' => 'latest',
             'path' => 'assets',
             'notice' => 'Phosphor Icons (https://phosphoricons.com), MIT licensed.',
             // Six weights upstream, and the two the scale asks for are `regular`
@@ -350,8 +360,8 @@ return [
         ],
 
         'bootstrap-icons' => [
-            'repo' => 'twbs/icons',
-            'ref' => 'main',
+            'npm' => 'bootstrap-icons',
+            'version' => 'latest',
             'path' => 'icons',
             'notice' => 'Bootstrap Icons (https://icons.getbootstrap.com), MIT licensed.',
             // A style by suffix in one flat directory: `check-circle-fill.svg`
@@ -422,8 +432,8 @@ return [
         ],
 
         'remix-icon' => [
-            'repo' => 'Remix-Design/RemixIcon',
-            'ref' => 'master',
+            'npm' => 'remixicon',
+            'version' => 'latest',
             'path' => 'icons',
             // Filed by category — `close-line.svg` is under `System` and
             // `user-line.svg` under `User & Faces` — which is a layout no
@@ -494,38 +504,29 @@ return [
         ],
 
         'material-symbols' => [
-            // Not Google's own repository. That one files every symbol as a
-            // directory of its own holding 168 variants — four optical sizes
-            // against fill, three grades and seven weights — three times over
-            // for outlined, rounded and sharp. The name is a directory there,
-            // which no pattern can place a name into, and the whole of it is
-            // five gigabytes.
+            // Read from the published package rather than from Google's own
+            // repository, which files every symbol as a directory of 168
+            // variants — four optical sizes against fill, three grades and seven
+            // weights — three times over for outlined, rounded and sharp. The
+            // name is a directory there, which no pattern can place a name into,
+            // and the whole of it is five gigabytes.
             //
-            // This is the mirror the `@material-symbols` npm packages are built
-            // from: the same Apache 2.0 drawings, one weight and family to a
-            // directory, rebuilt from upstream by a bot that checks daily and
-            // usually publishes the same day.
-            'repo' => 'marella/material-symbols',
-            'ref' => 'main',
-            // Weight 400, outlined. `rounded` and `sharp` sit beside it and the
-            // other weights are `svg/100` through `svg/700`, so a library that
-            // wants a lighter or rounder Material changes this line and nothing
-            // else.
-            'path' => 'svg/400/outlined',
+            // The package is the same Apache 2.0 drawings with none of that:
+            // 1.8MB against 2.8GB for the mirror repository it is built from,
+            // because a published package holds the drawings and not the project
+            // that produces them. It carries its own LICENSE, so the notice
+            // below is still the upstream's own words.
+            'npm' => '@material-symbols/svg-400',
+            // A dist-tag, resolved to the release behind it and pinned as that:
+            // a generated component records `0.47.0`, not the word `latest`.
+            // Name an exact version here to hold a set still.
+            'version' => 'latest',
+            // Weight 400, outlined. `rounded` and `sharp` sit beside it inside
+            // the same package, and the other weights are packages of their own
+            // — `@material-symbols/svg-200` and so on — so a library that wants
+            // a lighter or rounder Material changes these two lines.
+            'path' => 'outlined',
             'notice' => 'Material Symbols (https://fonts.google.com/icons), Apache 2.0 licensed.',
-            // Read one drawing at a time, because the repository holding them
-            // cannot be pulled whole: seven weights across three families, plus
-            // the fonts built from them, is gigabytes — and unpacking asks PHP
-            // to hold all of it in memory at once, which is fatal rather than
-            // slow. So `shape:icon check_circle` is two requests and quick, and
-            // `--replace` is twenty-eight and no worse.
-            //
-            // `--all` is what that costs: there is no listing without the
-            // archive, so it is refused with a sentence saying as much. Pass
-            // `--from` with a local checkout to have it anyway — a directory
-            // lists fine, and `npm i @material-symbols/svg-400` is the shortest
-            // way to get one.
-            'archive' => false,
             // 3,903 names, each drawn both ways, so the sparse matrix never
             // fires. Material spells them with underscores, which the generated
             // components keep: `<x-shape::icon.check_circle />`.

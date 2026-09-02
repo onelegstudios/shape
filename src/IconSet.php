@@ -42,6 +42,8 @@ final class IconSet
      * @param  non-empty-array<string, array<string, non-empty-list<string>>>  $styles  Style, then the sizes it draws its own glyph at, each a list of candidate patterns.
      * @param  array<string, string|null>  $slots  Shape's slots, against this set's own spelling of the drawing that fills each; null where the set has none.
      * @param  string  $ref  Only meaningful with a repo; ignored otherwise.
+     * @param  string|null  $npm  The package the set is published as, read instead of a repository when given.
+     * @param  string  $version  Only meaningful with a package: an exact version, or a dist-tag such as `latest`.
      * @param  string  $path  The subdirectory of the repository the drawings live in, if any.
      * @param  string|null  $namespace  The subdirectory of the components path this set is written into, if it wants one of its own.
      * @param  bool  $flatten  Whether the set's own subdirectories under `path` are collapsed into one when it is fetched.
@@ -55,6 +57,8 @@ final class IconSet
         private readonly array $slots = [],
         public readonly ?string $repo = null,
         public readonly string $ref = 'main',
+        public readonly ?string $npm = null,
+        public readonly string $version = 'latest',
         public readonly string $path = '',
         public readonly ?string $namespace = null,
         public readonly bool $flatten = false,
@@ -123,6 +127,15 @@ final class IconSet
         $repo = self::text($name, $definition, 'repo');
         $ref = self::text($name, $definition, 'ref');
         $path = self::text($name, $definition, 'path');
+        $npm = self::text($name, $definition, 'npm');
+        $version = self::text($name, $definition, 'version');
+
+        // Both is not a set with a spare source; it is a set nobody can say
+        // which drawings came from, and a header that names the wrong one is
+        // worse than no header.
+        if ($repo !== null && $npm !== null) {
+            throw new InvalidArgumentException("Icon set [{$name}] names both a [repo] and an [npm] package. Read it from one of them — the package is usually the smaller and the version the more exact.");
+        }
 
         return new self(
             $name,
@@ -132,6 +145,8 @@ final class IconSet
             self::slots($name, $definition),
             $repo,
             $ref ?? 'main',
+            $npm,
+            $version ?? 'latest',
             trim($path ?? '', '/'),
             self::namespace($name, $definition),
             self::flatten($name, $definition),

@@ -51,6 +51,16 @@ beforeEach(function () {
         '16/solid/check.svg', '20/solid/check.svg',
         '24/solid/check.svg', '24/outline/check.svg',
     ];
+
+    // The shipped `heroicons` entry is read from its published package now, and
+    // the fixtures here are archives of a *repository*. What these tests are
+    // about is that source — the tarball, the raw fetch, the unpacking, the
+    // refusal to write outside itself — so the set is put back into the form
+    // that reads one. The npm tests below configure sets of their own.
+    config()->set('shape.icon_sets.heroicons.npm', null);
+    config()->set('shape.icon_sets.heroicons.repo', 'tailwindlabs/heroicons');
+    config()->set('shape.icon_sets.heroicons.ref', 'master');
+    config()->set('shape.icon_sets.heroicons.path', 'optimized');
 });
 
 /**
@@ -62,7 +72,23 @@ beforeEach(function () {
  *
  * @param  array<string, string>  $files
  */
+function packageArchive(array $files): string
+{
+    return archiveWith('package/', $files);
+}
+
+/**
+ * @param  array<string, string>  $files
+ */
 function nestedArchive(array $files): string
+{
+    return archiveWith('RemixIcon-master/', $files);
+}
+
+/**
+ * @param  array<string, string>  $files
+ */
+function archiveWith(string $prefix, array $files): string
 {
     // A path of its own per archive: `PharData` caches by filename for the life
     // of the process, so a second archive written to a path already read would
@@ -72,7 +98,7 @@ function nestedArchive(array $files): string
     $archive = new PharData($path.'.tar');
 
     foreach ($files as $entry => $contents) {
-        $archive->addFromString('RemixIcon-master/'.$entry, $contents);
+        $archive->addFromString($prefix.$entry, $contents);
     }
 
     $archive->compress(Phar::GZ);
@@ -345,6 +371,28 @@ it('writes nothing outside the directory it unpacks into', function () {
         ->and(is_link($this->cache.'/heroicons/master/optimized/link.svg'))->toBeFalse();
 });
 
+/**
+ * A set whose repository is too large to unpack, which is the other thing a
+ * pattern cannot rescue: `PharData` reads an archive into memory whole, so past
+ * a certain size the run is killed rather than slowed.
+ */
+function unpackableSet(): string
+{
+    $name = 'huge-'.uniqid();
+
+    config()->set('shape.icon_sets.'.$name, [
+        'repo' => 'google/material-design-icons',
+        'ref' => 'master',
+        'path' => 'symbols',
+        'archive' => false,
+        'notice' => 'Material Symbols (https://fonts.google.com/icons), Apache 2.0 licensed.',
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+        'slots' => array_fill_keys(array_keys((array) config('shape.icon_slots')), 'check'),
+    ]);
+
+    return $name;
+}
+
 it('refuses --all for a set that cannot be pulled whole, before fetching anything', function () {
     // What this used to do was pull a repository measured in gigabytes and be
     // killed unpacking it, with a stack trace inside `PharData::__construct`
@@ -352,7 +400,7 @@ it('refuses --all for a set that cannot be pulled whole, before fetching anythin
     // that reached for the archive would fail here rather than pass.
     Http::fake();
 
-    $this->artisan('shape:icon', ['--all' => true, '--set' => 'material-symbols'])
+    $this->artisan('shape:icon', ['--all' => true, '--set' => unpackableSet()])
         ->expectsOutputToContain('one drawing at a time')
         ->assertFailed();
 
@@ -368,7 +416,7 @@ it('replaces from a set that cannot be pulled whole, a drawing at a time', funct
         'api.github.com/*' => Http::response($this->commit),
     ]);
 
-    $this->artisan('shape:icon', ['--replace' => true, '--set' => 'material-symbols'])->assertSuccessful();
+    $this->artisan('shape:icon', ['--replace' => true, '--set' => unpackableSet()])->assertSuccessful();
 
     expect($this->destination.'/icon/shape-close.blade.php')->toBeFile();
 
@@ -433,4 +481,136 @@ it('says so when GitHub will not answer', function () {
     $this->artisan('shape:icon', ['--all' => true])
         ->expectsOutputToContain('404')
         ->assertFailed();
+});
+
+/**
+ * A set read from the npm registry, and the two responses that serves it: the
+ * package document, then the tarball it points at.
+ *
+ * @param  array<string, string>  $files
+ * @return array{0: string, 1: array<string, mixed>}
+ */
+function published(array $files, string $version = '0.47.0'): array
+{
+    $name = 'published-'.uniqid();
+    $tarball = packageArchive($files);
+
+    config()->set('shape.icon_sets.'.$name, [
+        'npm' => '@material-symbols/svg-400',
+        'version' => 'latest',
+        'path' => 'outlined',
+        'notice' => 'Material Symbols (https://fonts.google.com/icons), Apache 2.0 licensed.',
+        'styles' => [
+            'outline' => ['base' => '{name}.svg'],
+            'solid' => ['base' => '{name}-fill.svg'],
+        ],
+    ]);
+
+    return [$name, [
+        'dist-tags' => ['latest' => $version],
+        'versions' => [$version => ['dist' => [
+            'tarball' => 'https://registry.npmjs.org/@material-symbols/svg-400/-/svg-400-'.$version.'.tgz',
+            'integrity' => 'sha512-'.base64_encode(hash('sha512', $tarball, true)),
+        ]]],
+    ], $tarball];
+}
+
+it('reads a set from the package it is published as', function () {
+    // The reason this source exists. Google's repository files each symbol as a
+    // directory of 168 variants and is gigabytes; the package is the same
+    // drawings and 1.8MB, because a published artefact holds the drawings and
+    // not the project that produces them.
+    [$set, $document, $tarball] = published([
+        'outlined/check_circle.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" data-drawn="check_circle" /></svg>',
+        'outlined/check_circle-fill.svg' => '<svg viewBox="0 0 24 24"><path d="M1 1" data-drawn="check_circle-fill" /></svg>',
+        'LICENSE' => 'Apache License 2.0',
+    ]);
+
+    Http::fake([
+        'registry.npmjs.org/@material-symbols%2fsvg-400' => Http::response($document),
+        'registry.npmjs.org/*.tgz' => Http::response($tarball),
+    ]);
+
+    $this->artisan('shape:icon', ['icons' => ['check_circle'], '--set' => $set])->assertSuccessful();
+
+    // The dist-tag is resolved to the release behind it, and it is the release
+    // that is pinned — `latest` says nothing a year from now.
+    expect(file_get_contents($this->destination.'/icon/check_circle.blade.php'))
+        ->toContain('data-drawn="check_circle"')
+        ->toContain('data-drawn="check_circle-fill"')
+        ->toContain('@material-symbols/svg-400@0.47.0')
+        ->not->toContain('@latest');
+
+    $lock = json_decode((string) file_get_contents($this->destination.'/icon/shape-icons.json'), true);
+
+    expect($lock[$set])->toMatchArray([
+        'npm' => '@material-symbols/svg-400',
+        'version' => '0.47.0',
+    ]);
+
+    // The licence travels with the drawings here as it does from a repository.
+    expect($this->cache.'/'.$set.'/latest/LICENSE')->toBeFile();
+});
+
+it('checks the archive against the hash the registry states for it', function () {
+    // The one thing a registry offers that a repository archive does not. What
+    // is downloaded is written into somebody's application, so bytes that do not
+    // match what was published are not unpacked.
+    [$set, $document] = published([
+        'outlined/check_circle.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" /></svg>',
+    ]);
+
+    Http::fake([
+        'registry.npmjs.org/@material-symbols%2fsvg-400' => Http::response($document),
+        'registry.npmjs.org/*.tgz' => Http::response(packageArchive([
+            'outlined/check_circle.svg' => '<svg viewBox="0 0 24 24"><path d="M9 9" data-drawn="not what was published" /></svg>',
+        ])),
+    ]);
+
+    $this->artisan('shape:icon', ['icons' => ['check_circle'], '--set' => $set])
+        ->expectsOutputToContain('integrity hash')
+        ->assertFailed();
+
+    expect(file_exists($this->destination.'/icon/check_circle.blade.php'))->toBeFalse();
+});
+
+it('says so when the registry has no such version of a package', function () {
+    [$set, $document, $tarball] = published([
+        'outlined/check_circle.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" /></svg>',
+    ]);
+
+    Http::fake([
+        'registry.npmjs.org/@material-symbols%2fsvg-400' => Http::response($document),
+        'registry.npmjs.org/*.tgz' => Http::response($tarball),
+    ]);
+
+    $this->artisan('shape:icon', ['icons' => ['check_circle'], '--set' => $set, '--ref' => '9.9.9'])
+        ->expectsOutputToContain('no [9.9.9]')
+        ->assertFailed();
+});
+
+it('keeps the licence and not a drawing that is merely called one', function () {
+    // Tabler draws `license.svg` — a document with a stamp on it — and the rule
+    // that keeps a licence file whatever case it is written in matched that too,
+    // pulling two drawings out of a directory the set does not read. A licence
+    // is a file at the root of the archive; a drawing called `license` is not.
+    [$set, $document, $tarball] = published([
+        'outlined/check_circle.svg' => '<svg viewBox="0 0 24 24"><path d="M0 0" /></svg>',
+        'LICENSE' => 'Apache License 2.0',
+        'categories/Document/license.svg' => '<svg viewBox="0 0 24 24"><path d="M9 9" /></svg>',
+        'categories/Document/license-off.svg' => '<svg viewBox="0 0 24 24"><path d="M8 8" /></svg>',
+    ]);
+
+    Http::fake([
+        'registry.npmjs.org/@material-symbols%2fsvg-400' => Http::response($document),
+        'registry.npmjs.org/*.tgz' => Http::response($tarball),
+    ]);
+
+    $this->artisan('shape:icon', ['icons' => ['check_circle'], '--set' => $set])->assertSuccessful();
+
+    $root = $this->cache.'/'.$set.'/latest';
+
+    expect($root.'/LICENSE')->toBeFile()
+        ->and(file_exists($root.'/categories/Document/license.svg'))->toBeFalse()
+        ->and(file_exists($root.'/categories/Document/license-off.svg'))->toBeFalse();
 });

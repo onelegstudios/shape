@@ -509,7 +509,9 @@ it('ships every set with somewhere to fetch it and a licence to carry', function
     foreach ($sets as $name => $definition) {
         $set = IconSet::fromArray((string) $name, $definition, config('shape.icon_sizes'));
 
-        expect($set->repo)->not->toBeNull()
+        // A repository or a published package; the package is the smaller
+        // source and the more exact one, and either is somewhere to fetch from.
+        expect($set->repo ?? $set->npm)->not->toBeNull()
             ->and($set->notice)->not->toBe('');
     }
 });

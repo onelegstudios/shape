@@ -6,19 +6,11 @@ namespace Onelegstudios\Shape\Icons;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Http;
-use Phar;
-use PharData;
-use RecursiveIteratorIterator;
 use RuntimeException;
 use Throwable;
 
 /**
- * A set fetched from the repository that draws it, then cached and read locally.
- *
- * This is what makes the generator's promise true. The point of reading a
- * directory rather than shipping a Composer package per icon set is that the set
- * a consumer actually wants is within reach — and it was not, while reaching it
- * meant cloning something first.
+ * A set fetched from the repository that draws it.
  *
  * Two ways in, because the two shapes of run want different things:
  *
@@ -29,21 +21,16 @@ use Throwable;
  *   requests the other way.
  * - **Raw files**, `raw.githubusercontent.com/{repo}/{ref}/{path}`, for the few
  *   names typed on the command line. `shape:icon bell` wants one drawing, and
- *   downloading three megabytes to find it is the wrong trade. A 404 there maps
+ *   downloading a repository to find it is the wrong trade. A 404 there maps
  *   cleanly onto "this style has no drawing at this size", which is the same
- *   answer `pattern()` already models.
+ *   answer the matrix already models.
  *
- * Either way the bytes land in the same cache, laid out exactly as the
- * repository lays them out, and every read after the first is a local one. A
- * later `--all` over a cache primed by raw fetches simply pulls the tarball and
- * overwrites it, because the tarball is a superset of anything raw put there.
- *
- * Nothing here runs at render time, or indeed anywhere but this command. A
- * generated component is bytes on disk with the licence notice and the resolved
- * commit written into its header; the set it came from is a compile-time input
- * and never a runtime one.
+ * A repository is a whole project and a set is one directory of it, which is
+ * what the archive is filtered down to on the way in. Where that filtering is
+ * not enough — a repository shaped for a font rather than for its drawings — a
+ * published package is the better source, and `NpmSource` is that.
  */
-final class GitHubSource implements IconSource
+final class GitHubSource extends ArchiveSource
 {
     /**
      * Paths that came back 404, so a second cell resolving to the same missing
@@ -52,13 +39,6 @@ final class GitHubSource implements IconSource
      * @var array<string, true>
      */
     private array $missing = [];
-
-    /**
-     * @var array{repo?: string, ref?: string, commit?: string, complete?: bool}|null
-     */
-    private ?array $meta = null;
-
-    private ?DirectorySource $directory = null;
 
     /**
      * @param  string  $set  The set's name in `shape.icon_sets`, for anything this has to say out loud.
@@ -72,142 +52,38 @@ final class GitHubSource implements IconSource
      * @param  bool  $archive  Whether the repository can be pulled whole, or is too large to be read that way.
      */
     public function __construct(
-        private readonly Filesystem $files,
-        private readonly string $set,
+        Filesystem $files,
+        string $set,
         private readonly string $repo,
-        private readonly string $ref,
-        private readonly string $path,
-        private readonly string $base,
-        private readonly bool $offline = false,
-        private readonly bool $whole = false,
-        private readonly bool $flatten = false,
-        private readonly bool $archive = true,
+        string $ref,
+        string $path,
+        string $base,
+        bool $offline = false,
+        bool $whole = false,
+        bool $flatten = false,
+        bool $archive = true,
     ) {
-        // Checked here rather than at the first read, because failing loudly is
-        // the entire point of the flag. A run that quietly generated nothing
-        // because the cache happened to be cold would be the failure `--offline`
-        // exists to make impossible.
-        if ($this->offline && ! $this->cached()) {
-            throw new RuntimeException("No cached copy of [{$this->set}] at [{$this->ref}] to work from, and --offline forbids fetching one. Drop --offline, or pass --from with a local checkout.");
-        }
-    }
-
-    public function has(string $path): bool
-    {
-        if ($this->whole || $this->cached()) {
-            $this->fetchSet();
-
-            return $this->directory()->has($path);
-        }
-
-        if ($this->directory()->has($path)) {
-            return true;
-        }
-
-        if (isset($this->missing[$path])) {
-            return false;
-        }
-
-        return $this->fetchOne($path);
-    }
-
-    public function get(string $path): string
-    {
-        return $this->directory()->get($path);
+        parent::__construct($files, $set, $ref, $path, $base, $offline, $whole, $flatten, $archive);
     }
 
     /**
-     * @return list<string>
+     * Pull the repository's own archive, and read the commit out of it.
      */
-    public function names(string $directory): array
+    protected function download(string $archive): ?string
     {
-        // A set whose repository cannot be pulled whole has no listing at all,
-        // and the caller is expected to have said so before asking. Refused
-        // rather than attempted, because attempting it is the fatal this flag
-        // exists to prevent.
-        if (! $this->archive) {
-            throw new RuntimeException("Icon set [{$this->set}] is read one drawing at a time, so there is nothing to list. Name the icons you want, or pass --from with a local checkout.");
-        }
-
-        // There is no listing a raw file fetch can answer, so this is the one
-        // call that always costs the whole set.
-        $this->fetchSet();
-
-        return $this->directory()->names($directory);
-    }
-
-    /**
-     * The commit these drawings were fetched at.
-     *
-     * Resolved rather than assumed: `master` names a moving target, and a header
-     * that recorded the branch would say nothing about which drawing is in the
-     * file underneath it.
-     */
-    public function revision(): ?string
-    {
-        $commit = $this->meta()['commit'] ?? null;
-
-        return is_string($commit) && $commit !== '' ? $commit : null;
-    }
-
-    /**
-     * Read the cache the way any other directory is read.
-     *
-     * Once the bytes are on disk there is nothing left that is GitHub's problem,
-     * which is why the set's subdirectory is folded in here: a repository that
-     * keeps its drawings under `optimized/` is a directory source rooted there.
-     */
-    private function directory(): DirectorySource
-    {
-        return $this->directory ??= new DirectorySource(
-            $this->files,
-            rtrim($this->root().'/'.$this->path, '/'),
-        );
-    }
-
-    /**
-     * Whether the whole set is already unpacked and can be read without asking
-     * GitHub anything.
-     */
-    private function cached(): bool
-    {
-        return ($this->meta()['complete'] ?? false) === true;
-    }
-
-    /**
-     * Fetch and unpack the whole set, unless that has already happened.
-     */
-    private function fetchSet(): void
-    {
-        if ($this->cached()) {
-            return;
-        }
-
-        $archive = $this->root().'.tar.gz';
-
         $response = Http::withHeaders(['User-Agent' => 'laravel-shape'])
             ->timeout(120)
             ->retry(3, 200, throw: false)
-            ->get("https://codeload.github.com/{$this->repo}/tar.gz/{$this->ref}");
+            ->get("https://codeload.github.com/{$this->repo}/tar.gz/{$this->reference}");
 
         if (! $response->successful()) {
-            throw new RuntimeException("Could not fetch [{$this->set}] from [{$this->repo}] at [{$this->ref}]: GitHub answered {$response->status()}.");
+            throw new RuntimeException("Could not fetch [{$this->set}] from [{$this->repo}] at [{$this->reference}]: GitHub answered {$response->status()}.");
         }
 
         $this->files->ensureDirectoryExists(dirname($archive));
         $this->files->put($archive, $response->body());
 
-        $commit = $this->commit($archive);
-
-        $this->unpack($archive);
-
-        // Not `unlink`. PHP keeps every archive it has opened in memory, keyed
-        // by the filename, for the life of the process — so deleting the file
-        // and fetching a second set to the same path unpacks the first one
-        // again. This is the call that forgets it as well as removes it.
-        Phar::unlinkArchive($archive);
-
-        $this->remember($commit, complete: true);
+        return $this->commit($archive);
     }
 
     /**
@@ -218,13 +94,17 @@ final class GitHubSource implements IconSource
      * retrying it three times would turn a name this set simply does not have
      * into a dozen requests.
      */
-    private function fetchOne(string $path): bool
+    protected function fetchOne(string $path): bool
     {
+        if (isset($this->missing[$path])) {
+            return false;
+        }
+
         $within = rtrim($this->path.'/'.$path, '/');
 
         $response = Http::withHeaders(['User-Agent' => 'laravel-shape'])
             ->timeout(30)
-            ->get("https://raw.githubusercontent.com/{$this->repo}/{$this->ref}/{$within}");
+            ->get("https://raw.githubusercontent.com/{$this->repo}/{$this->reference}/{$within}");
 
         if ($response->status() === 404) {
             $this->missing[$path] = true;
@@ -233,7 +113,7 @@ final class GitHubSource implements IconSource
         }
 
         if (! $response->successful()) {
-            throw new RuntimeException("Could not fetch [{$within}] from [{$this->repo}] at [{$this->ref}]: GitHub answered {$response->status()}.");
+            throw new RuntimeException("Could not fetch [{$within}] from [{$this->repo}] at [{$this->reference}]: GitHub answered {$response->status()}.");
         }
 
         $target = $this->root().'/'.$within;
@@ -247,166 +127,11 @@ final class GitHubSource implements IconSource
     }
 
     /**
-     * Unpack the archive into the cache, keeping only the set's own subtree.
-     *
-     * Entries are read and written one at a time rather than handed to
-     * `PharData::extractTo()`, for two reasons. The first is size: a repository
-     * is a whole project and a set is one directory of it, so there is no reason
-     * to spill the other ninety percent onto somebody's disk. The second is that
-     * writing is the dangerous half — an archive is the one input to this
-     * command that can name where it wants to be put — and it belongs in code
-     * that can be read, rather than delegated.
-     *
-     * `PharData` will not surface a traversing entry to begin with; the suite
-     * proves that against a hostile archive it cannot itself construct. The
-     * check below is what makes that a property of this package rather than of
-     * whichever tar implementation happens to be underneath it.
+     * @return array<string, string>
      */
-    private function unpack(string $archive): void
+    protected function origin(): array
     {
-        if (! extension_loaded('phar')) {
-            throw new RuntimeException("Unpacking [{$this->set}] needs PHP's phar extension, which is not loaded. Pass --from with a local checkout instead.");
-        }
-
-        $this->affordable($archive);
-
-        try {
-            $iterator = new RecursiveIteratorIterator(new PharData($archive));
-        } catch (Throwable $e) {
-            throw new RuntimeException("The archive for [{$this->set}] at [{$this->ref}] could not be read: {$e->getMessage()}");
-        }
-
-        $root = $this->root();
-        $written = 0;
-        $from = [];
-
-        foreach ($iterator as $file) {
-            $entry = str_replace('\\', '/', $iterator->getSubPathname());
-
-            if (str_starts_with($entry, '/') || in_array('..', explode('/', $entry), true)) {
-                throw new RuntimeException("The archive for [{$this->set}] holds an entry that points outside it: [{$entry}].");
-            }
-
-            // GitHub wraps everything in one `{name}-{ref}` directory, which is
-            // an artefact of how the archive was made rather than part of the
-            // set's layout, so it is dropped here and nowhere else.
-            $within = (string) preg_replace('#^[^/]+/#', '', $entry);
-
-            if ($within === '' || ! $this->wanted($within)) {
-                continue;
-            }
-
-            $target = $this->target($within);
-
-            // Two drawings landing on one filename is the one way flattening can
-            // lose a drawing, and it would lose it silently — the second write
-            // wins and the set is quietly one icon short. Which two files
-            // collided is the whole of what a reader needs to fix it.
-            if (isset($from[$target]) && $from[$target] !== $within) {
-                throw new RuntimeException("Flattening [{$this->set}] would put [{$within}] and [{$from[$target]}] in the same place. The set's filenames are not unique across its directories, so it cannot be read flat.");
-            }
-
-            $from[$target] = $within;
-
-            $this->files->ensureDirectoryExists(dirname($root.'/'.$target));
-            $this->files->put($root.'/'.$target, (string) $file->getContent());
-
-            $written++;
-        }
-
-        if ($written === 0) {
-            throw new RuntimeException("The archive for [{$this->set}] at [{$this->ref}] held nothing under [{$this->path}].");
-        }
-    }
-
-    /**
-     * Refuse an archive PHP has no room to open.
-     *
-     * `PharData` reads the whole thing into memory to build its manifest, so an
-     * archive larger than what is left of `memory_limit` does not fail — the
-     * process is killed mid-unpack, and what a reader gets is a stack trace
-     * inside a constructor rather than a reason. This is the same fact, said
-     * first and in numbers.
-     *
-     * Compared against the compressed size, which is the optimistic reading:
-     * what has to fit is the archive expanded. So this fires only where the
-     * attempt was hopeless, and stays quiet for every set that fits.
-     */
-    private function affordable(string $archive): void
-    {
-        $limit = $this->limit();
-
-        if ($limit === null) {
-            return;
-        }
-
-        $size = (int) $this->files->size($archive);
-        $spare = $limit - memory_get_usage(true);
-
-        if ($size <= $spare) {
-            return;
-        }
-
-        $megabytes = static fn (int $bytes): string => number_format($bytes / 1048576, 0).'MB';
-
-        throw new RuntimeException("The archive for [{$this->set}] is {$megabytes($size)} and PHP has about {$megabytes(max($spare, 0))} left of its memory_limit to unpack it in, which is not enough — unpacking reads the whole archive into memory. Name the icons you want instead of --all, raise memory_limit, or pass --from with a local checkout.");
-    }
-
-    /**
-     * What is left of `memory_limit`, or null where there is no limit.
-     */
-    private function limit(): ?int
-    {
-        $limit = trim((string) ini_get('memory_limit'));
-
-        if ($limit === '' || $limit === '-1') {
-            return null;
-        }
-
-        $units = ['k' => 1024, 'm' => 1048576, 'g' => 1073741824];
-        $suffix = strtolower(substr($limit, -1));
-
-        return (int) $limit * ($units[$suffix] ?? 1);
-    }
-
-    /**
-     * Where one entry of the archive is written, relative to the cache root.
-     *
-     * The repository's own layout, ordinarily. A flattening set drops whatever
-     * directories it files its drawings under and keeps the filename, so that
-     * `icons/System/close-line.svg` lands as `icons/close-line.svg` and the set
-     * on disk is one `{name}-line.svg` deep — which is a layout a pattern can
-     * express, where nesting by category is not.
-     *
-     * Only under the set's own `path`. A licence sits at the root of the
-     * repository rather than among the drawings, and moving it in beside them
-     * would file it as though it were one.
-     */
-    private function target(string $within): string
-    {
-        return $this->flatten && $this->path !== '' && str_starts_with($within, $this->path.'/')
-            ? $this->path.'/'.basename($within)
-            : $within;
-    }
-
-    /**
-     * Whether an entry is part of this set, or the rest of the repository.
-     *
-     * A licence travels with the drawings it covers, so it is kept whatever the
-     * set's own subdirectory is: a consumer redistributing generated components
-     * inherits an attribution requirement, and the file that states it should be
-     * the repository's own words rather than a paraphrase of them.
-     */
-    private function wanted(string $within): bool
-    {
-        // Whatever case it is written in. Remix Icon's is `License`, and a
-        // check that only knew `LICENSE` dropped the one file in the archive
-        // that states the terms the drawings arrive under.
-        if (str_starts_with(strtoupper(basename($within)), 'LICENSE')) {
-            return true;
-        }
-
-        return $this->path === '' || str_starts_with($within, $this->path.'/');
+        return ['repo' => $this->repo, 'ref' => $this->reference];
     }
 
     /**
@@ -454,15 +179,15 @@ final class GitHubSource implements IconSource
             return $known;
         }
 
-        if (preg_match('/^[0-9a-f]{40}$/', $this->ref) === 1) {
-            return $this->ref;
+        if (preg_match('/^[0-9a-f]{40}$/', $this->reference) === 1) {
+            return $this->reference;
         }
 
         try {
             $response = Http::withHeaders([
                 'User-Agent' => 'laravel-shape',
                 'Accept' => 'application/vnd.github.sha',
-            ])->timeout(15)->get("https://api.github.com/repos/{$this->repo}/commits/{$this->ref}");
+            ])->timeout(15)->get("https://api.github.com/repos/{$this->repo}/commits/{$this->reference}");
         } catch (Throwable) {
             return null;
         }
@@ -470,83 +195,5 @@ final class GitHubSource implements IconSource
         $sha = trim($response->body());
 
         return $response->successful() && preg_match('/^[0-9a-f]{40}$/', $sha) === 1 ? $sha : null;
-    }
-
-    /**
-     * Record what the cache now holds, so a later run knows without looking.
-     */
-    private function remember(?string $commit, bool $complete): void
-    {
-        $this->ignore();
-
-        $meta = array_filter([
-            'repo' => $this->repo,
-            'ref' => $this->ref,
-            'commit' => $commit ?? $this->revision(),
-            'complete' => $complete,
-        ], fn (mixed $value): bool => $value !== null);
-
-        $this->files->ensureDirectoryExists(dirname($this->root()));
-        $this->files->put($this->root().'.json', json_encode($meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
-
-        /** @var array{repo?: string, ref?: string, commit?: string, complete?: bool} $meta */
-        $this->meta = $meta;
-    }
-
-    /**
-     * Keep the cache out of the consumer's history.
-     *
-     * This is a copy of somebody else's repository that exists to save fetching
-     * it twice, and a set is thousands of files nobody wrote — none of it is a
-     * change to their application. Laravel ignores its own storage directories
-     * this way; the pattern covers the file itself as well, so there is nothing
-     * here to commit at all rather than one stray `.gitignore` to explain.
-     */
-    private function ignore(): void
-    {
-        $path = rtrim($this->base, '/').'/.gitignore';
-
-        if ($this->files->exists($path)) {
-            return;
-        }
-
-        $this->files->ensureDirectoryExists(dirname($path));
-        $this->files->put($path, "*\n");
-    }
-
-    /**
-     * @return array{repo?: string, ref?: string, commit?: string, complete?: bool}
-     */
-    private function meta(): array
-    {
-        if ($this->meta !== null) {
-            return $this->meta;
-        }
-
-        $path = $this->root().'.json';
-
-        if (! $this->files->exists($path)) {
-            return $this->meta = [];
-        }
-
-        $decoded = json_decode($this->files->get($path), true);
-
-        /** @var array{repo?: string, ref?: string, commit?: string, complete?: bool} $meta */
-        $meta = is_array($decoded) ? $decoded : [];
-
-        return $this->meta = $meta;
-    }
-
-    /**
-     * Where this set at this ref is cached.
-     *
-     * The ref is a branch name, and a branch name can hold a slash, so it is
-     * flattened rather than trusted to be one path segment.
-     */
-    private function root(): string
-    {
-        $ref = (string) preg_replace('/[^A-Za-z0-9._-]+/', '-', $this->ref);
-
-        return rtrim($this->base, '/')."/{$this->set}/{$ref}";
     }
 }

@@ -11,6 +11,7 @@ use Onelegstudios\Shape\Console\Commands\Concerns\ClearsCompiledViews;
 use Onelegstudios\Shape\Icons\DirectorySource;
 use Onelegstudios\Shape\Icons\GitHubSource;
 use Onelegstudios\Shape\Icons\IconSource;
+use Onelegstudios\Shape\Icons\NpmSource;
 use Onelegstudios\Shape\IconSet;
 use Onelegstudios\Shape\IconSlots;
 use RuntimeException;
@@ -351,7 +352,7 @@ class IconCommand extends Command
     /**
      * Report on one directory's worth of generated icons, and count the stale.
      *
-     * @param  array<string, array{repo?: string, ref?: string, commit?: string, icons: array<string, string>}>  $lock
+     * @param  array<string, array{repo?: string, ref?: string, commit?: string, npm?: string, version?: string, icons: array<string, string>}>  $lock
      */
     protected function report(Filesystem $files, string $to, array $lock): int
     {
@@ -364,7 +365,7 @@ class IconCommand extends Command
             // command does not know which directory it was. Reaching for the
             // set's repository instead would compare them against drawings they
             // never came from, over a network nobody asked it to use.
-            if (! isset($record['repo']) && $this->fetched()) {
+            if (! isset($record['repo']) && ! isset($record['npm']) && $this->fetched()) {
                 $this->components->twoColumnDetail('  generated from a directory', '<fg=gray>pass --from to check</>');
 
                 continue;
@@ -442,7 +443,7 @@ class IconCommand extends Command
      * sets can legitimately write into one directory — a primary one flat and a
      * supplementary one namespaced — and each is pinned to its own upstream.
      *
-     * @param  array<string, array{repo?: string, ref?: string, commit?: string, icons: array<string, string>}>  $lock
+     * @param  array<string, array{repo?: string, ref?: string, commit?: string, npm?: string, version?: string, icons: array<string, string>}>  $lock
      */
     protected function pin(IconSet $set, IconSource $source, Filesystem $files, string $to, array $lock): void
     {
@@ -451,11 +452,10 @@ class IconCommand extends Command
         // fetched from it, and recording otherwise would pin a component to a
         // commit nobody read it at.
         $record = $this->fetched()
-            ? array_filter([
-                'repo' => $set->repo,
-                'ref' => $this->ref($set),
-                'commit' => $source->revision(),
-            ], fn (?string $value): bool => $value !== null && $value !== '')
+            ? array_filter($set->npm !== null
+                ? ['npm' => $set->npm, 'version' => $source->revision() ?? $this->version($set)]
+                : ['repo' => $set->repo, 'ref' => $this->ref($set), 'commit' => $source->revision()],
+                fn (?string $value): bool => $value !== null && $value !== '')
             : [];
 
         ksort($lock[$set->name]['icons']);
@@ -474,10 +474,16 @@ class IconCommand extends Command
     /**
      * What was recorded for one set, as one line.
      *
-     * @param  array{repo?: string, ref?: string, commit?: string, icons: array<string, string>}  $record
+     * @param  array{repo?: string, ref?: string, commit?: string, npm?: string, version?: string, icons: array<string, string>}  $record
      */
     protected function pinned(array $record): string
     {
+        $package = $record['npm'] ?? null;
+
+        if ($package !== null) {
+            return '<fg=gray>'.$package.'@'.($record['version'] ?? '?').'</>';
+        }
+
         $repo = $record['repo'] ?? null;
         $commit = $record['commit'] ?? null;
 
@@ -491,7 +497,7 @@ class IconCommand extends Command
     /**
      * What has been generated into this directory before, if anything.
      *
-     * @return array<string, array{repo?: string, ref?: string, commit?: string, icons: array<string, string>}>
+     * @return array<string, array{repo?: string, ref?: string, commit?: string, npm?: string, version?: string, icons: array<string, string>}>
      */
     protected function lock(Filesystem $files, string $to): array
     {
@@ -511,7 +517,7 @@ class IconCommand extends Command
 
         foreach ($decoded as $name => $record) {
             if (is_string($name) && is_array($record) && is_array($record['icons'] ?? null)) {
-                /** @var array{repo?: string, ref?: string, commit?: string, icons: array<string, string>} $record */
+                /** @var array{repo?: string, ref?: string, commit?: string, npm?: string, version?: string, icons: array<string, string>} $record */
                 $lock[$name] = $record;
             }
         }
@@ -633,9 +639,13 @@ class IconCommand extends Command
     {
         $revision = $source->revision();
 
-        $stamp = $revision === null || $set->repo === null
+        $origin = $set->repo ?? $set->npm;
+
+        // A commit is abbreviated because forty characters says nothing a
+        // reader can hold; a version is already the short form of itself.
+        $stamp = $revision === null || $origin === null
             ? ''
-            : $set->repo.'@'.substr($revision, 0, 12).'.';
+            : $origin.'@'.(preg_match('/^[0-9a-f]{40}$/', $revision) === 1 ? substr($revision, 0, 12) : $revision).'.';
 
         $notice = trim($set->notice.' '.$stamp);
 
@@ -951,8 +961,25 @@ class IconCommand extends Command
             return new DirectorySource($files, rtrim($from, '/'));
         }
 
+        if ($set->npm !== null) {
+            // A registry serves packages and nothing smaller, so there is no
+            // whole-or-not question to answer: every run pulls the package. At
+            // the sizes these come in — 1.8MB for Material Symbols against 2.8GB
+            // of repository — that is cheaper than the raw fetches it replaces.
+            return new NpmSource(
+                $files,
+                $set->name,
+                $set->npm,
+                $this->version($set),
+                $set->path,
+                $this->cache(),
+                (bool) $this->option('offline'),
+                $set->flatten,
+            );
+        }
+
         if ($set->repo === null) {
-            throw new InvalidArgumentException("Icon set [{$set->name}] says nothing about where it is drawn, so there is nothing to fetch. Pass --from with the directory to read SVGs from, or give the set a [repo].");
+            throw new InvalidArgumentException("Icon set [{$set->name}] says nothing about where it is drawn, so there is nothing to fetch. Pass --from with the directory to read SVGs from, or give the set a [repo] or an [npm] package.");
         }
 
         return new GitHubSource(
@@ -999,6 +1026,20 @@ class IconCommand extends Command
         $ref = $this->option('ref');
 
         return is_string($ref) && $ref !== '' ? $ref : $set->ref;
+    }
+
+    /**
+     * The version to read a published set at.
+     *
+     * `--ref` answers for this too, because it is the same question asked of a
+     * different kind of source: read this set at something other than what it
+     * declares. `--ref=0.46.0` on a package reads that release.
+     */
+    protected function version(IconSet $set): string
+    {
+        $ref = $this->option('ref');
+
+        return is_string($ref) && $ref !== '' ? $ref : $set->version;
     }
 
     /**

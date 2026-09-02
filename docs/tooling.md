@@ -413,13 +413,13 @@ slot, so `--replace --set=…` is a complete answer for any of them:
 
 | | Styles | Grid | |
 | --- | --- | --- | --- |
-| `heroicons` | outline, solid | 24, with solid also drawn at 16 and 20 | The default, and what this package's own drawings came from |
-| `lucide` | outline | 24 | One style, one flat directory |
-| `tabler` | outline, solid | 24 | `solid` is upstream's `filled`, which draws about a fifth of what `outline` does; a name it hasn't got falls back |
+| `heroicons` | outline, solid | 24, with solid also drawn at 16 and 20 | The default, and what this package's own drawings came from; the package publishes them byte for byte |
+| `lucide` | outline | 24 | One style, one flat directory, and the one set still read from its repository |
+| `tabler` | outline, solid | 24 | Read from the `@tabler/icons` package; `solid` is upstream's `filled`, which draws about a fifth of what `outline` does, and a name it hasn't got falls back |
 | `phosphor` | outline, solid | 256 | `regular` and `fill`, two of its six weights |
 | `bootstrap-icons` | outline, solid | 16 | `solid` is the `-fill` half of a flat directory, suffixed or infixed; half its names have one |
 | `remix-icon` | outline, solid | 24 | Filed by category, so it is flattened on the way in; 1,539 names drawn both ways, and 151 editor glyphs drawn neither |
-| `material-symbols` | outline, solid | 24 | Weight 400 outlined, read from the `@material-symbols` mirror; 3,903 names, spelled with underscores |
+| `material-symbols` | outline, solid | 24 | Weight 400 outlined, read from the `@material-symbols/svg-400` package; 3,903 names, spelled with underscores |
 
 The grid is what the drawings are drawn on, not what they render at: every set is
 measured against `icon_sizes`, and every generated icon emits the same size
@@ -435,32 +435,55 @@ named in both the directory and the filename, a style that is a suffix inside
 one directory, a set filed by category that is flattened before it is read, and
 a set read from a mirror because its own repository is shaped for a font.
 
-`material-symbols` is the one that is read differently. Its repository carries
-seven weights across three families plus the fonts built from them, and
-unpacking an archive means holding all of it in memory at once — which is fatal
-rather than slow, at any `memory_limit` you are likely to have. So the set
-declares `'archive' => false` and is read one drawing at a time: naming icons is
-two requests each, `--replace` is twenty-eight, and both are quick.
+Six of the seven are read from published packages rather than from
+repositories, which is the other source a set can name:
 
-`--all` is what that costs. There is no listing without the archive, so it is
-refused with a sentence rather than attempted:
-
-```
-ERROR  Icon set [material-symbols] is read one drawing at a time, because its
-repository is too large to fetch whole — so there is no listing for --all to
-walk. Name the icons you want, use --replace for Shape's own, or pass --from
-with a local checkout.
+```php
+'material-symbols' => [
+    'npm' => '@material-symbols/svg-400',
+    'version' => 'latest',
+    'path' => 'outlined',
+],
 ```
 
-A local directory lists fine, so `--from` is the way to have `--all` anyway;
-`npm i @material-symbols/svg-400` is the shortest route to one. Google's own
-repository is not read directly at all, because it files each symbol as a
-directory of 168 variants — a layout no pattern can place a name into.
+Nothing here runs npm. A registry is an HTTP endpoint that hands back a gzipped
+tar, so this is the same download and the same unpacking, pointed somewhere
+else. What differs is what is on the other end: a package holds the drawings,
+where a repository holds the project that produces them.
 
-Any set can say `'archive' => false`; it is the flag for a repository that is
-too big to pull whole. And whatever a set says, an archive larger than the
-memory left to unpack it in is reported with its size and the limit, rather than
-killing the process partway through.
+| | Package | Repository |
+| --- | --- | --- |
+| `heroicons` | 0.2 MB | 0.6 MB |
+| `tabler` | 1.2 MB | 31.7 MB |
+| `phosphor` | 1.4 MB | 2.3 MB |
+| `bootstrap-icons` | 0.8 MB | 2.0 MB |
+| `remix-icon` | 3.7 MB | 3.9 MB |
+| `material-symbols` | 1.8 MB | 2.8 GB |
+| `lucide` | 6.2 MB | **5.0 MB** |
+
+Material Symbols is why this exists at all: Google files every symbol as a
+directory of 168 variants, and even the mirror of that cannot be unpacked in
+memory. Lucide is the one that stayed — `lucide-static` ships fonts and a sprite
+sheet beside the drawings, so it is the only package here larger than the
+repository behind it, and there is nothing to move it for.
+
+Two things follow beyond the bytes. A version is immutable where a branch moves,
+so what is pinned into a generated component is `heroicons@2.2.0` — the release,
+resolved from the `latest` tag rather than the word itself. And the registry
+states an sha512 for every archive, which is checked before anything is
+unpacked; a repository archive offers nothing to check against.
+
+The cost is that a registry serves packages and nothing smaller: there is no
+per-file endpoint, so every run pulls the package rather than the two drawings a
+named icon needs. At these sizes that is cheaper than the raw fetches it
+replaces. `--ref` names a version for a published set, the way it names a branch
+for a repository.
+
+A set that says `'archive' => false` is read one drawing at a time instead —
+that is the flag for a repository too large to unpack, and it costs `--all`,
+which has no listing without an archive. Whatever a set says, an archive larger
+than the memory left to open it in is reported with its size and the limit
+rather than killing the process partway through.
 
 ### Slots, and replacing Shape's own icons
 

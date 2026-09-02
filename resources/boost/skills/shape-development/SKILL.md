@@ -177,9 +177,13 @@ on one run writes a Heroicon into a directory of Lucide drawings, under a slot
 name that says nothing about who drew it. `--set` stays the override for a
 one-off, such as reading a supplementary set.
 
-Each set in `shape.icon_sets` declares the repository that draws it (`repo`,
-`ref`, `path`), so `shape:icon` fetches it and caches it under
-`storage/framework/shape/icons`. Nothing needs cloning first, and nothing is read
+Each set in `shape.icon_sets` declares where its drawings are had — a published
+package (`npm`, `version`, `path`) or the repository that draws it (`repo`,
+`ref`, `path`) — so `shape:icon` fetches it and caches it under
+`storage/framework/shape/icons`. Six of the seven shipped sets read a package:
+it holds the drawings rather than the project that produces them, a version is
+immutable where a branch moves, and the registry's sha512 is verified. `lucide`
+is the exception, its package being larger than its repository. Nothing needs cloning first, and nothing is read
 at run time — a generated component is a Blade file with the drawing baked in.
 
 Seven sets ship, each answering every slot: `heroicons` (the default),
@@ -193,12 +197,24 @@ inside one flat directory, a set filed by category, and a set read from a mirror
 (`svg/400/outlined`), because Google files each symbol as a directory of 168
 variants. Its names use underscores: `<x-shape::icon.check_circle />`.
 
-It declares `'archive' => false`: the repository is too large to unpack in
-memory, so it is read one drawing at a time. Naming icons and `--replace` both
-work and are quick. `--all` is refused for it — use `--from` with a local
-checkout (`npm i @material-symbols/svg-400`) if the app really wants every
-symbol. Use the same flag for any set whose repository is too big to pull
-whole.
+It is read from a published package rather than a repository — the other source
+a set can name, and the smaller one:
+
+```php
+'material-symbols' => [
+    'npm' => '@material-symbols/svg-400',
+    'version' => 'latest',   // resolved and pinned as the release behind it
+    'path' => 'outlined',
+],
+```
+
+Nothing runs npm; the registry is fetched over HTTP like any archive. Use it for
+a set whose repository carries far more than its drawings — 1.8MB against 2.8GB
+here, 1.2MB against 32MB for Tabler. Versions are pinned into generated
+components instead of commits, and the registry's sha512 is verified.
+
+`'archive' => false` is the other lever: read a set one drawing at a time when
+its repository is too large to unpack. It costs `--all`, which needs a listing.
 
 A set's `styles` gives each cell a path with the name in it, so a directory
 layout and a filename convention are one declaration. `{name}` is the whole name.
