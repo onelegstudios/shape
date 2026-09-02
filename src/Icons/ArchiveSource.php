@@ -299,7 +299,7 @@ abstract class ArchiveSource implements IconSource
 
         $megabytes = static fn (int $bytes): string => number_format($bytes / 1048576, 0).'MB';
 
-        throw new RuntimeException("The archive for [{$this->set}] is {$megabytes($size)} and PHP has about {$megabytes(max($spare, 0))} left of its memory_limit to unpack it in, which is not enough — unpacking reads the whole archive into memory. Name the icons you want instead of --all, raise memory_limit, or pass --from with a local checkout.");
+        throw new RuntimeException("The archive for [{$this->set}] is {$megabytes($size)} and PHP has about {$megabytes(max($spare, 0))} left of its memory_limit to unpack it in, which is not enough — unpacking reads the whole archive into memory. Name the icons you want with shape:icon instead of running shape:icon:all, raise memory_limit, or pass --from with a local checkout.");
     }
 
     /**

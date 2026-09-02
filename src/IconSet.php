@@ -23,10 +23,10 @@ use InvalidArgumentException;
  * because the icons came from different sets, which is exactly what a
  * supplementary set invites. A set says only which cells it draws.
  *
- * This is a compile-time thing. `shape:icon` reads it while writing a component
- * and bakes every value it decides — the size class, the preferred style, the
- * case labels — into that file as a literal. Nothing here is read at run time,
- * which is what keeps the generated components foldable.
+ * This is a compile-time thing. The generator reads it while writing a
+ * component and bakes every value it decides — the size class, the preferred
+ * style, the case labels — into that file as a literal. Nothing here is read at
+ * run time, which is what keeps the generated components foldable.
  *
  * Parsed once, here, so that the command deals in typed values rather than in
  * whatever shape `config('shape.icon_sets')` happened to be left in.
@@ -92,7 +92,7 @@ final class IconSet
         // And a config published before slots existed has this one. An alias
         // keyed `exclamation-triangle` says nothing about where the drawing is
         // used, and ignoring the key would leave the set covering no slot at
-        // all — a `--replace` that writes nothing and reports success.
+        // all — a `shape:icon:replace` that writes nothing and reports success.
         if (array_key_exists('aliases', $definition)) {
             throw new InvalidArgumentException("Icon set [{$name}] declares [aliases]. Shape asks for slots now, not for another set's spellings — rewrite it as [slots], keyed by the slot names in [icon_slots].");
         }
@@ -159,8 +159,8 @@ final class IconSet
      *
      * Nearly every set's can, and that is the cheap way to read one: an archive
      * is a single request where a drawing at a time is hundreds, and it is the
-     * only thing that can answer `--all`, because a raw file fetch has no
-     * listing in it.
+     * only thing that can answer `shape:icon:all`, because a raw file fetch has
+     * no listing in it.
      *
      * Some repositories are too big to be read that way at all. The Material
      * Symbols mirror is one: it carries seven weights across three families plus
@@ -169,9 +169,10 @@ final class IconSet
      * `memory_limit` a consumer is likely to have.
      *
      * A set that says `false` here is read a drawing at a time. Naming icons
-     * works, and so does `--replace`, which is fourteen slots rather than the
-     * thousands `--all` would be. `--all` is what is actually lost, and it is
-     * refused with a sentence rather than attempted and killed.
+     * works, and so does `shape:icon:replace`, which is fourteen slots rather
+     * than the thousands `shape:icon:all` would be. That last command is what
+     * is actually lost, and it is refused with a sentence rather than attempted
+     * and killed.
      *
      * @param  array<mixed>  $definition
      */
@@ -311,7 +312,7 @@ final class IconSet
      *
      * `null` is a value and not an omission. A set saying `null` has been asked
      * the question and has no drawing for it; a set saying nothing has not been
-     * asked. Only the first is something `shape:icon` can report as a decision
+     * asked. Only the first is something the generator can report as a decision
      * rather than as a hole.
      *
      * @param  array<mixed>  $definition
@@ -472,11 +473,11 @@ final class IconSet
      *
      * - A slot the set names resolves to that drawing.
      * - A slot the set names `null` resolves to nothing. The set has been asked
-     *   and has no drawing for it, which `shape:icon` can report as a decision.
+     *   and has no drawing for it, which the generator can report as a decision.
      * - Anything the set says nothing about is itself. That covers every icon
-     *   outside the slots — `bell`, `plus`, a set's own file under `--all` — and
-     *   it is also how a set that has simply not been asked about a slot is told
-     *   apart from one that answered `null`.
+     *   outside the slots — `bell`, `plus`, a set's own file under
+     *   `shape:icon:all` — and it is also how a set that has simply not been
+     *   asked about a slot is told apart from one that answered `null`.
      */
     public function sourceName(string $name): ?string
     {
@@ -586,7 +587,7 @@ final class IconSet
     }
 
     /**
-     * Every directory a name could be drawn in, for `--all` to walk.
+     * Every directory a name could be drawn in, for `shape:icon:all` to walk.
      *
      * Derived from the patterns rather than declared, so a flat set — whose only
      * pattern is `{name}.svg` — resolves to the source directory itself without

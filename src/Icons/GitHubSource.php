@@ -15,10 +15,10 @@ use Throwable;
  * Two ways in, because the two shapes of run want different things:
  *
  * - **The tarball**, `codeload.github.com/{repo}/tar.gz/{ref}`, is one request
- *   for the whole set. It is the only form that can answer `--all`, because a
- *   raw file fetch has no directory listing, and it is the one that keeps
- *   `--replace` off the rate limiter — twelve names over six cells is seventy-two
- *   requests the other way.
+ *   for the whole set. It is the only form that can answer `shape:icon:all`,
+ *   because a raw file fetch has no directory listing, and it is the one that
+ *   keeps `shape:icon:replace` off the rate limiter — twelve names over six
+ *   cells is seventy-two requests the other way.
  * - **Raw files**, `raw.githubusercontent.com/{repo}/{ref}/{path}`, for the few
  *   names typed on the command line. `shape:icon bell` wants one drawing, and
  *   downloading a repository to find it is the wrong trade. A 404 there maps

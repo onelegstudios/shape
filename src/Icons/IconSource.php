@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Onelegstudios\Shape\Icons;
 
 /**
- * Where `shape:icon` reads drawings from.
+ * Where the icon commands read drawings from.
  *
- * The command used to take a directory and read it, which made "Regenerate;
+ * The generator used to take a directory and read it, which made "Regenerate;
  * don't hand-edit" an instruction nobody could follow: Heroicons is not a
  * Composer dependency of this package, so the header asked for a checkout that
  * was never mentioned anywhere. The fifteen shipped icons were last regenerated
  * by extracting the SVGs back out of the components, which worked, and which is
  * a trick rather than a workflow.
  *
- * So the command stops knowing where bytes come from. It walks the matrix, asks
+ * So the commands stop knowing where bytes come from. They walk the matrix, ask
  * for cells by their path inside the set, and something else decides whether
  * that means a directory on disk or a tarball from GitHub.
  *
@@ -41,9 +41,10 @@ interface IconSource
     /**
      * The names of the SVGs in one directory of the set, without extensions.
      *
-     * These are the *set's* names, not Shape's — `--all` puts them back through
-     * the alias map before anything is written. An empty string asks about the
-     * root, which is what a flat set has instead of directories.
+     * These are the *set's* names, not Shape's — `shape:icon:all` reads each one
+     * back through the set's own patterns before anything is written. An empty
+     * string asks about the root, which is what a flat set has instead of
+     * directories.
      *
      * @return list<string>
      */

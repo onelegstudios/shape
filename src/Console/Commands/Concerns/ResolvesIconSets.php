@@ -15,10 +15,26 @@ use Onelegstudios\Shape\IconSet;
 /**
  * The questions every icon command has to answer before it can do its work.
  *
+ * Every icon in this library is a generated file, and generating them is what
+ * makes the set cheap to grow and what keeps the header on each one —
+ * "Regenerate; don't hand-edit" — an honest instruction rather than a hope.
+ *
+ * What a set looks like is declared in `shape.icon_sets`, measured against the
+ * scale in `shape.icon_sizes`, and parsed by `IconSet`: a matrix of styles
+ * against sizes, mostly sparse. A generating command walks that matrix, reads
+ * whichever cells the set actually holds, and writes one component per name
+ * with the answers baked in.
+ *
+ * The alternative, which WireUI takes, is a Composer package per icon set. That
+ * is a version matrix to maintain for what is fundamentally a code generator,
+ * and it puts the set a consumer actually wants — theirs — furthest out of
+ * reach. These commands read whatever set they are pointed at, in whatever
+ * layout the manifest describes.
+ *
  * Which set, read from where, at which ref, written into which directory, and
- * what was recorded there last time. All four icon commands ask all of them —
- * the one that only reports asks them so it knows what it is reporting on — so
- * they live here rather than in any one of the four.
+ * what was recorded there last time: all four of them ask all of those — the
+ * one that only reports asks them so it knows what it is reporting on — so they
+ * are answered here rather than in any one of the four.
  *
  * Two of the answers differ by command rather than by run, and are the two
  * methods below that a command overrides: whether the run walks the whole set,
@@ -53,7 +69,7 @@ trait ResolvesIconSets
      * Lucide had to say `--set=lucide` on every run forever, and the run that
      * forgot wrote a Heroicon into a directory of Lucide ones — under a slot
      * name, which says nothing about who drew it. Saying it once here is what
-     * makes `shape:icon --replace` a replacement rather than a re-mixing.
+     * makes `shape:icon:replace` a replacement rather than a re-mixing.
      *
      * `--set` stays the override, and a supplementary set — read once, written
      * into a namespace of its own — is exactly the one-off run it is for.
@@ -78,11 +94,16 @@ trait ResolvesIconSets
     /**
      * Where this run reads drawings from.
      *
+     * Which is as far as any command's interest in it goes: an `IconSource`
+     * answers for a path, and it is either a directory somebody already has or
+     * a repository fetched and cached on their behalf.
+     *
      * `--from` wins whenever it is given, and stays the way to generate from a
      * local checkout, from a designer's folder, or from a set with no upstream
      * at all. Otherwise the set says which repository draws it and this fetches
-     * it — which is the difference between "regenerate this" being an
-     * instruction and being a suggestion.
+     * it, which is what makes the header's instruction followable: Heroicons is
+     * not a dependency of this package, so before that, regenerating meant
+     * cloning something nobody had been told to clone.
      */
     protected function source(IconSet $set, Filesystem $files): IconSource
     {
@@ -122,9 +143,10 @@ trait ResolvesIconSets
             $set->path,
             $this->cache(),
             (bool) $this->option('offline'),
-            // One request for the whole set, rather than one per drawing. Both
-            // of these walk far more of it than a raw fetch per file could pay
-            // for: `--replace` alone is twelve names over six cells.
+            // One request for the whole set, rather than one per drawing. A
+            // command that walks the set reads far more of it than a raw fetch
+            // per file could pay for: `shape:icon:replace` alone is twelve names
+            // over six cells, and `shape:icon:all` is every name there is.
             //
             // A flattening set has no choice about it. Its drawings are filed
             // under something their names do not say — a category — so there is
@@ -132,8 +154,9 @@ trait ResolvesIconSets
             // collapsed, whether the run wanted one icon or all of them.
             //
             // A set whose repository cannot be pulled whole is the other way
-            // round: `--replace` goes back to a drawing at a time, which is
-            // twenty-eight requests against an archive PHP cannot hold.
+            // round: `shape:icon:replace` goes back to a drawing at a time,
+            // which is twenty-eight requests against an archive PHP cannot
+            // hold.
             ($set->archive && $this->walksTheSet()) || $set->flatten,
             $set->flatten,
             $set->archive,
@@ -208,7 +231,8 @@ trait ResolvesIconSets
      * `<x-shape::icon.lucide.bell />`, and a flat `bell` is no longer in its
      * way.
      *
-     * The set answers this — with its `namespace`, or with its own name where it
+     * The set answers this — with its `namespace`, declared in `shape.icon_sets`
+     * beside everything else that is true of it, or with its own name where it
      * declares none — and the flag only overrides it. A flag on its own is
      * remembered by nobody: the run after it, without the flag, would write a
      * second copy elsewhere and pin it in a second lockfile, which is the
@@ -414,9 +438,9 @@ trait ResolvesIconSets
      * What one drawing is, boiled down to something comparable.
      *
      * Over the cells rather than over the generated component, because the
-     * question `--status` answers is whether *upstream* moved. A component
-     * regenerated by a later version of this command would differ byte for byte
-     * while the drawing behind it had not changed at all.
+     * question `shape:icon:status` answers is whether *upstream* moved. A
+     * component regenerated by a later version of the generator would differ
+     * byte for byte while the drawing behind it had not changed at all.
      *
      * @param  array<string, string>  $cells
      */

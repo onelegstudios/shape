@@ -88,7 +88,8 @@ class IconAllCommand extends Command
     }
 
     /**
-     * The names to write components under: everything the set holds.
+     * The names to write components under: every drawing the set holds, each
+     * under its own name.
      *
      * It used to have to run the alias map backwards, and the hairy case was a
      * file whose name was itself an alias key — a Heroicons-named

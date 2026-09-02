@@ -17,6 +17,19 @@ use RuntimeException;
 
 /**
  * Generate exactly the icons Shape draws itself.
+ *
+ * The generator taken to its conclusion. Writing an icon into `components_path`
+ * replaces the packaged one everywhere, including inside this library's own
+ * components, because that path resolves first — so generating the library's
+ * slots swaps the icon set out from under the whole of it. What made that
+ * impossible before slots was not the mechanism but the vocabulary: a set that
+ * spells `x-mark` as `x` could add icons here, and never replace one.
+ *
+ * A slot is that vocabulary made Shape's own. `shape-close` is the dismiss glyph
+ * whoever drew it, and `shape.icon_slots` declares the list while each set says
+ * which of its files fills each one. So the filename states the role, the header
+ * states the vendor, and a set that has nothing for a slot says `null` rather
+ * than leaving a hole nobody can see.
  */
 class IconReplaceCommand extends Command
 {

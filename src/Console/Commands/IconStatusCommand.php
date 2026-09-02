@@ -60,7 +60,7 @@ class IconStatusCommand extends Command
      * upstream might have moved underneath it; without the record both look the
      * same, and only the second is a reason to regenerate.
      *
-     * This is the same trade `shape:eject --status` makes against the package,
+     * This is the same trade `shape:eject:status` makes against the package,
      * one layer further out — there, the package is upstream; here, the icon set
      * is.
      *

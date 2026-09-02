@@ -75,10 +75,11 @@ return [
     | `shape-arrow-right`, `shape-plus` and `shape-trash` — exist so that the
     | README and the previews render for somebody who has configured nothing.
     | They are not part of the library's vocabulary: nothing resolves them, they
-    | are not documented as a catalogue to pick from, and `--replace` leaves them
-    | alone. They carry the prefix anyway, so that `trash` and `plus` stay free
-    | for the icons you generate yourself — reaching for a bare `trash` you never
-    | generated is a "component not found" rather than a Heroicon nobody chose.
+    | are not documented as a catalogue to pick from, and `shape:icon:replace`
+    | leaves them alone. They carry the prefix anyway, so that `trash` and `plus`
+    | stay free for the icons you generate yourself — reaching for a bare `trash`
+    | you never generated is a "component not found" rather than a Heroicon
+    | nobody chose.
     |
     */
 
@@ -104,8 +105,8 @@ return [
     | Default Icon Set
     |--------------------------------------------------------------------------
     |
-    | Which of the sets below `shape:icon` reads when a run does not say. It is
-    | `heroicons` because that is what the icons this package ships were drawn
+    | Which of the sets below the icon commands read when a run does not say. It
+    | is `heroicons` because that is what the icons this package ships were drawn
     | from; an application that has moved the library onto another set answers
     | this question once here rather than in every command it ever types.
     |
@@ -113,7 +114,7 @@ return [
     | is yours is true of the application, not of a run. `--set` typed on one
     | run and forgotten on the next is how a components directory ends up
     | holding two vendors, and the icons that name a slot say nothing about
-    | which drew them. Set this, and `shape:icon --replace` stays a replacement.
+    | which drew them. Set this, and `shape:icon:replace` stays a replacement.
     |
     | `--set` is still the override, and reading a supplementary set is exactly
     | the one-off run it is for. A set read that way is written into a
@@ -130,7 +131,7 @@ return [
     | Icon Sets
     |--------------------------------------------------------------------------
     |
-    | What `shape:icon` needs to know to turn a directory of SVGs into
+    | What the icon commands need to know to turn a directory of SVGs into
     | components. A set says which cells of the matrix above it draws, and most
     | of them are sparse: Heroicons draws no outline at 16px or 20px, because a
     | 1.5px stroke does not read at that size. A cell with no drawing of its own
@@ -148,11 +149,10 @@ return [
     | `repo`, `ref` and `path` are where the drawings can be had. Without them a
     | set can only be generated from a directory somebody already has, which
     | made "Regenerate; don't hand-edit" ask for a checkout nobody had been told
-    | to make — Heroicons is not a dependency of this package. With them,
-    | `shape:icon` fetches the set once, caches it under `storage/framework`, and
-    | pins the resolved commit into every file it writes. `--from` still wins
-    | when given, and stays the way to read a local folder or a set with no
-    | upstream at all.
+    | to make — Heroicons is not a dependency of this package. With them, a run
+    | fetches the set once, caches it under `storage/framework`, and pins the
+    | resolved commit into every file it writes. `--from` still wins when given,
+    | and stays the way to read a local folder or a set with no upstream at all.
     |
     | `flatten` is for a set whose drawings are filed under something their names
     | do not say. A pattern places a name into a path, which covers every layout
@@ -162,7 +162,7 @@ return [
     | and what the patterns then read is an ordinary flat set. The cost is that a
     | single drawing can no longer be fetched on its own, so such a set always
     | pulls the whole of itself; and its filenames have to be unique across its
-    | directories, which `shape:icon` checks rather than assumes.
+    | directories, which the generator checks rather than assumes.
     |
     | `namespace` gives a set a subdirectory of the components path, and with it
     | a namespace of its own: `icon/lucide/bell.blade.php` is
@@ -179,8 +179,8 @@ return [
     | and the next run without it writes a second copy flat. `--namespace=`,
     | with nothing after it, is still how a run says it is flat out loud.
     |
-    | None of this is read at run time. It is spent while `shape:icon` writes a
-    | component, and every value it decides is a literal in the generated file —
+    | None of this is read at run time. It is spent while a component is being
+    | written, and every value it decides is a literal in the generated file —
     | which is what keeps those files foldable.
     |
     */
@@ -239,7 +239,7 @@ return [
             // is a supplementary set, so it is written into `icon/lucide/`
             // under its own name and keeps a spelling Heroicons already has —
             // `<x-shape::icon.lucide.bell />`. Naming one here would only move
-            // it somewhere else. `shape:icon --replace --set=lucide` is flat
+            // it somewhere else. `shape:icon:replace --set=lucide` is flat
             // regardless, because a replacement writes over Shape's own names.
             'repo' => 'lucide-icons/lucide',
             'ref' => 'main',
@@ -250,7 +250,7 @@ return [
                     'base' => '{name}.svg',
                 ],
             ],
-            // Every slot, so that `shape:icon --replace --set=lucide` leaves
+            // Every slot, so that `shape:icon:replace --set=lucide` leaves
             // nothing behind. The names on the right are the current release's
             // own files; several were renamed around v0.4xx and the old
             // spellings survive as metadata aliases rather than as SVGs, so
@@ -337,9 +337,10 @@ return [
             // here rather than have Shape grow a third axis to hold it.
             //
             // Phosphor puts the weight in the filename as well as the directory,
-            // which is why a pattern is a path and not a directory: `--all` runs
-            // it backwards to read `heart-fill.svg` as the fill drawing of
-            // `heart` rather than as an icon called `heart-fill`.
+            // which is why a pattern is a path and not a directory:
+            // `shape:icon:all` runs it backwards to read `heart-fill.svg` as the
+            // fill drawing of `heart` rather than as an icon called
+            // `heart-fill`.
             'styles' => [
                 'outline' => [
                     'base' => 'regular/{name}.svg',
@@ -375,7 +376,7 @@ return [
             'notice' => 'Bootstrap Icons (https://icons.getbootstrap.com), MIT licensed.',
             // A style by suffix in one flat directory: `check-circle-fill.svg`
             // sits beside `check-circle.svg`, so the pattern says so and
-            // `--all` reads the pair as one icon in two styles.
+            // `shape:icon:all` reads the pair as one icon in two styles.
             //
             // Half the set — 702 of 1,374 names — has a fill. Most of what does
             // not is line art with no interior to fill (every arrow, chevron and
@@ -385,10 +386,10 @@ return [
             // renders its outline small, which is the sparse matrix again.
             //
             // `person-lines-fill` is the one fill with no plain drawing behind
-            // it, so `--all` writes it under `person-lines`, a name Bootstrap
-            // has not got. It is still reachable by its own spelling, because
-            // `{name}.svg` matches a fill name too: `shape:icon person-lines-fill`
-            // generates it.
+            // it, so `shape:icon:all` writes it under `person-lines`, a name
+            // Bootstrap has not got. It is still reachable by its own spelling,
+            // because `{name}.svg` matches a fill name too:
+            // `shape:icon person-lines-fill` generates it.
             'styles' => [
                 'outline' => [
                     'base' => '{name}.svg',
@@ -434,8 +435,8 @@ return [
                 // Bootstrap's spinners are CSS rather than drawings, so there is
                 // no ring to spin here. This is the `null` case for real: the
                 // set has been asked and has nothing, and the slot is packaged,
-                // so a `--replace` onto Bootstrap keeps Shape's own spinner and
-                // says so.
+                // so `shape:icon:replace` onto Bootstrap keeps Shape's own
+                // spinner and says so.
                 'shape-loading' => null,
             ],
         ],
@@ -450,7 +451,7 @@ return [
             // which of the twenty folders it is in. Flattened on the way in, so
             // what the patterns below read is an ordinary flat set. The 3,229
             // drawings have no filename in common across those folders, which is
-            // what makes that safe; `shape:icon` checks rather than assumes it.
+            // what makes that safe; the generator checks rather than assumes it.
             'flatten' => true,
             // Not Apache 2.0, as it was until January 2026. The current licence
             // asks for no attribution at all — Shape states it anyway, the way

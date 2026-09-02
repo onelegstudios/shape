@@ -41,13 +41,13 @@ final class IconSlots
      *
      * Checked rather than assumed, because a consumer publishes this file and
      * then edits it. A published config from before slots existed has no
-     * `icon_slots` at all, and saying so beats a `--replace` that writes nothing
-     * and reports success.
+     * `icon_slots` at all, and saying so beats a `shape:icon:replace` that
+     * writes nothing and reports success.
      */
     public static function fromArray(mixed $slots): self
     {
         if (! is_array($slots) || $slots === []) {
-            throw new InvalidArgumentException('No icon slots are configured. Add [icon_slots] to config/shape.php — it is the list of icons Shape resolves for you, and `shape:icon --replace` generates exactly it.');
+            throw new InvalidArgumentException('No icon slots are configured. Add [icon_slots] to config/shape.php — it is the list of icons Shape resolves for you, and `shape:icon:replace` generates exactly it.');
         }
 
         $declared = [];

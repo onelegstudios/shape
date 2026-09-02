@@ -96,7 +96,7 @@ class DoctorCommand extends Command
             $this->components->error("{$missing} slot(s) Shape resolves for you are not in your set.");
             $this->line('  Each one falls back to the icon this package ships, so those components');
             $this->line('  render in Heroicons while the rest of the page renders in yours. Generate');
-            $this->line('  them with `shape:icon --replace`, and if a slot has no drawing under it,');
+            $this->line('  them with `shape:icon:replace`, and if a slot has no drawing under it,');
             $this->line('  say which of your set\'s drawings fills it in `shape.icon_sets.*.slots`.');
         }
 
@@ -130,9 +130,9 @@ class DoctorCommand extends Command
      *
      * Anything else in the directory gets a line and never a finding: the three
      * examples this package ships, if they were ever generated, and whatever the
-     * application has generated for itself. `--replace` does not touch either,
-     * correctly — they are not Shape's — but they are the drawings it will not
-     * keep level with the rest, so they are worth naming.
+     * application has generated for itself. `shape:icon:replace` does not touch
+     * either, correctly — they are not Shape's — but they are the drawings it
+     * will not keep level with the rest, so they are worth naming.
      *
      * @return array{0: int, 1: int} The slots missing, and the slots drawn but never declared.
      */
@@ -216,11 +216,11 @@ class DoctorCommand extends Command
      *
      * Icons outside the slot list: ones the application generated for itself,
      * and the three examples this package ships if they were ever ejected.
-     * `--replace` does not touch either and should not — neither is Shape's to
-     * keep level with your set. But they sit in the same directory, drawn by
-     * whichever set was pointed at when they were generated, and a reader
-     * looking at a coverage report should be told they are there rather than
-     * left to infer it from a count that excludes them.
+     * `shape:icon:replace` does not touch either and should not — neither is
+     * Shape's to keep level with your set. But they sit in the same directory,
+     * drawn by whichever set was pointed at when they were generated, and a
+     * reader looking at a coverage report should be told they are there rather
+     * than left to infer it from a count that excludes them.
      *
      * @param  list<string>  $declared
      */

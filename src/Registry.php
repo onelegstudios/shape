@@ -107,7 +107,7 @@ final class Registry
      * The slots the library resolves in components of its own.
      *
      * Read out of the markup, and no longer the source of truth for anything.
-     * `shape.icon_slots` declares the list `shape:icon --replace` generates and
+     * `shape.icon_slots` declares the list `shape:icon:replace` generates and
      * `shape:doctor` checks; this is the assertion that the declaration and the
      * markup have not drifted apart. Derived must be a subset of declared: a
      * component that starts drawing a slot nobody declared has to fail loudly
@@ -117,7 +117,7 @@ final class Registry
      * `shape-loading` is one — grep `resources/views/shape` and nothing renders
      * a spinner, because the button has no loading state and the icon exists to
      * be used by an application — so a derived list could never contain it, and
-     * `--replace` would never generate it.
+     * `shape:icon:replace` would never generate it.
      *
      * A slot counts if it appears as a static tag or as a quoted literal: the
      * two forms in this library, one being `<x-shape::icon.shape-checked />` and
@@ -173,8 +173,8 @@ final class Registry
      * Slots and the three examples together. `shape-arrow-right`, `shape-plus`
      * and `shape-trash` are not part of the library's vocabulary — nothing
      * resolves them, and they ship so that the README and the previews render
-     * for somebody who has configured nothing. `--replace` leaves them alone,
-     * which is correct: they are not Shape's to keep level with your set.
+     * for somebody who has configured nothing. `shape:icon:replace` leaves them
+     * alone, which is correct: they are not Shape's to keep level with your set.
      *
      * They carry the prefix so the bare names stay free. An application that
      * wants a trash can generates `trash` from its own set, and reaching for one
