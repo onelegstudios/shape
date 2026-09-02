@@ -120,7 +120,7 @@ return [
     |
     */
 
-    'icon_set' => 'heroicons',
+    'icon_set' => 'hero',
 
     /*
     |--------------------------------------------------------------------------
@@ -179,7 +179,7 @@ return [
 
     'icon_sets' => [
 
-        'heroicons' => [
+        'hero' => [
             // The package publishes the `optimized/` drawings at its root, byte
             // for byte, which is why there is no `path` here and why the icons
             // this library ships regenerate identically from it.
@@ -359,7 +359,7 @@ return [
             ],
         ],
 
-        'bootstrap-icons' => [
+        'bootstrap' => [
             'npm' => 'bootstrap-icons',
             'version' => 'latest',
             'path' => 'icons',
@@ -431,7 +431,7 @@ return [
             ],
         ],
 
-        'remix-icon' => [
+        'remix' => [
             'npm' => 'remixicon',
             'version' => 'latest',
             'path' => 'icons',
@@ -503,7 +503,7 @@ return [
             ],
         ],
 
-        'material-symbols' => [
+        'material' => [
             // Read from the published package rather than from Google's own
             // repository, which files every symbol as a directory of 168
             // variants — four optical sizes against fill, three grades and seven

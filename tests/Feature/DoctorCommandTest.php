@@ -199,7 +199,7 @@ it('names both sets when an icon directory is wearing two', function () {
     writeIcons(['shape-warning'], 'Heroicons (https://heroicons.com), MIT licensed.');
 
     $this->artisan('shape:doctor')
-        ->expectsOutputToContain('lucide and heroicons, 14 of 14 slots')
+        ->expectsOutputToContain('lucide and hero, 14 of 14 slots')
         ->assertSuccessful();
 });
 

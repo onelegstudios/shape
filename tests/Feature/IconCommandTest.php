@@ -56,7 +56,7 @@ function heroiconsFixture(): string
 
     exec('rm -rf '.escapeshellarg($directory));
 
-    $set = IconSet::fromArray('heroicons', config('shape.icon_sets')['heroicons'], config('shape.icon_sizes'));
+    $set = IconSet::fromArray('hero', config('shape.icon_sets')['hero'], config('shape.icon_sizes'));
 
     foreach (IconSlots::fromConfig()->names() as $slot) {
         $drawn = $set->sourceName($slot);
@@ -144,7 +144,7 @@ it('generates an icon whose name is spelled with underscores', function () {
 
     $this->artisan('shape:icon', [
         'icons' => ['check_circle'],
-        '--set' => 'material-symbols',
+        '--set' => 'material',
         '--from' => $from,
     ])->assertSuccessful();
 
@@ -288,7 +288,7 @@ it('lets --set read another set for the one run that asks', function () {
 
     $from = heroiconsFixture();
 
-    $this->artisan('shape:icon', ['icons' => ['shape-close'], '--set' => 'heroicons', '--from' => $from])
+    $this->artisan('shape:icon', ['icons' => ['shape-close'], '--set' => 'hero', '--from' => $from])
         ->assertSuccessful();
 
     expect(file_get_contents($this->destination.'/icon/shape-close.blade.php'))
@@ -324,14 +324,14 @@ it('records what each icon was drawn from, beside the icons', function () {
 
     $lock = json_decode((string) file_get_contents($this->destination.'/icon/shape-icons.json'), true);
 
-    expect($lock)->toHaveKey('heroicons')
-        ->and($lock['heroicons']['icons'])->toHaveKey('shape-checked');
+    expect($lock)->toHaveKey('hero')
+        ->and($lock['hero']['icons'])->toHaveKey('shape-checked');
 
     // A `--from` directory was not fetched from the set's repository, so the
     // record does not claim it was. Pinning a component to a commit nobody read
     // it at would be worse than not pinning it.
-    expect($lock['heroicons'])->not->toHaveKey('repo')
-        ->and($lock['heroicons'])->not->toHaveKey('commit');
+    expect($lock['hero'])->not->toHaveKey('repo')
+        ->and($lock['hero'])->not->toHaveKey('commit');
 });
 
 it('reports an icon whose drawing has moved since it was generated', function () {
@@ -650,10 +650,10 @@ it('reads a marker inside a filename as the drawing it is, not as a name of its 
     // `person-fill-x` whose *outline* cell holds a filled drawing — the fill
     // leaking into the outline style under a name that says so.
     //
-    // Read through the shipped `bootstrap-icons` entry rather than a set written
+    // Read through the shipped `bootstrap` entry rather than a set written
     // for the test, so this covers the config the package promises as well as
     // the command that reads it.
-    $this->artisan('shape:icon', ['--set' => 'bootstrap-icons', '--from' => $this->bootstrap, '--all' => true])
+    $this->artisan('shape:icon', ['--set' => 'bootstrap', '--from' => $this->bootstrap, '--all' => true])
         ->assertSuccessful();
 
     expect(written())->toBe(['heart', 'person-check', 'person-x']);

@@ -21,7 +21,7 @@ function scale(): array
 
 function heroicons(): IconSet
 {
-    return IconSet::fromArray('heroicons', [
+    return IconSet::fromArray('hero', [
         'notice' => 'Heroicons (https://heroicons.com), MIT licensed.',
         'styles' => [
             'solid' => [
@@ -86,7 +86,7 @@ function slotted(): IconSet
  */
 function split(): IconSet
 {
-    return IconSet::fromArray('bootstrap-icons', [
+    return IconSet::fromArray('bootstrap', [
         'styles' => [
             'outline' => ['base' => '{name}.svg'],
             'solid' => ['base' => ['{name}-fill.svg', '{head}-fill-{tail}.svg']],
@@ -282,7 +282,7 @@ it('refuses a set that draws nothing', function () {
 });
 
 it('refuses a scale that measures nothing', function () {
-    expect(fn () => IconSet::fromArray('heroicons', ['styles' => ['solid' => ['base' => '{name}.svg']]], []))
+    expect(fn () => IconSet::fromArray('hero', ['styles' => ['solid' => ['base' => '{name}.svg']]], []))
         ->toThrow(InvalidArgumentException::class, 'No icon sizes are configured');
 });
 
@@ -311,7 +311,7 @@ it('refuses a set that keeps a scale of its own', function () {
 });
 
 it('refuses a set that is not an array at all', function () {
-    expect(fn () => IconSet::fromArray('bad', 'heroicons', scale()))
+    expect(fn () => IconSet::fromArray('bad', 'hero', scale()))
         ->toThrow(InvalidArgumentException::class, 'is not an array');
 });
 
@@ -320,10 +320,10 @@ it('ships a heroicons set and a single-style set to check the model generalises'
     $sizes = config('shape.icon_sizes');
 
     expect($sets)->toBeArray()
-        ->and($sets)->toHaveKeys(['heroicons', 'lucide'])
+        ->and($sets)->toHaveKeys(['hero', 'lucide'])
         ->and($sizes)->toBe(scale());
 
-    $shipped = IconSet::fromArray('heroicons', $sets['heroicons'], $sizes);
+    $shipped = IconSet::fromArray('hero', $sets['hero'], $sizes);
 
     expect($shipped->styleFor('sm'))->toBe('solid')
         ->and($shipped->notice)->toContain('Heroicons');
@@ -396,7 +396,7 @@ it('ships two sets that between them fill every declared slot', function () {
     // is the right answer rather than a gap.
     $slots = array_keys(config('shape.icon_slots'));
 
-    foreach (['heroicons', 'lucide'] as $name) {
+    foreach (['hero', 'lucide'] as $name) {
         $set = IconSet::fromArray($name, config('shape.icon_sets')[$name], config('shape.icon_sizes'));
 
         foreach ($slots as $slot) {
@@ -417,7 +417,7 @@ it('ships two sets that between them fill every declared slot', function () {
 
     // Heroicons has nothing that reads as a loader, and says so rather than
     // shadowing the packaged spinner with a circular arrow.
-    $heroicons = IconSet::fromArray('heroicons', config('shape.icon_sets')['heroicons'], config('shape.icon_sizes'));
+    $heroicons = IconSet::fromArray('hero', config('shape.icon_sets')['hero'], config('shape.icon_sizes'));
 
     expect($heroicons->sourceName('shape-loading'))->toBeNull()
         ->and($heroicons->sourceName('shape-close'))->toBe('x-mark');
@@ -427,13 +427,13 @@ it('ships the one set whose layout has to be collapsed before it can be read', f
     // Remix Icon files its drawings by category, so the name says nothing about
     // which of the twenty folders it is in. The flag is what makes the flat
     // patterns below true of the set on disk.
-    $remix = IconSet::fromArray('remix-icon', config('shape.icon_sets')['remix-icon'], config('shape.icon_sizes'));
+    $remix = IconSet::fromArray('remix', config('shape.icon_sets')['remix'], config('shape.icon_sizes'));
 
     expect($remix->flatten)->toBeTrue()
         ->and($remix->path)->toBe('icons');
 
     // Every other shipped set is read where it lies.
-    foreach (['heroicons', 'lucide', 'tabler', 'phosphor', 'bootstrap-icons', 'material-symbols'] as $name) {
+    foreach (['hero', 'lucide', 'tabler', 'phosphor', 'bootstrap', 'material'] as $name) {
         $set = IconSet::fromArray($name, config('shape.icon_sets')[$name], config('shape.icon_sizes'));
 
         expect($set->flatten)->toBeFalse("[{$name}] should be read where it lies");
@@ -458,7 +458,7 @@ it('reads Material Symbols from the published package rather than the repository
     // is 2.8GB, which cannot be unpacked in memory at all. The package is the
     // same drawings without the project that produces them: 1.8MB, one weight
     // and family to a directory, which the ordinary flat patterns read.
-    $material = IconSet::fromArray('material-symbols', config('shape.icon_sets')['material-symbols'], config('shape.icon_sizes'));
+    $material = IconSet::fromArray('material', config('shape.icon_sets')['material'], config('shape.icon_sizes'));
 
     expect($material->npm)->toBe('@material-symbols/svg-400')
         ->and($material->repo)->toBeNull()
@@ -510,7 +510,7 @@ it('ships both sets flat, so a call site has one spelling for an icon', function
     // Flat is the default and stays it: a namespace declared here would put the
     // set's drawings under a second spelling at every call site, and neither
     // shipped set is the supplementary one that wants that.
-    foreach (['heroicons', 'lucide'] as $name) {
+    foreach (['hero', 'lucide'] as $name) {
         $set = IconSet::fromArray($name, config('shape.icon_sets')[$name], config('shape.icon_sizes'));
 
         expect($set->namespace)->toBeNull();

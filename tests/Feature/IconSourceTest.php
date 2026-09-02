@@ -52,15 +52,15 @@ beforeEach(function () {
         '24/solid/check.svg', '24/outline/check.svg',
     ];
 
-    // The shipped `heroicons` entry is read from its published package now, and
+    // The shipped `hero` entry is read from its published package now, and
     // the fixtures here are archives of a *repository*. What these tests are
     // about is that source — the tarball, the raw fetch, the unpacking, the
     // refusal to write outside itself — so the set is put back into the form
     // that reads one. The npm tests below configure sets of their own.
-    config()->set('shape.icon_sets.heroicons.npm', null);
-    config()->set('shape.icon_sets.heroicons.repo', 'tailwindlabs/heroicons');
-    config()->set('shape.icon_sets.heroicons.ref', 'master');
-    config()->set('shape.icon_sets.heroicons.path', 'optimized');
+    config()->set('shape.icon_sets.hero.npm', null);
+    config()->set('shape.icon_sets.hero.repo', 'tailwindlabs/heroicons');
+    config()->set('shape.icon_sets.hero.ref', 'master');
+    config()->set('shape.icon_sets.hero.path', 'optimized');
 });
 
 /**
@@ -283,13 +283,13 @@ it('pins the resolved commit into every file it writes', function () {
 
     $lock = json_decode((string) file_get_contents($this->destination.'/icon/shape-icons.json'), true);
 
-    expect($lock['heroicons'])
+    expect($lock['hero'])
         ->toMatchArray([
             'repo' => 'tailwindlabs/heroicons',
             'ref' => 'master',
             'commit' => $this->commit,
         ])
-        ->and($lock['heroicons']['icons'])->toHaveKey('check');
+        ->and($lock['hero']['icons'])->toHaveKey('check');
 });
 
 it('fetches one drawing at a time for the few icons that were named', function () {
@@ -333,7 +333,7 @@ it('unpacks the set and the licence, and not the rest of the repository', functi
 
     $this->artisan('shape:icon', ['--all' => true])->assertSuccessful();
 
-    $root = $this->cache.'/heroicons/master';
+    $root = $this->cache.'/hero/master';
 
     expect($root.'/optimized/24/solid/check.svg')->toBeFile()
         ->and($root.'/LICENSE')->toBeFile()
@@ -367,8 +367,8 @@ it('writes nothing outside the directory it unpacks into', function () {
 
     // The one legitimate drawing still came through, and the symlink did not
     // survive as a symlink.
-    expect($this->cache.'/heroicons/master/optimized/24/solid/check.svg')->toBeFile()
-        ->and(is_link($this->cache.'/heroicons/master/optimized/link.svg'))->toBeFalse();
+    expect($this->cache.'/hero/master/optimized/24/solid/check.svg')->toBeFile()
+        ->and(is_link($this->cache.'/hero/master/optimized/link.svg'))->toBeFalse();
 });
 
 /**
@@ -444,7 +444,7 @@ it('fails loudly when --offline is asked to work from a cache that is cold', fun
     // Naming both the set and the ref, because "nothing cached" is useless
     // without saying what was looked for.
     $this->artisan('shape:icon', ['icons' => ['check'], '--offline' => true])
-        ->expectsOutputToContain('[heroicons] at [master]')
+        ->expectsOutputToContain('[hero] at [master]')
         ->assertFailed();
 
     Http::assertNothingSent();
@@ -472,7 +472,7 @@ it('reads the ref it was asked for rather than the one the set declares', functi
 
     Http::assertSent(fn ($request): bool => $request->url() === 'https://codeload.github.com/tailwindlabs/heroicons/tar.gz/v2.1.5');
 
-    expect($this->cache.'/heroicons/v2.1.5/optimized/24/solid/check.svg')->toBeFile();
+    expect($this->cache.'/hero/v2.1.5/optimized/24/solid/check.svg')->toBeFile();
 });
 
 it('says so when GitHub will not answer', function () {
