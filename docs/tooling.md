@@ -40,13 +40,13 @@ It then asks one question:
 
 ```
  Which icon set should Shape be drawn in?
- › hero
- ○ lucide
- ○ tabler
- ○ phosphor
- ○ bootstrap
- ○ remix
- ○ material
+ › Heroicons (hero)
+ ○ Lucide (lucide)
+ ○ Tabler Icons (tabler)
+ ○ Phosphor Icons (phosphor)
+ ○ Bootstrap Icons (bootstrap)
+ ○ Remix Icon (remix)
+ ○ Material Symbols (material)
  Enter keeps [hero], which is the set the library is drawn in now.
 ```
 
@@ -63,6 +63,11 @@ the network, so a run that cannot reach one leaves `icon_set` still naming the
 set the drawings on disk actually came from — a config saying `lucide` over a
 directory of Heroicons is the mixed-set page the slots exist to prevent, arrived
 at by an installer instead of by a forgotten flag.
+
+The vendor is read from that set's `notice`, the attribution every generated
+icon already carries — a set's real name is a thing it has said once rather than
+a second key to keep level with the first. The key in brackets is what `--icons`
+and `--set` take.
 
 `--icons` answers in advance, which is the scripted install:
 

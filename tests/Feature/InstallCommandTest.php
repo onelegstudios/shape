@@ -52,7 +52,18 @@ beforeEach(function () {
     mkdir($this->icons.'/icon', 0777, true);
     mkdir($this->storage.'/framework/views', 0777, true);
 
-    $this->sets = array_keys((array) config('shape.icon_sets'));
+    // What the prompt offers. Written out rather than derived from the config,
+    // so that a set added or a notice reworded has to be said here too — the
+    // vendor's name is read out of `notice`, and this is where that is checked.
+    $this->offered = [
+        'hero' => 'Heroicons (hero)',
+        'lucide' => 'Lucide (lucide)',
+        'tabler' => 'Tabler Icons (tabler)',
+        'phosphor' => 'Phosphor Icons (phosphor)',
+        'bootstrap' => 'Bootstrap Icons (bootstrap)',
+        'remix' => 'Remix Icon (remix)',
+        'material' => 'Material Symbols (material)',
+    ];
 });
 
 afterEach(function () {
@@ -175,7 +186,7 @@ it('asks which set the library is drawn in, and does nothing more when the answe
     file_put_contents($this->js, "import './bootstrap';\n");
 
     $this->artisan('shape:install', ['--css' => $this->css, '--js' => $this->js])
-        ->expectsChoice('Which icon set should Shape be drawn in?', 'hero', $this->sets)
+        ->expectsChoice('Which icon set should Shape be drawn in?', 'hero', $this->offered)
         ->expectsOutputToContain('drawn in [hero]')
         ->assertSuccessful();
 
@@ -244,4 +255,20 @@ it('leaves icon_set naming the set the drawings on disk came from when the icons
     // saying `nowhere` over a directory of Heroicons is the mixed-set page the
     // whole arrangement exists to prevent.
     expect(file_exists($this->config.'/shape.php'))->toBeFalse();
+});
+
+it('offers a set whose notice names no vendor under its own name', function () {
+    config()->set('shape.icon_sets.nameless', [
+        'notice' => '',
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+        'slots' => [],
+    ]);
+
+    $this->artisan('shape:install', ['--css' => $this->css, '--js' => $this->js])
+        ->expectsChoice(
+            'Which icon set should Shape be drawn in?',
+            'hero',
+            [...$this->offered, 'nameless' => 'nameless'],
+        )
+        ->assertSuccessful();
 });

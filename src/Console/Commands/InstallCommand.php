@@ -167,10 +167,9 @@ class InstallCommand extends Command
             return self::SUCCESS;
         }
 
-        /** @var list<string> $names */
-        $names = array_map(strval(...), array_keys($sets));
+        $options = $this->labels($sets);
 
-        $chosen = $this->chosen($names, $current);
+        $chosen = $this->chosen($options, $current);
 
         if ($chosen === null) {
             return self::FAILURE;
@@ -196,17 +195,55 @@ class InstallCommand extends Command
     }
 
     /**
+     * Every set, against the vendor each one is.
+     *
+     * `hero` is not a word anybody recognises, and the vendor behind it is
+     * already in the config: `notice` is the attribution every generated file
+     * carries, and it opens with the name. Reading that is what stops a second
+     * key drifting from it — a set renamed in one place and not the other would
+     * put Lucide's name on a Tabler run, in the one place nobody would check.
+     *
+     * The key is shown beside the name because the key is what `--icons` and
+     * `--set` take, and a prompt that teaches the flag is worth two words. A
+     * set whose notice says no name is offered under its key alone, which is
+     * every set that has not said otherwise rather than a hole.
+     *
+     * @param  array<mixed>  $sets
+     * @return array<string, string>
+     */
+    protected function labels(array $sets): array
+    {
+        $options = [];
+
+        foreach ($sets as $name => $definition) {
+            $notice = is_array($definition) ? ($definition['notice'] ?? null) : null;
+            $vendor = '';
+
+            if (is_string($notice) && str_contains($notice, ' (')) {
+                $vendor = trim(explode(' (', $notice, 2)[0]);
+            }
+
+            $name = (string) $name;
+
+            $options[$name] = $vendor === '' ? $name : "{$vendor} ({$name})";
+        }
+
+        return $options;
+    }
+
+    /**
      * The set this run is being told to draw the library in.
      *
      * `--icons` for a scripted install, the prompt for a typed one, and the set
      * already configured for a run with no terminal to ask — which is what keeps
      * `--no-interaction` the install it has always been.
      *
-     * @param  list<string>  $names
+     * @param  array<string, string>  $options  Every set's name, against what the prompt calls it.
      * @return string|null Null where the option named a set that is not configured.
      */
-    protected function chosen(array $names, string $current): ?string
+    protected function chosen(array $options, string $current): ?string
     {
+        $names = array_keys($options);
         $option = $this->option('icons');
 
         if (is_string($option) && $option !== '') {
@@ -225,17 +262,18 @@ class InstallCommand extends Command
 
         $answer = select(
             label: 'Which icon set should Shape be drawn in?',
-            options: $names,
+            options: $options,
             default: $current,
             // Every set at once. A list this short that scrolls hides the
             // choice being made, which is the whole point of asking.
-            scroll: count($names),
+            scroll: count($options),
             hint: "Enter keeps [{$current}], which is the set the library is drawn in now.",
         );
 
-        // Not a multiple-choice question and not a keyed list, so the answer is
-        // one of the names. `select()` types it wider than it asks it, and the
-        // set already configured is the right reading of anything else.
+        // A keyed list, so the answer is one of its keys — a set's name, which
+        // is what the rest of this command deals in. `select()` types it wider
+        // than it asks it, and the set already configured is the right reading
+        // of anything else.
         return is_string($answer) ? $answer : $current;
     }
 
