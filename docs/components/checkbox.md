@@ -50,7 +50,7 @@ the moment anything sets the property:
 | `label` | — | the text beside the box |
 | `description` | — | a second line under the label |
 | `value` | — | the submitted value; separates a group sharing one name |
-| `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
+| `color` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
 | `id` | `{name}-{value}` | the element id |
 
 `checked`, `disabled`, `required` and `wire:model` pass through to the

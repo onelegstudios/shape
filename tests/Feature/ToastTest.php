@@ -65,10 +65,10 @@ it('carries two live regions, because a failure is not announced like a success'
 it('ships a template per tone, so the glyph is resolved in blade rather than in the script', function (string $tone) {
     expect(Blade::render('<x-shape::toaster />'))
         ->toContain("data-shape-toast-template=\"{$tone}\"");
-})->with(['neutral', 'accent', 'success', 'warning', 'danger']);
+})->with(['neutral', 'accent', 'info', 'success', 'warning', 'danger']);
 
 it('keeps its templates inert until something clones them', function () {
-    // A `<template>` is parsed but not rendered, which is what lets five toasts
+    // A `<template>` is parsed but not rendered, which is what lets six toasts
     // sit in the layout without appearing in it.
     expect(Blade::render('<x-shape::toaster />'))
         ->toContain('<template');

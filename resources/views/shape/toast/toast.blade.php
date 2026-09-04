@@ -39,7 +39,7 @@ $glyph = $icon ?? match ($color) {
     'success' => 'shape-success',
     'danger' => 'shape-danger',
     'warning' => 'shape-warning',
-    'accent' => 'shape-info',
+    'info' => 'shape-info',
     default => null,
 };
 

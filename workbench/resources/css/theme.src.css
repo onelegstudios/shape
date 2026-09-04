@@ -106,6 +106,15 @@
         --shape-tone-tint-hover: var(--color-shape-danger-900);
     }
 
+    [data-theme='dark'] [data-shape-tone='info'] {
+        --shape-tone: var(--color-shape-info-500);
+        --shape-tone-hover: var(--color-shape-info-400);
+        --shape-tone-fg: var(--color-shape-950);
+        --shape-tone-ink: var(--color-shape-info-200);
+        --shape-tone-tint: var(--color-shape-info-950);
+        --shape-tone-tint-hover: var(--color-shape-info-900);
+    }
+
     [data-theme='dark'] [data-shape-tone='success'] {
         --shape-tone: var(--color-shape-success-500);
         --shape-tone-hover: var(--color-shape-success-400);
@@ -170,6 +179,15 @@
             --shape-tone-ink: var(--color-shape-danger-800);
             --shape-tone-tint: var(--color-shape-danger-100);
             --shape-tone-tint-hover: var(--color-shape-danger-200);
+        }
+
+        [data-theme='light'] [data-shape-tone='info'] {
+            --shape-tone: var(--color-shape-info-700);
+            --shape-tone-hover: var(--color-shape-info-800);
+            --shape-tone-fg: white;
+            --shape-tone-ink: var(--color-shape-info-800);
+            --shape-tone-tint: var(--color-shape-info-100);
+            --shape-tone-tint-hover: var(--color-shape-info-200);
         }
 
         [data-theme='light'] [data-shape-tone='success'] {

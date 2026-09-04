@@ -6,7 +6,7 @@ book the rest of this library follows — so redefining any of it here would onl
 create a second scale to keep in tune with the first.
 
 What is left is what Tailwind has no opinion about: a neutral ramp with a
-temperature, an accent, three state colours, one radius decision, and the
+temperature, an accent, four state colours, one radius decision, and the
 per-surface foreground contract that stops de-emphasized text turning to mud on
 a coloured background. That is the whole of `resources/css/shape.css`, and it is
 all overridable from your own stylesheet.
@@ -46,6 +46,7 @@ from your own file is the arrangement to prefer.
 | `--color-shape-50` … `-950` | Tailwind's `mist` | Every neutral surface, border and rule |
 | `--color-shape-accent-50` … `-950` | Tailwind's `cyan` | The accent tone, the focus ring, the active tab and page |
 | `--color-shape-danger-*` | Tailwind's `red` | The danger tone |
+| `--color-shape-info-*` | Tailwind's `blue` | The info tone |
 | `--color-shape-success-*` | Tailwind's `green` | The success tone |
 | `--color-shape-warning-*` | Tailwind's `yellow` | The warning tone |
 | `--color-shape-*-fg`, `-fg-muted` | Ends of each ramp | What goes on top when a tone is used as a fill |
@@ -108,6 +109,14 @@ Danger has to be red and success has to be green whatever the brand is. Retint
 them to match a palette by all means; do not repurpose them. They are also never
 the only signal — the alert, the badge and the toast each resolve a glyph from
 the tone, so the message survives greyscale.
+
+`info` is in that set, and it is the one worth spelling out. It is blue and not
+the accent even though the default accent is a cyan that would pass for one,
+because the accent is the ramp this page has just finished inviting you to move.
+Share it, and an informational alert is violet in a violet product and orange in
+an orange one — where it reads as a warning. `color="accent"` still means
+emphasis, and resolves no glyph; `color="info"` means "worth knowing", and stays
+blue however far the brand travels.
 
 ## One colour, both ramps
 
@@ -200,8 +209,8 @@ background" structurally impossible rather than merely documented. On a tinted
 surface the muted foreground is the same hue dialled down, not grey.
 
 `data-shape-surface` republishes the pair. The values are `accent`, `danger`,
-`success`, `warning` — the four filled surfaces — and `tint`, which is the pale
-wash whose foreground is the tone's own ink rather than white.
+`info`, `success`, `warning` — the five filled surfaces — and `tint`, which is
+the pale wash whose foreground is the tone's own ink rather than white.
 
 A surface of your own is two declarations:
 
@@ -248,9 +257,10 @@ tone sets the variables, every variant reads them.
 | `--shape-tone-border` | The `outline` variant's border |
 
 The tones are `neutral` (the default, and the bare `[data-shape-tone]` block),
-`accent`, `danger`, `success` and `warning`. Retinting a ramp retones everything
-that reads it — a button, a badge, a checkbox and a progress bar all move
-together, because there is one set of variables and not four component palettes.
+`accent`, `danger`, `info`, `success` and `warning`. Retinting a ramp retones
+everything that reads it — a button, a badge, a checkbox and a progress bar all
+move together, because there is one set of variables and not four component
+palettes.
 
 ### A tone of your own
 
@@ -274,7 +284,7 @@ Declare the block in the components layer and pass its name as `color`:
 ```
 
 The `neutral` block sets all nine variables; a tone that only overrides some of
-them inherits the rest, which is why the four shipped tones are six lines each
+them inherits the rest, which is why the five shipped tones are six lines each
 and not nine.
 
 One caveat, and it is small: the alert, the badge and the toast branch on `color`

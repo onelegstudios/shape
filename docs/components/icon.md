@@ -101,7 +101,7 @@ calls it — and they are the list that matters when you swap sets: the list
 | `shape-success` | the `success` tone |
 | `shape-danger` | the `danger` tone |
 | `shape-warning` | the `warning` tone |
-| `shape-info` | the `accent` tone |
+| `shape-info` | the `info` tone |
 | `shape-trend-up` | a [stat](stat.md) that rose |
 | `shape-trend-down` | a stat that fell |
 | `shape-trend-flat` | a stat that did not move |

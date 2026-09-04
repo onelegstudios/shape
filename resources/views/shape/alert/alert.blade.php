@@ -38,13 +38,18 @@
 ])
 
 @php
-// Never colour alone — every tone resolves a glyph, so an alert stays readable
-// in greyscale. `:icon="false"` opts out; forgetting isn't possible.
+// Never colour alone — every state tone resolves a glyph, so an alert stays
+// readable in greyscale. `:icon="false"` opts out; forgetting isn't possible.
+//
+// `accent` is not one of them. It is the brand's colour, which an application is
+// free to move, and a glyph here would make it the fourth state under another
+// name — the one `info` now is, in a blue that stays blue whatever the accent
+// becomes.
 $glyph = $icon ?? match ($color) {
     'success' => 'shape-success',
     'danger' => 'shape-danger',
     'warning' => 'shape-warning',
-    'accent' => 'shape-info',
+    'info' => 'shape-info',
     default => null,
 };
 

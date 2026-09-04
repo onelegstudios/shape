@@ -125,7 +125,7 @@ without `!important`:
 
 Shape's theme layer is small on purpose. Tailwind's spacing, type and shadow
 scales are already the right ones, so the package adds only what Tailwind has no
-opinion about: a neutral ramp with a temperature, an accent, three state colours,
+opinion about: a neutral ramp with a temperature, an accent, four state colours,
 one radius decision, and a per-surface foreground contract. Every ramp is aliased
 rather than copied, so retinting Tailwind's own colours retints Shape with them.
 

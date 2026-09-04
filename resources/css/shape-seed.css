@@ -15,7 +15,12 @@
 | `cyan` — the same relationship, generated rather than looked up.
 |
 | The state colours are deliberately NOT derived. Danger has to be red and
-| success has to be green whatever the brand is, so those stay Tailwind's.
+| success has to be green whatever the brand is, so those stay Tailwind's. Info
+| is in that set for the same reason and needs saying out loud, because it is
+| the one a seed would happily swallow: at the default seed it sits a little
+| along the hue wheel from the accent, and deriving it would make every
+| informational message take the brand's colour — which is the whole thing the
+| tone exists not to do.
 |
 | WHY THIS HOLDS CONTRAST
 |

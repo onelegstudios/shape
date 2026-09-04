@@ -65,6 +65,13 @@ own Tailwind build scans the package's Blade.
 Every component is `<x-shape::name>`. Props take scale keys, never raw values:
 `size="lg"`, not `size="18px"`; `color="danger"`, not `color="#b91c1c"`.
 
+`color` is one of `neutral`, `accent`, `info`, `success`, `warning`, `danger`.
+The last four are the states, and the alert, the badge and the toast each resolve
+a glyph from them so colour is never the only signal. `accent` is emphasis rather
+than a state — it is the brand's ramp, the one an application retints, and it
+draws no glyph. An informational message wants `info`, which is blue whatever the
+accent becomes.
+
 | Component | Tier | Key props |
 | --- | --- | --- |
 | `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `color`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `as` |
@@ -140,6 +147,8 @@ also the only form Blaze will memoize:
 use Onelegstudios\Shape\Facades\Shape;
 
 Shape::toast()->success('Invoice sent')->description('A copy went to billing.')->send();
+
+Shape::toast()->info('Export queued')->send();   // info() success() warning() danger() accent()
 
 Shape::confirm('Delete project?')->accept('Delete')->color('danger')->then('deleteProject')->send();
 ```

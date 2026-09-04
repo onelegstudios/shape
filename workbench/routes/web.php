@@ -26,7 +26,7 @@ $gallery = function (string $stylesheet, bool $seeded) {
         ['number' => 'INV-1041', 'client' => 'Globex', 'state' => 'Overdue', 'tone' => 'danger', 'total' => '£1,180.00'],
         ['number' => 'INV-1040', 'client' => 'Initech', 'state' => 'Draft', 'tone' => 'neutral', 'total' => '£96.50'],
         ['number' => 'INV-1039', 'client' => 'Umbrella', 'state' => 'Paid', 'tone' => 'success', 'total' => '£3,400.00'],
-        ['number' => 'INV-1038', 'client' => 'Soylent', 'state' => 'Sent', 'tone' => 'accent', 'total' => '£512.00'],
+        ['number' => 'INV-1038', 'client' => 'Soylent', 'state' => 'Sent', 'tone' => 'info', 'total' => '£512.00'],
     ]);
 
     $people = collect([

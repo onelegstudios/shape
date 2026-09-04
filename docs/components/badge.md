@@ -27,7 +27,7 @@ a button given the same colour agree without either knowing about the other.
 
 ## Icons
 
-Every colour but `neutral` resolves a glyph of its own, so a badge stays
+Every state colour resolves a glyph of its own, so a badge stays
 readable in greyscale and to anyone who can't separate the hues. `icon` picks a
 different one, `:icon="false"` removes it, and `icon-size` changes how big
 it is:
@@ -39,15 +39,15 @@ it is:
 | `success` | `shape-success` |
 | `danger` | `shape-danger` |
 | `warning` | `shape-warning` |
-| `accent` | `shape-info` |
-| `neutral` | none — a neutral badge has no state to signal |
+| `info` | `shape-info` |
+| `neutral`, `accent` | none — neither is a state to signal |
 
 ## Reference
 
 | Prop | Default | Values |
 | --- | --- | --- |
 | `label` | — | the text |
-| `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
+| `color` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `size` | `base` | `sm`, `base` |
 | `icon` | resolved from `color` | any [icon](icon.md) name, or `false` to omit |

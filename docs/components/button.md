@@ -104,7 +104,7 @@ without `!important`:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `variant` | `outline` | `primary`, `outline`, `subtle`, `ghost` |
-| `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
+| `color` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
 | `size` | `base` | `sm`, `base`, `lg` |
 | `icon` | — | any [icon](icon.md) name, rendered before the label |
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |

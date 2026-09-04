@@ -42,7 +42,7 @@ holds still for anyone who asked for reduced motion.
 | `label` | — | the text beside the switch |
 | `description` | — | a second line under the label |
 | `value` | — | the submitted value |
-| `color` | `accent` | `neutral`, `accent`, `danger`, `success`, `warning` |
+| `color` | `accent` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
 | `id` | the resolved name | the element id |
 
 `checked`, `disabled` and `wire:model` pass through to the `<input>`.

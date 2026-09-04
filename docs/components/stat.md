@@ -54,7 +54,7 @@ numbers and they should line up.
 | `label` | — | what it is a number of |
 | `delta` | — | the change, as text |
 | `trend` | — | `up`, `down`, `flat` |
-| `color` | from `trend` | `neutral`, `accent`, `success`, `warning`, `danger` |
+| `color` | from `trend` | `neutral`, `accent`, `info`, `success`, `warning`, `danger` |
 | `description` | — | a line under the value |
 | `emphasis` | `value` | `value`, `label` |
 

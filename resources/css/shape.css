@@ -58,13 +58,13 @@
     --color-shape-accent-fg: var(--color-shape-accent-50);
     --color-shape-accent-fg-muted: var(--color-shape-accent-100);
 
-    /* State colours: Tailwind's red, green and yellow, aliased exactly as the
-       accent is, so a page that already uses `text-red-600` for its own errors
-       and Shape's danger tone side by side gets one red, not two that nearly
-       match. Never the only signal — components pair them with an icon.
+    /* State colours: Tailwind's red, green, yellow and blue, aliased exactly as
+       the accent is, so a page that already uses `text-red-600` for its own
+       errors and Shape's danger tone side by side gets one red, not two that
+       nearly match. Never the only signal — components pair them with an icon.
 
        900 and 950 carry the dark-mode tints. The `-fg` pair is the foreground
-       for the filled surface: the top of the ramp for the two that take light
+       for the filled surface: the top of the ramp for the three that take light
        text, and the bottom of it for warning, which does not. */
     --color-shape-danger-50: var(--color-red-50, oklch(97.1% 0.013 17.38));
     --color-shape-danger-100: var(--color-red-100, oklch(93.6% 0.032 17.717));
@@ -79,6 +79,36 @@
     --color-shape-danger-950: var(--color-red-950, oklch(25.8% 0.092 26.042));
     --color-shape-danger-fg: var(--color-shape-danger-50);
     --color-shape-danger-fg-muted: var(--color-shape-danger-100);
+
+    /*
+    | Info is blue rather than the accent, even though the default accent is a
+    | cyan that would pass for one.
+    |
+    | The accent is the one ramp an application is invited to move: theming.md
+    | retints it to violet, and the seed layer derives it from a single brand
+    | colour. "Here is something worth knowing" has to still mean that
+    | afterwards. Sharing the ramp makes an informational alert violet in a
+    | violet product and orange in an orange one, where it reads as a warning
+    | that has lost its glyph. Danger stays red whatever the brand is; this is
+    | the same rule applied to the fourth state.
+    |
+    | Blue's hue is 264 against the accent's 215 — far enough apart to separate
+    | at a glance, and the one case where they sit close is the case where the
+    | accent has not been moved and nothing yet depends on telling them apart.
+    */
+    --color-shape-info-50: var(--color-blue-50, oklch(97% 0.014 254.604));
+    --color-shape-info-100: var(--color-blue-100, oklch(93.2% 0.032 255.585));
+    --color-shape-info-200: var(--color-blue-200, oklch(88.2% 0.059 254.128));
+    --color-shape-info-300: var(--color-blue-300, oklch(80.9% 0.105 251.813));
+    --color-shape-info-400: var(--color-blue-400, oklch(70.7% 0.165 254.624));
+    --color-shape-info-500: var(--color-blue-500, oklch(62.3% 0.214 259.815));
+    --color-shape-info-600: var(--color-blue-600, oklch(54.6% 0.245 262.881));
+    --color-shape-info-700: var(--color-blue-700, oklch(48.8% 0.243 264.376));
+    --color-shape-info-800: var(--color-blue-800, oklch(42.4% 0.199 265.638));
+    --color-shape-info-900: var(--color-blue-900, oklch(37.9% 0.146 265.522));
+    --color-shape-info-950: var(--color-blue-950, oklch(28.2% 0.091 267.935));
+    --color-shape-info-fg: var(--color-shape-info-50);
+    --color-shape-info-fg-muted: var(--color-shape-info-100);
 
     --color-shape-success-50: var(--color-green-50, oklch(98.2% 0.018 155.826));
     --color-shape-success-100: var(--color-green-100, oklch(96.2% 0.044 156.743));
@@ -176,6 +206,11 @@
         --shape-fg-muted: var(--color-shape-danger-fg-muted);
     }
 
+    [data-shape-surface='info'] {
+        --shape-fg: var(--color-shape-info-fg);
+        --shape-fg-muted: var(--color-shape-info-fg-muted);
+    }
+
     [data-shape-surface='success'] {
         --shape-fg: var(--color-shape-success-fg);
         --shape-fg-muted: var(--color-shape-success-fg-muted);
@@ -249,8 +284,8 @@
     | The filled tones use their 700 step, not the 600 the naming suggests.
     | Tailwind's 600s carry white at the blues and reds, but not here: white on
     | cyan-600 is 3.6:1 and on green-600 is 3.2:1, both under AA. On 700 all of
-    | them clear it. Red would have passed at 600 and fills with 700 regardless,
-    | so the tones sit at one weight rather than three.
+    | them clear it. Red and blue would have passed at 600 and fill with 700
+    | regardless, so the tones sit at one weight rather than three.
     */
     [data-shape-tone='accent'] {
         --shape-tone: var(--color-shape-accent-700);
@@ -268,6 +303,15 @@
         --shape-tone-ink: var(--color-shape-danger-800);
         --shape-tone-tint: var(--color-shape-danger-100);
         --shape-tone-tint-hover: var(--color-shape-danger-200);
+    }
+
+    [data-shape-tone='info'] {
+        --shape-tone: var(--color-shape-info-700);
+        --shape-tone-hover: var(--color-shape-info-800);
+        --shape-tone-fg: white;
+        --shape-tone-ink: var(--color-shape-info-800);
+        --shape-tone-tint: var(--color-shape-info-100);
+        --shape-tone-tint-hover: var(--color-shape-info-200);
     }
 
     [data-shape-tone='success'] {
@@ -329,6 +373,15 @@
             --shape-tone-ink: var(--color-shape-danger-200);
             --shape-tone-tint: var(--color-shape-danger-950);
             --shape-tone-tint-hover: var(--color-shape-danger-900);
+        }
+
+        [data-shape-tone='info'] {
+            --shape-tone: var(--color-shape-info-500);
+            --shape-tone-hover: var(--color-shape-info-400);
+            --shape-tone-fg: var(--color-shape-950);
+            --shape-tone-ink: var(--color-shape-info-200);
+            --shape-tone-tint: var(--color-shape-info-950);
+            --shape-tone-tint-hover: var(--color-shape-info-900);
         }
 
         [data-shape-tone='success'] {

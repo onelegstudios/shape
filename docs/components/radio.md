@@ -25,7 +25,7 @@ A group only has an accessible name if it is a real `<fieldset>` with a
 | `label` | — | the text beside the dot |
 | `description` | — | a second line under the label |
 | `value` | — | the submitted value |
-| `color` | `neutral` | `neutral`, `accent`, `danger`, `success`, `warning` |
+| `color` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
 | `id` | `{name}-{value}` | the element id |
 
 `checked`, `disabled` and `wire:model` pass through to the `<input>`.

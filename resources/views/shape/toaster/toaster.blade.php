@@ -58,6 +58,7 @@ $classes = Shape::classes()
 
     <template data-shape-toast-template="neutral"><x-shape::toast /></template>
     <template data-shape-toast-template="accent"><x-shape::toast color="accent" /></template>
+    <template data-shape-toast-template="info"><x-shape::toast color="info" /></template>
     <template data-shape-toast-template="success"><x-shape::toast color="success" /></template>
     <template data-shape-toast-template="warning"><x-shape::toast color="warning" /></template>
     <template data-shape-toast-template="danger"><x-shape::toast color="danger" /></template>

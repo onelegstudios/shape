@@ -100,3 +100,27 @@ it('leaves anchored placement to the script, with no second path to disagree wit
         ->not->toContain('position-try-fallbacks')
         ->and($js)->not->toContain('CSS.supports');
 });
+
+it('gives info a ramp of its own rather than pointing it at the accent', function () {
+    // The decision this guards: the accent is the one ramp an application is
+    // invited to move — theming.md walks it to violet, and the seed layer
+    // derives it from a single brand colour — so an informational message that
+    // reads the accent stops being blue the moment somebody brands the product.
+    // Info is aliased to Tailwind's blue for the reason danger is aliased to red.
+    $css = shapeStylesheet();
+
+    expect($css)
+        ->toContain('--color-shape-info-700: var(--color-blue-700')
+        ->toContain("[data-shape-tone='info']")
+        ->toContain("[data-shape-surface='info']")
+        ->and(preg_match('/--color-shape-info-[0-9]+: var\(--color-shape-accent/', $css))->toBe(0);
+});
+
+it('keeps info out of the seed layer, where the accent and the neutrals are derived', function () {
+    // A seed that reached info would put the brand's hue back on the one tone
+    // that exists to be independent of it — the same rule that keeps danger red
+    // and success green under any seed.
+    $seed = (string) file_get_contents(__DIR__.'/../../resources/css/shape-seed.css');
+
+    expect(preg_replace('#/\*.*?\*/#s', '', $seed))->not->toContain('--color-shape-info-');
+});

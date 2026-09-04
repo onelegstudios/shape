@@ -29,9 +29,9 @@ it('leaves a heading alone when the tone is set on its own', function () {
         ->toMatchArray(['heading' => 'Invoice sent', 'color' => 'danger']);
 });
 
-it('names a tone for each of the four states', function (string $tone) {
+it('names a tone for each state, and for the accent', function (string $tone) {
     expect(pendingToast()->{$tone}('Message')->toArray()['color'])->toBe($tone);
-})->with(['accent', 'success', 'warning', 'danger']);
+})->with(['info', 'success', 'warning', 'danger', 'accent']);
 
 it('stays until dismissed when it is sticky', function () {
     expect(pendingToast('Uploading')->sticky()->toArray()['duration'])->toBe(0);

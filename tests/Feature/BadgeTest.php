@@ -28,13 +28,13 @@ it('carries semantics on the tone attribute', function () {
 it('resolves an icon for every state so colour is never the only signal', function (string $color) {
     expect(Blade::render("<x-shape::badge label=\"State\" color=\"{$color}\" />"))
         ->toContain('data-shape-icon');
-})->with(['success', 'danger', 'warning', 'accent']);
+})->with(['success', 'danger', 'warning', 'info']);
 
 it('gives each state a glyph of its own rather than reusing one', function () {
     // Asserting the drawings differ, rather than asserting any particular path,
     // is what actually enforces the rule: a badge has to stay readable in
     // greyscale, which it doesn't if two states share an icon.
-    $glyphs = collect(['success', 'danger', 'warning', 'accent'])
+    $glyphs = collect(['success', 'danger', 'warning', 'info'])
         ->map(fn (string $color) => Blade::render("<x-shape::badge label=\"State\" color=\"{$color}\" />"))
         ->map(fn (string $html) => preg_match('/<path[^>]*d="([^"]+)"/', $html, $m) ? $m[1] : null);
 
@@ -44,6 +44,12 @@ it('gives each state a glyph of its own rather than reusing one', function () {
 
 it('renders no icon for the neutral tone', function () {
     expect(Blade::render('<x-shape::badge label="Draft" />'))
+        ->not->toContain('data-shape-icon');
+});
+
+it('renders none for the accent either, which is emphasis rather than a state', function () {
+    expect(Blade::render('<x-shape::badge label="Beta" color="accent" />'))
+        ->toContain('data-shape-tone="accent"')
         ->not->toContain('data-shape-icon');
 });
 

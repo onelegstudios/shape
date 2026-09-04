@@ -21,10 +21,19 @@ it('carries semantics on the tone attribute', function () {
 it('resolves a glyph for every state so colour is never the only signal', function (string $color) {
     expect(Blade::render("<x-shape::alert color=\"{$color}\">Message</x-shape::alert>"))
         ->toContain('data-shape-icon');
-})->with(['success', 'danger', 'warning', 'accent']);
+})->with(['success', 'danger', 'warning', 'info']);
+
+it('draws nothing for the accent, which is emphasis and not a state', function () {
+    // The accent is the ramp an application retints, so a glyph here would make
+    // it a fourth state whose colour is whatever the brand happens to be. `info`
+    // is that state, in a blue that survives the retint.
+    expect(Blade::render('<x-shape::alert color="accent">On the beta.</x-shape::alert>'))
+        ->toContain('data-shape-tone="accent"')
+        ->not->toContain('data-shape-icon');
+});
 
 it('gives each state a glyph of its own rather than reusing one', function () {
-    $glyphs = collect(['success', 'danger', 'warning', 'accent'])
+    $glyphs = collect(['success', 'danger', 'warning', 'info'])
         ->map(fn (string $color) => Blade::render("<x-shape::alert color=\"{$color}\">Message</x-shape::alert>"))
         ->map(fn (string $html) => preg_match('/<path[^>]*d="([^"]+)"/', $html, $m) ? $m[1] : null);
 

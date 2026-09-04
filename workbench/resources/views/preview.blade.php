@@ -485,6 +485,7 @@
                             <x-shape::badge label="Paid" color="success" />
                             <x-shape::badge label="Overdue" color="danger" />
                             <x-shape::badge label="Pending" color="warning" />
+                            <x-shape::badge label="Sent" color="info" />
                             <x-shape::badge label="Trial" color="accent" />
                             <x-shape::badge label="Draft" />
                         </div>
@@ -901,7 +902,7 @@
                         </p>
                     </div>
                     <div class="space-y-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
-                        <x-shape::alert color="accent" heading="Weekly digest is on">
+                        <x-shape::alert color="info" heading="Weekly digest is on">
                             <x-shape::text size="sm" variant="muted">Sent every Monday at 9am, in your timezone.</x-shape::text>
                         </x-shape::alert>
 
@@ -966,7 +967,8 @@
                         <x-shape::button variant="subtle" color="success" data-toast="Invoice sent" data-toast-description="A copy went to billing@example.com" data-toast-color="success">Success</x-shape::button>
                         <x-shape::button variant="subtle" color="danger" data-toast="Card declined" data-toast-description="Announced assertively, unlike the rest." data-toast-color="danger">Danger</x-shape::button>
                         <x-shape::button variant="subtle" color="warning" data-toast="Trial ends Friday" data-toast-color="warning">Warning</x-shape::button>
-                        <x-shape::button variant="subtle" color="accent" data-toast="Digest is on" data-toast-color="accent">Accent</x-shape::button>
+                        <x-shape::button variant="subtle" color="info" data-toast="Digest is on" data-toast-color="info">Info</x-shape::button>
+                        <x-shape::button variant="subtle" color="accent" data-toast="Published" data-toast-color="accent">Accent</x-shape::button>
                         <x-shape::button variant="subtle" data-toast="Saved">Neutral</x-shape::button>
                         <x-shape::button variant="ghost" data-toast="Uploading" data-toast-description="Stays until dismissed." data-toast-duration="0">Sticky</x-shape::button>
                         <x-shape::button variant="ghost" as="a" href="/flash" icon-trailing="shape-arrow-right">Through the session</x-shape::button>

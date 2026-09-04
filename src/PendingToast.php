@@ -48,12 +48,13 @@ final class PendingToast
     }
 
     /**
-     * The tone: `accent`, `success`, `warning`, `danger`, or null for neutral.
+     * The tone: `accent`, `info`, `success`, `warning`, `danger`, or null for
+     * neutral.
      *
      * It selects which of the toaster's templates gets cloned, so it also
      * decides the glyph — and there is deliberately no way to send a different
      * one. The script clones markup; it cannot resolve an SVG it was not already
-     * given, and five templates is where that stops being worth it. The rule it
+     * given, and six templates is where that stops being worth it. The rule it
      * enforces by accident is the right one: the glyph and the colour say the
      * same thing, and neither can be set without the other.
      */
@@ -82,6 +83,15 @@ final class PendingToast
     public function accent(?string $heading = null): self
     {
         return $this->tone('accent', $heading);
+    }
+
+    /**
+     * Something worth knowing. Blue whatever the application's accent is, which
+     * is the reason it is a tone of its own rather than `accent()`.
+     */
+    public function info(?string $heading = null): self
+    {
+        return $this->tone('info', $heading);
     }
 
     public function success(?string $heading = null): self

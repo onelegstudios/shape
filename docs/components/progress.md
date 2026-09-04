@@ -70,7 +70,7 @@ own `aria-label` still wins.
 | `max` | `100` | |
 | `indeterminate` | `false` | `true` for work with no known end |
 | `size` | `base` | `sm`, `base`, `lg` |
-| `color` | `accent` | `accent`, `success`, `warning`, `danger` |
+| `color` | `accent` | `accent`, `info`, `success`, `warning`, `danger` |
 | `label` | — | becomes `aria-label` |
 
 ## Folding

@@ -146,7 +146,7 @@ other one, and a consumer who ejects it gets Blade rather than a template
 literal.
 
 One template per tone rather than one generic template, because the glyph is an
-SVG the script has no way to resolve. It costs five copies of the toast markup in
+SVG the script has no way to resolve. It costs six copies of the toast markup in
 every page's layout, which gzip flattens to almost nothing, and it means the
 "never rely on colour alone" rule holds for toasts without the script knowing
 anything about icons.
