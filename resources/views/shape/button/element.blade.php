@@ -1,7 +1,7 @@
 @blaze(fold: true, safe: ['type'])
 
 {{--
-    Renders the element the button should actually be, so that index.blade.php
+    Renders the element the button should actually be, so that button.blade.php
     doesn't have to repeat its content once per tag name.
 --}}
 

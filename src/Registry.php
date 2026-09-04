@@ -196,7 +196,7 @@ final class Registry
                 $name = basename($file, '.blade.php');
 
                 // The by-name form, which resolves one of the others.
-                if ($name !== 'index') {
+                if ($name !== 'icon') {
                     $names[] = $name;
                 }
             }
@@ -208,9 +208,9 @@ final class Registry
     /**
      * Which component a view file belongs to, or null if it belongs to none.
      *
-     * A file in a directory belongs to the component the directory is named
-     * for — `table/cell.blade.php` is part of `table` — and a file at the top
-     * level is its own component.
+     * Every view lives in a directory named for its component, so
+     * `table/cell.blade.php` is part of `table` and `table/table.blade.php` is
+     * the component's own entry view.
      */
     public function componentFor(string $file): ?string
     {

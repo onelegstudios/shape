@@ -98,23 +98,23 @@ The first of those prints what it took, and why each file is in the list:
 
 ```
 heading ................................... required by modal
-  heading.blade.php .................................... ejected
+  heading/heading.blade.php ............................ ejected
 icon ..................................... required by button
-  icon/index.blade.php ................................. ejected
+  icon/icon.blade.php .................................. ejected
   icon/shape-arrow-right.blade.php ..................... ejected
   …
   icon/shape-warning.blade.php ......................... ejected
 button .................................. required by overlay
+  button/button.blade.php .............................. ejected
   button/element.blade.php ............................. ejected
-  button/index.blade.php ............................... ejected
 overlay ................................... required by modal
   overlay/close.blade.php .............................. ejected
   overlay/footer.blade.php ............................. ejected
   overlay/trigger.blade.php ............................ ejected
 text ...................................... required by modal
-  text.blade.php ....................................... ejected
+  text/text.blade.php .................................. ejected
 modal .............................................. requested
-  modal/index.blade.php ................................ ejected
+  modal/modal.blade.php ................................ ejected
 ```
 
 A modal is a `<dialog>` that composes a heading, a text, and a close button that
@@ -830,8 +830,8 @@ the library is on and to nothing else: one spelling at every call site for the
 icons an application actually reaches for, and no collisions by construction.
 Note that a bare set name is a component that doesn't exist —
 `<x-shape::icon name="lucide" />` raises Blade's usual "unable to locate" error
-rather than rendering nothing, because Blade resolves a directory to an `index`
-view.
+rather than rendering nothing, because Blade resolves a directory to the view
+inside it named after the directory, and a set folder has no such file.
 
 ### What it writes
 
@@ -892,7 +892,7 @@ Blaze tier it belongs to.
 ```json
 {
   "modal": {
-    "files": ["modal/index.blade.php"],
+    "files": ["modal/modal.blade.php"],
     "requires": ["overlay", "heading", "text"],
     "docs": "components/modal.md",
     "tier": "fold"

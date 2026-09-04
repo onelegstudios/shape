@@ -57,9 +57,9 @@ it('ejects a component and everything it composes', function () {
 
     // The promise section 11 of the architecture makes: a modal arrives with the
     // close button inside it, and the icon inside that.
-    expect(ejected('modal/index.blade.php'))->toBeFile()
+    expect(ejected('modal/modal.blade.php'))->toBeFile()
         ->and(ejected('overlay/close.blade.php'))->toBeFile()
-        ->and(ejected('button/index.blade.php'))->toBeFile()
+        ->and(ejected('button/button.blade.php'))->toBeFile()
         ->and(ejected('icon/shape-checked.blade.php'))->toBeFile();
 });
 
@@ -73,8 +73,8 @@ it('says which component asked for each dependency', function () {
 it('ejects only what was named when told to', function () {
     $this->artisan('shape:eject', ['components' => ['modal'], '--bare' => true])->assertSuccessful();
 
-    expect(ejected('modal/index.blade.php'))->toBeFile()
-        ->and(file_exists(ejected('button/index.blade.php')))->toBeFalse();
+    expect(ejected('modal/modal.blade.php'))->toBeFile()
+        ->and(file_exists(ejected('button/button.blade.php')))->toBeFalse();
 });
 
 it('resolves an ejected component ahead of the packaged one', function () {
@@ -82,7 +82,7 @@ it('resolves an ejected component ahead of the packaged one', function () {
     // the file the command wrote is the file that renders.
     $this->artisan('shape:eject', ['components' => ['separator']])->assertSuccessful();
 
-    file_put_contents(ejected('separator.blade.php'), '<hr data-ejected-separator>');
+    file_put_contents(ejected('separator/separator.blade.php'), '<hr data-ejected-separator>');
 
     expect(Blade::render('<x-shape::separator />'))->toContain('data-ejected-separator');
 });
@@ -90,23 +90,23 @@ it('resolves an ejected component ahead of the packaged one', function () {
 it('keeps a component that has already been ejected', function () {
     $this->artisan('shape:eject', ['components' => ['separator']])->assertSuccessful();
 
-    file_put_contents(ejected('separator.blade.php'), 'mine');
+    file_put_contents(ejected('separator/separator.blade.php'), 'mine');
 
     $this->artisan('shape:eject', ['components' => ['separator']])
         ->expectsOutputToContain('exists, kept')
         ->assertSuccessful();
 
-    expect(file_get_contents(ejected('separator.blade.php')))->toBe('mine');
+    expect(file_get_contents(ejected('separator/separator.blade.php')))->toBe('mine');
 });
 
 it('overwrites an ejected component when forced', function () {
     $this->artisan('shape:eject', ['components' => ['separator']])->assertSuccessful();
 
-    file_put_contents(ejected('separator.blade.php'), 'mine');
+    file_put_contents(ejected('separator/separator.blade.php'), 'mine');
 
     $this->artisan('shape:eject', ['components' => ['separator'], '--force' => true])->assertSuccessful();
 
-    expect(file_get_contents(ejected('separator.blade.php')))->toContain('@blaze');
+    expect(file_get_contents(ejected('separator/separator.blade.php')))->toContain('@blaze');
 });
 
 it('records what the package held at the moment of ejection', function () {
@@ -114,7 +114,7 @@ it('records what the package held at the moment of ejection', function () {
 
     expect(ejectManifest())->toBe([
         'separator' => [
-            'separator.blade.php' => sha1_file(__DIR__.'/../../resources/views/shape/separator.blade.php'),
+            'separator/separator.blade.php' => sha1_file(__DIR__.'/../../resources/views/shape/separator/separator.blade.php'),
         ],
     ]);
 });
@@ -136,7 +136,7 @@ describe('all', function () {
         $this->artisan('shape:eject:all')->assertSuccessful();
 
         expect(ejected('table/cell.blade.php'))->toBeFile()
-            ->and(ejected('tooltip/index.blade.php'))->toBeFile();
+            ->and(ejected('tooltip/tooltip.blade.php'))->toBeFile();
     });
 });
 
@@ -159,7 +159,7 @@ describe('status', function () {
     it('separates a component the application edited from one the package moved', function () {
         $this->artisan('shape:eject', ['components' => ['separator']])->assertSuccessful();
 
-        file_put_contents(ejected('separator.blade.php'), '@blaze(fold: true) mine');
+        file_put_contents(ejected('separator/separator.blade.php'), '@blaze(fold: true) mine');
 
         // Locally edited: the file differs from what was recorded, and the
         // package still holds exactly what was recorded.
@@ -170,7 +170,7 @@ describe('status', function () {
         // The same file, now recorded as having been ejected from a version of
         // the package that no longer exists — which is what an upgrade does to
         // an untouched component, and the only case worth reading a diff for.
-        writeEjectManifest(['separator' => ['separator.blade.php' => sha1_file(ejected('separator.blade.php'))]]);
+        writeEjectManifest(['separator' => ['separator/separator.blade.php' => sha1_file(ejected('separator/separator.blade.php'))]]);
 
         $this->artisan('shape:eject:status')
             ->expectsOutputToContain('the package moved')
@@ -181,7 +181,7 @@ describe('status', function () {
     it('notices an ejected file that has since been deleted', function () {
         $this->artisan('shape:eject', ['components' => ['separator']])->assertSuccessful();
 
-        unlink(ejected('separator.blade.php'));
+        unlink(ejected('separator/separator.blade.php'));
 
         $this->artisan('shape:eject:status')
             ->expectsOutputToContain('gone')

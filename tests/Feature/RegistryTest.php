@@ -21,14 +21,12 @@ function registry(): Registry
 }
 
 /**
- * Which component a view file belongs to, by the library's own convention: a
- * file in a directory belongs to the component the directory is named for.
+ * Which component a view file belongs to, by the library's own convention:
+ * every view is in a directory named for the component it belongs to.
  */
 function componentOf(string $file): string
 {
-    return str_contains($file, '/')
-        ? explode('/', $file)[0]
-        : substr($file, 0, -strlen('.blade.php'));
+    return explode('/', $file)[0];
 }
 
 /**

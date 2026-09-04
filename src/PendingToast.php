@@ -13,7 +13,7 @@ namespace Onelegstudios\Shape;
  * them without naming the other four.
  *
  * There is no `render()` here and no markup anywhere in this class. What crosses
- * the wire is the payload below; the markup is `resources/views/shape/toast.blade.php`,
+ * the wire is the payload below; the markup is `resources/views/shape/toast/toast.blade.php`,
  * cloned in the browser from a template the toaster already rendered. Keeping
  * the two apart is what stops a design change having to touch PHP.
  */

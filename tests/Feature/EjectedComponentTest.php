@@ -18,7 +18,7 @@ beforeAll(function () {
         mkdir($path.'/button', 0777, true);
     }
 
-    file_put_contents($path.'/button/index.blade.php', '<button data-ejected-button>{{ $slot }}</button>');
+    file_put_contents($path.'/button/button.blade.php', '<button data-ejected-button>{{ $slot }}</button>');
 
     TestCase::$componentsPath = $path;
 });

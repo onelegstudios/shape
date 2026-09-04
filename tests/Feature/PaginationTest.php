@@ -22,7 +22,7 @@ it('reads the paginator and never the request', function () {
     // The whole API rests on this: the paginator already knows its URLs, so this
     // component has no reason to look at the current request — which is what
     // makes it safe to render the same markup from a mailable or a test.
-    $source = (string) file_get_contents(__DIR__.'/../../resources/views/shape/pagination.blade.php');
+    $source = (string) file_get_contents(__DIR__.'/../../resources/views/shape/pagination/pagination.blade.php');
 
     expect($source)
         ->not->toContain('request(')
@@ -34,7 +34,7 @@ it('reads the paginator and never the request', function () {
 it('is compiled rather than folded, and says so in the annotation', function () {
     // A folded pager would bake one visitor's page of links into the compiled
     // template and serve it to everybody.
-    $source = (string) file_get_contents(__DIR__.'/../../resources/views/shape/pagination.blade.php');
+    $source = (string) file_get_contents(__DIR__.'/../../resources/views/shape/pagination/pagination.blade.php');
 
     expect(trim($source))->toStartWith("@blaze\n");
 });

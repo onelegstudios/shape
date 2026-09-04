@@ -231,7 +231,7 @@ class DoctorCommand extends Command
         foreach (glob($directory.'/*.blade.php') ?: [] as $file) {
             $name = basename($file, '.blade.php');
 
-            if ($name !== 'index' && ! in_array($name, $declared, true)) {
+            if ($name !== 'icon' && ! in_array($name, $declared, true)) {
                 $extras[] = $name;
             }
         }

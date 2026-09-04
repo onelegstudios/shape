@@ -1,7 +1,7 @@
 {
     "alert": {
         "files": [
-            "alert.blade.php"
+            "alert/alert.blade.php"
         ],
         "requires": [
             "button",
@@ -14,8 +14,8 @@
     },
     "avatar": {
         "files": [
-            "avatar/group.blade.php",
-            "avatar/index.blade.php"
+            "avatar/avatar.blade.php",
+            "avatar/group.blade.php"
         ],
         "requires": [],
         "docs": "components/avatar.md",
@@ -23,7 +23,7 @@
     },
     "badge": {
         "files": [
-            "badge/index.blade.php"
+            "badge/badge.blade.php"
         ],
         "requires": [
             "icon"
@@ -33,8 +33,8 @@
     },
     "button": {
         "files": [
-            "button/element.blade.php",
-            "button/index.blade.php"
+            "button/button.blade.php",
+            "button/element.blade.php"
         ],
         "requires": [
             "icon"
@@ -44,9 +44,9 @@
     },
     "card": {
         "files": [
+            "card/card.blade.php",
             "card/footer.blade.php",
-            "card/header.blade.php",
-            "card/index.blade.php"
+            "card/header.blade.php"
         ],
         "requires": [],
         "docs": "components/card.md",
@@ -54,7 +54,7 @@
     },
     "checkbox": {
         "files": [
-            "checkbox.blade.php"
+            "checkbox/checkbox.blade.php"
         ],
         "requires": [
             "icon"
@@ -64,7 +64,7 @@
     },
     "confirm": {
         "files": [
-            "confirm.blade.php"
+            "confirm/confirm.blade.php"
         ],
         "requires": [
             "button",
@@ -77,7 +77,7 @@
     },
     "description": {
         "files": [
-            "description.blade.php"
+            "description/description.blade.php"
         ],
         "requires": [],
         "docs": "components/field.md",
@@ -85,7 +85,7 @@
     },
     "drawer": {
         "files": [
-            "drawer/index.blade.php"
+            "drawer/drawer.blade.php"
         ],
         "requires": [
             "heading",
@@ -97,7 +97,7 @@
     },
     "dropdown": {
         "files": [
-            "dropdown/index.blade.php",
+            "dropdown/dropdown.blade.php",
             "dropdown/item.blade.php",
             "dropdown/trigger.blade.php"
         ],
@@ -111,7 +111,7 @@
     },
     "empty": {
         "files": [
-            "empty.blade.php"
+            "empty/empty.blade.php"
         ],
         "requires": [
             "heading",
@@ -123,7 +123,7 @@
     },
     "error": {
         "files": [
-            "error.blade.php"
+            "error/error.blade.php"
         ],
         "requires": [],
         "docs": "components/field.md",
@@ -131,7 +131,7 @@
     },
     "field": {
         "files": [
-            "field.blade.php"
+            "field/field.blade.php"
         ],
         "requires": [],
         "docs": "components/field.md",
@@ -139,7 +139,7 @@
     },
     "heading": {
         "files": [
-            "heading.blade.php"
+            "heading/heading.blade.php"
         ],
         "requires": [],
         "docs": "components/heading.md",
@@ -147,7 +147,7 @@
     },
     "icon": {
         "files": [
-            "icon/index.blade.php",
+            "icon/icon.blade.php",
             "icon/shape-arrow-right.blade.php",
             "icon/shape-checked.blade.php",
             "icon/shape-close.blade.php",
@@ -172,7 +172,7 @@
     },
     "input": {
         "files": [
-            "input/index.blade.php"
+            "input/input.blade.php"
         ],
         "requires": [
             "description",
@@ -185,7 +185,7 @@
     },
     "label": {
         "files": [
-            "label.blade.php"
+            "label/label.blade.php"
         ],
         "requires": [],
         "docs": "components/field.md",
@@ -193,8 +193,8 @@
     },
     "list": {
         "files": [
-            "list/index.blade.php",
-            "list/item.blade.php"
+            "list/item.blade.php",
+            "list/list.blade.php"
         ],
         "requires": [
             "empty"
@@ -204,7 +204,7 @@
     },
     "modal": {
         "files": [
-            "modal/index.blade.php"
+            "modal/modal.blade.php"
         ],
         "requires": [
             "heading",
@@ -228,7 +228,7 @@
     },
     "pagination": {
         "files": [
-            "pagination.blade.php"
+            "pagination/pagination.blade.php"
         ],
         "requires": [
             "icon"
@@ -238,7 +238,7 @@
     },
     "popover": {
         "files": [
-            "popover/index.blade.php",
+            "popover/popover.blade.php",
             "popover/trigger.blade.php"
         ],
         "requires": [
@@ -249,7 +249,7 @@
     },
     "progress": {
         "files": [
-            "progress.blade.php"
+            "progress/progress.blade.php"
         ],
         "requires": [],
         "docs": "components/progress.md",
@@ -257,7 +257,7 @@
     },
     "radio": {
         "files": [
-            "radio.blade.php"
+            "radio/radio.blade.php"
         ],
         "requires": [],
         "docs": "components/radio.md",
@@ -265,8 +265,8 @@
     },
     "select": {
         "files": [
-            "select/index.blade.php",
-            "select/option.blade.php"
+            "select/option.blade.php",
+            "select/select.blade.php"
         ],
         "requires": [
             "description",
@@ -280,7 +280,7 @@
     },
     "separator": {
         "files": [
-            "separator.blade.php"
+            "separator/separator.blade.php"
         ],
         "requires": [],
         "docs": "components/separator.md",
@@ -288,7 +288,7 @@
     },
     "stat": {
         "files": [
-            "stat.blade.php"
+            "stat/stat.blade.php"
         ],
         "requires": [
             "icon"
@@ -298,7 +298,7 @@
     },
     "switch": {
         "files": [
-            "switch.blade.php"
+            "switch/switch.blade.php"
         ],
         "requires": [],
         "docs": "components/switch.md",
@@ -310,8 +310,8 @@
             "table/cell.blade.php",
             "table/head.blade.php",
             "table/heading.blade.php",
-            "table/index.blade.php",
-            "table/row.blade.php"
+            "table/row.blade.php",
+            "table/table.blade.php"
         ],
         "requires": [
             "empty"
@@ -321,9 +321,9 @@
     },
     "tabs": {
         "files": [
-            "tabs/index.blade.php",
             "tabs/panel.blade.php",
-            "tabs/tab.blade.php"
+            "tabs/tab.blade.php",
+            "tabs/tabs.blade.php"
         ],
         "requires": [
             "button",
@@ -334,7 +334,7 @@
     },
     "text": {
         "files": [
-            "text.blade.php"
+            "text/text.blade.php"
         ],
         "requires": [],
         "docs": "components/text.md",
@@ -342,7 +342,7 @@
     },
     "textarea": {
         "files": [
-            "textarea.blade.php"
+            "textarea/textarea.blade.php"
         ],
         "requires": [
             "description",
@@ -355,7 +355,7 @@
     },
     "toast": {
         "files": [
-            "toast.blade.php"
+            "toast/toast.blade.php"
         ],
         "requires": [
             "button",
@@ -368,7 +368,7 @@
     },
     "toaster": {
         "files": [
-            "toaster/index.blade.php"
+            "toaster/toaster.blade.php"
         ],
         "requires": [
             "toast"
@@ -378,7 +378,7 @@
     },
     "tooltip": {
         "files": [
-            "tooltip/index.blade.php"
+            "tooltip/tooltip.blade.php"
         ],
         "requires": [],
         "docs": "components/tooltip.md",
