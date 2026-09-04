@@ -1,1 +1,1 @@
-<x-shape::badge label="Paid" color="success" />
+<x-shape::badge label="Paid" tone="success" />

@@ -31,7 +31,7 @@ it('defaults to the accent tone because a switch is a live setting', function ()
 });
 
 it('takes a colour like every other component that carries semantics', function () {
-    expect(Blade::render('<x-shape::switch name="notify" color="success" />'))
+    expect(Blade::render('<x-shape::switch name="notify" tone="success" />'))
         ->toContain('data-shape-tone="success"')
         ->toContain('checked:bg-[var(--shape-tone)]');
 });

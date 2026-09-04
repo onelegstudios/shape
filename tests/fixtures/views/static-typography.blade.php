@@ -9,7 +9,7 @@
 
     <x-shape::separator />
 
-    <x-shape::badge label="Paid" color="success" />
+    <x-shape::badge label="Paid" tone="success" />
 
     <x-shape::card.footer>
         <x-shape::button variant="primary">Send receipt</x-shape::button>

@@ -15,7 +15,7 @@
     triggers, because there are genuinely two mechanisms.
 
     It renders a `button`, so everything the button takes works here: variant,
-    colour, size, icons.
+    tone, size, icons.
 --}}
 
 @props([

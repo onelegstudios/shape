@@ -30,7 +30,7 @@
     'max' => 100,
     'indeterminate' => false,
     'size' => 'base',
-    'color' => null,
+    'tone' => null,
     'label' => null,
 ])
 
@@ -52,5 +52,5 @@ $classes = Shape::classes()
     {{ $attributes->class($classes)->merge(['aria-label' => $label]) }}
     data-shape-progress
     data-shape-size="{{ $size }}"
-    data-shape-tone="{{ $color ?? 'accent' }}"
+    data-shape-tone="{{ $tone ?? 'accent' }}"
 ></progress>

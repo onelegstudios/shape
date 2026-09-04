@@ -3,6 +3,6 @@
 
 <x-shape::button
     variant="primary"
-    color="success"
-    onclick="dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Invoice sent', description: 'A copy went to billing@example.com.', color: 'success' } } }))"
+    tone="success"
+    onclick="dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Invoice sent', description: 'A copy went to billing@example.com.', tone: 'success' } } }))"
 >Send a toast</x-shape::button>

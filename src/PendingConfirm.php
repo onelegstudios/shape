@@ -29,7 +29,7 @@ final class PendingConfirm
 
     private ?string $cancel = null;
 
-    private ?string $color = null;
+    private ?string $tone = null;
 
     private ?string $then = null;
 
@@ -80,9 +80,9 @@ final class PendingConfirm
     /**
      * The tone of the accept button — `danger` for the destructive case.
      */
-    public function color(?string $color): self
+    public function tone(?string $tone): self
     {
-        $this->color = $color;
+        $this->tone = $tone;
 
         return $this;
     }
@@ -113,7 +113,7 @@ final class PendingConfirm
     }
 
     /**
-     * @return array{name: string, heading: string|null, message: string|null, accept: string|null, cancel: string|null, color: string|null, then: string|null, params: array<array-key, mixed>}
+     * @return array{name: string, heading: string|null, message: string|null, accept: string|null, cancel: string|null, tone: string|null, then: string|null, params: array<array-key, mixed>}
      */
     public function toArray(): array
     {
@@ -123,7 +123,7 @@ final class PendingConfirm
             'message' => $this->message,
             'accept' => $this->accept,
             'cancel' => $this->cancel,
-            'color' => $this->color,
+            'tone' => $this->tone,
             'then' => $this->then,
             'params' => $this->params,
         ];

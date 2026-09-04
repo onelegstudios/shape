@@ -21,12 +21,12 @@ it('falls back to the neutral tone', function () {
 });
 
 it('carries semantics on the tone attribute', function () {
-    expect(Blade::render('<x-shape::badge label="Paid" color="success" />'))
+    expect(Blade::render('<x-shape::badge label="Paid" tone="success" />'))
         ->toContain('data-shape-tone="success"');
 });
 
-it('resolves an icon for every state so colour is never the only signal', function (string $color) {
-    expect(Blade::render("<x-shape::badge label=\"State\" color=\"{$color}\" />"))
+it('resolves an icon for every state so colour is never the only signal', function (string $tone) {
+    expect(Blade::render("<x-shape::badge label=\"State\" tone=\"{$tone}\" />"))
         ->toContain('data-shape-icon');
 })->with(['success', 'danger', 'warning', 'info']);
 
@@ -35,7 +35,7 @@ it('gives each state a glyph of its own rather than reusing one', function () {
     // is what actually enforces the rule: a badge has to stay readable in
     // greyscale, which it doesn't if two states share an icon.
     $glyphs = collect(['success', 'danger', 'warning', 'info'])
-        ->map(fn (string $color) => Blade::render("<x-shape::badge label=\"State\" color=\"{$color}\" />"))
+        ->map(fn (string $tone) => Blade::render("<x-shape::badge label=\"State\" tone=\"{$tone}\" />"))
         ->map(fn (string $html) => preg_match('/<path[^>]*d="([^"]+)"/', $html, $m) ? $m[1] : null);
 
     expect($glyphs->filter())->toHaveCount(4)
@@ -48,15 +48,15 @@ it('renders no icon for the neutral tone', function () {
 });
 
 it('renders none for the accent either, which is emphasis rather than a state', function () {
-    expect(Blade::render('<x-shape::badge label="Beta" color="accent" />'))
+    expect(Blade::render('<x-shape::badge label="Beta" tone="accent" />'))
         ->toContain('data-shape-tone="accent"')
         ->not->toContain('data-shape-icon');
 });
 
 it('lets a caller opt out of the icon', function () {
-    expect(Blade::render('<x-shape::badge label="Paid" color="success" :icon="false" />'))
+    expect(Blade::render('<x-shape::badge label="Paid" tone="success" :icon="false" />'))
         ->not->toContain('data-shape-icon')
-        ->and(Blade::render('<x-shape::badge label="Paid" color="success" />'))
+        ->and(Blade::render('<x-shape::badge label="Paid" tone="success" />'))
         ->toContain('data-shape-icon');
 });
 
@@ -66,7 +66,7 @@ it('lets a caller name an icon of its own', function () {
 });
 
 it('reads its colours through the same tone variables the button does', function () {
-    $badge = Blade::render('<x-shape::badge label="Paid" color="success" variant="solid" />');
+    $badge = Blade::render('<x-shape::badge label="Paid" tone="success" variant="solid" />');
 
     expect($badge)
         ->toContain('bg-[var(--shape-tone)]')
@@ -74,7 +74,7 @@ it('reads its colours through the same tone variables the button does', function
 });
 
 it('keeps every variant reading the same variables rather than a colour matrix', function (string $variant, string $expected) {
-    expect(Blade::render("<x-shape::badge label=\"Paid\" color=\"success\" variant=\"{$variant}\" />"))
+    expect(Blade::render("<x-shape::badge label=\"Paid\" tone=\"success\" variant=\"{$variant}\" />"))
         ->toContain($expected)
         ->toContain('data-shape-variant="'.$variant.'"');
 })->with([

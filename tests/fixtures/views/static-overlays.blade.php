@@ -1,4 +1,4 @@
-<x-shape::overlay.trigger for="delete-project" variant="subtle" color="danger" icon="shape-trash">
+<x-shape::overlay.trigger for="delete-project" variant="subtle" tone="danger" icon="shape-trash">
     Delete project
 </x-shape::overlay.trigger>
 
@@ -7,7 +7,7 @@
 
     <x-shape::overlay.footer>
         <x-shape::overlay.close for="delete-project" label="Cancel" />
-        <x-shape::button variant="primary" color="danger">Delete</x-shape::button>
+        <x-shape::button variant="primary" tone="danger">Delete</x-shape::button>
     </x-shape::overlay.footer>
 </x-shape::modal>
 
@@ -22,7 +22,7 @@
 <x-shape::dropdown name="row-actions">
     <x-shape::dropdown.item icon="shape-checked">Approve</x-shape::dropdown.item>
     <x-shape::dropdown.item href="/invoices/1">Open</x-shape::dropdown.item>
-    <x-shape::dropdown.item icon="shape-trash" color="danger">Delete</x-shape::dropdown.item>
+    <x-shape::dropdown.item icon="shape-trash" tone="danger">Delete</x-shape::dropdown.item>
 </x-shape::dropdown>
 
 <x-shape::popover.trigger for="usage">Usage</x-shape::popover.trigger>

@@ -55,7 +55,7 @@ it('gives each trend its own drawing rather than one glyph in three colours', fu
 it('lets a metric say that up is the bad direction', function () {
     // Churn, refunds, error rate. The trend picks the arrow; the colour is a
     // separate claim about whether the direction is good news.
-    expect(Blade::render('<x-shape::stat value="4.1%" delta="0.6pp" trend="up" color="danger" />'))
+    expect(Blade::render('<x-shape::stat value="4.1%" delta="0.6pp" trend="up" tone="danger" />'))
         ->toContain('data-shape-tone="danger"')
         ->toContain('data-shape-icon');
 });

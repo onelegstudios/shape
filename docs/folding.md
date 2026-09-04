@@ -75,17 +75,17 @@ Some props never drive a branch — they are interpolated and nothing more. Thos
 are declared `safe`, and they fold even when bound dynamically:
 
 ```blade
-{{-- Folds. `color` only ever reaches `data-shape-tone`. --}}
-<x-shape::button variant="primary" :color="$destructive ? 'danger' : null">
+{{-- Folds. `tone` only ever reaches `data-shape-tone`. --}}
+<x-shape::button variant="primary" :tone="$destructive ? 'danger' : null">
     Delete
 </x-shape::button>
 ```
 
-This is why `variant` and `color` are separate props on the button rather than
+This is why `variant` and `tone` are separate props on the button rather than
 one combined appearance prop: hierarchy has to branch, semantics doesn't.
 
 `safe` is declared per component, not per prop name. The badge branches on
-`color` to resolve its state icon, so `color` is *not* safe there — the same
+`tone` to resolve its state icon, so `tone` is *not* safe there — the same
 prop name, a different answer, for a reason the component's own page explains.
 Check the page rather than assuming.
 
@@ -99,12 +99,12 @@ prop set.
 
 ```blade
 {{-- Folds. The span and its SVG are inlined into the parent template. --}}
-<x-shape::badge label="Paid" color="success" />
+<x-shape::badge label="Paid" tone="success" />
 
 {{-- Doesn't fold. Memoizes instead: a table of two hundred rows with five
      distinct states renders five badges and reuses them. --}}
 @foreach ($invoices as $invoice)
-    <x-shape::badge :label="$invoice->state" :color="$invoice->tone" />
+    <x-shape::badge :label="$invoice->state" :tone="$invoice->tone" />
 @endforeach
 ```
 
@@ -128,7 +128,7 @@ resolves the component at runtime and cannot fold — reach for the direct form 
 loops and tables.
 
 Icons nested inside a component that folds are baked in with it, so
-`<x-shape::button icon="shape-plus">` and `<x-shape::badge color="success">` both
+`<x-shape::button icon="shape-plus">` and `<x-shape::badge tone="success">` both
 end up as literal SVG in the compiled template.
 
 Both of an icon's props drive which drawing is chosen, so neither can be

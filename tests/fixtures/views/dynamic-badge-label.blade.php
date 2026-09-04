@@ -1,1 +1,1 @@
-<x-shape::badge :label="$label" color="success" />
+<x-shape::badge :label="$label" tone="success" />

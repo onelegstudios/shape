@@ -176,19 +176,19 @@ it('abandons folding when a prop that drives logic is bound dynamically', functi
 });
 
 it('keeps folding when a pass-through prop is bound dynamically', function () {
-    // `color` is only ever interpolated into `data-shape-tone`, never branched
-    // on, which is what `safe: ['color']` in the component declares.
-    expect(foldedComponentsWhileRendering('dynamic-color-button', ['color' => 'danger']))
+    // `tone` is only ever interpolated into `data-shape-tone`, never branched
+    // on, which is what `safe: ['tone']` in the component declares.
+    expect(foldedComponentsWhileRendering('dynamic-tone-button', ['tone' => 'danger']))
         ->toContain('shape::button');
 });
 
 it('renders identical markup whether or not the component folded', function () {
     clearCompiledViews();
-    $folded = view('dynamic-color-button', ['color' => 'danger'])->render();
+    $folded = view('dynamic-tone-button', ['tone' => 'danger'])->render();
 
     Blaze::disable();
     clearCompiledViews();
-    $unfolded = view('dynamic-color-button', ['color' => 'danger'])->render();
+    $unfolded = view('dynamic-tone-button', ['tone' => 'danger'])->render();
     Blaze::enable();
 
     expect($folded)->toBe($unfolded);
@@ -246,10 +246,10 @@ it('keeps folding a badge whose label is bound dynamically', function () {
 });
 
 it('abandons folding a badge whose colour is bound dynamically', function () {
-    // Unlike the button, the badge branches on `color` to resolve its state
+    // Unlike the button, the badge branches on `tone` to resolve its state
     // icon, so colour cannot be declared safe here. This is the documented
     // cost of the "never rely on colour alone" rule.
-    expect(foldedComponentsWhileRendering('dynamic-badge-color', ['color' => 'danger']))
+    expect(foldedComponentsWhileRendering('dynamic-badge-tone', ['tone' => 'danger']))
         ->not->toContain('shape::badge');
 });
 
@@ -257,7 +257,7 @@ it('memoizes the slotless components when they cannot fold', function () {
     // Fold and memo are alternatives, not a stack: a folded component is
     // already inlined and has nothing left to cache. Memo is what catches the
     // badge and separator on the call sites where folding gives up.
-    $fixture = __DIR__.'/../fixtures/views/dynamic-badge-color.blade.php';
+    $fixture = __DIR__.'/../fixtures/views/dynamic-badge-tone.blade.php';
 
     $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
 
@@ -497,9 +497,9 @@ it('keeps folding a toast whose text is bound dynamically', function () {
 
 it('abandons folding an alert whose colour is bound dynamically', function () {
     // Same trade the badge makes, for the same reason: the alert branches on
-    // `color` to resolve its glyph, so colour cannot be safe here. It is the
+    // `tone` to resolve its glyph, so colour cannot be safe here. It is the
     // documented price of never relying on colour alone.
-    expect(foldedComponentsWhileRendering('dynamic-alert-color', ['color' => 'danger']))
+    expect(foldedComponentsWhileRendering('dynamic-alert-tone', ['tone' => 'danger']))
         ->not->toContain('shape::alert');
 });
 

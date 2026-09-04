@@ -143,11 +143,11 @@
                 <x-shape::card>
                     <x-shape::stat label="Invoices sent" value="1,204" delta="12%" trend="up" />
                     <x-shape::separator />
-                    <x-shape::progress :value="42" size="sm" color="accent" label="Storage used" />
+                    <x-shape::progress :value="42" size="sm" tone="accent" label="Storage used" />
                 </x-shape::card>
 
                 <x-shape::card>
-                    <x-shape::alert color="success" heading="Payment received">
+                    <x-shape::alert tone="success" heading="Payment received">
                         <x-shape::text size="sm" variant="muted">Invoice #1042 was paid in full.</x-shape::text>
                     </x-shape::alert>
                     <x-shape::card.footer>
@@ -165,7 +165,7 @@
                             <x-shape::avatar initials="GH" size="sm" />
                             <x-shape::avatar initials="KJ" size="sm" />
                         </x-shape::avatar.group>
-                        <x-shape::badge label="Trial" color="accent" size="sm" />
+                        <x-shape::badge label="Trial" tone="accent" size="sm" />
                     </div>
                 </x-shape::card>
             </div>
@@ -243,9 +243,9 @@
                                 <div data-shape-seed style="--shape-seed: {{ $seed }}"
                                      class="flex flex-wrap items-center gap-3 rounded-shape border border-shape-200 bg-shape-50 p-4 dark:border-shape-800 dark:bg-shape-900">
                                     <span class="w-36 shrink-0 text-xs font-medium text-shape-500">{{ $label }}</span>
-                                    <x-shape::button variant="primary" color="accent">Primary</x-shape::button>
-                                    <x-shape::button variant="subtle" color="accent">Subtle</x-shape::button>
-                                    <x-shape::button variant="ghost" color="accent">Ghost</x-shape::button>
+                                    <x-shape::button variant="primary" tone="accent">Primary</x-shape::button>
+                                    <x-shape::button variant="subtle" tone="accent">Subtle</x-shape::button>
+                                    <x-shape::button variant="ghost" tone="accent">Ghost</x-shape::button>
                                     <span class="text-sm text-shape-600 dark:text-shape-400">Body copy on the derived neutral.</span>
                                 </div>
                             @endforeach
@@ -398,15 +398,15 @@
                     <div class="space-y-1.5 px-6 py-5">
                         <h3 class="font-medium tracking-tight">Semantics</h3>
                         <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
-                            Colour is a separate prop from hierarchy, so a destructive action can stay quiet
+                            Tone is a separate prop from hierarchy, so a destructive action can stay quiet
                             until the moment it matters.
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
-                        <x-shape::button variant="subtle" color="danger" icon="shape-trash">Delete project</x-shape::button>
-                        <x-shape::button variant="primary" color="danger">Yes, delete it</x-shape::button>
-                        <x-shape::button variant="primary" color="accent" icon="shape-checked">Approve</x-shape::button>
-                        <x-shape::button variant="subtle" color="success" icon="shape-checked">Paid</x-shape::button>
+                        <x-shape::button variant="subtle" tone="danger" icon="shape-trash">Delete project</x-shape::button>
+                        <x-shape::button variant="primary" tone="danger">Yes, delete it</x-shape::button>
+                        <x-shape::button variant="primary" tone="accent" icon="shape-checked">Approve</x-shape::button>
+                        <x-shape::button variant="subtle" tone="success" icon="shape-checked">Paid</x-shape::button>
                     </div>
                 </article>
 
@@ -482,19 +482,19 @@
                     </div>
                     <div class="space-y-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
                         <div class="flex flex-wrap items-center gap-3">
-                            <x-shape::badge label="Paid" color="success" />
-                            <x-shape::badge label="Overdue" color="danger" />
-                            <x-shape::badge label="Pending" color="warning" />
-                            <x-shape::badge label="Sent" color="info" />
-                            <x-shape::badge label="Trial" color="accent" />
+                            <x-shape::badge label="Paid" tone="success" />
+                            <x-shape::badge label="Overdue" tone="danger" />
+                            <x-shape::badge label="Pending" tone="warning" />
+                            <x-shape::badge label="Sent" tone="info" />
+                            <x-shape::badge label="Trial" tone="accent" />
                             <x-shape::badge label="Draft" />
                         </div>
                         <div class="flex flex-wrap items-center gap-3">
-                            <x-shape::badge label="Paid" color="success" variant="solid" />
-                            <x-shape::badge label="Paid" color="success" variant="subtle" />
-                            <x-shape::badge label="Paid" color="success" variant="outline" />
-                            <x-shape::badge label="Paid" color="success" :icon="false" />
-                            <x-shape::badge label="Paid" color="success" size="sm" />
+                            <x-shape::badge label="Paid" tone="success" variant="solid" />
+                            <x-shape::badge label="Paid" tone="success" variant="subtle" />
+                            <x-shape::badge label="Paid" tone="success" variant="outline" />
+                            <x-shape::badge label="Paid" tone="success" :icon="false" />
+                            <x-shape::badge label="Paid" tone="success" size="sm" />
                         </div>
                     </div>
                 </article>
@@ -551,7 +551,7 @@
                                     <x-shape::heading size="base">Bordered, tight</x-shape::heading>
                                     <x-shape::text size="sm" variant="muted">For cards on a surface too close to their own.</x-shape::text>
                                 </x-shape::card.header>
-                                <x-shape::badge label="Trial" color="accent" size="sm" class="self-start" />
+                                <x-shape::badge label="Trial" tone="accent" size="sm" class="self-start" />
                             </x-shape::card>
                         </div>
                     </div>
@@ -701,7 +701,7 @@
                         <div class="max-w-md space-y-3">
                             <x-shape::switch name="notify" label="Email me about new invoices" checked />
                             <x-shape::switch name="digest" label="Weekly digest" description="Sent Monday morning." />
-                            <x-shape::switch name="sms" label="Text me too" color="success" checked />
+                            <x-shape::switch name="sms" label="Text me too" tone="success" checked />
                             <x-shape::switch name="beta" label="Unavailable on your plan" disabled />
                         </div>
                     </div>
@@ -762,7 +762,7 @@
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
-                        <x-shape::overlay.trigger for="delete-project" variant="subtle" color="danger" icon="shape-trash">
+                        <x-shape::overlay.trigger for="delete-project" variant="subtle" tone="danger" icon="shape-trash">
                             Delete project
                         </x-shape::overlay.trigger>
 
@@ -777,7 +777,7 @@
 
                             <x-shape::overlay.footer>
                                 <x-shape::overlay.close for="delete-project" label="Cancel" />
-                                <x-shape::button variant="primary" color="danger" icon="shape-trash">Delete</x-shape::button>
+                                <x-shape::button variant="primary" tone="danger" icon="shape-trash">Delete</x-shape::button>
                             </x-shape::overlay.footer>
                         </x-shape::modal>
 
@@ -832,7 +832,7 @@
                                 <x-shape::dropdown.item icon="shape-checked">Approve</x-shape::dropdown.item>
                                 <x-shape::dropdown.item icon="shape-arrow-right" href="#">Open invoice</x-shape::dropdown.item>
                                 <x-shape::separator class="my-1" />
-                                <x-shape::dropdown.item icon="shape-trash" color="danger">Delete</x-shape::dropdown.item>
+                                <x-shape::dropdown.item icon="shape-trash" tone="danger">Delete</x-shape::dropdown.item>
                             </x-shape::dropdown>
 
                             <x-shape::popover.trigger for="usage" variant="subtle">Usage</x-shape::popover.trigger>
@@ -840,7 +840,7 @@
                             <x-shape::popover name="usage" placement="bottom-end">
                                 <x-shape::heading :level="3" size="sm">This month</x-shape::heading>
                                 <x-shape::text size="sm" variant="muted">4,210 of 10,000 requests.</x-shape::text>
-                                <x-shape::badge label="42%" color="success" />
+                                <x-shape::badge label="42%" tone="success" />
                             </x-shape::popover>
 
                             <x-shape::dropdown.trigger for="more" variant="ghost" square icon="shape-expand" aria-label="More" />
@@ -902,19 +902,19 @@
                         </p>
                     </div>
                     <div class="space-y-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
-                        <x-shape::alert color="info" heading="Weekly digest is on">
+                        <x-shape::alert tone="info" heading="Weekly digest is on">
                             <x-shape::text size="sm" variant="muted">Sent every Monday at 9am, in your timezone.</x-shape::text>
                         </x-shape::alert>
 
-                        <x-shape::alert color="success" heading="Payment received">
+                        <x-shape::alert tone="success" heading="Payment received">
                             <x-shape::text size="sm" variant="muted">Invoice #1042 was paid in full.</x-shape::text>
                         </x-shape::alert>
 
-                        <x-shape::alert color="warning" heading="Your trial ends on Friday" dismissible>
+                        <x-shape::alert tone="warning" heading="Your trial ends on Friday" dismissible>
                             <x-shape::text size="sm" variant="muted">Add a payment method to keep your projects.</x-shape::text>
                         </x-shape::alert>
 
-                        <x-shape::alert color="danger" heading="Card declined">
+                        <x-shape::alert tone="danger" heading="Card declined">
                             <x-shape::text size="sm" variant="muted">Update the card on file and try the payment again.</x-shape::text>
                         </x-shape::alert>
 
@@ -943,9 +943,9 @@
                                 <x-shape::progress :value="42" aria-labelledby="storage-label" />
                             </div>
 
-                            <x-shape::progress :value="18" size="sm" color="warning" label="Seats used" />
-                            <x-shape::progress :value="92" size="lg" color="danger" label="Quota" />
-                            <x-shape::progress :value="70" color="success" label="Onboarding" />
+                            <x-shape::progress :value="18" size="sm" tone="warning" label="Seats used" />
+                            <x-shape::progress :value="92" size="lg" tone="danger" label="Quota" />
+                            <x-shape::progress :value="70" tone="success" label="Onboarding" />
                             <x-shape::progress indeterminate label="Uploading" />
                         </div>
                     </div>
@@ -964,11 +964,11 @@
                         {{-- One attribute per field rather than a blob of JSON: an attribute bag
                              escapes a quote as `\"`, which HTML does not unescape, so JSON written
                              here arrives at the script unparseable. --}}
-                        <x-shape::button variant="subtle" color="success" data-toast="Invoice sent" data-toast-description="A copy went to billing@example.com" data-toast-color="success">Success</x-shape::button>
-                        <x-shape::button variant="subtle" color="danger" data-toast="Card declined" data-toast-description="Announced assertively, unlike the rest." data-toast-color="danger">Danger</x-shape::button>
-                        <x-shape::button variant="subtle" color="warning" data-toast="Trial ends Friday" data-toast-color="warning">Warning</x-shape::button>
-                        <x-shape::button variant="subtle" color="info" data-toast="Digest is on" data-toast-color="info">Info</x-shape::button>
-                        <x-shape::button variant="subtle" color="accent" data-toast="Published" data-toast-color="accent">Accent</x-shape::button>
+                        <x-shape::button variant="subtle" tone="success" data-toast="Invoice sent" data-toast-description="A copy went to billing@example.com" data-toast-tone="success">Success</x-shape::button>
+                        <x-shape::button variant="subtle" tone="danger" data-toast="Card declined" data-toast-description="Announced assertively, unlike the rest." data-toast-tone="danger">Danger</x-shape::button>
+                        <x-shape::button variant="subtle" tone="warning" data-toast="Trial ends Friday" data-toast-tone="warning">Warning</x-shape::button>
+                        <x-shape::button variant="subtle" tone="info" data-toast="Digest is on" data-toast-tone="info">Info</x-shape::button>
+                        <x-shape::button variant="subtle" tone="accent" data-toast="Published" data-toast-tone="accent">Accent</x-shape::button>
                         <x-shape::button variant="subtle" data-toast="Saved">Neutral</x-shape::button>
                         <x-shape::button variant="ghost" data-toast="Uploading" data-toast-description="Stays until dismissed." data-toast-duration="0">Sticky</x-shape::button>
                         <x-shape::button variant="ghost" as="a" href="/flash" icon-trailing="shape-arrow-right">Through the session</x-shape::button>
@@ -985,8 +985,8 @@
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
-                        <x-shape::button variant="subtle" color="danger" icon="shape-trash" data-confirm="Delete project?" data-confirm-message="Every invoice attached to it goes too." data-confirm-accept="Delete" data-confirm-color="danger" data-confirm-then="deleteProject">Delete project</x-shape::button>
-                        <x-shape::button variant="subtle" data-confirm="Publish now?" data-confirm-message="It goes live immediately." data-confirm-accept="Publish" data-confirm-color="accent" data-confirm-then="publish">Publish</x-shape::button>
+                        <x-shape::button variant="subtle" tone="danger" icon="shape-trash" data-confirm="Delete project?" data-confirm-message="Every invoice attached to it goes too." data-confirm-accept="Delete" data-confirm-tone="danger" data-confirm-then="deleteProject">Delete project</x-shape::button>
+                        <x-shape::button variant="subtle" data-confirm="Publish now?" data-confirm-message="It goes live immediately." data-confirm-accept="Publish" data-confirm-tone="accent" data-confirm-then="publish">Publish</x-shape::button>
                     </div>
                 </article>
             </div>
@@ -1039,14 +1039,14 @@
                                             <x-shape::table.cell :value="$invoice['number']" class="font-medium" />
                                             <x-shape::table.cell :value="$invoice['client']" />
                                             <x-shape::table.cell>
-                                                <x-shape::badge :label="$invoice['state']" :color="$invoice['tone']" />
+                                                <x-shape::badge :label="$invoice['state']" :tone="$invoice['tone']" />
                                             </x-shape::table.cell>
                                             <x-shape::table.cell :value="$invoice['total']" align="end" />
                                             <x-shape::table.cell align="end">
                                                 <x-shape::dropdown.trigger for="row-{{ $loop->index }}" variant="ghost" size="sm" icon="shape-expand">Actions</x-shape::dropdown.trigger>
                                                 <x-shape::dropdown name="row-{{ $loop->index }}">
                                                     <x-shape::dropdown.item icon="shape-arrow-right">Open</x-shape::dropdown.item>
-                                                    <x-shape::dropdown.item icon="shape-trash" color="danger">Void</x-shape::dropdown.item>
+                                                    <x-shape::dropdown.item icon="shape-trash" tone="danger">Void</x-shape::dropdown.item>
                                                 </x-shape::dropdown>
                                             </x-shape::table.cell>
                                         </x-shape::table.row>
@@ -1216,7 +1216,7 @@
                             <x-shape::stat label="Invoices sent" value="1,204" delta="12%" trend="up" />
                             <x-shape::stat label="Outstanding" value="£18,400" delta="4%" trend="down" />
                             <x-shape::stat label="Average days to pay" value="21" delta="0" trend="flat" />
-                            <x-shape::stat label="Churn" value="4.1%" delta="0.6pp" trend="up" color="danger" />
+                            <x-shape::stat label="Churn" value="4.1%" delta="0.6pp" trend="up" tone="danger" />
                         </div>
                         <div class="grid gap-6 sm:grid-cols-2">
                             <x-shape::stat label="Current plan" value="Team" emphasis="label" description="Renews 1 September" />
@@ -1336,7 +1336,7 @@
                 dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: {
                     heading: toast.dataset.toast,
                     description: toast.dataset.toastDescription ?? null,
-                    color: toast.dataset.toastColor ?? null,
+                    tone: toast.dataset.toastTone ?? null,
                     duration: toast.dataset.toastDuration === undefined ? undefined : Number(toast.dataset.toastDuration),
                 } } }))
             }
@@ -1348,7 +1348,7 @@
                     heading: confirm.dataset.confirm,
                     message: confirm.dataset.confirmMessage ?? null,
                     accept: confirm.dataset.confirmAccept ?? null,
-                    color: confirm.dataset.confirmColor ?? null,
+                    tone: confirm.dataset.confirmTone ?? null,
                     then: confirm.dataset.confirmThen ?? null,
                     params: [1042],
                 } } }))
@@ -1358,12 +1358,12 @@
         // What a Livewire component's `#[On('deleteProject')]` would be doing.
         addEventListener('deleteProject', (event) => {
             console.log('deleteProject', event.detail)
-            dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Project deleted', color: 'success' } } }))
+            dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Project deleted', tone: 'success' } } }))
         })
 
         addEventListener('publish', (event) => {
             console.log('publish', event.detail)
-            dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Published', color: 'accent' } } }))
+            dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Published', tone: 'accent' } } }))
         })
 
         // Diagnostics. Not part of the package — the preview only.

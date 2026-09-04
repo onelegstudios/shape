@@ -21,7 +21,7 @@ final class PendingToast
 {
     private ?string $description = null;
 
-    private ?string $color = null;
+    private ?string $tone = null;
 
     /**
      * How long the toast stays, in milliseconds. Zero means until dismissed.
@@ -55,12 +55,12 @@ final class PendingToast
      * decides the glyph — and there is deliberately no way to send a different
      * one. The script clones markup; it cannot resolve an SVG it was not already
      * given, and six templates is where that stops being worth it. The rule it
-     * enforces by accident is the right one: the glyph and the colour say the
+     * enforces by accident is the right one: the glyph and the tone say the
      * same thing, and neither can be set without the other.
      */
-    public function color(?string $color): self
+    public function tone(?string $tone): self
     {
-        $this->color = $color;
+        $this->tone = $tone;
 
         return $this;
     }
@@ -82,7 +82,7 @@ final class PendingToast
 
     public function accent(?string $heading = null): self
     {
-        return $this->tone('accent', $heading);
+        return $this->preset('accent', $heading);
     }
 
     /**
@@ -91,17 +91,17 @@ final class PendingToast
      */
     public function info(?string $heading = null): self
     {
-        return $this->tone('info', $heading);
+        return $this->preset('info', $heading);
     }
 
     public function success(?string $heading = null): self
     {
-        return $this->tone('success', $heading);
+        return $this->preset('success', $heading);
     }
 
     public function warning(?string $heading = null): self
     {
-        return $this->tone('warning', $heading);
+        return $this->preset('warning', $heading);
     }
 
     /**
@@ -110,7 +110,7 @@ final class PendingToast
      */
     public function danger(?string $heading = null): self
     {
-        return $this->tone('danger', $heading);
+        return $this->preset('danger', $heading);
     }
 
     /**
@@ -122,21 +122,21 @@ final class PendingToast
     }
 
     /**
-     * @return array{heading: string|null, description: string|null, color: string|null, duration: int}
+     * @return array{heading: string|null, description: string|null, tone: string|null, duration: int}
      */
     public function toArray(): array
     {
         return [
             'heading' => $this->heading,
             'description' => $this->description,
-            'color' => $this->color,
+            'tone' => $this->tone,
             'duration' => $this->duration,
         ];
     }
 
-    private function tone(string $color, ?string $heading): self
+    private function preset(string $tone, ?string $heading): self
     {
-        $this->color = $color;
+        $this->tone = $tone;
 
         if ($heading !== null) {
             $this->heading = $heading;

@@ -58,7 +58,7 @@ it('ships a script that depends on nothing', function () {
 
 describe('without blaze installed', function () {
     it('compiles the blaze directive away', function () {
-        expect(Blade::compileString('@blaze(fold: true, safe: [\'color\'])'))->toBe('');
+        expect(Blade::compileString('@blaze(fold: true, safe: [\'tone\'])'))->toBe('');
     });
 
     it('renders unblaze blocks inline and binds their scope', function () {

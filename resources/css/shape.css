@@ -250,9 +250,9 @@
     /*
     | Tones.
     |
-    | `variant` decides where an action sits in the hierarchy; `color` decides
+    | `variant` decides where an action sits in the hierarchy; `tone` decides
     | what it means. Keeping the two apart in the markup would normally multiply
-    | into a variant × colour class matrix, so the colour half lives here instead:
+    | into a variant × tone class matrix, so the tone half lives here instead:
     | a tone sets the variables, every variant reads them.
     |
     | Ink is the 800 step rather than the 700 the tint would suggest, because it
@@ -260,9 +260,9 @@
     | 700 on a 200 background lands between 3.7:1 and 4.8:1 depending on the
     | hue, and 800 clears 5.7:1 on every one of them.
     |
-    | This is also what keeps the button foldable. Because `color` only ever gets
+    | This is also what keeps the button foldable. Because `tone` only ever gets
     | interpolated into an attribute — never branched on — it stays a pass-through
-    | prop, so `:color="$destructive ? 'danger' : null"` still folds.
+    | prop, so `:tone="$destructive ? 'danger' : null"` still folds.
     |
     | The variables are named for the tone rather than for any one component, so
     | every component that carries semantics reads the same set. Only the button

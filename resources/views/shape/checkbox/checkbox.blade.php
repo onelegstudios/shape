@@ -23,7 +23,7 @@
     'label' => null,
     'description' => null,
     'value' => null,
-    'color' => null,
+    'tone' => null,
     'id' => null,
 ])
 
@@ -63,7 +63,7 @@ $glyph = 'col-start-1 row-start-1 pointer-events-none size-3.5 text-[color:var(-
 <label
     class="group inline-flex items-start gap-2.5 has-disabled:cursor-not-allowed"
     data-shape-checkbox
-    data-shape-tone="{{ $color ?? 'neutral' }}"
+    data-shape-tone="{{ $tone ?? 'neutral' }}"
 >
     <span class="grid place-items-center pt-0.5">
         <input type="checkbox" {{ $attributes->merge($defaults)->class($box) }} data-shape-control />

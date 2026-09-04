@@ -8,12 +8,12 @@ A checkbox inside its own label.
 
 @docs('preview', name: 'checkbox-description', layout: 'stack')
 
-## Colors
+## Tones
 
-@docs('preview', name: 'checkbox-colors')
+@docs('preview', name: 'checkbox-tones')
 
 The fill reads the same tone variables the [button](button.md) and
-[badge](badge.md) read, so a checkbox given a colour agrees with everything else
+[badge](badge.md) read, so a checkbox given a tone agrees with everything else
 given the same one.
 
 ## Groups
@@ -50,7 +50,7 @@ the moment anything sets the property:
 | `label` | — | the text beside the box |
 | `description` | — | a second line under the label |
 | `value` | — | the submitted value; separates a group sharing one name |
-| `color` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
+| `tone` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
 | `id` | `{name}-{value}` | the element id |
 
 `checked`, `disabled`, `required` and `wire:model` pass through to the

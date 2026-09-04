@@ -26,7 +26,7 @@
 --}}
 
 @props([
-    'color' => null,
+    'tone' => null,
     'heading' => null,
     'description' => null,
     'icon' => null,
@@ -35,7 +35,7 @@
 ])
 
 @php
-$glyph = $icon ?? match ($color) {
+$glyph = $icon ?? match ($tone) {
     'success' => 'shape-success',
     'danger' => 'shape-danger',
     'warning' => 'shape-warning',
@@ -55,7 +55,7 @@ $classes = Shape::classes()
 <div
     {{ $attributes->class($classes) }}
     data-shape-toast
-    data-shape-tone="{{ $color ?? 'neutral' }}"
+    data-shape-tone="{{ $tone ?? 'neutral' }}"
 >
     <span class="mt-0.5 shrink-0 text-[color:var(--shape-tone-ink)] empty:hidden" data-shape-toast-icon>
         @if ($glyph)

@@ -623,7 +623,7 @@ function toasts() {
 
         if (!toaster) return
 
-        const tone = toast.color ?? 'neutral'
+        const tone = toast.tone ?? 'neutral'
 
         const template =
             toaster.querySelector(`[data-shape-toast-template="${CSS.escape(tone)}"]`) ??
@@ -757,7 +757,7 @@ function confirms() {
         if (accept) {
             if (payload.accept != null) accept.textContent = payload.accept
 
-            accept.setAttribute('data-shape-tone', payload.color ?? 'neutral')
+            accept.setAttribute('data-shape-tone', payload.tone ?? 'neutral')
             accept.setAttribute('data-shape-confirm-then', payload.then ?? '')
 
             confirmParams.set(accept, payload.params ?? [])

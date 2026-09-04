@@ -1,1 +1,1 @@
-<x-shape::toast color="success" :heading="$heading" />
+<x-shape::toast tone="success" :heading="$heading" />

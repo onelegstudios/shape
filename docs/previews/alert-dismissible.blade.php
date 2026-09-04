@@ -1,1 +1,1 @@
-<x-shape::alert color="accent" dismissible>Weekly digest is on.</x-shape::alert>
+<x-shape::alert tone="accent" dismissible>Weekly digest is on.</x-shape::alert>

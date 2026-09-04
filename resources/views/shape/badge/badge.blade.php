@@ -11,17 +11,17 @@
     `label` is interpolated and nothing more, so it is safe: a badge in a table
     folds even though its text differs on every row.
 
-    `color` is not, and cannot be. The button passes its colour straight through
-    to `data-shape-tone` and stays foldable; a badge branches on colour to
-    resolve its icon, so a dynamic `:color` drops to the memo path. That path is
-    only cheap while labels repeat — with a dynamic colour AND a label unique to
+    `tone` is not, and cannot be. The button passes its tone straight through
+    to `data-shape-tone` and stays foldable; a badge branches on the tone to
+    resolve its icon, so a dynamic `:tone` drops to the memo path. That path is
+    only cheap while labels repeat — with a dynamic tone AND a label unique to
     each row, every call is a memo miss, which measures around sixty times the
-    cost of folding. Keep the colour static where you can.
+    cost of folding. Keep the tone static where you can.
 --}}
 
 @props([
     'label' => null,
-    'color' => null,
+    'tone' => null,
     'variant' => 'subtle',
     'size' => 'base',
     'icon' => null,
@@ -34,7 +34,7 @@
 // Opting out is `:icon="false"`; forgetting isn't possible. `accent` resolves
 // nothing: it is emphasis rather than a state, and `info` is the state it used
 // to stand in for.
-$glyph = $icon ?? match ($color) {
+$glyph = $icon ?? match ($tone) {
     'success' => 'shape-success',
     'danger' => 'shape-danger',
     'warning' => 'shape-warning',
@@ -64,7 +64,7 @@ $classes = Shape::classes()
     {{ $attributes->class($classes) }}
     data-shape-badge
     data-shape-variant="{{ $variant }}"
-    data-shape-tone="{{ $color ?? 'neutral' }}"
+    data-shape-tone="{{ $tone ?? 'neutral' }}"
 >
     @if ($glyph)
         <x-shape::icon :name="$glyph" :size="$iconSize" />

@@ -14,12 +14,12 @@ it('renders a block that stays on the page', function () {
 });
 
 it('carries semantics on the tone attribute', function () {
-    expect(Blade::render('<x-shape::alert color="danger">Card declined.</x-shape::alert>'))
+    expect(Blade::render('<x-shape::alert tone="danger">Card declined.</x-shape::alert>'))
         ->toContain('data-shape-tone="danger"');
 });
 
-it('resolves a glyph for every state so colour is never the only signal', function (string $color) {
-    expect(Blade::render("<x-shape::alert color=\"{$color}\">Message</x-shape::alert>"))
+it('resolves a glyph for every state so colour is never the only signal', function (string $tone) {
+    expect(Blade::render("<x-shape::alert tone=\"{$tone}\">Message</x-shape::alert>"))
         ->toContain('data-shape-icon');
 })->with(['success', 'danger', 'warning', 'info']);
 
@@ -27,21 +27,21 @@ it('draws nothing for the accent, which is emphasis and not a state', function (
     // The accent is the ramp an application retints, so a glyph here would make
     // it a fourth state whose colour is whatever the brand happens to be. `info`
     // is that state, in a blue that survives the retint.
-    expect(Blade::render('<x-shape::alert color="accent">On the beta.</x-shape::alert>'))
+    expect(Blade::render('<x-shape::alert tone="accent">On the beta.</x-shape::alert>'))
         ->toContain('data-shape-tone="accent"')
         ->not->toContain('data-shape-icon');
 });
 
 it('gives each state a glyph of its own rather than reusing one', function () {
     $glyphs = collect(['success', 'danger', 'warning', 'info'])
-        ->map(fn (string $color) => Blade::render("<x-shape::alert color=\"{$color}\">Message</x-shape::alert>"))
+        ->map(fn (string $tone) => Blade::render("<x-shape::alert tone=\"{$tone}\">Message</x-shape::alert>"))
         ->map(fn (string $html) => preg_match('/<path[^>]*d="([^"]+)"/', $html, $m) ? $m[1] : null);
 
     expect($glyphs->filter()->unique())->toHaveCount(4);
 });
 
 it('lets a caller opt out of the glyph', function () {
-    expect(Blade::render('<x-shape::alert color="success" :icon="false">Done</x-shape::alert>'))
+    expect(Blade::render('<x-shape::alert tone="success" :icon="false">Done</x-shape::alert>'))
         ->not->toContain('data-shape-icon');
 });
 
@@ -49,14 +49,14 @@ it('publishes the tone as its own foreground contract', function () {
     // The point of `data-shape-surface="tint"`: a muted paragraph inside a
     // coloured alert has to read a dialled-back version of the tone, not the
     // global grey that would otherwise apply on a coloured background.
-    expect(Blade::render('<x-shape::alert color="danger">Card declined.</x-shape::alert>'))
+    expect(Blade::render('<x-shape::alert tone="danger">Card declined.</x-shape::alert>'))
         ->toContain('data-shape-surface="tint"');
 });
 
 it('is not a live region, because it was on the page already', function () {
     // The toaster carries the live regions. Announcing markup that was present
     // at load repeats what a screen reader is about to read anyway.
-    expect(Blade::render('<x-shape::alert color="danger">Card declined.</x-shape::alert>'))
+    expect(Blade::render('<x-shape::alert tone="danger">Card declined.</x-shape::alert>'))
         ->not->toContain('aria-live')
         ->not->toContain('role="alert"');
 });

@@ -32,7 +32,7 @@ it('defaults to the accent tone and takes any other', function () {
     expect(Blade::render('<x-shape::progress :value="10" />'))
         ->toContain('data-shape-tone="accent"');
 
-    expect(Blade::render('<x-shape::progress :value="10" color="danger" />'))
+    expect(Blade::render('<x-shape::progress :value="10" tone="danger" />'))
         ->toContain('data-shape-tone="danger"');
 });
 

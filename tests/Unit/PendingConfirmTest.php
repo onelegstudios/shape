@@ -19,7 +19,7 @@ it('defaults to the dialog the layout already has', function () {
         'message' => 'Delete project?',
         'accept' => null,
         'cancel' => null,
-        'color' => null,
+        'tone' => null,
         'then' => null,
         'params' => [],
     ]);
@@ -43,7 +43,7 @@ it('chains the whole dialog', function () {
             ->message('Every invoice attached to it goes too.')
             ->accept('Delete')
             ->cancel('Keep it')
-            ->color('danger')
+            ->tone('danger')
             ->name('confirm-delete')
             ->then('deleteProject')
             ->toArray(),
@@ -53,7 +53,7 @@ it('chains the whole dialog', function () {
         'message' => 'Every invoice attached to it goes too.',
         'accept' => 'Delete',
         'cancel' => 'Keep it',
-        'color' => 'danger',
+        'tone' => 'danger',
         'then' => 'deleteProject',
         'params' => [],
     ]);

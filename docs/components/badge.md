@@ -5,11 +5,11 @@ rather than a slot.
 
 @docs('preview', name: 'badge')
 
-## Colors
+## Tones
 
-`color` says what the badge means, and resolves a matching icon:
+`tone` says what the badge means, and resolves a matching icon:
 
-@docs('preview', name: 'badge-colors')
+@docs('preview', name: 'badge-tones')
 
 ## Variants
 
@@ -19,7 +19,7 @@ almost always annotating something rather than being the thing you look at:
 @docs('preview', name: 'badge-variants')
 
 Both read the same tone variables the [button](button.md) reads, so a badge and
-a button given the same colour agree without either knowing about the other.
+a button given the same tone agree without either knowing about the other.
 
 ## Sizes
 
@@ -34,7 +34,7 @@ it is:
 
 @docs('preview', name: 'badge-icons')
 
-| `color` | Icon |
+| `tone` | Icon |
 | --- | --- |
 | `success` | `shape-success` |
 | `danger` | `shape-danger` |
@@ -47,10 +47,10 @@ it is:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `label` | — | the text |
-| `color` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
+| `tone` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `size` | `base` | `sm`, `base` |
-| `icon` | resolved from `color` | any [icon](icon.md) name, or `false` to omit |
+| `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` to omit |
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
 
 There is no slot: Blaze memoizes a component only when it has none and is called
@@ -62,18 +62,18 @@ candidate for memoization in the library.
 Tier B — `@blaze(fold: true, memo: true, safe: ['label'])`.
 
 `label` is interpolated and nothing more, so a badge folds even though its text
-differs on every row. `color` branches to resolve the state icon, so it cannot
+differs on every row. `tone` branches to resolve the state icon, so it cannot
 be `safe`:
 
 ```blade
 {{-- Folds. --}}
-<x-shape::badge label="Paid" color="success" />
+<x-shape::badge label="Paid" tone="success" />
 
 {{-- Folds. The label is safe. --}}
-<x-shape::badge :label="$invoice->reference" color="success" />
+<x-shape::badge :label="$invoice->reference" tone="success" />
 
 {{-- Does not fold. Memoizes instead. --}}
-<x-shape::badge :label="$invoice->state" :color="$invoice->tone" />
+<x-shape::badge :label="$invoice->state" :tone="$invoice->tone" />
 ```
 
 Memoization pays off on a cache hit, so the last form is cheap while labels
@@ -81,19 +81,19 @@ repeat and expensive when they don't. Measured over 200 rows:
 
 | Call site | Cost | Memo entries |
 | --- | --- | --- |
-| Static colour, any label | 0.26 ms | 0 — it folds |
-| Dynamic colour, ~5 repeated labels | 0.77 ms | 5 |
-| Dynamic colour, label unique per row | 17.0 ms | 200 |
+| Static tone, any label | 0.26 ms | 0 — it folds |
+| Dynamic tone, ~5 repeated labels | 0.77 ms | 5 |
+| Dynamic tone, label unique per row | 17.0 ms | 200 |
 
-Keep the colour static wherever you can. Deriving it at the call site costs
+Keep the tone static wherever you can. Deriving it at the call site costs
 nothing and folds every branch:
 
 ```blade
 @foreach ($invoices as $invoice)
     @if ($invoice->isPaid())
-        <x-shape::badge :label="$invoice->reference" color="success" />
+        <x-shape::badge :label="$invoice->reference" tone="success" />
     @else
-        <x-shape::badge :label="$invoice->reference" color="danger" />
+        <x-shape::badge :label="$invoice->reference" tone="danger" />
     @endif
 @endforeach
 ```

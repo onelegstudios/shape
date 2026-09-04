@@ -8,9 +8,9 @@ A native `<progress>`, restyled.
 
 @docs('preview', name: 'progress-sizes', layout: 'stack')
 
-## Colors
+## Tones
 
-@docs('preview', name: 'progress-colors', layout: 'stack')
+@docs('preview', name: 'progress-tones', layout: 'stack')
 
 ## Max
 
@@ -70,7 +70,7 @@ own `aria-label` still wins.
 | `max` | `100` | |
 | `indeterminate` | `false` | `true` for work with no known end |
 | `size` | `base` | `sm`, `base`, `lg` |
-| `color` | `accent` | `accent`, `info`, `success`, `warning`, `danger` |
+| `tone` | `accent` | `accent`, `info`, `success`, `warning`, `danger` |
 | `label` | — | becomes `aria-label` |
 
 ## Folding

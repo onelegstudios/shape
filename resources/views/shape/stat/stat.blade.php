@@ -21,8 +21,8 @@
     because `:empty` is defeated by a single space.
 
     `trend` picks the glyph, so it is branched and unsafe. That is fine: a trend
-    is one of three literals at nearly every call site. `color` overrides the
-    tone for the metrics where up is the bad direction.
+    is one of three literals at nearly every call site. `tone` overrides what
+    the trend resolves to, for the metrics where up is the bad direction.
 --}}
 
 @props([
@@ -31,7 +31,7 @@
     'description' => null,
     'delta' => null,
     'trend' => null,
-    'color' => null,
+    'tone' => null,
     'emphasis' => 'value',
 ])
 
@@ -46,7 +46,7 @@ $glyph = match ($trend) {
     default => null,
 };
 
-$tone = $color ?? match ($trend) {
+$tone ??= match ($trend) {
     'up' => 'success',
     'down' => 'danger',
     default => 'neutral',

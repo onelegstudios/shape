@@ -21,12 +21,12 @@ with no delta leaves a bare glyph with nothing beside it:
 Three separate drawings rather than one arrow at three angles — never relying on
 colour alone only works if the two directions are distinguishable.
 
-## Color
+## Tones
 
-`color` overrides the tone `trend` picked, for the metrics where up is the bad
+`tone` overrides the one `trend` picked, for the metrics where up is the bad
 news:
 
-@docs('preview', name: 'stat-color')
+@docs('preview', name: 'stat-tone')
 
 ## Emphasis
 
@@ -54,7 +54,7 @@ numbers and they should line up.
 | `label` | — | what it is a number of |
 | `delta` | — | the change, as text |
 | `trend` | — | `up`, `down`, `flat` |
-| `color` | from `trend` | `neutral`, `accent`, `info`, `success`, `warning`, `danger` |
+| `tone` | from `trend` | `neutral`, `accent`, `info`, `success`, `warning`, `danger` |
 | `description` | — | a line under the value |
 | `emphasis` | `value` | `value`, `label` |
 

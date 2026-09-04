@@ -13,7 +13,7 @@ One dialog in your layout answers every confirmation in the application.
 Shape::confirm('Every invoice attached to it goes too.')
     ->heading('Delete project?')
     ->accept('Delete')
-    ->color('danger')
+    ->tone('danger')
     ->then('deleteProject', [$project->id])
     ->send();
 ```
@@ -90,7 +90,7 @@ Shape::confirm(__('This cannot be undone.'))->accept(__('Delete'))->send();
 | `accept` | `Confirm` |
 | `cancel` | `Cancel` |
 
-The builder takes `heading()`, `message()`, `accept()`, `cancel()`, `color()`,
+The builder takes `heading()`, `message()`, `accept()`, `cancel()`, `tone()`,
 `name()`, `then()` and `send()`.
 
 ## Folding

@@ -18,7 +18,7 @@
     'label' => null,
     'description' => null,
     'value' => null,
-    'color' => null,
+    'tone' => null,
     'id' => null,
 ])
 
@@ -53,7 +53,7 @@ $box = Shape::classes()
 <label
     class="group inline-flex items-start gap-2.5 has-disabled:cursor-not-allowed"
     data-shape-radio
-    data-shape-tone="{{ $color ?? 'neutral' }}"
+    data-shape-tone="{{ $tone ?? 'neutral' }}"
 >
     <span class="grid place-items-center pt-0.5">
         <input type="radio" {{ $attributes->merge($defaults)->class($box) }} data-shape-control />

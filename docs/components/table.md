@@ -25,7 +25,7 @@ per-row value. The slot is there for a cell holding a component:
 <x-shape::table.cell :value="$invoice->total" align="end" />
 
 <x-shape::table.cell>
-    <x-shape::badge :label="$invoice->status" color="success" />
+    <x-shape::badge :label="$invoice->status" tone="success" />
 </x-shape::table.cell>
 ```
 

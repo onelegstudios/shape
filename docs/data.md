@@ -47,7 +47,7 @@ does its memo actually hit.
 | --- | --- | --- |
 | `table.cell` with `:value` | folds | `value` is safe |
 | `table.heading` with `:label` | folds | `label` is safe |
-| `badge` with a static colour | folds | `label` is safe, `color` is not |
+| `badge` with a static colour | folds | `label` is safe, `tone` is not |
 | `stat` with `:value` and `:delta` | folds | both safe; see below |
 | `avatar` with `:initials` | folds | |
 | `avatar` with a per-row `src` | no | memo entry per URL, no hits |

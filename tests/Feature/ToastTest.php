@@ -23,7 +23,7 @@ it('collapses the parts that stay empty', function () {
 });
 
 it('carries semantics on the tone attribute, with a glyph to match', function () {
-    $html = Blade::render('<x-shape::toast color="success" />');
+    $html = Blade::render('<x-shape::toast tone="success" />');
 
     expect($html)
         ->toContain('data-shape-tone="success"')
@@ -39,7 +39,7 @@ it('is dismissible unless told otherwise', function () {
 });
 
 it('sets no z-index, because the toaster is in the top layer', function () {
-    expect(Blade::render('<x-shape::toast color="danger" />'))
+    expect(Blade::render('<x-shape::toast tone="danger" />'))
         ->not->toContain('z-');
 });
 

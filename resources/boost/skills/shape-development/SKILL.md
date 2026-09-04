@@ -63,9 +63,9 @@ own Tailwind build scans the package's Blade.
 ### 3. Use the components
 
 Every component is `<x-shape::name>`. Props take scale keys, never raw values:
-`size="lg"`, not `size="18px"`; `color="danger"`, not `color="#b91c1c"`.
+`size="lg"`, not `size="18px"`; `tone="danger"`, not `tone="#b91c1c"`.
 
-`color` is one of `neutral`, `accent`, `info`, `success`, `warning`, `danger`.
+`tone` is one of `neutral`, `accent`, `info`, `success`, `warning`, `danger`.
 The last four are the states, and the alert, the badge and the toast each resolve
 a glyph from them so colour is never the only signal. `accent` is emphasis rather
 than a state — it is the brand's ramp, the one an application retints, and it
@@ -74,7 +74,7 @@ accent becomes.
 
 | Component | Tier | Key props |
 | --- | --- | --- |
-| `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `color`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `as` |
+| `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `tone`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `as` |
 | `button.element` | fold | `as`, `type` — the element a button renders |
 | `icon.<name>` | fold + memo | `size` (xs\|sm\|base), `variant` (outline\|solid — chosen by `size` if unset). Shape's own are the `shape-*` slots |
 | `icon` | — | `name` — resolves at runtime, so it cannot fold |
@@ -82,25 +82,25 @@ accent becomes.
 | `text` | fold | `size`, `variant` (base\|muted\|strong), `as` |
 | `card` / `card.header` / `card.footer` | fold | `padding`, `border` |
 | `separator` | fold + memo | `orientation`, `label` |
-| `badge` | fold + memo | `label`, `color`, `variant`, `size`, `icon` |
+| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon` |
 | `empty` | fold | `heading`, `description`, `icon` |
 | `field` | fold | `field-name`, `as` — wraps a control with its label, description and error |
 | `label` / `description` / `error` | fold | `for` / `for` / `name`, `bag` |
 | `input` | fold | `label`, `description`, `type`, `size`, `id` |
 | `textarea` | fold | `label`, `description`, `rows`, `size` |
 | `select` / `select.option` | fold | `label`, `placeholder`, `size` / `label`, `value` |
-| `checkbox` / `radio` / `switch` | fold | `label`, `description`, `value`, `color` |
+| `checkbox` / `radio` / `switch` | fold | `label`, `description`, `value`, `tone` |
 | `modal` | fold | `name` (required), `heading`, `description`, `size`, `dismissible` |
 | `drawer` | fold | `name` (required), `side`, `heading`, `description`, `size` |
-| `dropdown` / `dropdown.trigger` / `dropdown.item` | fold | `name`, `placement` / `for` / `icon`, `color`, `as` |
+| `dropdown` / `dropdown.trigger` / `dropdown.item` | fold | `name`, `placement` / `for` / `icon`, `tone`, `as` |
 | `popover` / `popover.trigger` | fold | `name`, `placement`, `padding` / `for` |
 | `tooltip` | fold | `name`, `text`, `placement` |
 | `overlay.trigger` / `overlay.close` / `overlay.footer` | fold | `for` |
-| `alert` | fold | `color`, `heading`, `icon`, `dismissible` |
-| `toast` | fold | `color`, `heading`, `description`, `dismissible` |
+| `alert` | fold | `tone`, `heading`, `icon`, `dismissible` |
+| `toast` | fold | `tone`, `heading`, `description`, `dismissible` |
 | `toaster` | compile | `position` — put one in the layout |
 | `confirm` | fold | `name`, `heading`, `message`, `accept`, `cancel` — put one in the layout |
-| `progress` | fold | `value`, `max`, `indeterminate`, `size`, `color`, `label` |
+| `progress` | fold | `value`, `max`, `indeterminate`, `size`, `tone`, `label` |
 | `table` (+ `head`, `body`, `row`, `heading`, `cell`) | fold | `empty*` on the table; `value`, `align` on the cell |
 | `list` / `list.item` | fold | `as`, `empty*` |
 | `pagination` | compile | `paginator`, `simple` |
@@ -121,8 +121,8 @@ falls back to the compiled path.
 {{-- Does not fold: `variant` selects a match arm. --}}
 <x-shape::button :variant="$isPrimary ? 'primary' : 'outline'">Save</x-shape::button>
 
-{{-- Folds: `color` is declared safe on the button, so it may be dynamic. --}}
-<x-shape::button variant="primary" :color="$destructive ? 'danger' : null">Delete</x-shape::button>
+{{-- Folds: `tone` is declared safe on the button, so it may be dynamic. --}}
+<x-shape::button variant="primary" :tone="$destructive ? 'danger' : null">Delete</x-shape::button>
 ```
 
 Inside a loop this is the difference that matters. Prefer the prop-first,
@@ -131,7 +131,7 @@ also the only form Blaze will memoize:
 
 ```blade
 <x-shape::table.cell :value="$invoice->number" />   {{-- folds --}}
-<x-shape::badge label="Paid" color="success" />     {{-- folds and memoizes --}}
+<x-shape::badge label="Paid" tone="success" />     {{-- folds and memoizes --}}
 <x-shape::icon.bell />                              {{-- folds; <x-shape::icon :name="$n" /> cannot --}}
 ```
 
@@ -150,7 +150,7 @@ Shape::toast()->success('Invoice sent')->description('A copy went to billing.')-
 
 Shape::toast()->info('Export queued')->send();   // info() success() warning() danger() accent()
 
-Shape::confirm('Delete project?')->accept('Delete')->color('danger')->then('deleteProject')->send();
+Shape::confirm('Delete project?')->accept('Delete')->tone('danger')->then('deleteProject')->send();
 ```
 
 `send()` dispatches a browser event through Livewire when there is a Livewire
@@ -399,7 +399,7 @@ Read before executing:
   `for`, `id` and `aria-describedby` wired from the control's name.
 - A table of rows: wrap `<x-shape::table>` around `table.head` / `table.body`, and
   write cells as `<x-shape::table.cell :value="$row->total" />` so each one folds.
-- A destructive action: `<x-shape::overlay.trigger for="delete-project" color="danger">`
+- A destructive action: `<x-shape::overlay.trigger for="delete-project" tone="danger">`
   beside `<x-shape::modal name="delete-project" heading="Delete project">`.
 
 ## Anti-patterns

@@ -103,7 +103,7 @@ package's components without further configuration. Shape ships no compiled CSS.
 ```blade
 <x-shape::button variant="primary" icon="shape-plus">Save changes</x-shape::button>
 
-<x-shape::button variant="subtle" color="danger" icon="shape-trash">Delete</x-shape::button>
+<x-shape::button variant="subtle" tone="danger" icon="shape-trash">Delete</x-shape::button>
 
 <x-shape::button as="a" href="/settings" icon-trailing="shape-arrow-right">Settings</x-shape::button>
 
@@ -111,7 +111,7 @@ package's components without further configuration. Shape ships no compiled CSS.
 ```
 
 `variant` is hierarchy — where an action sits in the pyramid of importance.
-`color` is semantics. They are separate props so that a destructive action can
+`tone` is semantics. They are separate props so that a destructive action can
 stay quiet until the moment it matters.
 
 Every default Shape sets carries zero specificity, so your own classes win
@@ -195,7 +195,7 @@ outside the overlays that reaches for it, and only in their panel-switching mode
 See [docs/overlays.md](docs/overlays.md).
 
 ```blade
-<x-shape::overlay.trigger for="delete-project" color="danger" variant="subtle">
+<x-shape::overlay.trigger for="delete-project" tone="danger" variant="subtle">
     Delete project
 </x-shape::overlay.trigger>
 
@@ -217,7 +217,7 @@ browser:
 ```php
 Shape::toast()->success('Invoice sent')->send();
 
-Shape::confirm('Delete project?')->accept('Delete')->color('danger')->then('deleteProject')->send();
+Shape::confirm('Delete project?')->accept('Delete')->tone('danger')->then('deleteProject')->send();
 ```
 
 `send()` dispatches a browser event through Livewire when there is a Livewire

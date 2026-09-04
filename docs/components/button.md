@@ -1,6 +1,6 @@
 # Button
 
-An action. `variant` sets how loud the button is, `color` sets what it means,
+An action. `variant` sets how loud the button is, `tone` sets what it says,
 and the two are independent — which is what lets a destructive action be quiet.
 
 @docs('preview', name: 'button')
@@ -12,12 +12,12 @@ primary action, so reach for `primary` once.
 
 @docs('preview', name: 'button-variants')
 
-## Colors
+## Tones
 
-`color` changes the tone a variant paints with. `neutral` is the default and the
-right answer for most buttons; the rest carry meaning.
+`tone` is what a variant paints with. `neutral` is the default and the right
+answer for most buttons; the rest carry meaning.
 
-@docs('preview', name: 'button-colors')
+@docs('preview', name: 'button-tones')
 
 Because hierarchy and meaning are separate props, a destructive action does not
 have to shout:
@@ -87,7 +87,7 @@ Anything Shape doesn't claim as a prop lands on the rendered element:
 ```
 
 ```blade
-<x-shape::button icon="shape-trash" color="danger" x-on:click="open = true">Delete</x-shape::button>
+<x-shape::button icon="shape-trash" tone="danger" x-on:click="open = true">Delete</x-shape::button>
 ```
 
 ## Overriding styles
@@ -104,7 +104,7 @@ without `!important`:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `variant` | `outline` | `primary`, `outline`, `subtle`, `ghost` |
-| `color` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
+| `tone` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
 | `size` | `base` | `sm`, `base`, `lg` |
 | `icon` | — | any [icon](icon.md) name, rendered before the label |
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
@@ -118,8 +118,8 @@ The default slot is the label. Every other attribute — `href`, `disabled`,
 
 ## Folding
 
-Tier A — `@blaze(fold: true, safe: ['color'])`.
+Tier A — `@blaze(fold: true, safe: ['tone'])`.
 
-`color` is interpolated into an attribute and nothing more, so `:color="$tone"`
+`tone` is interpolated into an attribute and nothing more, so `:tone="$tone"`
 still folds. Everything else is a static choice at the call site. See
 [Folding](../folding.md).

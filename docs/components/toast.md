@@ -19,7 +19,7 @@ into a `<template>`, and `shape.js` clones the one the payload asked for.
 
 ## Tones
 
-`color` sets the tone and resolves the glyph:
+`tone` says what the toast means, and resolves the glyph:
 
 @docs('preview', name: 'toast-tones', layout: 'stack')
 
@@ -46,7 +46,7 @@ Shape::toast()
 | --- | --- |
 | `heading(?string)` | the line in bold |
 | `description(?string)` | a second line under it |
-| `color(?string)` | `info`, `success`, `warning`, `danger`, `accent` |
+| `tone(?string)` | `info`, `success`, `warning`, `danger`, `accent` |
 | `info()` `success()` `warning()` `danger()` `accent()` | the tone, and optionally the heading, in one call |
 | `duration(int)` | milliseconds; default `5000` |
 | `sticky()` | stay until dismissed |
@@ -90,7 +90,7 @@ toast:
 
 ```js
 dispatchEvent(new CustomEvent('shape:toast', {
-    detail: { toast: { heading: 'Copied', color: 'success', duration: 2000 } },
+    detail: { toast: { heading: 'Copied', tone: 'success', duration: 2000 } },
 }))
 ```
 
@@ -105,10 +105,10 @@ If a message is still true after someone has read it, it is an
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `color` | `neutral` | `info`, `success`, `warning`, `danger`, `accent` |
+| `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `accent` |
 | `heading` | — | the line in bold |
 | `description` | — | a second line under it |
-| `icon` | resolved from `color` | any [icon](icon.md) name, or `false` for none |
+| `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `dismissible` | `true` | `false` removes the close button |
 

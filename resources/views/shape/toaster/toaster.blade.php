@@ -57,11 +57,11 @@ $classes = Shape::classes()
     <div class="flex flex-col gap-3" data-shape-toast-region="assertive" aria-live="assertive"></div>
 
     <template data-shape-toast-template="neutral"><x-shape::toast /></template>
-    <template data-shape-toast-template="accent"><x-shape::toast color="accent" /></template>
-    <template data-shape-toast-template="info"><x-shape::toast color="info" /></template>
-    <template data-shape-toast-template="success"><x-shape::toast color="success" /></template>
-    <template data-shape-toast-template="warning"><x-shape::toast color="warning" /></template>
-    <template data-shape-toast-template="danger"><x-shape::toast color="danger" /></template>
+    <template data-shape-toast-template="accent"><x-shape::toast tone="accent" /></template>
+    <template data-shape-toast-template="info"><x-shape::toast tone="info" /></template>
+    <template data-shape-toast-template="success"><x-shape::toast tone="success" /></template>
+    <template data-shape-toast-template="warning"><x-shape::toast tone="warning" /></template>
+    <template data-shape-toast-template="danger"><x-shape::toast tone="danger" /></template>
 
     @if ($feedback)
         {{-- The flags matter. Without them a message containing `</script>`

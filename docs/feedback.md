@@ -44,7 +44,7 @@ open too:
 
 ```js
 dispatchEvent(new CustomEvent('shape:toast', {
-    detail: { toast: { heading: 'Saved', color: 'success' } },
+    detail: { toast: { heading: 'Saved', tone: 'success' } },
 }))
 ```
 
@@ -70,7 +70,7 @@ redirect. The next page's toaster renders it from there.
 Shape::confirm('Delete project?')
     ->heading('Delete project?')
     ->accept('Delete')
-    ->color('danger')
+    ->tone('danger')
     ->then('deleteProject', [$project->id])
     ->send();
 ```

@@ -24,7 +24,7 @@ it('renders an anchor when asked to', function () {
 });
 
 it('carries hierarchy on the variant attribute and semantics on the tone attribute', function () {
-    $html = Blade::render('<x-shape::button variant="subtle" color="danger">Delete</x-shape::button>');
+    $html = Blade::render('<x-shape::button variant="subtle" tone="danger">Delete</x-shape::button>');
 
     expect($html)
         ->toContain('data-shape-variant="subtle"')
@@ -37,11 +37,11 @@ it('falls back to the neutral tone', function () {
 });
 
 it('reads its colours through tone variables rather than a variant colour matrix', function () {
-    $primary = Blade::render('<x-shape::button variant="primary" color="danger">Delete</x-shape::button>');
+    $primary = Blade::render('<x-shape::button variant="primary" tone="danger">Delete</x-shape::button>');
     $neutral = Blade::render('<x-shape::button variant="primary">Save</x-shape::button>');
 
     // Same classes either way — only the tone attribute differs, which is what
-    // keeps `color` a pass-through prop and the component foldable.
+    // keeps `tone` a pass-through prop and the component foldable.
     expect($primary)->toContain('bg-[var(--shape-tone)]')
         ->and($neutral)->toContain('bg-[var(--shape-tone)]');
 });

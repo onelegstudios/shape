@@ -14,9 +14,9 @@ A group only has an accessible name if it is a real `<fieldset>` with a
 
 @docs('preview', name: 'radio-description', layout: 'stack')
 
-## Colors
+## Tones
 
-@docs('preview', name: 'radio-colors')
+@docs('preview', name: 'radio-tones')
 
 ## Reference
 
@@ -25,7 +25,7 @@ A group only has an accessible name if it is a real `<fieldset>` with a
 | `label` | — | the text beside the dot |
 | `description` | — | a second line under the label |
 | `value` | — | the submitted value |
-| `color` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
+| `tone` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
 | `id` | `{name}-{value}` | the element id |
 
 `checked`, `disabled` and `wire:model` pass through to the `<input>`.

@@ -5,12 +5,12 @@ this a callout.
 
 @docs('preview', name: 'alert', layout: 'stack')
 
-## Colors
+## Tones
 
-`color` sets the tone and resolves a matching icon. With no colour the alert is
-neutral and draws no glyph:
+`tone` says what the alert means, and resolves a matching icon. With no tone the
+alert is neutral and draws no glyph:
 
-@docs('preview', name: 'alert-colors', layout: 'stack')
+@docs('preview', name: 'alert-tones', layout: 'stack')
 
 ## Heading and body
 
@@ -65,9 +65,9 @@ the fact.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `color` | `neutral` | `info`, `success`, `warning`, `danger`, `accent` |
+| `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `accent` |
 | `heading` | — | a title above the body |
-| `icon` | resolved from `color` | any [icon](icon.md) name, or `false` for none |
+| `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `dismissible` | `false` | adds a close button |
 
@@ -78,6 +78,6 @@ The default slot is the body.
 Tier A — `@blaze(fold: true, safe: ['heading'])`.
 
 `heading` is interpolated and nothing more, so an alert whose title comes from a
-variable still folds. `color` branches to resolve its glyph, so `:color="$tone"`
+variable still folds. `tone` branches to resolve its glyph, so `:tone="$tone"`
 drops to the compiled path — the same prop is safe on the [button](button.md),
 which only ever interpolates it. See [Folding](../folding.md).

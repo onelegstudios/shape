@@ -19,7 +19,7 @@
 @props([
     'icon' => null,
     'iconSize' => 'sm',
-    'color' => null,
+    'tone' => null,
     'as' => null,
 ])
 
@@ -40,7 +40,7 @@ $classes = Shape::classes()
     role="menuitem"
     {{ $attributes->class($classes) }}
     data-shape-menu-item=""
-    data-shape-tone="{{ $color ?? 'neutral' }}"
+    data-shape-tone="{{ $tone ?? 'neutral' }}"
 >
     @if ($icon)
         <x-shape::icon :name="$icon" :size="$iconSize" class="opacity-70" />

@@ -114,8 +114,8 @@ the tone, so the message survives greyscale.
 the accent even though the default accent is a cyan that would pass for one,
 because the accent is the ramp this page has just finished inviting you to move.
 Share it, and an informational alert is violet in a violet product and orange in
-an orange one — where it reads as a warning. `color="accent"` still means
-emphasis, and resolves no glyph; `color="info"` means "worth knowing", and stays
+an orange one — where it reads as a warning. `tone="accent"` still means
+emphasis, and resolves no glyph; `tone="info"` means "worth knowing", and stays
 blue however far the brand travels.
 
 ## One colour, both ramps
@@ -172,7 +172,7 @@ real constraint on the value you pass:
 
 ```blade
 <section data-shape-seed style="--shape-seed: oklch(52% 0.19 25)">
-    <x-shape::button variant="primary" color="accent">Upgrade</x-shape::button>
+    <x-shape::button variant="primary" tone="accent">Upgrade</x-shape::button>
 </section>
 ```
 
@@ -234,8 +234,8 @@ A surface of your own is two declarations:
 ## Tones
 
 `variant` is hierarchy — where an action sits in the pyramid of importance.
-`color` is semantics. Keeping them apart in the markup would normally multiply
-into a variant × colour class matrix, so the colour half lives in CSS instead: a
+`tone` is semantics. Keeping them apart in the markup would normally multiply
+into a variant × tone class matrix, so the tone half lives in CSS instead: a
 tone sets the variables, every variant reads them.
 
 ```css
@@ -264,7 +264,7 @@ palettes.
 
 ### A tone of your own
 
-Declare the block in the components layer and pass its name as `color`:
+Declare the block in the components layer and pass its name as `tone`:
 
 ```css
 @layer components {
@@ -280,17 +280,17 @@ Declare the block in the components layer and pass its name as `color`:
 ```
 
 ```blade
-<x-shape::button variant="primary" color="brand">Upgrade</x-shape::button>
+<x-shape::button variant="primary" tone="brand">Upgrade</x-shape::button>
 ```
 
 The `neutral` block sets all nine variables; a tone that only overrides some of
 them inherits the rest, which is why the five shipped tones are six lines each
 and not nine.
 
-One caveat, and it is small: the alert, the badge and the toast branch on `color`
+One caveat, and it is small: the alert, the badge and the toast branch on `tone`
 to resolve their glyph, so an unknown tone gets no icon. Pass `icon="…"`
-explicitly on those three. Everything else only ever interpolates `color` into
-the attribute, which is also what keeps `:color="$destructive ? 'danger' : null"`
+explicitly on those three. Everything else only ever interpolates `tone` into
+the attribute, which is also what keeps `:tone="$destructive ? 'danger' : null"`
 on the fold path — see [Folding](folding.md).
 
 ## Dark mode

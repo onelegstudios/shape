@@ -1,4 +1,4 @@
-@blaze(fold: true, safe: ['color'])
+@blaze(fold: true, safe: ['tone'])
 
 {{--
     `icon-trailing` and `icon-size` arrive as the camelCased props below —
@@ -7,7 +7,7 @@
 
 @props([
     'variant' => 'outline',
-    'color' => null,
+    'tone' => null,
     'size' => 'base',
     'type' => 'button',
     'icon' => null,
@@ -56,7 +56,7 @@ $classes = Shape::classes()
     {{ $attributes->class($classes) }}
     data-shape-button=""
     data-shape-variant="{{ $variant }}"
-    data-shape-tone="{{ $color ?? 'neutral' }}"
+    data-shape-tone="{{ $tone ?? 'neutral' }}"
 >
     @if ($icon)
         <x-shape::icon :name="$icon" :size="$iconSize" />

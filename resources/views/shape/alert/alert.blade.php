@@ -16,7 +16,7 @@
     tone rather than a global grey. Grey text on a coloured background is the one
     thing the surface contract exists to make impossible.
 
-    `color` is branched on to resolve the glyph, exactly as the badge does, so it
+    `tone` is branched on to resolve the glyph, exactly as the badge does, so it
     is *not* declared safe here. The same prop is safe on the button, which only
     ever interpolates it. Whatever a component does with a value decides that.
 
@@ -30,7 +30,7 @@
 --}}
 
 @props([
-    'color' => null,
+    'tone' => null,
     'heading' => null,
     'icon' => null,
     'iconSize' => 'sm',
@@ -45,7 +45,7 @@
 // free to move, and a glyph here would make it the fourth state under another
 // name — the one `info` now is, in a blue that stays blue whatever the accent
 // becomes.
-$glyph = $icon ?? match ($color) {
+$glyph = $icon ?? match ($tone) {
     'success' => 'shape-success',
     'danger' => 'shape-danger',
     'warning' => 'shape-warning',
@@ -63,7 +63,7 @@ $classes = Shape::classes()
 <div
     {{ $attributes->class($classes) }}
     data-shape-alert
-    data-shape-tone="{{ $color ?? 'neutral' }}"
+    data-shape-tone="{{ $tone ?? 'neutral' }}"
     data-shape-surface="tint"
 >
     @if ($glyph)

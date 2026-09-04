@@ -63,7 +63,7 @@ it('flashes to the session when there is no livewire to dispatch through', funct
                 'toast' => [
                     'heading' => 'Invoice sent',
                     'description' => null,
-                    'color' => 'success',
+                    'tone' => 'success',
                     'duration' => 5000,
                 ],
             ],

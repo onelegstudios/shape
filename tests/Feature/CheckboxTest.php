@@ -48,7 +48,7 @@ it('ships the indeterminate glyph even though no prop can set the state', functi
 });
 
 it('reads its checked fill from the tone variables', function () {
-    expect(Blade::render('<x-shape::checkbox name="terms" color="accent" />'))
+    expect(Blade::render('<x-shape::checkbox name="terms" tone="accent" />'))
         ->toContain('data-shape-tone="accent"')
         ->toContain('checked:bg-[var(--shape-tone)]');
 });

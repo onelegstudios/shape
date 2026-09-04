@@ -6,5 +6,5 @@
     <x-shape::dropdown.item icon="shape-arrow-right" href="/invoices/1">A link</x-shape::dropdown.item>
     <x-shape::dropdown.item icon="shape-plus" disabled>Disabled</x-shape::dropdown.item>
     <x-shape::separator class="my-1" />
-    <x-shape::dropdown.item icon="shape-trash" color="danger">Delete</x-shape::dropdown.item>
+    <x-shape::dropdown.item icon="shape-trash" tone="danger">Delete</x-shape::dropdown.item>
 </x-shape::dropdown>
