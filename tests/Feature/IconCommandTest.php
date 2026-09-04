@@ -699,6 +699,172 @@ it('refuses a set whose declared namespace would write outside the components pa
     expect(dirname($this->destination).'/escape')->not->toBeDirectory();
 });
 
+describe('a name spelled the way the component is', function () {
+    it('writes the component the name resolves to', function () {
+        // The spelling already in your templates, typed straight into the
+        // command: `lucide.spinner` is `<x-shape::icon.lucide.spinner />` and the
+        // run that writes it, with nothing to translate in either direction. It
+        // is `--set=lucide` moved off the run and onto the name it is true of.
+        $this->artisan('shape:icon', ['icons' => ['lucide.spinner'], '--from' => $this->flat])
+            ->assertSuccessful();
+
+        expect($this->destination.'/icon/lucide/spinner.blade.php')->toBeFile()
+            ->and($this->destination.'/icon/spinner.blade.php')->not->toBeFile();
+
+        expect(Blade::render('<x-shape::icon.lucide.spinner />'))->toContain('data-shape-icon');
+    });
+
+    it('reads two sets in one run', function () {
+        // Which the flag cannot do at all, being true of a run rather than of a
+        // name. Each set is still resolved and read once, because the names are
+        // grouped by the namespace they asked for before anything is fetched.
+        config()->set('shape.icon_sets.homemade', [
+            'notice' => 'Homemade drawings.',
+            'styles' => ['outline' => ['base' => '{name}.svg']],
+        ]);
+
+        $this->artisan('shape:icon', [
+            'icons' => ['lucide.spinner', 'homemade.spinner'],
+            '--from' => $this->flat,
+        ])->assertSuccessful();
+
+        expect(file_get_contents($this->destination.'/icon/lucide/spinner.blade.php'))->toContain('Lucide')
+            ->and(file_get_contents($this->destination.'/icon/homemade/spinner.blade.php'))->toContain('Homemade');
+    });
+
+    it('leaves the flags to the names that carry no namespace', function () {
+        // Both forms in one run. `--set` goes on answering for the names that
+        // did not answer for themselves, and answers for nothing else.
+        config()->set('shape.icon_sets.homemade', [
+            'notice' => 'Homemade drawings.',
+            'styles' => ['outline' => ['base' => '{name}.svg']],
+        ]);
+
+        $this->artisan('shape:icon', [
+            'icons' => ['spinner', 'lucide.spinner'],
+            '--set' => 'homemade',
+            '--from' => $this->flat,
+        ])->assertSuccessful();
+
+        expect(file_get_contents($this->destination.'/icon/homemade/spinner.blade.php'))->toContain('Homemade')
+            ->and(file_get_contents($this->destination.'/icon/lucide/spinner.blade.php'))->toContain('Lucide');
+    });
+
+    it('takes the namespace on the name over the flag on the run', function () {
+        // A run that says both has said the more specific thing second, and the
+        // component it named is the one it gets. Under `hero` this fixture holds
+        // no drawing at all, so the file is the assertion.
+        $this->artisan('shape:icon', [
+            'icons' => ['lucide.spinner'],
+            '--set' => 'hero',
+            '--from' => $this->flat,
+        ])->assertSuccessful();
+
+        expect(file_get_contents($this->destination.'/icon/lucide/spinner.blade.php'))->toContain('Lucide')
+            ->and($this->destination.'/icon/hero/spinner.blade.php')->not->toBeFile();
+    });
+
+    it('reaches a set by the namespace it declares', function () {
+        // The prefix is read off a component, and a component is spelled with
+        // whichever name that set is written under. So a set that renames its
+        // own subdirectory answers to the renamed one, and a run typed that way
+        // is a run with nothing to say about it.
+        config()->set('shape.icon_sets.lucide.namespace', 'ic');
+
+        $this->artisan('shape:icon', ['icons' => ['ic.spinner'], '--from' => $this->flat])
+            ->doesntExpectOutputToContain('declares the namespace')
+            ->assertSuccessful();
+
+        expect($this->destination.'/icon/ic/spinner.blade.php')->toBeFile();
+    });
+
+    it('will not guess between two sets written into one namespace', function () {
+        // One of them has declared the other's name, and no run typed that way
+        // can say which it meant.
+        config()->set('shape.icon_sets.homemade', [
+            'notice' => 'Homemade drawings.',
+            'namespace' => 'lucide',
+            'styles' => ['outline' => ['base' => '{name}.svg']],
+        ]);
+
+        $this->artisan('shape:icon', ['icons' => ['lucide.spinner'], '--from' => $this->flat])
+            ->expectsOutputToContain('are both written into')
+            ->assertFailed();
+
+        expect($this->destination.'/icon/lucide/spinner.blade.php')->not->toBeFile();
+    });
+
+    it('writes the library\'s own set flat, whether or not it was named', function () {
+        // The prefix names a set; where that set is written is the set's own
+        // business. So naming the set the library is on lands exactly where
+        // `--set=lucide` lands on the same application — flat — rather than
+        // writing a second copy of a drawing that is already there, under a
+        // namespace nothing reaches for and in a second lockfile.
+        //
+        // Said out loud, because the spelling is the whole reason to type a
+        // name this way and this run resolved to another one.
+        config()->set('shape.icon_set', 'lucide');
+
+        $this->artisan('shape:icon', ['icons' => ['lucide.spinner'], '--from' => $this->flat])
+            ->expectsOutputToContain('is the set the library is on')
+            ->assertSuccessful();
+
+        expect($this->destination.'/icon/spinner.blade.php')->toBeFile()
+            ->and($this->destination.'/icon/lucide/spinner.blade.php')->not->toBeFile();
+    });
+
+    it('writes a set into the namespace it declares, under either spelling', function () {
+        // A set reached by its own name while it declares another namespace is
+        // the other run that lands somewhere other than it was typed. The
+        // declaration wins for the reason it exists — a `--namespace` typed on
+        // one run and forgotten on the next is what put two copies in two
+        // lockfiles — and the run says which spelling resolves.
+        config()->set('shape.icon_sets.lucide.namespace', 'ic');
+
+        $this->artisan('shape:icon', ['icons' => ['lucide.spinner'], '--from' => $this->flat])
+            ->expectsOutputToContain('declares the namespace [ic]')
+            ->assertSuccessful();
+
+        expect($this->destination.'/icon/ic/spinner.blade.php')->toBeFile()
+            ->and($this->destination.'/icon/lucide/spinner.blade.php')->not->toBeFile();
+    });
+
+    it('says so when no set is written into the namespace', function () {
+        $this->artisan('shape:icon', ['icons' => ['bogus.spinner'], '--from' => $this->flat])
+            ->expectsOutputToContain('No icon set is written into [bogus]')
+            ->assertFailed();
+    });
+
+    it('refuses anything that is not one namespace and one name', function () {
+        foreach (['lucide.nested.spinner', '.spinner', 'lucide.'] as $icon) {
+            $this->artisan('shape:icon', ['icons' => [$icon], '--from' => $this->flat])
+                ->expectsOutputToContain('is not an icon name')
+                ->assertFailed();
+        }
+
+        // Held to what a namespace has to be, for the reason `--namespace` is:
+        // this is the value that decides where a file is written.
+        foreach (['Lucide.spinner', 'lucide/nested.spinner'] as $icon) {
+            $this->artisan('shape:icon', ['icons' => [$icon], '--from' => $this->flat])
+                ->expectsOutputToContain('is not a namespace')
+                ->assertFailed();
+        }
+
+        expect(written())->toBe([]);
+    });
+
+    it('writes what it can when one group of a run fails', function () {
+        // Each group is its own run, so a namespace nobody answers to is
+        // reported without taking the names beside it down with it.
+        $this->artisan('shape:icon', [
+            'icons' => ['lucide.spinner', 'bogus.spinner'],
+            '--from' => $this->flat,
+        ])->expectsOutputToContain('No icon set is written into [bogus]')->assertFailed();
+
+        expect($this->destination.'/icon/lucide/spinner.blade.php')->toBeFile();
+    });
+});
+
 it('throws away the compiled views after writing an icon', function () {
     // A generated component is a file, and a compiled view is a cached answer
     // about a file. Leaving the second behind after writing the first is how a

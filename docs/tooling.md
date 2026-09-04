@@ -242,8 +242,12 @@ and is the rest of this section:
 
 ```bash
 php artisan shape:icon bell --set=lucide
+php artisan shape:icon lucide.bell
 php artisan shape:icon:all --from=./resources/svg
 ```
+
+The middle one is the first one, typed the way the component is spelled. See
+[Naming the set on the icon](#naming-the-set-on-the-icon).
 
 ### Which set a run reads
 
@@ -276,6 +280,67 @@ A set read that way is written under its own name — `icon/hero/bell.blade.php`
 reached as `<x-shape::icon.hero.bell />` — rather than flat among the drawings
 the library is wearing. [Two sets at once](#two-sets-at-once) is the whole of
 that story.
+
+### Naming the set on the icon
+
+Which makes `--set` an answer about a run to a question about a component, and
+the component already has somewhere to say it. So a name may be spelled the way
+you would write it in a template:
+
+```bash
+php artisan shape:icon lucide.bell
+```
+
+```
+resources/views/shape/icon/lucide/bell.blade.php
+→ <x-shape::icon.lucide.bell />
+```
+
+That is the same run as `shape:icon bell --set=lucide`, and it is the spelling
+already in your templates: copy the name out of the Blade you are about to
+write, paste it after `shape:icon`, and what comes back resolves. Nothing to
+translate in either direction, and nothing to remember about where a
+supplementary set lands.
+
+Being true of a name rather than of a run, it is also the only form that can ask
+for two sets at once:
+
+```bash
+php artisan shape:icon lucide.bell tabler.compass trash
+```
+
+Each set is still read once — the names are grouped before anything is fetched —
+and each group writes its own lockfile beside its own components. `trash` there
+carries no namespace, so `--set` and `--namespace` answer for it, as they always
+did; a name that answers for itself is not asking. A run that says both, as
+`shape:icon lucide.bell --set=hero` does, has said the more specific thing on
+the name, and the set it named is the one it reads.
+
+The prefix names a set. Where that set is written is still the set's own to
+declare, which is what keeps the two forms the same run:
+
+```bash
+php artisan shape:icon lucide.bell
+php artisan shape:icon bell --set=lucide   # the same directory, either way
+```
+
+For the sets you will type it about, those are the same word and there is
+nothing to know. Two of them resolve to a directory other than the one typed,
+and both say so when they do:
+
+- The set `shape.icon_set` names is written flat, so on a Heroicons application
+  `hero.bell` is `icon/bell.blade.php` — `<x-shape::icon.bell />` — exactly
+  where `--set=hero` puts it. Writing it under `icon/hero/` instead would be a
+  second copy of a drawing already there, in a second lockfile, under a
+  namespace nothing reaches for; that is the collision the whole subdirectory
+  exists to avoid, not an instance of it.
+- A set that declares a `namespace` is written under that, and answers to either
+  spelling: with `'namespace' => 'lucide-icons'`, both `lucide.bell` and
+  `lucide-icons.bell` write `icon/lucide-icons/bell.blade.php`.
+
+One lower-case segment either way, checked the way `--namespace` is. Two sets
+written into one namespace is the one case with no answer — one of them has
+declared the other's name — and the run is told so rather than guessed at.
 
 ### Where the drawings come from
 
@@ -678,7 +743,8 @@ supplementary one — read for what the library's set has not got — and is wri
 into a subdirectory named after it:
 
 ```bash
-php artisan shape:icon bell --set=lucide
+php artisan shape:icon lucide.bell
+php artisan shape:icon bell --set=lucide   # the same run
 ```
 
 ```

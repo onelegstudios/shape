@@ -259,6 +259,11 @@ hand-edit* an instruction you can follow rather than one that asks for a
 checkout nobody mentioned. `--from` reads a local directory instead, and
 `shape:icon:status` reports which drawings have moved upstream since.
 
+A name may be spelled the way the component is — `php artisan shape:icon
+lucide.bell` writes what `<x-shape::icon.lucide.bell />` resolves — which is
+`--set=lucide` said on the name rather than on the run, and the only form that
+asks two sets for something at once.
+
 Fourteen of those components are the ones Shape's own components draw — the
 *slots*, named `shape-close` and `shape-warning` for the role they play rather
 than for whichever vendor drew them. `shape:icon:replace --set=lucide`

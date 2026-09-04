@@ -164,6 +164,7 @@ php artisan shape:eject:all         # every component the package ships
 php artisan shape:eject:status      # what has drifted since an upgrade
 php artisan shape:doctor            # fold safety of ejected components
 php artisan shape:icon bell         # the icons named, from the configured set
+php artisan shape:icon lucide.bell  # a name spelled the way the component is
 php artisan shape:icon:all          # every icon the set draws
 php artisan shape:icon:replace      # regenerate Shape's own icons in that set
 php artisan shape:icon:status       # which drawings have moved upstream
@@ -352,6 +353,16 @@ second copy flat. The flag survives as a per-run override on `shape:icon` and
 isn't — on `shape:icon:replace` that empty value is the only one it takes, and a
 set declaring a `namespace` is refused outright. Keep the primary set flat so a
 call site has one spelling for an icon whichever set drew it.
+
+Asking for one of those is `php artisan shape:icon lucide.bell`: the name
+spelled the way the component is, which is `--set=lucide` said on the name
+rather than on the run, down to the directory it writes. It is the only form
+that reads two sets in one run (`shape:icon lucide.bell tabler.compass trash`),
+and `--set` and `--namespace` go on answering for the bare names beside it. The
+prefix names a set and the set still says where it is written, so the two cases
+where those differ resolve to the set's answer and say so: the set `icon_set`
+names is written flat, and a set declaring a `namespace` is written under that
+whichever of the two spellings reached it.
 
 Run `shape:doctor` in CI once anything has been ejected: it exits non-zero when a
 folded component reads `auth()`, `session()`, `request()`, `config()`, `$errors`,

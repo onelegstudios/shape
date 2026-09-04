@@ -174,22 +174,33 @@ ones stay free. `shape:icon:replace` does not touch what you generate, so
 regenerate it yourself when you swap sets; `shape:doctor` lists what it finds
 outside the slots for exactly that reason.
 
-A whole second set can have a subdirectory, and a namespace, of its own. Say so
-once, on the set:
+An icon from a second set is written under that set's name, and can be asked for
+under it too — the command takes the name the way you would write it in a
+template:
+
+```bash
+php artisan shape:icon lucide.bell
+```
+
+```blade
+<x-shape::icon.lucide.bell />
+```
+
+That is `shape:icon bell --set=lucide` with the set said on the name rather than
+on the run, which is also what lets one run ask two sets for something:
+
+```bash
+php artisan shape:icon lucide.bell tabler.compass trash
+```
+
+A whole second set at once is `shape:icon:all --set=lucide`, and where it lands
+is the set's to declare:
 
 ```php
 'lucide' => [
     'namespace' => 'lucide',
     // …
 ],
-```
-
-```bash
-php artisan shape:icon:all --set=lucide
-```
-
-```blade
-<x-shape::icon.lucide.bell />
 ```
 
 See [Tooling](../tooling.md#shapeicon).
