@@ -224,6 +224,10 @@ Each set says which of its drawings fills each slot, once, in `slots` — see
 the fourteen and the fourteenth quietly keeps its Heroicon, which is why
 `shape:doctor` counts them.
 
+Both steps are what [`shape:install`](../tooling.md#which-set-the-library-is-drawn-in)
+asks its one question to do for you, in that order, on the day you install. It is
+the same pair of commands; doing it later is doing it by hand.
+
 ## Reference
 
 | Prop | Default | Values |

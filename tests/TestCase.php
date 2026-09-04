@@ -20,6 +20,34 @@ abstract class TestCase extends Orchestra
     public static ?string $componentsPath = null;
 
     /**
+     * Overrides where `config_path()` points, for the tests in one file.
+     *
+     * `shape:install` publishes the config when it is told to draw the library
+     * in another set, and the application these tests boot is the Testbench
+     * skeleton — whose `config/` is a directory inside `vendor/`, read on boot
+     * and shared by every worker in a parallel run. A test that published into
+     * it would be reconfiguring the tests running beside it.
+     *
+     * Set from `beforeAll` for the reason above it is: a publish path is
+     * registered while the provider boots, so `config_path()` has to already
+     * answer differently by then.
+     */
+    public static ?string $configPath = null;
+
+    /**
+     * Overrides where `storage_path()` points, for the tests in one file.
+     *
+     * `shape:icon` caches a fetched set under `storage/framework/shape/icons`,
+     * and in the skeleton that is one directory shared by every worker — which
+     * the tests for the sources themselves empty between cases. A test that
+     * fetches a set has to own the directory it unpacks into, or a worker
+     * beside it clears the cache midway through.
+     *
+     * Set from `beforeAll`, for the reason the two above it are.
+     */
+    public static ?string $storagePath = null;
+
+    /**
      * No test in this suite reaches the network.
      *
      * `shape:icon` can fetch an icon set from GitHub, and the components it
@@ -43,6 +71,14 @@ abstract class TestCase extends Orchestra
     {
         if (static::$componentsPath !== null) {
             $app['config']->set('shape.components_path', static::$componentsPath);
+        }
+
+        if (static::$configPath !== null) {
+            $app->useConfigPath(static::$configPath);
+        }
+
+        if (static::$storagePath !== null) {
+            $app->useStoragePath(static::$storagePath);
         }
 
         // Every worker compiles views into a directory it owns.

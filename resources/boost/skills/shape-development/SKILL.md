@@ -35,7 +35,13 @@ composer require onelegstudios/laravel-shape
 php artisan shape:install
 ```
 
-`shape:install` adds the two lines the package needs:
+`shape:install` adds the two lines the package needs, then asks which icon set
+the library should be drawn in. Enter is `hero`, which is what the fourteen icons
+Shape resolves already ship drawn in; answer `--icons=lucide` (or any set in
+`shape.icon_sets`) to generate those fourteen from another set and record the
+choice in a published config. Pass `--no-interaction` to skip the question.
+
+The two lines:
 
 ```css
 @import "tailwindcss";
@@ -48,9 +54,11 @@ import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.j
 shape()   // or, with Alpine: Alpine.plugin(shape)
 ```
 
-There is no config to publish before the package works, no compiled CSS, no
-migrations, no routes and no translations. The token file declares
-`@source "../views"`, so the app's own Tailwind build scans the package's Blade.
+There is no config to publish before the package works — the icon question is
+the one thing that publishes one, and only when it is answered with a set other
+than the packaged `hero`. No compiled CSS, no migrations, no routes and no
+translations either. The token file declares `@source "../views"`, so the app's
+own Tailwind build scans the package's Blade.
 
 ### 3. Use the components
 

@@ -6,7 +6,7 @@ turns that into something you can install, take pieces out of, and keep honest
 afterwards.
 
 ```bash
-php artisan shape:install     # the two lines this package needs
+php artisan shape:install     # the two lines, and which set the icons come from
 php artisan shape:eject modal # a component, and everything it composes
 php artisan shape:doctor      # the mistake that costs a fold and says nothing
 php artisan shape:icon        # SVGs in, components out
@@ -33,6 +33,49 @@ php artisan shape:install --css=resources/css/theme.css --js=resources/js/site.j
 If it can't find a file, it prints the line and where it goes rather than
 creating an entry point you didn't ask for. Run it twice and the second run
 changes nothing.
+
+### Which set the library is drawn in
+
+It then asks one question:
+
+```
+ Which icon set should Shape be drawn in?
+ › hero
+ ○ lucide
+ ○ tabler
+ ○ phosphor
+ ○ bootstrap
+ ○ remix
+ ○ material
+ Enter keeps [hero], which is the set the library is drawn in now.
+```
+
+Enter is Heroicons, which is what the fourteen
+[slots](components/icon.md#what-shape-draws-for-you) already ship drawn in — so
+the default answer generates nothing, publishes nothing, and leaves the paragraph
+above true. Any other answer is
+[`shape:icon:replace`](#slots-and-replacing-shapes-own-icons) against that set,
+followed by `icon_set` written into a published `config/shape.php` so that no
+later run has to be told again.
+
+Those two happen in that order, and the order is the point. A set is fetched over
+the network, so a run that cannot reach one leaves `icon_set` still naming the
+set the drawings on disk actually came from — a config saying `lucide` over a
+directory of Heroicons is the mixed-set page the slots exist to prevent, arrived
+at by an installer instead of by a forgotten flag.
+
+`--icons` answers in advance, which is the scripted install:
+
+```bash
+php artisan shape:install --icons=lucide
+```
+
+`--no-interaction` skips the question and leaves the configured set alone, so a
+deploy script that has always run this keeps running it unchanged. Answering with
+the set you are already on does nothing. Answering with a different one overwrites
+every slot in `components_path`, including any you had drawn by hand — which is
+what switching sets means, and is why the question is asked on day one rather
+than left to be discovered on day ninety.
 
 ## `shape:eject`
 

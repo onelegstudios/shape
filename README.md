@@ -24,10 +24,17 @@ composer require onelegstudios/laravel-shape
 php artisan shape:install
 ```
 
-`shape:install` imports the design tokens into your stylesheet and registers the
-script. That is the whole installation — there is no config to publish before the
-package works and no asset to build. Both lines are shown below if you would
-rather write them yourself.
+`shape:install` imports the design tokens into your stylesheet, registers the
+script, and asks which icon set the library should be drawn in. Enter is
+Heroicons, which the fourteen icons Shape resolves already ship drawn in, so the
+default answer publishes nothing: that is the whole installation, with no config
+to publish before the package works and no asset to build. Both lines are shown
+below if you would rather write them yourself.
+
+Naming another set instead generates those fourteen from it and records the
+choice in a published `config/shape.php`, so that no later run has to be told
+again. `--icons=lucide` answers in advance and `--no-interaction` skips the
+question — see [docs/components/icon.md](docs/components/icon.md#using-a-different-set).
 
 There are no migrations, no routes and no translations to publish either. A
 folded component resolves a translation once at compile time and serves that one
@@ -223,7 +230,7 @@ which is what `#[On]` already listens for. See
 ## Commands
 
 ```bash
-php artisan shape:install          # import the tokens, register the script
+php artisan shape:install          # the tokens, the script, and which set
 php artisan shape:doctor           # the mistake that costs a fold, silently
 
 php artisan shape:eject modal      # a component, and everything it composes
