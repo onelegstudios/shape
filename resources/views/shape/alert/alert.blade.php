@@ -117,7 +117,14 @@ $classes = Shape::classes()
     @if ($dismissible)
         {{-- One delegated listener in shape.js removes the nearest alert or
              toast. There is no platform primitive for "remove this element", so
-             this is the one place feedback needs a handler of its own. --}}
+             this is the one place feedback needs a handler of its own.
+
+             `data-shape-dismiss` is also what the paint rule at the foot of
+             shape.css keys on. A button declares a `data-shape-tone` of its own,
+             so left alone this control resolves the neutral ink and the neutral
+             tint whatever the tone above it; the rule hands it the surface's
+             foreground instead. Nothing is passed down here either — the
+             attribute the listener already needed is the whole hook. --}}
         <x-shape::button
             square
             size="sm"

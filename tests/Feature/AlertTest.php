@@ -158,3 +158,26 @@ it('yields to a class passed at the call site', function () {
         ->toContain('[:where(&amp;)]:p-4')
         ->toContain('p-8');
 });
+
+it('publishes a surface the dismiss control can be corrected against', function (string $variant) {
+    // The Blade half of a fix that finishes in CSS. The rule at the foot of
+    // shape.css is `[data-shape-surface] [data-shape-dismiss]`, so both halves
+    // have to be in the markup or the close button silently goes back to
+    // resolving the neutral ink from the `data-shape-tone` a button always
+    // declares for itself.
+    $html = Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\" dismissible>Card declined.</x-shape::alert>");
+
+    expect($html)
+        ->toContain('data-shape-surface="'.($variant === 'solid' ? 'solid' : 'tint').'"')
+        ->toContain('data-shape-dismiss');
+})->with(['subtle', 'outline', 'ghost', 'solid']);
+
+it('leaves the dismiss control untoned, because the surface is what it reads', function () {
+    // Passing `:tone="$tone"` down would fix the tints and break `solid` —
+    // danger-800 ink on a danger-700 fill — and it is the thing the surface
+    // contract exists so that no component has to do. The control stays neutral
+    // in the markup and is corrected by the surface it is standing on.
+    $html = Blade::render('<x-shape::alert tone="danger" dismissible>Card declined.</x-shape::alert>');
+
+    expect($html)->toContain('data-shape-tone="neutral"');
+});

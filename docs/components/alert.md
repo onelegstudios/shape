@@ -76,18 +76,35 @@ your application owns.
 
 The close button is a [ghost](button.md#variants), and a ghost paints with
 `--shape-tone-ink` so that a ghost `danger` button is red on a page that is not.
-To do that it declares a `data-shape-tone` of its own — which means that on a
-`solid` alert it would resolve the *neutral* ink, dark grey, on a saturated fill.
-It reads the surface's foreground there instead, so the control stays legible
-whatever the variant painted:
+To do that it declares a `data-shape-tone` of its own — which means that left
+alone it resolves the *neutral* ink and the *neutral* tint inside an alert of any
+tone at all. On `solid` that is dark grey on a saturated fill; on the tints it is
+a grey × beside a coloured glyph, hovering to a grey square on a coloured block.
+
+It reads the surface's foreground instead, and hovers to a wash of the same, so
+the control belongs to whatever the variant painted:
 
 @docs('preview', name: 'alert-dismissible-solid', layout: 'stack')
 
 This is the one component that reads a tone rather than a surface, so it is the
-one place the contract is corrected by a rule instead of being followed. The
-rule lives in a layer after Tailwind's, because
-`text-[var(--shape-tone-ink)]` is a utility and nothing in `@layer components`
-outranks a utility — see [Theming](../theming.md#the-surface-contract).
+one place the contract is corrected by a rule instead of being followed. The rule
+is scoped to the dismiss control rather than to ghost buttons generally: a ghost
+`danger` button you put inside a `brand` alert is meant to be red and stays red,
+where a close button was never given a tone to keep. It lives in a layer after
+Tailwind's, because `text-[var(--shape-tone-ink)]` is a utility and nothing in
+`@layer components` outranks a utility — see
+[Theming](../theming.md#the-surface-contract).
+
+A [toast](toast.md) is the case the rule deliberately misses. It publishes a tone
+but no surface, because its fill stays white so it reads over whatever it is
+floating above, so its × goes on resolving neutral grey — which is the right
+answer on white.
+
+Focus is the same failure in a property colour does not reach. `--shape-ring` is
+the brand, so focusing the close button on a solid `brand` alert would draw
+brand-600 on brand-700 and there would be no ring to see; on `solid` the ring
+takes the surface's foreground too. On the tints it stays the brand ring, which
+is off-hue but never invisible.
 
 ## Muted text inside an alert
 

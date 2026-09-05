@@ -956,13 +956,35 @@
 | is the exception, and deliberately: it paints with `--shape-tone-ink` so that a
 | ghost `danger` button is red on a page that is not. To do that it declares a
 | `data-shape-tone` of its own, which re-declares the tone variables at the
-| button — so the alert's dismiss control resolves the *neutral* ink, dark grey,
-| however saturated the fill it is sitting on.
+| button — so a dismiss control resolves the *neutral* ink and the *neutral*
+| tint, whatever the tone of the block it was put in.
 |
-| On the tint that was always fine. On `solid` it is a dark grey glyph on a
-| 700-step fill, which is the one combination the rest of this file exists to
-| prevent. So the correction is scoped to exactly that: a ghost control inside a
-| filled surface reads the surface's foreground, like everything else does.
+| On `solid` that is a dark grey glyph on a 700-step fill, the one combination
+| the rest of this file exists to prevent. On the tint it is quieter and no more
+| correct: the glyph beside it is the tone's 800 and the × is a grey one, and
+| hovering paints a grey square on a coloured tint — two hues in a control whose
+| whole job is to belong to the block it sits in.
+|
+| So the correction is the contract, applied to the one control that cannot
+| reach it: wherever a surface has been published, the dismiss button reads that
+| surface's foreground, and hovers to a wash of it. Both halves of the pair move
+| together, which is what keeps the hover the same hue as the rest.
+|
+| Scoped to `[data-shape-dismiss]` rather than to ghost buttons generally,
+| because the two are not the same claim. A ghost `danger` button someone put
+| inside a `brand` alert is meant to be red and stays red; a dismiss control was
+| never given a tone to keep. The attribute is a behaviour hook doing duty in a
+| paint rule, which is worth one line of explanation and no abstraction.
+|
+| The toast is the case this deliberately misses. Its root publishes a tone but
+| no surface — the fill stays white so it is readable over whatever it floats
+| above — so its × goes on resolving neutral grey, which is the right answer on
+| white and would be the wrong one under a selector keyed on the tone.
+|
+| The ring is the same failure in a property the colour rule does not reach, and
+| only on `solid`: `--shape-ring` is brand-600, so focusing the dismiss control
+| on a solid `brand` alert draws brand-600 on brand-700 and there is no ring to
+| see. On the tints it is off-hue but never invisible, so it is left alone.
 |
 | In a layer after Tailwind's for the reason the placement layer above gives —
 | `text-[var(--shape-tone-ink)]` is a utility, and no rule in `@layer components`
@@ -970,11 +992,15 @@
 | this; the button is the only component that reads a tone rather than a surface.
 */
 @layer shape-surface {
-    [data-shape-surface='solid'] [data-shape-button][data-shape-variant='ghost'] {
+    [data-shape-surface] [data-shape-dismiss] {
         color: var(--shape-fg);
     }
 
-    [data-shape-surface='solid'] [data-shape-button][data-shape-variant='ghost']:hover {
+    [data-shape-surface] [data-shape-dismiss]:hover {
         background-color: color-mix(in oklch, var(--shape-fg) 15%, transparent);
+    }
+
+    [data-shape-surface='solid'] [data-shape-dismiss]:focus-visible {
+        outline-color: var(--shape-fg);
     }
 }

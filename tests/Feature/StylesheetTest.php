@@ -127,18 +127,57 @@ it('does not dial back the muted foreground on a fill that has no room for it', 
 });
 
 it('corrects the one control that reads a tone instead of the surface it sits on', function () {
-    // A button declares its own `data-shape-tone`, so a ghost dismiss control
-    // inside a solid alert resolves the neutral ink — dark grey on a saturated
-    // fill. The correction has to outrank `text-[var(--shape-tone-ink)]`, and a
-    // utility beats any specificity in `@layer components`, so it lives in a
-    // layer declared after Tailwind's.
+    // A button declares its own `data-shape-tone`, so a dismiss control resolves
+    // the neutral ink inside an alert of any tone — dark grey on a saturated
+    // fill, and a grey × beside a coloured glyph on every tint. The correction
+    // has to outrank `text-[var(--shape-tone-ink)]`, and a utility beats any
+    // specificity in `@layer components`, so it lives in a layer declared after
+    // Tailwind's.
     $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
 
     expect($css)
         ->toContain('@layer shape-surface')
-        ->toContain("[data-shape-surface='solid'] [data-shape-button][data-shape-variant='ghost']");
+        ->toContain('[data-shape-surface] [data-shape-dismiss]');
 
     expect(strpos($css, '@layer shape-surface'))->toBeGreaterThan((int) strpos($css, '@layer components'));
+});
+
+it('corrects every surface the control can sit on, not only the filled one', function () {
+    // The regression this guards: the rule was once scoped to `solid`, on the
+    // reading that a grey glyph is only wrong when the fill is saturated. It is
+    // wrong on the tints too — the glyph beside it is the tone's 800 and the ×
+    // is a neutral one — so an attribute selector with no value is the whole fix
+    // and the value is what would quietly bring the bug back.
+    $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
+
+    preg_match('/@layer shape-surface \{(.*?)\n\}/s', $css, $matches);
+
+    expect($matches[1] ?? '')
+        ->toContain('[data-shape-surface] [data-shape-dismiss] {')
+        ->toContain('[data-shape-surface] [data-shape-dismiss]:hover');
+});
+
+it('moves the hover with the foreground so the wash is never a second hue', function () {
+    // Colour alone is half the control. The button's own `hover:bg-` resolves
+    // `--shape-tone-tint` from the neutral tone it declared, so correcting the
+    // ink and leaving the hover paints a grey square on a coloured block — the
+    // same mismatch one property along.
+    $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
+
+    preg_match('/\[data-shape-surface\] \[data-shape-dismiss\]:hover \{(.*?)\}/s', $css, $matches);
+
+    expect($matches[1] ?? '')->toContain('var(--shape-fg)');
+});
+
+it('gives the ring somewhere to be seen on a fill the brand ring disappears into', function () {
+    // `--shape-ring` is brand-600 and a solid `brand` alert fills with
+    // brand-700, so focusing its dismiss control draws a ring that is not there.
+    // Only `solid` needs this: on the tints the brand ring is off-hue but never
+    // invisible, which is a smaller problem than a rule that recolours focus
+    // everywhere.
+    $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
+
+    expect($css)->toContain("[data-shape-surface='solid'] [data-shape-dismiss]:focus-visible");
 });
 
 it('gives info a ramp of its own rather than pointing it at the brand', function () {
