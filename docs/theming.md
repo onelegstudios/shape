@@ -382,7 +382,7 @@ A surface of your own is two declarations:
 
 ```css
 @layer base {
-    [data-shape-surface="promo"] {
+    [data-shape-surface='promo'] {
         --shape-fg: var(--color-white);
         --shape-fg-muted: color-mix(
             in oklch,
@@ -409,7 +409,7 @@ into a variant × tone class matrix, so the tone half lives in CSS instead: a
 tone sets the variables, every variant reads them.
 
 ```css
-[data-shape-tone="brand"] {
+[data-shape-tone='brand'] {
     --shape-tone: var(--color-shape-brand-700);
     /* … */
 }
@@ -465,7 +465,7 @@ go wrong in the browser fails later and elsewhere — the table under
 
 ```css
 @layer components {
-    [data-shape-tone="spotlight"] {
+    [data-shape-tone='spotlight'] {
         --shape-tone: var(--color-shape-spotlight-700);
         --shape-tone-hover: var(--color-shape-spotlight-800);
         --shape-tone-fg: white;
@@ -489,7 +489,7 @@ tint inverts to the bottom of the ramp:
 ```css
 @layer components {
     @media (prefers-color-scheme: dark) {
-        [data-shape-tone="spotlight"] {
+        [data-shape-tone='spotlight'] {
             --shape-tone: var(--color-shape-spotlight-500);
             --shape-tone-hover: var(--color-shape-spotlight-400);
             --shape-tone-fg: var(--color-shape-950);
@@ -521,7 +521,7 @@ own foreground:
 }
 
 @layer base {
-    [data-shape-surface="spotlight"] {
+    [data-shape-surface='spotlight'] {
         --shape-fg: var(--color-shape-spotlight-fg);
         --shape-fg-muted: var(--color-shape-spotlight-fg-muted);
     }
@@ -669,7 +669,7 @@ and every `dark:` in Shape's Blade compiles against it, because your build is
 already scanning the package's views:
 
 ```css
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 ```
 
 The token half is not reachable that way: a media query cannot be re-pointed at a
@@ -678,7 +678,7 @@ the import:
 
 ```css
 @layer base {
-    [data-theme="dark"] {
+    [data-theme='dark'] {
         --shape-fg: var(--color-shape-50);
         --shape-fg-muted: var(--color-shape-400);
         --shape-ring: var(--color-shape-brand-500);
