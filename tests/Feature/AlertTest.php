@@ -73,6 +73,36 @@ it('paints each variant with the same tone variables rather than a colour of its
     ['outline', 'border-[var(--shape-tone-border)]'],
 ]);
 
+it('paints nothing at rest for the ghost variant', function () {
+    // The quietest arm: no fill and no border, so the message sits in the flow
+    // of whatever already boxes it. Only the paint is dropped — the padding is
+    // added above the match, so a ghost alert lines up with the other three
+    // and the dismiss control's negative margins still land in the corner.
+    $rendered = Blade::render('<x-shape::alert tone="danger" variant="ghost">Card declined.</x-shape::alert>');
+
+    expect($rendered)
+        ->toContain('data-shape-variant="ghost"')
+        ->toContain('[:where(&amp;)]:p-4')
+        ->not->toContain('[:where(&amp;)]:bg-')
+        ->not->toContain('border-[var(--shape-tone-border)]');
+});
+
+it('shows a ghost alert its own bounds on hover, in the fill it would have had', function () {
+    // The tint is `subtle`'s resting background and the ghost button's hover,
+    // read from the same variable, so a ghost alert and the ghost control
+    // inside it agree without either knowing about the other. It is the only
+    // arm that moves, so the transition is scoped to it rather than the root.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="ghost">Card declined.</x-shape::alert>'))
+        ->toContain('hover:bg-[var(--shape-tone-tint)]')
+        ->toContain('transition-colors');
+});
+
+it('leaves the other variants still on hover, because only ghost is unpainted', function (string $variant) {
+    expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\">Card declined.</x-shape::alert>"))
+        ->not->toContain('hover:bg-')
+        ->not->toContain('transition-colors');
+})->with(['subtle', 'solid', 'outline']);
+
 it('moves the foreground contract with the variant, not just the background', function () {
     // The failure this prevents is the one the tint surface was built for, a
     // step louder: a solid alert fills with the tone, so the readable
@@ -81,18 +111,21 @@ it('moves the foreground contract with the variant, not just the background', fu
     expect(Blade::render('<x-shape::alert tone="danger" variant="solid">Card declined.</x-shape::alert>'))
         ->toContain('data-shape-surface="solid"');
 
-    // Outline paints no background, so the ink contract still applies.
+    // Outline and ghost paint no background, so the ink contract still applies.
     expect(Blade::render('<x-shape::alert tone="danger" variant="outline">Card declined.</x-shape::alert>'))
+        ->toContain('data-shape-surface="tint"');
+
+    expect(Blade::render('<x-shape::alert tone="danger" variant="ghost">Card declined.</x-shape::alert>'))
         ->toContain('data-shape-surface="tint"');
 });
 
 it('leaves the foreground to the surface instead of restating it per variant', function (string $variant) {
-    // One `text-` class serves all three, which is what keeps the arms above to
+    // One `text-` class serves all four, which is what keeps the arms above to
     // a background each. If a variant ever paints its own foreground, the
     // nested muted text stops agreeing with it.
     expect(Blade::render("<x-shape::alert variant=\"{$variant}\">Message</x-shape::alert>"))
         ->toContain('text-[color:var(--shape-fg)]');
-})->with(['subtle', 'solid', 'outline']);
+})->with(['subtle', 'solid', 'outline', 'ghost']);
 
 it('is not a live region, because it was on the page already', function () {
     // The toaster carries the live regions. Announcing markup that was present

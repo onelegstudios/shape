@@ -25,6 +25,20 @@ default, because an alert is usually not the loudest thing on its page:
 tone and is worth spending sparingly: a saturated block that size competes with
 everything around it.
 
+`ghost` is `outline` with the border dropped, and the quietest of the four: no
+fill, no edge, just the glyph and the tone's ink in the flow of the page. Reach
+for it where the alert is already inside something boxed — a
+[card](card.md), a panel, a form section — and a second border would only draw a
+box inside a box. It keeps the padding the others have, so switching a variant
+never shifts the text.
+
+It is also the one variant that paints on hover, in `subtle`'s tint — the fill
+it would have had at rest. An alert is not a control and the hover promises no
+click; what it does is show the bounds an unpainted block has no other way of
+drawing, which is worth having when the block carries a
+[dismiss](#dismissing) button. The ghost [button](button.md#variants) hovers to
+the same variable, so a ghost control inside a ghost alert agrees with it.
+
 Inside a `solid` alert the muted foreground is not dialled back, because there is
 nowhere for it to go. White on the 700 fills starts at 4.9:1 for `success`, so
 any tint that reads as recessed lands under AA. Hierarchy comes from the
@@ -99,7 +113,7 @@ the fact.
 | Prop | Default | Values |
 | --- | --- | --- |
 | `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
-| `variant` | `subtle` | `subtle`, `outline`, `solid` |
+| `variant` | `subtle` | `subtle`, `outline`, `solid`, `ghost` |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |

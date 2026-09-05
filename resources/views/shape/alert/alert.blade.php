@@ -17,11 +17,11 @@
     coloured background is the one thing the surface contract exists to make
     impossible.
 
-    Which is why `variant` and the surface are decided together. `subtle` and
-    `outline` both put the tone's ink on a light background, so both publish
-    `tint`; `solid` fills with the tone and publishes `solid`, where the readable
-    foreground is the tone's own `-fg` instead. Nothing is passed down in either
-    case — the nested text finds it.
+    Which is why `variant` and the surface are decided together. `subtle`,
+    `outline` and `ghost` all put the tone's ink on a light background, so all
+    three publish `tint`; `solid` fills with the tone and publishes `solid`,
+    where the readable foreground is the tone's own `-fg` instead. Nothing is
+    passed down in either case — the nested text finds it.
 
     `tone` is branched on to resolve the glyph, exactly as the badge does, so it
     is *not* declared safe here. The same prop is safe on the button, which only
@@ -65,17 +65,31 @@ $glyph = $icon ?? match ($tone) {
 // Variant is how loud the alert is; tone is what it means. The two never
 // multiply into a class matrix, because every arm below paints with the same
 // tone variables and the foreground comes from the surface rather than from
-// here — one `text-` class serves all three.
+// here — one `text-` class serves all four.
 //
 // The badge's set, and the badge's recipe: `outline` takes the neutral border
 // and leaves the colour to the ink and the glyph, which is what keeps `brand`
-// and `accent` — the two tones that draw no glyph — visibly toned.
+// and `accent` — the two tones that draw no glyph — visibly toned. `ghost` is
+// that arm with the border dropped: the quietest of the four, for a message
+// that belongs in the flow of a form or a panel that is already boxed.
+//
+// Only the paint changes. The padding above stays with it, so swapping a
+// variant never moves the text, and the dismiss control's negative margins go
+// on pulling it back into the same corner.
+//
+// Ghost is the one arm that paints on hover, and it resolves to `subtle`: the
+// tint is the fill this alert would have had at rest, so pointing at one shows
+// its bounds — the block a dismiss control belongs to — rather than promising
+// a click. It is the ghost button's recipe and the same variable, which is why
+// the two agree without either knowing about the other. The transition rides
+// in this arm rather than on the root, since the other three never move.
 $classes = Shape::classes()
     ->add('flex items-start')
     ->add('[:where(&)]:gap-3 [:where(&)]:rounded-shape [:where(&)]:p-4')
     ->add(match ($variant) {
         'solid' => '[:where(&)]:bg-[var(--shape-tone)]',
         'outline' => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border)]',
+        'ghost' => 'transition-colors duration-100 hover:bg-[var(--shape-tone-tint)]',
         default => '[:where(&)]:bg-[var(--shape-tone-tint)]',
     })
     ->add('[:where(&)]:text-[color:var(--shape-fg)]');
