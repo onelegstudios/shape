@@ -5,5 +5,5 @@
     variant="subtle"
     tone="danger"
     icon="shape-trash"
-    onclick="dispatchEvent(new CustomEvent('shape:confirm', { detail: { confirm: { heading: 'Delete project?', message: 'Every invoice attached to it goes too.', accept: 'Delete', tone: 'danger', then: 'deleteProject' } } }))"
+    onclick="window.dispatchEvent(new CustomEvent('shape:confirm', { detail: { confirm: { heading: 'Delete project?', message: 'Every invoice attached to it goes too.', accept: 'Delete', tone: 'danger', then: 'deleteProject' } } }))"
 >Delete project</x-shape::button>

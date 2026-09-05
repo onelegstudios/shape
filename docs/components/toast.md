@@ -89,7 +89,7 @@ The event is the API, so anything that can dispatch a window event can raise a
 toast:
 
 ```js
-dispatchEvent(new CustomEvent('shape:toast', {
+window.dispatchEvent(new CustomEvent('shape:toast', {
     detail: { toast: { heading: 'Copied', tone: 'success', duration: 2000 } },
 }))
 ```

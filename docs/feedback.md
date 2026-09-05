@@ -43,7 +43,7 @@ you want to send one by hand — from Alpine, from your own script — that path
 open too:
 
 ```js
-dispatchEvent(new CustomEvent('shape:toast', {
+window.dispatchEvent(new CustomEvent('shape:toast', {
     detail: { toast: { heading: 'Saved', tone: 'success' } },
 }))
 ```
