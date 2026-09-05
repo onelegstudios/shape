@@ -7,13 +7,13 @@ would otherwise be repeated on five component pages.
 ## The script
 
 ```bash
-php artisan vendor:publish --tag="laravel-shape-js"
+php artisan vendor:publish --tag="shape-js"
 ```
 
 Or import it straight from the package, which is what the stylesheet does too:
 
 ```js
-import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
+import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'
 
 shape()
 ```

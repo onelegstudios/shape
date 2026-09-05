@@ -137,7 +137,7 @@ it('imports the tokens after tailwind', function () {
     // overwritten by the theme they exist to override.
     expect(file_get_contents($this->css))->toBe(implode("\n", [
         "@import 'tailwindcss';",
-        "@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';",
+        "@import '../../vendor/onelegstudios/shape/resources/css/shape.css';",
         '',
         '.something { color: red; }',
         '',
@@ -150,7 +150,7 @@ it('registers the script', function () {
     $this->artisan('shape:install', ['--css' => $this->css, '--js' => $this->js, '--icons' => 'hero'])->assertSuccessful();
 
     expect(file_get_contents($this->js))
-        ->toContain("import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'")
+        ->toContain("import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'")
         ->toContain('shape()');
 });
 

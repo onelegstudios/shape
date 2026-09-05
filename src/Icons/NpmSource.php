@@ -69,7 +69,7 @@ final class NpmSource extends ArchiveSource
     {
         [$version, $url, $integrity] = $this->resolve();
 
-        $response = Http::withHeaders(['User-Agent' => 'laravel-shape'])
+        $response = Http::withHeaders(['User-Agent' => 'shape'])
             ->timeout(120)
             ->retry(3, 200, throw: false)
             ->get($url);
@@ -104,7 +104,7 @@ final class NpmSource extends ArchiveSource
         // registry and two to anything reading a URL.
         $name = str_replace('/', '%2f', $this->package);
 
-        $response = Http::withHeaders(['User-Agent' => 'laravel-shape'])
+        $response = Http::withHeaders(['User-Agent' => 'shape'])
             ->timeout(30)
             ->retry(3, 200, throw: false)
             ->get("https://registry.npmjs.org/{$name}");

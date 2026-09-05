@@ -1,5 +1,5 @@
 {
-    "name": "laravel-shape",
+    "name": "shape",
     "private": true,
     "description": "Build tooling for the workbench gallery and the docs-site previews. The package itself ships no compiled CSS.",
     "scripts": {

@@ -71,7 +71,7 @@ final class GitHubSource extends ArchiveSource
      */
     protected function download(string $archive): ?string
     {
-        $response = Http::withHeaders(['User-Agent' => 'laravel-shape'])
+        $response = Http::withHeaders(['User-Agent' => 'shape'])
             ->timeout(120)
             ->retry(3, 200, throw: false)
             ->get("https://codeload.github.com/{$this->repo}/tar.gz/{$this->reference}");
@@ -102,7 +102,7 @@ final class GitHubSource extends ArchiveSource
 
         $within = rtrim($this->path.'/'.$path, '/');
 
-        $response = Http::withHeaders(['User-Agent' => 'laravel-shape'])
+        $response = Http::withHeaders(['User-Agent' => 'shape'])
             ->timeout(30)
             ->get("https://raw.githubusercontent.com/{$this->repo}/{$this->reference}/{$within}");
 
@@ -185,7 +185,7 @@ final class GitHubSource extends ArchiveSource
 
         try {
             $response = Http::withHeaders([
-                'User-Agent' => 'laravel-shape',
+                'User-Agent' => 'shape',
                 'Accept' => 'application/vnd.github.sha',
             ])->timeout(15)->get("https://api.github.com/repos/{$this->repo}/commits/{$this->reference}");
         } catch (Throwable) {

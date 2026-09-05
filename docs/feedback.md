@@ -129,7 +129,7 @@ still time out. If a message has to be acted on while a modal is open, it belong
 inside the modal.
 
 ```js
-import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
+import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'
 
 shape()   // or, if you use Alpine: Alpine.plugin(shape)
 ```

@@ -39,7 +39,7 @@ it('names only commands that exist', function () {
 });
 
 it('points at documentation pages that exist', function () {
-    preg_match_all('#^- `vendor/onelegstudios/laravel-shape/([^`]+)`#m', boostSkill(), $matches);
+    preg_match_all('#^- `vendor/onelegstudios/shape/([^`]+)`#m', boostSkill(), $matches);
 
     expect($matches[1])->not->toBeEmpty();
 

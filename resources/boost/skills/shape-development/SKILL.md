@@ -16,7 +16,7 @@ template at compile time.
 
 ## Primary Goal
 
-- apply the `onelegstudios/laravel-shape` package's public API in the smallest correct way
+- apply the `onelegstudios/shape` package's public API in the smallest correct way
 - write call sites that stay on the fold path, because that is a property of the
   application's templates and not only of the package
 
@@ -24,14 +24,14 @@ template at compile time.
 
 ### 1. Inspect the Laravel app context
 
-- confirm the app is a Laravel project with `onelegstudios/laravel-shape` installed
+- confirm the app is a Laravel project with `onelegstudios/shape` installed
 - check whether `livewire/blaze` is installed; Shape works without it, and folds with it
 - check `resources/css/app.css` for the token import and `resources/js/app.js` for the script
 
 ### 2. Install, if it is not installed
 
 ```bash
-composer require onelegstudios/laravel-shape
+composer require onelegstudios/shape
 php artisan shape:install
 ```
 
@@ -45,11 +45,11 @@ The two lines:
 
 ```css
 @import 'tailwindcss';
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
 ```
 
 ```js
-import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
+import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'
 
 shape()   // or, with Alpine: Alpine.plugin(shape)
 ```
@@ -389,11 +389,11 @@ Shape, **missing**.
 
 Read before executing:
 
-- `vendor/onelegstudios/laravel-shape/docs/_index.md` — every component, with its tier
-- `vendor/onelegstudios/laravel-shape/docs/folding.md` — what keeps a call site on the fold path
-- `vendor/onelegstudios/laravel-shape/docs/forms.md` — the field shorthand and name resolution
-- `vendor/onelegstudios/laravel-shape/docs/tooling.md` — the nine commands
-- `vendor/onelegstudios/laravel-shape/resources/registry.json` — components, files, dependencies, tiers
+- `vendor/onelegstudios/shape/docs/_index.md` — every component, with its tier
+- `vendor/onelegstudios/shape/docs/folding.md` — what keeps a call site on the fold path
+- `vendor/onelegstudios/shape/docs/forms.md` — the field shorthand and name resolution
+- `vendor/onelegstudios/shape/docs/tooling.md` — the nine commands
+- `vendor/onelegstudios/shape/resources/registry.json` — components, files, dependencies, tiers
 
 ## Examples
 

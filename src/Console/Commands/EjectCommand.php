@@ -20,7 +20,7 @@ use Onelegstudios\Shape\Registry;
  * application's code, resolved ahead of the packaged one by the path the service
  * provider registers first.
  *
- * `vendor:publish --tag="laravel-shape-components"` does the same thing for the
+ * `vendor:publish --tag="shape-components"` does the same thing for the
  * whole library at once. This exists because that is rarely what anybody wants:
  * a modal alone is a file that composes a button, an icon, a heading and a
  * close — eject the modal without them and half of it still belongs to the

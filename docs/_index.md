@@ -8,14 +8,14 @@ templates at compile time.
 ## Installation
 
 ```bash
-composer require onelegstudios/laravel-shape
+composer require onelegstudios/shape
 ```
 
 Import the design tokens after Tailwind in your application stylesheet:
 
 ```css
 @import 'tailwindcss';
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
 ```
 
 The token file declares `@source "../views"`, so your Tailwind build scans the
@@ -94,7 +94,7 @@ One file, for the overlays, the feedback channel, and the keyboard behaviour of
 a tab strip:
 
 ```js
-import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
+import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'
 
 shape()   // or, if you use Alpine: Alpine.plugin(shape)
 ```
@@ -129,7 +129,7 @@ php artisan shape:eject modal
 A modal composes a heading, a text and a close button, so all four arrive
 together — ejecting the shell without the parts you wanted to change is the
 worst of both arrangements. `shape:eject:all` and
-`vendor:publish --tag="laravel-shape-components"` each take the whole library at
+`vendor:publish --tag="shape-components"` each take the whole library at
 once.
 
 Ejected components resolve ahead of the packaged ones. The location is

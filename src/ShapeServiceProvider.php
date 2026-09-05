@@ -51,26 +51,26 @@ class ShapeServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__.'/../config/shape.php' => config_path('shape.php'),
-        ], ['laravel-shape', 'laravel-shape-config']);
+        ], ['shape', 'shape-config']);
 
         $this->publishes([
             __DIR__.'/../resources/views' => resource_path('views/vendor/shape'),
-        ], ['laravel-shape', 'laravel-shape-views']);
+        ], ['shape', 'shape-views']);
 
         // The whole library at once. `shape:eject` is the same operation for one
         // component and the components it composes, which is what anyone
         // customizing a single modal actually wants.
         $this->publishes([
             __DIR__.'/../resources/views/shape' => resource_path('views/shape'),
-        ], ['laravel-shape', 'laravel-shape-components']);
+        ], ['shape', 'shape-components']);
 
         $this->publishes([
             __DIR__.'/../resources/css/shape.css' => resource_path('css/shape.css'),
-        ], ['laravel-shape', 'laravel-shape-css']);
+        ], ['shape', 'shape-css']);
 
         $this->publishes([
             __DIR__.'/../resources/js/shape.js' => resource_path('js/shape.js'),
-        ], ['laravel-shape', 'laravel-shape-js']);
+        ], ['shape', 'shape-js']);
 
         $this->commands([
             DoctorCommand::class,

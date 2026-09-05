@@ -9,12 +9,12 @@ use Onelegstudios\Shape\ShapeServiceProvider;
 it('publishes each resource group under its own tag', function (string $tag) {
     expect(ServiceProvider::pathsToPublish(ShapeServiceProvider::class, $tag))->not->toBeEmpty();
 })->with([
-    'laravel-shape',
-    'laravel-shape-config',
-    'laravel-shape-views',
-    'laravel-shape-components',
-    'laravel-shape-css',
-    'laravel-shape-js',
+    'shape',
+    'shape-config',
+    'shape-views',
+    'shape-components',
+    'shape-css',
+    'shape-js',
 ]);
 
 it('publishes nothing it has no use for', function (string $tag) {
@@ -25,19 +25,19 @@ it('publishes nothing it has no use for', function (string $tag) {
     // `vendor/` so a consumer's own Tailwind build stays authoritative.
     expect(ServiceProvider::pathsToPublish(ShapeServiceProvider::class, $tag))->toBeEmpty();
 })->with([
-    'laravel-shape-lang',
-    'laravel-shape-assets',
-    'laravel-shape-migrations',
+    'shape-lang',
+    'shape-assets',
+    'shape-migrations',
 ]);
 
 it('ships the stylesheet it promises to publish', function () {
-    $published = ServiceProvider::pathsToPublish(ShapeServiceProvider::class, 'laravel-shape-css');
+    $published = ServiceProvider::pathsToPublish(ShapeServiceProvider::class, 'shape-css');
 
     expect(array_key_first($published))->toBeFile();
 });
 
 it('ships the script it promises to publish', function () {
-    $published = ServiceProvider::pathsToPublish(ShapeServiceProvider::class, 'laravel-shape-js');
+    $published = ServiceProvider::pathsToPublish(ShapeServiceProvider::class, 'shape-js');
 
     expect(array_key_first($published))->toBeFile();
 });

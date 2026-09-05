@@ -137,7 +137,7 @@ being asked about.
 
 `shape:eject:all` takes the whole library, on the same terms: the same
 `--force`, the same report, and the same record written beside the files.
-`vendor:publish --tag="laravel-shape-components"` still copies all of it too,
+`vendor:publish --tag="shape-components"` still copies all of it too,
 and is the one way in that writes no record — so what it hands you is a
 directory `shape:eject:status` can say nothing about afterwards.
 
@@ -478,7 +478,7 @@ ignored, because in a hand-written set that is a typo every time.
 Publish the config to add your own:
 
 ```bash
-php artisan vendor:publish --tag="laravel-shape-config"
+php artisan vendor:publish --tag="shape-config"
 ```
 
 A flat directory of SVGs is not a special case — it is a set with one style
@@ -710,7 +710,7 @@ To point one slot somewhere else, publish the config, change its entry, and
 regenerate that one name:
 
 ```bash
-php artisan vendor:publish --tag=laravel-shape-config
+php artisan vendor:publish --tag=shape-config
 ```
 
 ```php

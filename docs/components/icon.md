@@ -120,7 +120,7 @@ The whole list at once is
 one slot, publish the config and change what fills it:
 
 ```bash
-php artisan vendor:publish --tag=laravel-shape-config
+php artisan vendor:publish --tag=shape-config
 ```
 
 ```php

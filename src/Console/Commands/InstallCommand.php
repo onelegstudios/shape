@@ -51,7 +51,7 @@ class InstallCommand extends Command
     /**
      * The line that pulls in the design tokens.
      */
-    protected string $import = "@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';";
+    protected string $import = "@import '../../vendor/onelegstudios/shape/resources/css/shape.css';";
 
     /**
      * Execute the console command.
@@ -86,7 +86,7 @@ class InstallCommand extends Command
 
         $contents = $files->get($path);
 
-        if (str_contains($contents, 'laravel-shape/resources/css/shape.css')) {
+        if (str_contains($contents, 'shape/resources/css/shape.css')) {
             $this->components->twoColumnDetail($relative, '<fg=gray>already imports the tokens</>');
 
             return;
@@ -120,7 +120,7 @@ class InstallCommand extends Command
 
         $snippet = <<<'JS'
 
-        import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
+        import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'
 
         shape()
         JS;
@@ -133,7 +133,7 @@ class InstallCommand extends Command
 
         $contents = $files->get($path);
 
-        if (str_contains($contents, 'laravel-shape/resources/js/shape.js')) {
+        if (str_contains($contents, 'shape/resources/js/shape.js')) {
             $this->components->twoColumnDetail($relative, '<fg=gray>already registers the script</>');
 
             return;
@@ -291,7 +291,7 @@ class InstallCommand extends Command
         $relative = $this->relative($path);
 
         if (! $files->exists($path)) {
-            $this->callSilent('vendor:publish', ['--tag' => 'laravel-shape-config']);
+            $this->callSilent('vendor:publish', ['--tag' => 'shape-config']);
         }
 
         $contents = $files->exists($path) ? $files->get($path) : '';

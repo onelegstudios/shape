@@ -34,7 +34,7 @@
 | where consumers expect to register it, but it does not use the argument and
 | works exactly as well called on its own:
 |
-|   import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
+|   import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'
 |
 |   Alpine.plugin(shape)   // or just: shape()
 */

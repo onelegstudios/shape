@@ -31,14 +31,14 @@ you declare after the import wins:
 
 ```css
 @import 'tailwindcss';
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
 
 @theme {
     --radius-shape: 0.25rem;
 }
 ```
 
-`vendor:publish --tag='laravel-shape-css'` copies the file into
+`vendor:publish --tag='shape-css'` copies the file into
 `resources/css/shape.css` if you would rather own the token layer outright — but
 then you own it, including every change the package makes to it later. Overriding
 from your own file is the arrangement to prefer.
@@ -54,7 +54,7 @@ your colours.
 ```css
 /* resources/css/app.css */
 @import 'tailwindcss';
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
 
 /* Everything from here down wins. */
 ```
@@ -81,7 +81,7 @@ in the file from step 1.
 only one whose contrast was measured rather than assumed:
 
 ```css
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape-seed.css';
 
 :root {
     --shape-seed: oklch(52% 0.16 300);
@@ -289,8 +289,8 @@ an optional second stylesheet that derives the whole palette from a single value
 
 ```css
 @import 'tailwindcss';
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape-seed.css';
 
 :root {
     --shape-seed: oklch(52% 0.16 300);
@@ -717,7 +717,7 @@ In the right layer the extra attribute is enough to win on its own.
 
 This is the one place where theming means restating something Shape already says
 rather than overriding it. If you find yourself doing it, publishing the
-stylesheet (`vendor:publish --tag='laravel-shape-css'`) and rewriting the three
+stylesheet (`vendor:publish --tag='shape-css'`) and rewriting the three
 media queries in place is the tidier trade — at the cost of owning the file.
 
 `workbench/resources/css/theme.src.css` in this repository is the whole thing

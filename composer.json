@@ -1,13 +1,13 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "onelegstudios/laravel-shape",
+    "name": "onelegstudios/shape",
     "description": "foobar",
     "keywords": [
         "laravel",
         "onelegstudios",
-        "laravel-shape"
+        "shape"
     ],
-    "homepage": "https://github.com/onelegstudios/laravel-shape",
+    "homepage": "https://github.com/onelegstudios/shape",
     "license": "MIT",
     "authors": [
         {

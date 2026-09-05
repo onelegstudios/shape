@@ -3,11 +3,11 @@
 </div>
 
 <p align="center">
-    <a href="https://packagist.org/packages/onelegstudios/laravel-shape"><img src="https://img.shields.io/packagist/v/onelegstudios/laravel-shape.svg?style=flat-square" alt="Packagist"></a>
-    <a href="https://packagist.org/packages/onelegstudios/laravel-shape"><img src="https://img.shields.io/packagist/php-v/onelegstudios/laravel-shape.svg?style=flat-square" alt="PHP from Packagist"></a>
-    <a href="https://packagist.org/packages/onelegstudios/laravel-shape"><img src="https://badge.laravel.cloud/badge/onelegstudios/laravel-shape?style=flat" alt="Laravel versions"></a>
-    <a href="https://github.com/onelegstudios/laravel-shape/actions"><img alt="GitHub Workflow Status (main)" src="https://img.shields.io/github/actions/workflow/status/onelegstudios/laravel-shape/tests.yml?branch=main&label=Tests&style=flat-square"></a>
-    <a href="https://packagist.org/packages/onelegstudios/laravel-shape"><img src="https://img.shields.io/packagist/dt/onelegstudios/laravel-shape.svg?style=flat-square" alt="Total Downloads"></a>
+    <a href="https://packagist.org/packages/onelegstudios/shape"><img src="https://img.shields.io/packagist/v/onelegstudios/shape.svg?style=flat-square" alt="Packagist"></a>
+    <a href="https://packagist.org/packages/onelegstudios/shape"><img src="https://img.shields.io/packagist/php-v/onelegstudios/shape.svg?style=flat-square" alt="PHP from Packagist"></a>
+    <a href="https://packagist.org/packages/onelegstudios/shape"><img src="https://badge.laravel.cloud/badge/onelegstudios/shape?style=flat" alt="Laravel versions"></a>
+    <a href="https://github.com/onelegstudios/shape/actions"><img alt="GitHub Workflow Status (main)" src="https://img.shields.io/github/actions/workflow/status/onelegstudios/shape/tests.yml?branch=main&label=Tests&style=flat-square"></a>
+    <a href="https://packagist.org/packages/onelegstudios/shape"><img src="https://img.shields.io/packagist/dt/onelegstudios/shape.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
 A Blade component library for Livewire applications. Components are anonymous
@@ -20,7 +20,7 @@ templates at compile time.
 You can install the package via Composer:
 
 ```bash
-composer require onelegstudios/laravel-shape
+composer require onelegstudios/shape
 php artisan shape:install
 ```
 
@@ -43,7 +43,7 @@ locale to everybody, so the library has none to ship.
 You may publish all of the package's resources at once:
 
 ```bash
-php artisan vendor:publish --tag="laravel-shape"
+php artisan vendor:publish --tag="shape"
 ```
 
 Or, you may publish each resource individually:
@@ -51,13 +51,13 @@ Or, you may publish each resource individually:
 ### Publishing the Configuration File
 
 ```bash
-php artisan vendor:publish --tag="laravel-shape-config"
+php artisan vendor:publish --tag="shape-config"
 ```
 
 ### Publishing the Views
 
 ```bash
-php artisan vendor:publish --tag="laravel-shape-views"
+php artisan vendor:publish --tag="shape-views"
 ```
 
 ### Publishing the Stylesheet
@@ -67,13 +67,13 @@ authoritative and leaves nothing to rebuild on an upgrade. Publish them only if
 you intend to own the token layer outright:
 
 ```bash
-php artisan vendor:publish --tag="laravel-shape-css"
+php artisan vendor:publish --tag="shape-css"
 ```
 
 ### Publishing the JavaScript
 
 ```bash
-php artisan vendor:publish --tag="laravel-shape-js"
+php artisan vendor:publish --tag="shape-js"
 ```
 
 ### Publishing the Components
@@ -82,7 +82,7 @@ Ejects every component into `resources/views/shape`, where they resolve ahead of
 the packaged ones:
 
 ```bash
-php artisan vendor:publish --tag="laravel-shape-components"
+php artisan vendor:publish --tag="shape-components"
 ```
 
 `php artisan shape:eject modal` does the same for one component and everything it
@@ -94,7 +94,7 @@ Import the design tokens after Tailwind in your application stylesheet:
 
 ```css
 @import 'tailwindcss';
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
 ```
 
 The token file declares `@source "../views"`, so your Tailwind build scans the
@@ -131,7 +131,7 @@ rather than copied, so retinting Tailwind's own colours retints Shape with them.
 
 ```css
 @import 'tailwindcss';
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
 
 @theme {
     --color-shape-brand-700: oklch(45.7% 0.24 277.023);
@@ -143,7 +143,7 @@ Or derive the brand and the neutrals from one colour, with an optional second
 stylesheet:
 
 ```css
-@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css';
+@import '../../vendor/onelegstudios/shape/resources/css/shape-seed.css';
 
 :root { --shape-seed: oklch(52% 0.16 300); }
 ```
@@ -182,7 +182,7 @@ One file, for the overlays, the feedback channel, and the keyboard behaviour of
 a tab strip:
 
 ```js
-import shape from '../../vendor/onelegstudios/laravel-shape/resources/js/shape.js'
+import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'
 
 shape()   // or, if your application uses Alpine: Alpine.plugin(shape)
 ```
