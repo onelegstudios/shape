@@ -13,7 +13,7 @@ body:
     attributes:
       label: Package Version
       description: Provide the package version that you are using.
-      placeholder: 1.0.0
+      placeholder: 0.1.0
     validations:
       required: true
 

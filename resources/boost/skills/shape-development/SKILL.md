@@ -389,10 +389,10 @@ Shape, **missing**.
 
 Read before executing:
 
-- `vendor/onelegstudios/shape/docs/_index.md` — every component, with its tier
-- `vendor/onelegstudios/shape/docs/folding.md` — what keeps a call site on the fold path
-- `vendor/onelegstudios/shape/docs/forms.md` — the field shorthand and name resolution
-- `vendor/onelegstudios/shape/docs/tooling.md` — the nine commands
+- [docs/_index.md](https://github.com/onelegstudios/shape/blob/main/docs/_index.md) — every component, with its tier
+- [docs/folding.md](https://github.com/onelegstudios/shape/blob/main/docs/folding.md) — what keeps a call site on the fold path
+- [docs/forms.md](https://github.com/onelegstudios/shape/blob/main/docs/forms.md) — the field shorthand and name resolution
+- [docs/tooling.md](https://github.com/onelegstudios/shape/blob/main/docs/tooling.md) — the nine commands
 - `vendor/onelegstudios/shape/resources/registry.json` — components, files, dependencies, tiers
 
 ## Examples

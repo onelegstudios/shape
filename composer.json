@@ -1,114 +1,128 @@
 {
-    "$schema": "https://getcomposer.org/schema.json",
-    "name": "onelegstudios/shape",
-    "description": "foobar",
-    "keywords": [
-        "laravel",
-        "onelegstudios",
-        "shape"
+  "$schema": "https://getcomposer.org/schema.json",
+  "name": "onelegstudios/shape",
+  "description": "Shape the interface. Predictable Blade UI components for Livewire applications. Components are anonymous Blade files, styled with Tailwind, and annotated so that Blaze can fold them into their parent templates at compile time.",
+  "keywords": [
+    "blade",
+    "blade-components",
+    "blaze",
+    "components",
+    "design-system",
+    "laravel",
+    "livewire",
+    "tailwindcss",
+    "ui"
+  ],
+  "homepage": "https://github.com/onelegstudios/shape",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Oneleggedswede",
+      "email": "oneleggedswede@onelegstudios.com",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/onelegstudios/shape/issues",
+    "source": "https://github.com/onelegstudios/shape",
+    "docs": "https://github.com/onelegstudios/shape/tree/main/docs"
+  },
+  "require": {
+    "php": "^8.3",
+    "illuminate/console": "^12.0||^13.0",
+    "illuminate/contracts": "^12.0||^13.0",
+    "illuminate/filesystem": "^12.0||^13.0",
+    "illuminate/http": "^12.0||^13.0",
+    "illuminate/support": "^12.0||^13.0",
+    "illuminate/view": "^12.0||^13.0",
+    "symfony/finder": "^7.2||^8.0"
+  },
+  "require-dev": {
+    "larastan/larastan": "^3.9",
+    "laravel/pao": "^1.0",
+    "laravel/pint": "^1.29",
+    "livewire/blaze": "^1.0",
+    "orchestra/testbench": "^10.0||^11.0",
+    "pestphp/pest": "^4.6||^5.0",
+    "pestphp/pest-plugin-laravel": "^4.1||^5.0",
+    "pestphp/pest-plugin-type-coverage": "^4.0||^5.0",
+    "petebishwhip/laradocs": "^0.1.4",
+    "phpstan/extension-installer": "^1.4"
+  },
+  "suggest": {
+    "livewire/blaze": "Compiles Shape's components into folded PHP for near-zero render cost (^1.0)."
+  },
+  "autoload": {
+    "psr-4": {
+      "Onelegstudios\\Shape\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Onelegstudios\\Shape\\Tests\\": "tests/",
+      "Workbench\\App\\": "workbench/app/",
+      "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+      "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "@clear",
+      "@prepare"
     ],
-    "homepage": "https://github.com/onelegstudios/shape",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Oneleggedswede",
-            "email": "oneleggedswede@onelegstudios.com",
-            "role": "Developer"
-        }
+    "prepare": [
+      "@php vendor/bin/testbench package:discover --ansi"
     ],
-    "require": {
-        "php": "^8.3",
-        "illuminate/console": "^12.0||^13.0",
-        "illuminate/http": "^12.0||^13.0",
-        "illuminate/support": "^12.0||^13.0",
-        "illuminate/view": "^12.0||^13.0"
-    },
-    "require-dev": {
-        "larastan/larastan": "^3.9",
-        "laravel/pao": "^1.0",
-        "laravel/pint": "^1.29",
-        "livewire/blaze": "^1.0",
-        "orchestra/testbench": "^10.0||^11.0",
-        "pestphp/pest": "^4.6||^5.0",
-        "pestphp/pest-plugin-laravel": "^4.1||^5.0",
-        "pestphp/pest-plugin-type-coverage": "^4.0||^5.0",
-        "petebishwhip/laradocs": "^0.1.4",
-        "phpstan/extension-installer": "^1.4"
-    },
-    "suggest": {
-        "livewire/blaze": "Compiles Shape's components into folded PHP for near-zero render cost (^1.0)."
-    },
-    "autoload": {
-        "psr-4": {
-            "Onelegstudios\\Shape\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Onelegstudios\\Shape\\Tests\\": "tests/",
-            "Workbench\\App\\": "workbench/app/",
-            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
-            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
-        }
-    },
-    "scripts": {
-        "post-autoload-dump": [
-            "@clear",
-            "@prepare"
-        ],
-        "prepare": [
-            "@php vendor/bin/testbench package:discover --ansi"
-        ],
-        "build": [
-            "@php vendor/bin/testbench workbench:build --ansi"
-        ],
-        "serve": [
-            "Composer\\Config::disableProcessTimeout",
-            "@build",
-            "@php vendor/bin/testbench serve --ansi"
-        ],
-        "lint": [
-            "vendor/bin/pint --parallel"
-        ],
-        "lint:check": [
-            "vendor/bin/pint --parallel --test"
-        ],
-        "analyse": [
-            "vendor/bin/phpstan analyse --memory-limit=1G"
-        ],
-        "test:types": [
-            "vendor/bin/pest --type-coverage --min=100"
-        ],
-        "test:unit": [
-            "vendor/bin/pest --parallel"
-        ],
-        "test": [
-            "@analyse",
-            "@lint:check",
-            "@test:types",
-            "@test:unit"
-        ],
-        "clear": [
-            "@php vendor/bin/testbench package:purge-skeleton --ansi"
-        ]
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Onelegstudios\\Shape\\ShapeServiceProvider"
-            ],
-            "aliases": {
-                "Shape": "Onelegstudios\\Shape\\Facades\\Shape"
-            }
-        }
-    },
-    "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "phpstan/extension-installer": true
-        }
-    },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    "build": [
+      "@php vendor/bin/testbench workbench:build --ansi"
+    ],
+    "serve": [
+      "Composer\\Config::disableProcessTimeout",
+      "@build",
+      "@php vendor/bin/testbench serve --ansi"
+    ],
+    "lint": [
+      "vendor/bin/pint --parallel"
+    ],
+    "lint:check": [
+      "vendor/bin/pint --parallel --test"
+    ],
+    "analyse": [
+      "vendor/bin/phpstan analyse --memory-limit=1G"
+    ],
+    "test:types": [
+      "vendor/bin/pest --type-coverage --min=100"
+    ],
+    "test:unit": [
+      "vendor/bin/pest --parallel"
+    ],
+    "test": [
+      "@analyse",
+      "@lint:check",
+      "@test:types",
+      "@test:unit"
+    ],
+    "clear": [
+      "@php vendor/bin/testbench package:purge-skeleton --ansi"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Onelegstudios\\Shape\\ShapeServiceProvider"
+      ],
+      "aliases": {
+        "Shape": "Onelegstudios\\Shape\\Facades\\Shape"
+      }
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "phpstan/extension-installer": true
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
 }

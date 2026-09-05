@@ -1,9 +1,9 @@
 # Shape
 
-Shape is a Blade component library for Livewire applications. Components are
-anonymous Blade files, styled with Tailwind, and annotated so that
-[Blaze](https://github.com/livewire/blaze) can fold them into their parent
-templates at compile time.
+Shape the interface. Predictable Blade UI components for Livewire applications.
+Components are anonymous Blade files, styled with Tailwind, and annotated so that
+[Blaze](https://github.com/livewire/blaze) can fold them into their parent templates
+at compile time.
 
 ## Installation
 
@@ -14,8 +14,8 @@ composer require onelegstudios/shape
 Import the design tokens after Tailwind in your application stylesheet:
 
 ```css
-@import 'tailwindcss';
-@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
+@import "tailwindcss";
+@import "../../vendor/onelegstudios/shape/resources/css/shape.css";
 ```
 
 The token file declares `@source "../views"`, so your Tailwind build scans the
@@ -39,54 +39,54 @@ Folding is not free of obligations at the call site. See
 
 ## Components
 
-| Component | Tier | |
-| --- | --- | --- |
-| [`button`](components/button.md) | fold | An action, with `variant` for hierarchy and `tone` for meaning |
-| [`icon`](components/icon.md) | fold + memo | One component per icon, generated from your set, at three sizes and two styles |
-| [`heading`](components/heading.md) | fold | `level` picks the element, `size` picks the type |
-| [`text`](components/text.md) | fold | A paragraph, muted or strong |
-| [`card`](components/card.md) | fold | A surface, with a header and footer if you want them |
-| [`separator`](components/separator.md) | fold + memo | A rule, with an optional label in it |
-| [`badge`](components/badge.md) | fold + memo | A piece of state attached to something else |
-| [`empty`](components/empty.md) | fold | The screen before there is any data |
-| [`field`](components/field.md) | fold | Label, description, control and error, assembled |
-| [`input`](components/input.md) | fold | A text input; give it a `label` and it writes the field |
-| [`textarea`](components/textarea.md) | fold | The input's chrome, resizing vertically only |
-| [`select`](components/select.md) | fold | A native select, restyled; options are children |
-| [`checkbox`](components/checkbox.md) | fold | A checkbox inside its own label |
-| [`radio`](components/radio.md) | fold | Grouped by a real fieldset |
-| [`switch`](components/switch.md) | fold | A setting that applies the moment it moves |
-| [`modal`](components/modal.md) | fold | A `<dialog>`, so the focus trap is the platform's |
-| [`drawer`](components/drawer.md) | fold | The modal, pinned to an edge |
-| [`dropdown`](components/dropdown.md) | fold | A menu of actions, anchored to its trigger |
-| [`popover`](components/popover.md) | fold | Anchored content in the top layer |
-| [`tooltip`](components/tooltip.md) | fold | A label for an icon button |
-| [`alert`](components/alert.md) | fold | A message that stays on the page |
-| [`toast`](components/toast.md) | fold | A message about something that just happened |
-| [`toaster`](components/toast.md) | compile | Where toasts appear; one per layout |
-| [`confirm`](components/confirm.md) | fold | One dialog for every confirmation in the app |
-| [`progress`](components/progress.md) | fold | A native `<progress>`, restyled |
-| [`table`](components/table.md) | fold | Rows and columns, with the empty state built in |
-| [`list`](components/list.md) | fold | The table's answer without the columns |
-| [`pagination`](components/pagination.md) | compile | Hand it the paginator you already have |
-| [`stat`](components/stat.md) | fold + memo | A number, its label and its trend |
-| [`avatar`](components/avatar.md) | fold + memo | A person, as a picture or as initials |
-| [`tabs`](components/tabs.md) | fold | Links when they're links, tabs when they're not |
+| Component                                | Tier        |                                                                                |
+| ---------------------------------------- | ----------- | ------------------------------------------------------------------------------ |
+| [`button`](components/button.md)         | fold        | An action, with `variant` for hierarchy and `tone` for meaning                 |
+| [`icon`](components/icon.md)             | fold + memo | One component per icon, generated from your set, at three sizes and two styles |
+| [`heading`](components/heading.md)       | fold        | `level` picks the element, `size` picks the type                               |
+| [`text`](components/text.md)             | fold        | A paragraph, muted or strong                                                   |
+| [`card`](components/card.md)             | fold        | A surface, with a header and footer if you want them                           |
+| [`separator`](components/separator.md)   | fold + memo | A rule, with an optional label in it                                           |
+| [`badge`](components/badge.md)           | fold + memo | A piece of state attached to something else                                    |
+| [`empty`](components/empty.md)           | fold        | The screen before there is any data                                            |
+| [`field`](components/field.md)           | fold        | Label, description, control and error, assembled                               |
+| [`input`](components/input.md)           | fold        | A text input; give it a `label` and it writes the field                        |
+| [`textarea`](components/textarea.md)     | fold        | The input's chrome, resizing vertically only                                   |
+| [`select`](components/select.md)         | fold        | A native select, restyled; options are children                                |
+| [`checkbox`](components/checkbox.md)     | fold        | A checkbox inside its own label                                                |
+| [`radio`](components/radio.md)           | fold        | Grouped by a real fieldset                                                     |
+| [`switch`](components/switch.md)         | fold        | A setting that applies the moment it moves                                     |
+| [`modal`](components/modal.md)           | fold        | A `<dialog>`, so the focus trap is the platform's                              |
+| [`drawer`](components/drawer.md)         | fold        | The modal, pinned to an edge                                                   |
+| [`dropdown`](components/dropdown.md)     | fold        | A menu of actions, anchored to its trigger                                     |
+| [`popover`](components/popover.md)       | fold        | Anchored content in the top layer                                              |
+| [`tooltip`](components/tooltip.md)       | fold        | A label for an icon button                                                     |
+| [`alert`](components/alert.md)           | fold        | A message that stays on the page                                               |
+| [`toast`](components/toast.md)           | fold        | A message about something that just happened                                   |
+| [`toaster`](components/toast.md)         | compile     | Where toasts appear; one per layout                                            |
+| [`confirm`](components/confirm.md)       | fold        | One dialog for every confirmation in the app                                   |
+| [`progress`](components/progress.md)     | fold        | A native `<progress>`, restyled                                                |
+| [`table`](components/table.md)           | fold        | Rows and columns, with the empty state built in                                |
+| [`list`](components/list.md)             | fold        | The table's answer without the columns                                         |
+| [`pagination`](components/pagination.md) | compile     | Hand it the paginator you already have                                         |
+| [`stat`](components/stat.md)             | fold + memo | A number, its label and its trend                                              |
+| [`avatar`](components/avatar.md)         | fold + memo | A person, as a picture or as initials                                          |
+| [`tabs`](components/tabs.md)             | fold        | Links when they're links, tabs when they're not                                |
 
 Every component page opens with a rendered example of each prop that changes
 what you see, and closes with a prop reference and the component's Blaze tier.
 
 The guides cover what several components share:
 
-| Guide | |
-| --- | --- |
-| [Theming](theming.md) | Changing the colours step by step, the tokens, the one-colour seed, the surface contract, tones, a second accent and dark mode |
-| [Forms](forms.md) | The shorthand, groups, name resolution and validation messages |
-| [Overlays](overlays.md) | What the five overlays share: the script, the naming convention, what the platform supplies |
-| [Feedback](feedback.md) | Server to browser, and why that needs no Livewire component |
-| [Data display](data.md) | What the table, the list and the pager share, and what a component costs per row |
-| [Tooling](tooling.md) | The nine commands and the manifests they read |
-| [Folding](folding.md) | What Blaze does, and the call sites that keep a component on the fold path |
+| Guide                   |                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| [Theming](theming.md)   | Changing the colours step by step, the tokens, the one-colour seed, the surface contract, tones, a second accent and dark mode |
+| [Forms](forms.md)       | The shorthand, groups, name resolution and validation messages                                                                 |
+| [Overlays](overlays.md) | What the five overlays share: the script, the naming convention, what the platform supplies                                    |
+| [Feedback](feedback.md) | Server to browser, and why that needs no Livewire component                                                                    |
+| [Data display](data.md) | What the table, the list and the pager share, and what a component costs per row                                               |
+| [Tooling](tooling.md)   | The nine commands and the manifests they read                                                                                  |
+| [Folding](folding.md)   | What Blaze does, and the call sites that keep a component on the fold path                                                     |
 
 ## JavaScript
 
@@ -94,9 +94,9 @@ One file, for the overlays, the feedback channel, and the keyboard behaviour of
 a tab strip:
 
 ```js
-import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'
+import shape from "../../vendor/onelegstudios/shape/resources/js/shape.js";
 
-shape()   // or, if you use Alpine: Alpine.plugin(shape)
+shape(); // or, if you use Alpine: Alpine.plugin(shape)
 ```
 
 It imports nothing and depends on nothing — not Alpine, and not Livewire.

@@ -38,8 +38,25 @@ it('names only commands that exist', function () {
     }
 });
 
-it('points at documentation pages that exist', function () {
+it('points at packaged files that exist', function () {
     preg_match_all('#^- `vendor/onelegstudios/shape/([^`]+)`#m', boostSkill(), $matches);
+
+    expect($matches[1])->not->toBeEmpty();
+
+    foreach (array_unique($matches[1]) as $path) {
+        expect(__DIR__.'/../../'.$path)->toBeFile();
+    }
+});
+
+/**
+ * `docs/` is export-ignored, so it is absent from an installed package. A skill
+ * that sends an assistant into `vendor/.../docs` sends it nowhere, and nothing
+ * says so — the directory is simply not there.
+ */
+it('links documentation on GitHub rather than in the vendor directory', function () {
+    expect(boostSkill())->not->toContain('vendor/onelegstudios/shape/docs/');
+
+    preg_match_all('#https://github\.com/onelegstudios/shape/blob/main/(\S+?)\)#', boostSkill(), $matches);
 
     expect($matches[1])->not->toBeEmpty();
 

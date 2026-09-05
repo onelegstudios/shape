@@ -10,10 +10,10 @@
     <a href="https://packagist.org/packages/onelegstudios/shape"><img src="https://img.shields.io/packagist/dt/onelegstudios/shape.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
-A Blade component library for Livewire applications. Components are anonymous
-Blade files, styled with Tailwind, and annotated so that
-[Blaze](https://github.com/livewire/blaze) folds them into their parent
-templates at compile time.
+Shape the interface. Predictable Blade UI components for Livewire applications.
+Components are anonymous Blade files, styled with Tailwind, and annotated so that
+[Blaze](https://github.com/livewire/blaze) can fold them into their parent templates
+at compile time.
 
 ## Installation
 
@@ -93,8 +93,8 @@ composes, which is usually what you want. See [Commands](#commands).
 Import the design tokens after Tailwind in your application stylesheet:
 
 ```css
-@import 'tailwindcss';
-@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
+@import "tailwindcss";
+@import "../../vendor/onelegstudios/shape/resources/css/shape.css";
 ```
 
 The token file declares `@source "../views"`, so your Tailwind build scans the
@@ -130,8 +130,8 @@ state colours, one radius decision, and a per-surface foreground contract. Every
 rather than copied, so retinting Tailwind's own colours retints Shape with them.
 
 ```css
-@import 'tailwindcss';
-@import '../../vendor/onelegstudios/shape/resources/css/shape.css';
+@import "tailwindcss";
+@import "../../vendor/onelegstudios/shape/resources/css/shape.css";
 
 @theme {
     --color-shape-brand-700: oklch(45.7% 0.24 277.023);
@@ -143,9 +143,11 @@ Or derive the brand and the neutrals from one colour, with an optional second
 stylesheet:
 
 ```css
-@import '../../vendor/onelegstudios/shape/resources/css/shape-seed.css';
+@import "../../vendor/onelegstudios/shape/resources/css/shape-seed.css";
 
-:root { --shape-seed: oklch(52% 0.16 300); }
+:root {
+    --shape-seed: oklch(52% 0.16 300);
+}
 ```
 
 Each step pins its OKLCH lightness and takes only hue and chroma from the seed,
@@ -182,9 +184,9 @@ One file, for the overlays, the feedback channel, and the keyboard behaviour of
 a tab strip:
 
 ```js
-import shape from '../../vendor/onelegstudios/shape/resources/js/shape.js'
+import shape from "../../vendor/onelegstudios/shape/resources/js/shape.js";
 
-shape()   // or, if your application uses Alpine: Alpine.plugin(shape)
+shape(); // or, if your application uses Alpine: Alpine.plugin(shape)
 ```
 
 It imports nothing and depends on nothing — not Alpine, and not Livewire. Modal
@@ -254,8 +256,8 @@ edited from one the package has changed underneath you.
 
 `shape:icon` generates icon components from a set of SVGs. A set declares the
 repository that draws it, so the command fetches it, caches it, and writes the
-resolved commit into every file — which is what makes *Regenerate; don't
-hand-edit* an instruction you can follow rather than one that asks for a
+resolved commit into every file — which is what makes _Regenerate; don't
+hand-edit_ an instruction you can follow rather than one that asks for a
 checkout nobody mentioned. `--from` reads a local directory instead, and
 `shape:icon:status` reports which drawings have moved upstream since.
 
@@ -265,7 +267,7 @@ lucide.bell` writes what `<x-shape::icon.lucide.bell />` resolves — which is
 asks two sets for something at once.
 
 Fourteen of those components are the ones Shape's own components draw — the
-*slots*, named `shape-close` and `shape-warning` for the role they play rather
+_slots_, named `shape-close` and `shape-warning` for the role they play rather
 than for whichever vendor drew them. `shape:icon:replace --set=lucide`
 regenerates that fourteen from another set without a call site changing.
 Heroicons, Lucide, Tabler, Phosphor and Bootstrap Icons ship as sets, and any
