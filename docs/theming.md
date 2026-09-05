@@ -30,15 +30,15 @@ declarations authoritative and leaves nothing to rebuild on an upgrade. Anything
 you declare after the import wins:
 
 ```css
-@import "tailwindcss";
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+@import 'tailwindcss';
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
 
 @theme {
     --radius-shape: 0.25rem;
 }
 ```
 
-`vendor:publish --tag="laravel-shape-css"` copies the file into
+`vendor:publish --tag='laravel-shape-css'` copies the file into
 `resources/css/shape.css` if you would rather own the token layer outright — but
 then you own it, including every change the package makes to it later. Overriding
 from your own file is the arrangement to prefer.
@@ -53,8 +53,8 @@ your colours.
 
 ```css
 /* resources/css/app.css */
-@import "tailwindcss";
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+@import 'tailwindcss';
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
 
 /* Everything from here down wins. */
 ```
@@ -81,7 +81,7 @@ in the file from step 1.
 only one whose contrast was measured rather than assumed:
 
 ```css
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css";
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css';
 
 :root {
     --shape-seed: oklch(52% 0.16 300);
@@ -159,8 +159,8 @@ brand should still get calm greys. The cast is meant to be felt, not seen.
 Rebuild the stylesheet — `npm run dev` or `npm run build` — and check, in this
 order:
 
-1. A `variant="primary"` button. That is the `700` step carrying white.
-2. A `variant="subtle"` button. That is the `800` label on the `100` tint, and
+1. A `variant='primary'` button. That is the `700` step carrying white.
+2. A `variant='subtle'` button. That is the `800` label on the `100` tint, and
    its hover is `800` on `200`.
 3. Tab to something focusable. The ring is the brand's `600`.
 4. A card, a table, a divider. Those are the neutrals from step 4.
@@ -260,8 +260,8 @@ want it moved — but move it _away_ from the brand, and mind the arc between
 280° and 350°, which is the only stretch the four state colours leave free.
 
 ```blade
-<x-shape::badge label="New" tone="accent" />
-<x-shape::button variant="subtle" tone="accent">Try the beta</x-shape::button>
+<x-shape::badge label='New' tone='accent' />
+<x-shape::button variant='subtle' tone='accent'>Try the beta</x-shape::button>
 ```
 
 Like the brand, it resolves no glyph. Neither is a state, and a badge that draws
@@ -278,8 +278,8 @@ the tone, so the message survives greyscale.
 the brand even though the default brand is a cyan that would pass for one,
 because the brand is the ramp this page has just finished inviting you to move.
 Share it, and an informational alert is violet in a violet product and orange in
-an orange one — where it reads as a warning. `tone="brand"` still means
-emphasis, and resolves no glyph; `tone="info"` means "worth knowing", and stays
+an orange one — where it reads as a warning. `tone='brand'` still means
+emphasis, and resolves no glyph; `tone='info'` means "worth knowing", and stays
 blue however far the brand travels.
 
 ## One colour, both ramps
@@ -288,9 +288,9 @@ For the common case — a brand colour, and neutrals that agree with it — ther
 an optional second stylesheet that derives the whole palette from a single value:
 
 ```css
-@import "tailwindcss";
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css";
+@import 'tailwindcss';
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css';
 
 :root {
     --shape-seed: oklch(52% 0.16 300);
@@ -336,8 +336,8 @@ real constraint on the value you pass:
 `[data-shape-seed]` re-derives the palette from whatever seed is in scope:
 
 ```blade
-<section data-shape-seed style="--shape-seed: oklch(52% 0.19 25)">
-    <x-shape::button variant="primary" tone="brand">Upgrade</x-shape::button>
+<section data-shape-seed style='--shape-seed: oklch(52% 0.19 25)'>
+    <x-shape::button variant='primary' tone='brand'>Upgrade</x-shape::button>
 </section>
 ```
 
@@ -368,7 +368,7 @@ surface exports the pair that belongs on it:
 | `--shape-fg-muted` | The de-emphasized foreground for this surface |
 | `--shape-ring`     | The focus ring                                |
 
-`<x-shape::text variant="muted">` reads `--shape-fg-muted` rather than
+`<x-shape::text variant='muted'>` reads `--shape-fg-muted` rather than
 `text-shape-500`, which is what makes "don't use grey text on a coloured
 background" structurally impossible rather than merely documented. On a tinted
 surface the muted foreground is the same hue dialled down, not grey.
@@ -394,10 +394,10 @@ A surface of your own is two declarations:
 ```
 
 ```blade
-<x-shape::card data-shape-surface="promo" class="bg-violet-700">
-    <x-shape::heading size="lg">Upgrade</x-shape::heading>
+<x-shape::card data-shape-surface='promo' class='bg-violet-700'>
+    <x-shape::heading size='lg'>Upgrade</x-shape::heading>
     {{-- Muted, and still legible, because it isn't grey. --}}
-    <x-shape::text variant="muted">Cancel any time.</x-shape::text>
+    <x-shape::text variant='muted'>Cancel any time.</x-shape::text>
 </x-shape::card>
 ```
 
@@ -511,7 +511,7 @@ media query, this block needs the treatment the
 `[data-shape-tone]` in `components` whatever specificity you give it.
 
 **4. Optional — the filled surface.** Only if you will put
-`data-shape-surface="spotlight"` on a container and let the text inside find its
+`data-shape-surface='spotlight'` on a container and let the text inside find its
 own foreground:
 
 ```css
@@ -531,12 +531,12 @@ own foreground:
 Then it is a tone like any other, everywhere a tone goes:
 
 ```blade
-<x-shape::badge label="Beta" tone="spotlight" />
-<x-shape::button variant="subtle" tone="spotlight">Join the beta</x-shape::button>
+<x-shape::badge label='Beta' tone='spotlight' />
+<x-shape::button variant='subtle' tone='spotlight'>Join the beta</x-shape::button>
 ```
 
 One caveat, and it is small: the alert, the badge and the toast branch on `tone`
-to resolve their glyph, so an unknown tone gets no icon. Pass `icon="…"`
+to resolve their glyph, so an unknown tone gets no icon. Pass `icon='…'`
 explicitly on those three. Everything else only ever interpolates `tone` into
 the attribute, which is also what keeps `:tone="$destructive ? 'danger' : null"`
 on the fold path — see [Folding](folding.md).
@@ -547,7 +547,7 @@ Two different things get asked for under that name, and they have different
 answers.
 
 **Moving the accent you have** is a retint: eleven declarations, no new tone,
-and everything already passing `tone="accent"` follows. This is the common case
+and everything already passing `tone='accent'` follows. This is the common case
 — it is what a product whose brand has landed near fuchsia needs.
 
 **Adding a second accent** is a tone of your own and mechanically nothing more
@@ -699,7 +699,7 @@ In the right layer the extra attribute is enough to win on its own.
 
 This is the one place where theming means restating something Shape already says
 rather than overriding it. If you find yourself doing it, publishing the
-stylesheet (`vendor:publish --tag="laravel-shape-css"`) and rewriting the three
+stylesheet (`vendor:publish --tag='laravel-shape-css'`) and rewriting the three
 media queries in place is the tidier trade — at the cost of owning the file.
 
 `workbench/resources/css/theme.src.css` in this repository is the whole thing
@@ -714,8 +714,8 @@ zero specificity with `[:where(&)]:`, so there is no `!important` and no
 class-merging utility involved:
 
 ```blade
-<x-shape::button class="rounded-full w-full">Continue</x-shape::button>
-<x-shape::card class="bg-brand-50 shadow-none">…</x-shape::card>
+<x-shape::button class='rounded-full w-full'>Continue</x-shape::button>
+<x-shape::card class='bg-brand-50 shadow-none'>…</x-shape::card>
 ```
 
 Past that, [`shape:eject`](tooling.md#shapeeject) hands you the file and
