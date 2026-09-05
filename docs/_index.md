@@ -80,7 +80,7 @@ The guides cover what several components share:
 
 | Guide | |
 | --- | --- |
-| [Theming](theming.md) | The tokens, the one-colour seed, the surface contract, tones and dark mode |
+| [Theming](theming.md) | Changing the colours step by step, the tokens, the one-colour seed, the surface contract, tones, a second accent and dark mode |
 | [Forms](forms.md) | The shorthand, groups, name resolution and validation messages |
 | [Overlays](overlays.md) | What the five overlays share: the script, the naming convention, what the platform supplies |
 | [Feedback](feedback.md) | Server to browser, and why that needs no Livewire component |

@@ -19,6 +19,10 @@ Customisation escalates in three steps. This page is the first one in full:
 3. **[Eject](tooling.md#shapeeject).** Copy a component into your application
    and own it outright.
 
+If you are here to make it your colours and would rather read the recipe than
+the reasoning, [Changing the colours, step by step](#changing-the-colours-step-by-step)
+is the whole of step 1 as instructions.
+
 ## Where overrides go
 
 The tokens are imported from `vendor/`, which is what keeps your own
@@ -39,20 +43,153 @@ you declare after the import wins:
 then you own it, including every change the package makes to it later. Overriding
 from your own file is the arrangement to prefer.
 
+## Changing the colours, step by step
+
+Everything below this section explains why the token layer is shaped the way it
+is. This one is the short version: what to type, in what order, to make Shape
+your colours.
+
+### 1. Write in your own stylesheet, under the import
+
+```css
+/* resources/css/app.css */
+@import "tailwindcss";
+@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+
+/* Everything from here down wins. */
+```
+
+Every step below goes in that file, under that import. You do not edit
+`vendor/`, and publishing the stylesheet is not the way in: it hands you the
+file and every future change to it along with it.
+
+### 2. Know which ramps are yours to move
+
+| Ramp                                   | Yours?                                                                                                                     |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `--color-shape-brand-*`                | Yes. The product's colour, and what most retints are about.                                                                |
+| `--color-shape-*` — the neutrals       | Yes, and they should follow the brand's hue.                                                                               |
+| `--color-shape-accent-*`               | Yes — and you have to, if the brand lands near fuchsia. See [Adding another accent colour](#adding-another-accent-colour). |
+| `danger`, `info`, `success`, `warning` | Retint to fit the palette; never repoint at another meaning.                                                               |
+
+### 3. Write the brand ramp
+
+Three ways to produce eleven steps, in increasing order of effort. All three go
+in the file from step 1.
+
+**A — one value, and the file derives both ramps.** The shortest path, and the
+only one whose contrast was measured rather than assumed:
+
+```css
+@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css";
+
+:root {
+    --shape-seed: oklch(52% 0.16 300);
+}
+```
+
+Note `:root` and not `@theme` — the seed is an input to a derivation, not a
+theme token. It moves the neutrals too, so step 4 is already done. What it does
+in full, and the one precondition it carries, is
+[One colour, both ramps](#one-colour-both-ramps).
+
+**B — alias another Tailwind ramp.** Shape's own ramps are aliases; a retint can
+be one too. Eleven lines, no colour values to get right, and it inherits the
+step-to-contrast relationship the tones depend on — every Tailwind `700` carries
+white at AA, the tightest of them at 4.9:1:
+
+```css
+@theme {
+    --color-shape-brand-50: var(--color-violet-50);
+    --color-shape-brand-100: var(--color-violet-100);
+    --color-shape-brand-200: var(--color-violet-200);
+    --color-shape-brand-300: var(--color-violet-300);
+    --color-shape-brand-400: var(--color-violet-400);
+    --color-shape-brand-500: var(--color-violet-500);
+    --color-shape-brand-600: var(--color-violet-600);
+    --color-shape-brand-700: var(--color-violet-700);
+    --color-shape-brand-800: var(--color-violet-800);
+    --color-shape-brand-900: var(--color-violet-900);
+    --color-shape-brand-950: var(--color-violet-950);
+}
+```
+
+Which is not the same as retinting `--color-violet-*` itself. This moves Shape
+and leaves your own `text-violet-600` where it is; that would move both. The
+difference is [Colour](#colour), below. One precondition: an application that
+clears Tailwind's palette with `--color-*: initial` has left nothing for these
+to point at, and wants path C.
+
+**C — literal values.** For a brand handed to you as one hex code with a ramp
+built around it, in a generator or by hand. The same eleven declarations with
+`oklch(…)` in place of each `var(…)`, and two steps you have to get right
+yourself — see
+[The two steps a hand-written ramp has to get right](#the-two-steps-a-hand-written-ramp-has-to-get-right).
+
+### 4. Bring the neutrals with it
+
+Skipping this is the most common way a retinted product still looks like it did
+not take. Tailwind's `mist` is cyan-matched, so a violet brand on mist greys is
+a violet product sitting on somebody else's page. Path A does this for you; for
+B and C, take the seed file's approach directly and derive the greys from one
+hue at a fixed, very low chroma:
+
+```css
+@theme {
+    /* mist's own lightness and chroma, at the brand's hue. */
+    --color-shape-50: oklch(98.7% 0.002 300);
+    --color-shape-100: oklch(96.3% 0.002 300);
+    --color-shape-200: oklch(92.5% 0.005 300);
+    --color-shape-300: oklch(87.2% 0.007 300);
+    --color-shape-400: oklch(72.3% 0.014 300);
+    --color-shape-500: oklch(56% 0.021 300);
+    --color-shape-600: oklch(45% 0.017 300);
+    --color-shape-700: oklch(37.8% 0.015 300);
+    --color-shape-800: oklch(27.5% 0.011 300);
+    --color-shape-900: oklch(21.8% 0.008 300);
+    --color-shape-950: oklch(14.8% 0.004 300);
+}
+```
+
+The chroma is absolute rather than scaled from the brand's on purpose: a neon
+brand should still get calm greys. The cast is meant to be felt, not seen.
+
+### 5. Rebuild, and look at five things
+
+Rebuild the stylesheet — `npm run dev` or `npm run build` — and check, in this
+order:
+
+1. A `variant="primary"` button. That is the `700` step carrying white.
+2. A `variant="subtle"` button. That is the `800` label on the `100` tint, and
+   its hover is `800` on `200`.
+3. Tab to something focusable. The ring is the brand's `600`.
+4. A card, a table, a divider. Those are the neutrals from step 4.
+5. Switch the machine to dark. Nothing above should need a second decision —
+   see [Dark mode](#dark-mode) for why, and for the one way a partial ramp
+   fails there and nowhere else.
+
+### What you do not have to touch
+
+No component, no `dark:` variant, and no second palette. Components never name a
+brand or accent step; they read `--shape-tone-*` and `--shape-fg*`, and the
+tone blocks read the ramp. Which is why a retint moves a button, a badge, a
+checkbox, an alert and a progress bar together, and why the ejected-component
+escape hatch is not part of any of this.
+
 ## What Shape owns
 
-| Token | Default | What reads it |
-| --- | --- | --- |
-| `--color-shape-50` … `-950` | Tailwind's `mist` | Every neutral surface, border and rule |
-| `--color-shape-brand-50` … `-950` | Tailwind's `cyan` | The brand tone, the focus ring, the active tab and page |
-| `--color-shape-accent-50` … `-950` | Tailwind's `fuchsia` | The accent tone |
-| `--color-shape-danger-*` | Tailwind's `red` | The danger tone |
-| `--color-shape-info-*` | Tailwind's `blue` | The info tone |
-| `--color-shape-success-*` | Tailwind's `green` | The success tone |
-| `--color-shape-warning-*` | Tailwind's `yellow` | The warning tone |
-| `--color-shape-*-fg`, `-fg-muted` | Ends of each ramp | What goes on top when a tone is used as a fill |
-| `--radius-shape`, `--radius-shape-lg` | `0.5rem`, `0.75rem` | `rounded-shape`, `rounded-shape-lg` |
-| `--text-2xs` | `0.6875rem` | Badges, avatar initials, table headings |
+| Token                                 | Default              | What reads it                                           |
+| ------------------------------------- | -------------------- | ------------------------------------------------------- |
+| `--color-shape-50` … `-950`           | Tailwind's `mist`    | Every neutral surface, border and rule                  |
+| `--color-shape-brand-50` … `-950`     | Tailwind's `cyan`    | The brand tone, the focus ring, the active tab and page |
+| `--color-shape-accent-50` … `-950`    | Tailwind's `fuchsia` | The accent tone                                         |
+| `--color-shape-danger-*`              | Tailwind's `red`     | The danger tone                                         |
+| `--color-shape-info-*`                | Tailwind's `blue`    | The info tone                                           |
+| `--color-shape-success-*`             | Tailwind's `green`   | The success tone                                        |
+| `--color-shape-warning-*`             | Tailwind's `yellow`  | The warning tone                                        |
+| `--color-shape-*-fg`, `-fg-muted`     | Ends of each ramp    | What goes on top when a tone is used as a fill          |
+| `--radius-shape`, `--radius-shape-lg` | `0.5rem`, `0.75rem`  | `rounded-shape`, `rounded-shape-lg`                     |
+| `--text-2xs`                          | `0.6875rem`          | Badges, avatar initials, table headings                 |
 
 And what it deliberately does not own: the spacing scale, the rest of the type
 scale, the shadow scale (see [Elevation](elevation.md)), and the font family.
@@ -61,7 +198,7 @@ application has already chosen.
 
 ## Colour
 
-Every ramp is *aliased* to a Tailwind colour rather than copied out of it:
+Every ramp is _aliased_ to a Tailwind colour rather than copied out of it:
 
 ```css
 --color-shape-brand-700: var(--color-cyan-700, oklch(52% 0.105 223.128));
@@ -108,7 +245,7 @@ the bottom of its own ramp. If you retint warning, keep that shape.
 
 The brand is what the product looks like: the primary button, the focus ring,
 the active tab, the checked switch. It is everywhere — which is exactly why it
-cannot also be the colour that means *look here*. A `New` badge in the brand's
+cannot also be the colour that means _look here_. A `New` badge in the brand's
 own cyan, on a page already full of cyan, announces nothing.
 
 That second colour is `accent`, and it defaults to Tailwind's `fuchsia`. It is
@@ -119,7 +256,7 @@ stops working — the same rule the brand is under, one level up.
 It is not derived from the seed, and that is the point. An accent that followed
 the brand around the hue wheel would land next to it and stop standing apart. It
 is still yours to retint, unlike danger and success — a magenta product will
-want it moved — but move it *away* from the brand, and mind the arc between
+want it moved — but move it _away_ from the brand, and mind the arc between
 280° and 350°, which is the only stretch the four state colours leave free.
 
 ```blade
@@ -225,11 +362,11 @@ saturated steps.
 Components never reach for a global grey. They read two variables, and every
 surface exports the pair that belongs on it:
 
-| Variable | Meaning |
-| --- | --- |
-| `--shape-fg` | The foreground for this surface |
+| Variable           | Meaning                                       |
+| ------------------ | --------------------------------------------- |
+| `--shape-fg`       | The foreground for this surface               |
 | `--shape-fg-muted` | The de-emphasized foreground for this surface |
-| `--shape-ring` | The focus ring |
+| `--shape-ring`     | The focus ring                                |
 
 `<x-shape::text variant="muted">` reads `--shape-fg-muted` rather than
 `text-shape-500`, which is what makes "don't use grey text on a coloured
@@ -245,9 +382,13 @@ A surface of your own is two declarations:
 
 ```css
 @layer base {
-    [data-shape-surface='promo'] {
+    [data-shape-surface="promo"] {
         --shape-fg: var(--color-white);
-        --shape-fg-muted: color-mix(in oklch, var(--color-white) 76%, transparent);
+        --shape-fg-muted: color-mix(
+            in oklch,
+            var(--color-white) 76%,
+            transparent
+        );
     }
 }
 ```
@@ -268,22 +409,22 @@ into a variant × tone class matrix, so the tone half lives in CSS instead: a
 tone sets the variables, every variant reads them.
 
 ```css
-[data-shape-tone='brand'] {
+[data-shape-tone="brand"] {
     --shape-tone: var(--color-shape-brand-700);
     /* … */
 }
 ```
 
-| Variable | Used by |
-| --- | --- |
-| `--shape-tone` | The `primary` fill; the progress bar; a checked control |
-| `--shape-tone-hover` | That fill, hovered |
-| `--shape-tone-fg` | What goes on the fill |
-| `--shape-tone-ink` | The `subtle` and `ghost` label, and the tint surface's foreground |
-| `--shape-tone-tint` | The `subtle` background, and the alert's |
-| `--shape-tone-tint-hover` | That tint, hovered |
-| `--shape-tone-surface`, `-surface-hover` | The `outline` variant's background |
-| `--shape-tone-border` | The `outline` variant's border |
+| Variable                                 | Used by                                                           |
+| ---------------------------------------- | ----------------------------------------------------------------- |
+| `--shape-tone`                           | The `primary` fill; the progress bar; a checked control           |
+| `--shape-tone-hover`                     | That fill, hovered                                                |
+| `--shape-tone-fg`                        | What goes on the fill                                             |
+| `--shape-tone-ink`                       | The `subtle` and `ghost` label, and the tint surface's foreground |
+| `--shape-tone-tint`                      | The `subtle` background, and the alert's                          |
+| `--shape-tone-tint-hover`                | That tint, hovered                                                |
+| `--shape-tone-surface`, `-surface-hover` | The `outline` variant's background                                |
+| `--shape-tone-border`                    | The `outline` variant's border                                    |
 
 The tones are `neutral` (the default, and the bare `[data-shape-tone]` block),
 `brand`, `accent`, `danger`, `info`, `success` and `warning`. Retinting a ramp
@@ -293,34 +434,184 @@ palettes.
 
 ### A tone of your own
 
-Declare the block in the components layer and pass its name as `tone`:
+Four blocks, and the fourth is optional. The example is `spotlight`, a second
+highlight colour aliased to Tailwind's pink, but nothing below is specific to
+what it means: a `premium` tone or an `archived` one is the same four blocks.
+
+**1. The ramp.** All eleven steps. Light mode reads four of them and dark mode
+reads five others, which is why a ramp declared down to the steps you can watch
+go wrong in the browser fails later and elsewhere — the table under
+[Dark mode](#what-a-retint-costs-you-here) is which is which:
+
+```css
+@theme {
+    --color-shape-spotlight-50: var(--color-pink-50);
+    --color-shape-spotlight-100: var(--color-pink-100);
+    --color-shape-spotlight-200: var(--color-pink-200);
+    --color-shape-spotlight-300: var(--color-pink-300);
+    --color-shape-spotlight-400: var(--color-pink-400);
+    --color-shape-spotlight-500: var(--color-pink-500);
+    --color-shape-spotlight-600: var(--color-pink-600);
+    --color-shape-spotlight-700: var(--color-pink-700);
+    --color-shape-spotlight-800: var(--color-pink-800);
+    --color-shape-spotlight-900: var(--color-pink-900);
+    --color-shape-spotlight-950: var(--color-pink-950);
+}
+```
+
+**2. The light tone block.** In `@layer components` — `components` and not
+`base`, for the reason under
+[Dark mode](#if-your-application-has-a-manual-toggle):
 
 ```css
 @layer components {
-    [data-shape-tone='brand'] {
-        --shape-tone: var(--color-brand-700);
-        --shape-tone-hover: var(--color-brand-800);
+    [data-shape-tone="spotlight"] {
+        --shape-tone: var(--color-shape-spotlight-700);
+        --shape-tone-hover: var(--color-shape-spotlight-800);
         --shape-tone-fg: white;
-        --shape-tone-ink: var(--color-brand-800);
-        --shape-tone-tint: var(--color-brand-100);
-        --shape-tone-tint-hover: var(--color-brand-200);
+        --shape-tone-ink: var(--color-shape-spotlight-800);
+        --shape-tone-tint: var(--color-shape-spotlight-100);
+        --shape-tone-tint-hover: var(--color-shape-spotlight-200);
     }
 }
 ```
 
-```blade
-<x-shape::button variant="primary" tone="brand">Upgrade</x-shape::button>
+Six lines and not nine, because the `neutral` block sets all nine variables and
+a tone that overrides only some of them inherits the rest.
+`--shape-tone-surface`, `-surface-hover` and `-border` are the three left
+inherited, and the shipped tones leave them alone too: the `outline` variant is
+neutral chrome with a coloured label, in every tone.
+
+**3. The dark tone block.** The same six variables at the dark mode's steps —
+the fill drops to `500` and brightens on hover instead of darkening, and the
+tint inverts to the bottom of the ramp:
+
+```css
+@layer components {
+    @media (prefers-color-scheme: dark) {
+        [data-shape-tone="spotlight"] {
+            --shape-tone: var(--color-shape-spotlight-500);
+            --shape-tone-hover: var(--color-shape-spotlight-400);
+            --shape-tone-fg: var(--color-shape-950);
+            --shape-tone-ink: var(--color-shape-spotlight-200);
+            --shape-tone-tint: var(--color-shape-spotlight-950);
+            --shape-tone-tint-hover: var(--color-shape-spotlight-900);
+        }
+    }
+}
 ```
 
-The `neutral` block sets all nine variables; a tone that only overrides some of
-them inherits the rest, which is why the five shipped tones are six lines each
-and not nine.
+Note `--shape-tone-fg` there: dark fills take the _neutral_ `950`, not the
+tone's own. A `500` step is bright enough that dark text is the readable choice
+on it, which is the same reason warning takes dark text in both modes. And if
+your application drives dark mode from a class or attribute rather than the
+media query, this block needs the treatment the
+[toggle section](#if-your-application-has-a-manual-toggle) describes — still in
+`@layer components`, because a tone written in `base` loses to the plain
+`[data-shape-tone]` in `components` whatever specificity you give it.
+
+**4. Optional — the filled surface.** Only if you will put
+`data-shape-surface="spotlight"` on a container and let the text inside find its
+own foreground:
+
+```css
+@theme {
+    --color-shape-spotlight-fg: var(--color-shape-spotlight-50);
+    --color-shape-spotlight-fg-muted: var(--color-shape-spotlight-100);
+}
+
+@layer base {
+    [data-shape-surface="spotlight"] {
+        --shape-fg: var(--color-shape-spotlight-fg);
+        --shape-fg-muted: var(--color-shape-spotlight-fg-muted);
+    }
+}
+```
+
+Then it is a tone like any other, everywhere a tone goes:
+
+```blade
+<x-shape::badge label="Beta" tone="spotlight" />
+<x-shape::button variant="subtle" tone="spotlight">Join the beta</x-shape::button>
+```
 
 One caveat, and it is small: the alert, the badge and the toast branch on `tone`
 to resolve their glyph, so an unknown tone gets no icon. Pass `icon="…"`
 explicitly on those three. Everything else only ever interpolates `tone` into
 the attribute, which is also what keeps `:tone="$destructive ? 'danger' : null"`
 on the fold path — see [Folding](folding.md).
+
+## Adding another accent colour
+
+Two different things get asked for under that name, and they have different
+answers.
+
+**Moving the accent you have** is a retint: eleven declarations, no new tone,
+and everything already passing `tone="accent"` follows. This is the common case
+— it is what a product whose brand has landed near fuchsia needs.
+
+**Adding a second accent** is a tone of your own and mechanically nothing more
+— [A tone of your own](#a-tone-of-your-own) writes out the four blocks, using
+this exact case as its example. What is accent-specific is not the CSS but the
+decision: Shape ships one accent on purpose, because one colour meaning _look
+here_ is about as much as an interface can carry before none of them does.
+Before writing a second, be able to say what it means that the first does not.
+"Beta" against "recommended" is two jobs. "Another nice colour" is not one. Then
+the two questions below are the ones left.
+
+### Moving the accent you have
+
+[Step 3 of the recipe](#3-write-the-brand-ramp), on the accent's eleven steps
+instead of the brand's. Aliasing another Tailwind ramp is the way in:
+
+```css
+@theme {
+    --color-shape-accent-50: var(--color-rose-50);
+    --color-shape-accent-100: var(--color-rose-100);
+    /* … through … */
+    --color-shape-accent-950: var(--color-rose-950);
+}
+```
+
+Nothing else needs restating. `--color-shape-accent-fg` is declared as
+`var(--color-shape-accent-50)`, so the pair that goes on the filled surface
+moves with the ramp; the tone block names steps rather than colours, so it
+follows; and dark mode is the same eleven steps read at different numbers.
+
+### Where a second accent can go on the wheel
+
+The arc is crowded, and that is the real constraint rather than the CSS. Danger
+sits at 27°, warning at 86°, success at 150°, the brand at 223° until it moves,
+info at 264°, and the accent at 322°. Two rules follow:
+
+- **Away from the brand.** An accent that lands within a few tens of degrees of
+  the brand stops being the thing that stands apart from it, which is its only
+  job. This is the constraint the seed layer respects by not deriving the accent
+  at all.
+- **Away from the states**, or far enough that nothing reads as one. This is
+  where the arc runs out rather than where it obliges. Tailwind's `pink` — the
+  example in [A tone of your own](#a-tone-of-your-own) — is 354° at its `500`
+  step but has drifted to about 4° by the `700` its light fill uses, some 23°
+  from danger's red and just past the end of the 280-350° window
+  `shape.css` names. It is the least-bad slot on a full wheel, not a clean
+  one.
+
+Where the arc leaves no perfect answer, one thing works in your favour: `brand`
+and `accent` resolve no glyph, and the four states always do. A pink badge with
+no icon beside a red one carrying a triangle has already told the reader which
+of them is a state, before the hue is asked to. A tone of your own falls through
+to no glyph as well, which is the right answer for an accent — and the reason
+the glyph caveat in [A tone of your own](#a-tone-of-your-own) bites only for a
+tone you meant as a state.
+
+### Under a seed
+
+`shape-seed.css` derives the brand and the neutrals and nothing else, so a
+hand-written accent stays exactly where you put it under every seed — which is
+what you want, and the reason the shipped accent is not derived either. The one
+thing a seed changes is the arithmetic above: move the brand to 300° and the
+fuchsia accent at 322° is no longer a second colour, and both it and any
+`spotlight` of yours want re-checking against the new hue.
 
 ## Dark mode
 
@@ -335,6 +626,38 @@ colour and a ring instead; and because Tailwind resolves shadow values at build
 time rather than referencing the custom property, redefining `--shadow-sm` under
 a dark media query has no effect on the `shadow-sm` utility. See
 [Elevation](elevation.md#dark-mode).
+
+### What a retint costs you here
+
+Nothing, which is worth spelling out because it is the first thing the section
+above raises. The dark tone block is written against the same eleven steps
+as the light one, read at different numbers: the fill moves from `700` to `500`,
+its hover from `800` to `400`, the ink from `800` to `200`, the tint from `100`
+to `950`. A complete ramp is therefore already a dark ramp, and moving one moves
+both modes at once. No component names a brand or accent step either — the
+`dark:` utilities the components carry are all neutrals — so there is no second
+place to go and change.
+
+What that does mean is that an _incomplete_ ramp fails in the dark and only in
+the dark. Declare just the steps light mode reads, because those are the ones
+you can watch go wrong, and the page is correct until the machine switches;
+then the primary button falls back to whatever `--color-shape-brand-500` still
+resolves to, which is Tailwind's cyan. Declare all eleven.
+
+| Step         | What reads it                                                      |
+| ------------ | ------------------------------------------------------------------ |
+| `100`, `200` | The `subtle` background and its hover; the `ghost` hover — light   |
+| `600`        | The focus ring — light; brand only                                 |
+| `700`, `800` | The `primary` fill and its hover, and the `subtle` label — light   |
+| `400`, `500` | The `primary` fill and its hover, and the focus ring — dark        |
+| `200`        | The `subtle` label — dark                                          |
+| `900`, `950` | The same two, at the dark end — dark                               |
+| `50`, `100`  | The `-fg` pair: what goes on this tone as a filled surface         |
+| `300`        | Nothing in Shape. Yours, through `bg-shape-brand-300` and the like |
+
+The neutrals carry one more job than the table shows: dark fills take their
+foreground from `--color-shape-950`, so the neutral ramp's dark end is the text
+colour on every coloured button on a dark page.
 
 ### If your application has a manual toggle
 
@@ -355,7 +678,7 @@ the import:
 
 ```css
 @layer base {
-    [data-theme='dark'] {
+    [data-theme="dark"] {
         --shape-fg: var(--color-shape-50);
         --shape-fg-muted: var(--color-shape-400);
         --shape-ring: var(--color-shape-brand-500);
