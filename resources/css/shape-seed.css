@@ -3,9 +3,9 @@
 |
 | Import it after shape.css and give it one colour:
 |
-|   @import "tailwindcss";
-|   @import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
-|   @import "../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css";
+|   @import 'tailwindcss';
+|   @import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
+|   @import '../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css';
 |
 |   :root { --shape-seed: oklch(52% 0.16 300); }
 |

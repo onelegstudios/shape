@@ -93,8 +93,8 @@ composes, which is usually what you want. See [Commands](#commands).
 Import the design tokens after Tailwind in your application stylesheet:
 
 ```css
-@import "tailwindcss";
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+@import 'tailwindcss';
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
 ```
 
 The token file declares `@source "../views"`, so your Tailwind build scans the
@@ -130,8 +130,8 @@ state colours, one radius decision, and a per-surface foreground contract. Every
 rather than copied, so retinting Tailwind's own colours retints Shape with them.
 
 ```css
-@import "tailwindcss";
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+@import 'tailwindcss';
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
 
 @theme {
     --color-shape-brand-700: oklch(45.7% 0.24 277.023);
@@ -143,7 +143,7 @@ Or derive the brand and the neutrals from one colour, with an optional second
 stylesheet:
 
 ```css
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css";
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape-seed.css';
 
 :root { --shape-seed: oklch(52% 0.16 300); }
 ```

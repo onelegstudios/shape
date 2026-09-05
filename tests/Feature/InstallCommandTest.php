@@ -129,15 +129,15 @@ function aFetchableSet(): string
 }
 
 it('imports the tokens after tailwind', function () {
-    file_put_contents($this->css, "@import \"tailwindcss\";\n\n.something { color: red; }\n");
+    file_put_contents($this->css, "@import 'tailwindcss';\n\n.something { color: red; }\n");
 
     $this->artisan('shape:install', ['--css' => $this->css, '--js' => $this->js, '--icons' => 'hero'])->assertSuccessful();
 
     // Order matters: tokens declared before Tailwind's own import would be
     // overwritten by the theme they exist to override.
     expect(file_get_contents($this->css))->toBe(implode("\n", [
-        '@import "tailwindcss";',
-        '@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";',
+        "@import 'tailwindcss';",
+        "@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';",
         '',
         '.something { color: red; }',
         '',
@@ -155,7 +155,7 @@ it('registers the script', function () {
 });
 
 it('changes nothing on a second run', function () {
-    file_put_contents($this->css, "@import \"tailwindcss\";\n");
+    file_put_contents($this->css, "@import 'tailwindcss';\n");
     file_put_contents($this->js, "import './bootstrap';\n");
 
     $this->artisan('shape:install', ['--css' => $this->css, '--js' => $this->js, '--icons' => 'hero'])->assertSuccessful();
@@ -182,7 +182,7 @@ it('prints what it could not place rather than creating a file it invented', fun
 });
 
 it('asks which set the library is drawn in, and does nothing more when the answer is the one that ships', function () {
-    file_put_contents($this->css, "@import \"tailwindcss\";\n");
+    file_put_contents($this->css, "@import 'tailwindcss';\n");
     file_put_contents($this->js, "import './bootstrap';\n");
 
     $this->artisan('shape:install', ['--css' => $this->css, '--js' => $this->js])
@@ -198,7 +198,7 @@ it('asks which set the library is drawn in, and does nothing more when the answe
 });
 
 it('does not ask when there is no terminal to ask', function () {
-    file_put_contents($this->css, "@import \"tailwindcss\";\n");
+    file_put_contents($this->css, "@import 'tailwindcss';\n");
     file_put_contents($this->js, "import './bootstrap';\n");
 
     // Which is what keeps a scripted install the install it has always been.

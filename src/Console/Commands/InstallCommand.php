@@ -51,7 +51,7 @@ class InstallCommand extends Command
     /**
      * The line that pulls in the design tokens.
      */
-    protected string $import = '@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";';
+    protected string $import = "@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';";
 
     /**
      * Execute the console command.
@@ -94,7 +94,7 @@ class InstallCommand extends Command
 
         // After the last import in the file, which in a default Laravel
         // application is Tailwind's own. Tokens declared before `@import
-        // "tailwindcss"` would be overwritten by the theme they are overriding.
+        // 'tailwindcss'` would be overwritten by the theme they are overriding.
         $lines = explode("\n", $contents);
         $last = 0;
 

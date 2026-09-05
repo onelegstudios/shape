@@ -14,8 +14,8 @@ composer require onelegstudios/laravel-shape
 Import the design tokens after Tailwind in your application stylesheet:
 
 ```css
-@import "tailwindcss";
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+@import 'tailwindcss';
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
 ```
 
 The token file declares `@source "../views"`, so your Tailwind build scans the

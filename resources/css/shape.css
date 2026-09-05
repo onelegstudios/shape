@@ -3,8 +3,8 @@
 |
 | Import this from your application stylesheet, after Tailwind:
 |
-|   @import "tailwindcss";
-|   @import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+|   @import 'tailwindcss';
+|   @import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
 |
 | Refactoring UI's spacing and type scales are already Tailwind's defaults —
 | same authors, same scales — so this file deliberately does not redefine them.

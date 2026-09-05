@@ -44,8 +44,8 @@ choice in a published config. Pass `--no-interaction` to skip the question.
 The two lines:
 
 ```css
-@import "tailwindcss";
-@import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
+@import 'tailwindcss';
+@import '../../vendor/onelegstudios/laravel-shape/resources/css/shape.css';
 ```
 
 ```js
