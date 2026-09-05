@@ -374,9 +374,27 @@ background" structurally impossible rather than merely documented. On a tinted
 surface the muted foreground is the same hue dialled down, not grey.
 
 `data-shape-surface` republishes the pair. The values are `brand`, `accent`,
-`danger`, `info`, `success`, `warning` — the six filled surfaces — and `tint`,
-which is the pale wash whose foreground is the tone's own ink rather than
-white.
+`danger`, `info`, `success`, `warning` — the six filled surfaces, each naming its
+own palette steps — and two that read the tone instead: `tint`, the pale wash
+whose foreground is the tone's own ink rather than white, and `solid`, its filled
+counterpart, whose foreground is the tone's own `-fg`.
+
+Reading the tone is what lets those two follow it into dark mode.
+`[data-shape-surface='danger']` is red-50 in both, while the danger *tone* flips
+from a 700 fill carrying white to a 500 fill carrying dark — so a component that
+already has a tone reaches for `tint` or `solid`, and a page that paints a
+surface by hand names one of the six.
+
+`solid` publishes the same colour twice, dialling nothing back, because a fill
+that saturated has nowhere to go: white on the 700 steps starts at 4.9:1 for
+`success`, so any alpha that reads as recessed lands under AA. Hierarchy inside
+one is carried by size and weight instead.
+
+A ghost button is the single exception to all of this. It paints with
+`--shape-tone-ink` and declares a tone of its own, so inside a filled surface it
+would resolve the neutral ink; `@layer shape-surface` corrects it there, after
+Tailwind's layers, because a utility outranks every rule in `@layer components`
+whatever its specificity — the same arrangement the overlays use for placement.
 
 A surface of your own is two declarations:
 
@@ -417,14 +435,14 @@ tone sets the variables, every variant reads them.
 
 | Variable                                 | Used by                                                           |
 | ---------------------------------------- | ----------------------------------------------------------------- |
-| `--shape-tone`                           | The `primary` fill; the progress bar; a checked control           |
-| `--shape-tone-hover`                     | That fill, hovered                                                |
-| `--shape-tone-fg`                        | What goes on the fill                                             |
-| `--shape-tone-ink`                       | The `subtle` and `ghost` label, and the tint surface's foreground |
-| `--shape-tone-tint`                      | The `subtle` background, and the alert's                          |
-| `--shape-tone-tint-hover`                | That tint, hovered                                                |
-| `--shape-tone-surface`, `-surface-hover` | The `outline` variant's background                                |
-| `--shape-tone-border`                    | The `outline` variant's border                                    |
+| `--shape-tone`                           | The `primary` fill; the progress bar; a checked control; the alert's `solid` |
+| `--shape-tone-hover`                     | That fill, hovered                                                          |
+| `--shape-tone-fg`                        | What goes on the fill, and the `solid` surface's foreground                 |
+| `--shape-tone-ink`                       | The `subtle` and `ghost` label, and the tint surface's foreground           |
+| `--shape-tone-tint`                      | The `subtle` background, and the alert's                                    |
+| `--shape-tone-tint-hover`                | That tint, hovered                                                          |
+| `--shape-tone-surface`, `-surface-hover` | The `outline` variant's background                                          |
+| `--shape-tone-border`                    | The `outline` variant's border, on the button and the alert                 |
 
 The tones are `neutral` (the default, and the bare `[data-shape-tone]` block),
 `brand`, `accent`, `danger`, `info`, `success` and `warning`. Retinting a ramp

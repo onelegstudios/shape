@@ -9,12 +9,19 @@
     part of the page and survives it being read twice; a toast is an event and
     does not.
 
-    Tone rides on `data-shape-tone`, as everywhere else, and the tint is the
-    surface. `data-shape-surface="tint"` is the part that matters and is easy to
-    miss: it republishes the tone's ink as this element's foreground contract, so
-    a nested `<x-shape::text variant="muted">` reads a dialled-back version of the
-    tone rather than a global grey. Grey text on a coloured background is the one
-    thing the surface contract exists to make impossible.
+    Tone rides on `data-shape-tone`, as everywhere else, and the surface follows
+    the variant. `data-shape-surface` is the part that matters and is easy to
+    miss: it republishes the foreground that belongs on whatever this variant
+    just painted, so a nested `<x-shape::text variant="muted">` reads a
+    dialled-back version of the tone rather than a global grey. Grey text on a
+    coloured background is the one thing the surface contract exists to make
+    impossible.
+
+    Which is why `variant` and the surface are decided together. `subtle` and
+    `outline` both put the tone's ink on a light background, so both publish
+    `tint`; `solid` fills with the tone and publishes `solid`, where the readable
+    foreground is the tone's own `-fg` instead. Nothing is passed down in either
+    case — the nested text finds it.
 
     `tone` is branched on to resolve the glyph, exactly as the badge does, so it
     is *not* declared safe here. The same prop is safe on the button, which only
@@ -31,6 +38,7 @@
 
 @props([
     'tone' => null,
+    'variant' => 'subtle',
     'heading' => null,
     'icon' => null,
     'iconSize' => 'sm',
@@ -54,18 +62,31 @@ $glyph = $icon ?? match ($tone) {
     default => null,
 };
 
+// Variant is how loud the alert is; tone is what it means. The two never
+// multiply into a class matrix, because every arm below paints with the same
+// tone variables and the foreground comes from the surface rather than from
+// here — one `text-` class serves all three.
+//
+// The badge's set, and the badge's recipe: `outline` takes the neutral border
+// and leaves the colour to the ink and the glyph, which is what keeps `brand`
+// and `accent` — the two tones that draw no glyph — visibly toned.
 $classes = Shape::classes()
     ->add('flex items-start')
     ->add('[:where(&)]:gap-3 [:where(&)]:rounded-shape [:where(&)]:p-4')
-    ->add('[:where(&)]:bg-[var(--shape-tone-tint)]')
+    ->add(match ($variant) {
+        'solid' => '[:where(&)]:bg-[var(--shape-tone)]',
+        'outline' => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border)]',
+        default => '[:where(&)]:bg-[var(--shape-tone-tint)]',
+    })
     ->add('[:where(&)]:text-[color:var(--shape-fg)]');
 @endphp
 
 <div
     {{ $attributes->class($classes) }}
     data-shape-alert
+    data-shape-variant="{{ $variant }}"
     data-shape-tone="{{ $tone ?? 'neutral' }}"
-    data-shape-surface="tint"
+    data-shape-surface="{{ $variant === 'solid' ? 'solid' : 'tint' }}"
 >
     @if ($glyph)
         <x-shape::icon :name="$glyph" :size="$iconSize" class="mt-0.5" />

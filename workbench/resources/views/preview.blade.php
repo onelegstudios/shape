@@ -903,7 +903,8 @@
                         <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
                             A message that stays on the page. Every tone resolves a glyph of its own, and the
                             muted line inside each one reads a dialled-back version of the tone rather than a
-                            grey &mdash; squint, or turn the colour off, and both still work.
+                            grey &mdash; squint, or turn the colour off, and both still work. <code>variant</code>
+                            sets how loud it is; the foreground follows it, so nothing has to be passed down.
                         </p>
                     </div>
                     <div class="space-y-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
@@ -925,6 +926,14 @@
 
                         <x-shape::alert>
                             <x-shape::text size="sm" variant="muted">No tone, no glyph &mdash; the neutral case.</x-shape::text>
+                        </x-shape::alert>
+
+                        <x-shape::alert tone="danger" variant="outline" heading="Card declined">
+                            <x-shape::text size="sm" variant="muted">Outline: a neutral border, the colour left to the ink and the glyph.</x-shape::text>
+                        </x-shape::alert>
+
+                        <x-shape::alert tone="danger" variant="solid" heading="Card declined" dismissible>
+                            <x-shape::text size="sm" variant="muted">Solid: the muted line holds its colour on the fill, and so does the dismiss control.</x-shape::text>
                         </x-shape::alert>
                     </div>
                 </article>

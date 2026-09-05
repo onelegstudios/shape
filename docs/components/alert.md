@@ -12,6 +12,24 @@ alert is neutral and draws no glyph:
 
 @docs('preview', name: 'alert-tones', layout: 'stack')
 
+## Variants
+
+`variant` is how loud the alert is; `tone` is what it means. `subtle` is the
+default, because an alert is usually not the loudest thing on its page:
+
+@docs('preview', name: 'alert-variants', layout: 'stack')
+
+`outline` takes a neutral border and leaves the colour to the text and the glyph
+— the same recipe the [badge](badge.md#variants) uses, and what keeps `brand` and
+`accent`, the two tones that draw no glyph, visibly toned. `solid` fills with the
+tone and is worth spending sparingly: a saturated block that size competes with
+everything around it.
+
+Inside a `solid` alert the muted foreground is not dialled back, because there is
+nowhere for it to go. White on the 700 fills starts at 4.9:1 for `success`, so
+any tint that reads as recessed lands under AA. Hierarchy comes from the
+heading's size and weight instead.
+
 ## Heading and body
 
 `heading` is a title above the body; the default slot is the body. Either can
@@ -42,6 +60,21 @@ is clicked:
 Dismissal is not remembered. If an alert should stay dismissed, that is state
 your application owns.
 
+The close button is a [ghost](button.md#variants), and a ghost paints with
+`--shape-tone-ink` so that a ghost `danger` button is red on a page that is not.
+To do that it declares a `data-shape-tone` of its own — which means that on a
+`solid` alert it would resolve the *neutral* ink, dark grey, on a saturated fill.
+It reads the surface's foreground there instead, so the control stays legible
+whatever the variant painted:
+
+@docs('preview', name: 'alert-dismissible-solid', layout: 'stack')
+
+This is the one component that reads a tone rather than a surface, so it is the
+one place the contract is corrected by a rule instead of being followed. The
+rule lives in a layer after Tailwind's, because
+`text-[var(--shape-tone-ink)]` is a utility and nothing in `@layer components`
+outranks a utility — see [Theming](../theming.md#the-surface-contract).
+
 ## Muted text inside an alert
 
 An alert publishes its own foreground, so a nested muted paragraph reads a
@@ -66,6 +99,7 @@ the fact.
 | Prop | Default | Values |
 | --- | --- | --- |
 | `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
+| `variant` | `subtle` | `subtle`, `outline`, `solid` |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
@@ -78,6 +112,7 @@ The default slot is the body.
 Tier A — `@blaze(fold: true, safe: ['heading'])`.
 
 `heading` is interpolated and nothing more, so an alert whose title comes from a
-variable still folds. `tone` branches to resolve its glyph, so `:tone="$tone"`
-drops to the compiled path — the same prop is safe on the [button](button.md),
-which only ever interpolates it. See [Folding](../folding.md).
+variable still folds. `tone` branches to resolve its glyph and `variant` branches
+to resolve its paint, so `:tone="$tone"` drops to the compiled path — the same
+prop is safe on the [button](button.md), which only ever interpolates it. See
+[Folding](../folding.md).

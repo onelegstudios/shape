@@ -312,6 +312,30 @@
         --shape-fg: var(--shape-tone-ink);
         --shape-fg-muted: color-mix(in oklch, var(--shape-tone-ink) 76%, transparent);
     }
+
+    /*
+    | The solid surface, which is the tint's opposite and reads the tone the
+    | same way: the foreground on a filled tone is `--shape-tone-fg`, which the
+    | tone variables already carry.
+    |
+    | It reads them rather than reusing the named surfaces above because those
+    | are fixed to one mode. `[data-shape-surface='danger']` is red-50 in both,
+    | while the danger tone flips from a 700 fill with white on it to a 500 fill
+    | with dark — so a solid danger alert in dark mode would take light text on a
+    | light fill. The tone variables flip; the named surfaces do not.
+    |
+    | The muted foreground is the same colour rather than a dialled-back one,
+    | which is the only honest answer on a fill this saturated. White on the 700
+    | steps starts at 4.9:1 for success and 5.3:1 for the brand, so any alpha
+    | that reads as recessed lands under AA: at 90% they measure 4.3:1 and
+    | 4.6:1, and at the 76% the tint uses, 3.5:1 and 3.7:1. Hierarchy inside a
+    | solid alert is carried by the heading's size and weight instead, which is
+    | where it should have been carried anyway.
+    */
+    [data-shape-surface='solid'] {
+        --shape-fg: var(--shape-tone-fg);
+        --shape-fg-muted: var(--shape-tone-fg);
+    }
 }
 
 @layer components {
@@ -921,5 +945,36 @@
             margin-block: auto 0;
             margin-inline: auto;
         }
+    }
+}
+
+/*
+| The one control that cannot read its own surface.
+|
+| Every component here takes its foreground from `--shape-fg`, which is what
+| makes the surface contract work without anything being passed down. The button
+| is the exception, and deliberately: it paints with `--shape-tone-ink` so that a
+| ghost `danger` button is red on a page that is not. To do that it declares a
+| `data-shape-tone` of its own, which re-declares the tone variables at the
+| button — so the alert's dismiss control resolves the *neutral* ink, dark grey,
+| however saturated the fill it is sitting on.
+|
+| On the tint that was always fine. On `solid` it is a dark grey glyph on a
+| 700-step fill, which is the one combination the rest of this file exists to
+| prevent. So the correction is scoped to exactly that: a ghost control inside a
+| filled surface reads the surface's foreground, like everything else does.
+|
+| In a layer after Tailwind's for the reason the placement layer above gives —
+| `text-[var(--shape-tone-ink)]` is a utility, and no rule in `@layer components`
+| outranks a utility whatever its specificity. Nothing else in the file needs
+| this; the button is the only component that reads a tone rather than a surface.
+*/
+@layer shape-surface {
+    [data-shape-surface='solid'] [data-shape-button][data-shape-variant='ghost'] {
+        color: var(--shape-fg);
+    }
+
+    [data-shape-surface='solid'] [data-shape-button][data-shape-variant='ghost']:hover {
+        background-color: color-mix(in oklch, var(--shape-fg) 15%, transparent);
     }
 }

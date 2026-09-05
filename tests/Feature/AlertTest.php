@@ -54,6 +54,46 @@ it('publishes the tone as its own foreground contract', function () {
         ->toContain('data-shape-surface="tint"');
 });
 
+it('is quiet by default, because most alerts are not the loudest thing on the page', function () {
+    expect(Blade::render('<x-shape::alert tone="danger">Card declined.</x-shape::alert>'))
+        ->toContain('data-shape-variant="subtle"')
+        ->toContain('bg-[var(--shape-tone-tint)]');
+});
+
+it('paints each variant with the same tone variables rather than a colour of its own', function (string $variant, string $paint) {
+    // Variant is loudness and tone is meaning, and the two stay apart: every
+    // arm reads `--shape-tone-*`, so a variant never has to know a hue and the
+    // set does not multiply into a variant by tone matrix.
+    expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\">Card declined.</x-shape::alert>"))
+        ->toContain("data-shape-variant=\"{$variant}\"")
+        ->toContain($paint);
+})->with([
+    ['subtle', 'bg-[var(--shape-tone-tint)]'],
+    ['solid', 'bg-[var(--shape-tone)]'],
+    ['outline', 'border-[var(--shape-tone-border)]'],
+]);
+
+it('moves the foreground contract with the variant, not just the background', function () {
+    // The failure this prevents is the one the tint surface was built for, a
+    // step louder: a solid alert fills with the tone, so the readable
+    // foreground is the tone's own `-fg` rather than its ink. Publishing `tint`
+    // here would put dark ink on a saturated fill.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="solid">Card declined.</x-shape::alert>'))
+        ->toContain('data-shape-surface="solid"');
+
+    // Outline paints no background, so the ink contract still applies.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="outline">Card declined.</x-shape::alert>'))
+        ->toContain('data-shape-surface="tint"');
+});
+
+it('leaves the foreground to the surface instead of restating it per variant', function (string $variant) {
+    // One `text-` class serves all three, which is what keeps the arms above to
+    // a background each. If a variant ever paints its own foreground, the
+    // nested muted text stops agreeing with it.
+    expect(Blade::render("<x-shape::alert variant=\"{$variant}\">Message</x-shape::alert>"))
+        ->toContain('text-[color:var(--shape-fg)]');
+})->with(['subtle', 'solid', 'outline']);
+
 it('is not a live region, because it was on the page already', function () {
     // The toaster carries the live regions. Announcing markup that was present
     // at load repeats what a screen reader is about to read anyway.

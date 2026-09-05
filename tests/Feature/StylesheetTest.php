@@ -101,6 +101,46 @@ it('leaves anchored placement to the script, with no second path to disagree wit
         ->and($js)->not->toContain('CSS.supports');
 });
 
+it('derives the filled surface from the tone rather than reusing a named one', function () {
+    // `[data-shape-surface='danger']` is red-50 in both modes, while the danger
+    // tone flips from a 700 fill carrying white to a 500 fill carrying dark. A
+    // solid component that reached for the named surface would take light text
+    // on a light fill the moment the page went dark; the tone variables flip,
+    // so the solid surface reads those instead.
+    expect(shapeStylesheet())
+        ->toContain("[data-shape-surface='solid']")
+        ->toContain('--shape-fg: var(--shape-tone-fg)');
+});
+
+it('does not dial back the muted foreground on a fill that has no room for it', function () {
+    // White on the 700 steps starts at 4.9:1 for success. Any alpha that reads
+    // as recessed lands under AA — 4.3:1 at 90%, 3.5:1 at the 76% the tint
+    // uses — so the solid surface publishes one foreground twice and lets the
+    // heading's size and weight carry the hierarchy instead.
+    $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
+
+    preg_match("/\[data-shape-surface='solid'\]\s*\{(.*?)\}/s", $css, $matches);
+
+    expect($matches[1] ?? '')
+        ->toContain('--shape-fg-muted: var(--shape-tone-fg)')
+        ->not->toContain('color-mix');
+});
+
+it('corrects the one control that reads a tone instead of the surface it sits on', function () {
+    // A button declares its own `data-shape-tone`, so a ghost dismiss control
+    // inside a solid alert resolves the neutral ink — dark grey on a saturated
+    // fill. The correction has to outrank `text-[var(--shape-tone-ink)]`, and a
+    // utility beats any specificity in `@layer components`, so it lives in a
+    // layer declared after Tailwind's.
+    $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
+
+    expect($css)
+        ->toContain('@layer shape-surface')
+        ->toContain("[data-shape-surface='solid'] [data-shape-button][data-shape-variant='ghost']");
+
+    expect(strpos($css, '@layer shape-surface'))->toBeGreaterThan((int) strpos($css, '@layer components'));
+});
+
 it('gives info a ramp of its own rather than pointing it at the brand', function () {
     // The decision this guards: the brand is the one ramp an application is
     // invited to move — theming.md walks it to violet, and the seed layer
