@@ -56,7 +56,7 @@ looks like it didn't fire. Opt out per item with `data-shape-keep-open`.
 | --- | --- | --- |
 | `icon` | — | any [icon](icon.md) name |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
-| `tone` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
+| `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `as` | resolved from `href` | `button`, `a`, `div` |
 
 `dropdown.trigger` takes `for` and passes everything else to a

@@ -61,7 +61,7 @@ $state = $link
     type="button"
     {{ $attributes->merge($state)->class($classes) }}
     data-shape-tab=""
-    data-shape-tone="accent"
+    data-shape-tone="brand"
 >
     @if ($icon)
         <x-shape::icon :name="$icon" :size="$iconSize" class="opacity-70" />

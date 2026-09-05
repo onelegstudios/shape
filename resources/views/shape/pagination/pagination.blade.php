@@ -73,7 +73,7 @@ $current = (string) Shape::classes($step)
         role="navigation"
         aria-label="{{ $label }}"
         data-shape-pagination
-        data-shape-tone="accent"
+        data-shape-tone="brand"
     >
         @if ($paginator->previousPageUrl())
             <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="{{ $enabled }}" {{ $wire }} data-shape-pagination-previous>

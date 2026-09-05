@@ -37,8 +37,8 @@ it('draws its dot rather than using the platform control', function () {
 });
 
 it('reads its checked fill from the tone variables', function () {
-    expect(Blade::render('<x-shape::radio name="billing" value="monthly" tone="accent" />'))
-        ->toContain('data-shape-tone="accent"')
+    expect(Blade::render('<x-shape::radio name="billing" value="monthly" tone="brand" />'))
+        ->toContain('data-shape-tone="brand"')
         ->toContain('checked:bg-[var(--shape-tone)]');
 });
 

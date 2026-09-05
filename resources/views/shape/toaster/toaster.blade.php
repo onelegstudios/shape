@@ -57,6 +57,7 @@ $classes = Shape::classes()
     <div class="flex flex-col gap-3" data-shape-toast-region="assertive" aria-live="assertive"></div>
 
     <template data-shape-toast-template="neutral"><x-shape::toast /></template>
+    <template data-shape-toast-template="brand"><x-shape::toast tone="brand" /></template>
     <template data-shape-toast-template="accent"><x-shape::toast tone="accent" /></template>
     <template data-shape-toast-template="info"><x-shape::toast tone="info" /></template>
     <template data-shape-toast-template="success"><x-shape::toast tone="success" /></template>

@@ -9,8 +9,8 @@
 |
 |   :root { --shape-seed: oklch(52% 0.16 300); }
 |
-| The accent ramp and the neutral ramp are both derived from that one value:
-| the accent takes the seed's hue and a chroma scaled per step, the neutrals
+| The brand ramp and the neutral ramp are both derived from that one value:
+| the brand takes the seed's hue and a chroma scaled per step, the neutrals
 | take its hue at a fixed, very low chroma. Which is how `mist` relates to
 | `cyan` — the same relationship, generated rather than looked up.
 |
@@ -18,9 +18,16 @@
 | success has to be green whatever the brand is, so those stay Tailwind's. Info
 | is in that set for the same reason and needs saying out loud, because it is
 | the one a seed would happily swallow: at the default seed it sits a little
-| along the hue wheel from the accent, and deriving it would make every
+| along the hue wheel from the brand, and deriving it would make every
 | informational message take the brand's colour — which is the whole thing the
 | tone exists not to do.
+|
+| The accent is not derived either, and for a reason of its own. It is the
+| second colour, the one kept for "look here", and its whole job is to stand
+| apart from the brand. Deriving it from the same seed would walk it around the
+| wheel alongside the brand and land it right back beside it. It stays fuchsia
+| under every seed on this page; retint it by hand if the brand ends up near
+| it.
 |
 | WHY THIS HOLDS CONTRAST
 |
@@ -59,7 +66,7 @@
     | close, not identical. A ramp drifts its hue as it darkens and Tailwind's
     | cyan runs 201° at the 50 step to 230° at the 950; one seed carries one hue,
     | so the derived ramp cannot follow that. The neutrals land within 2/255, and
-    | the accent within 17/255 at its most saturated steps. It sits in the
+    | the brand within 17/255 at its most saturated steps. It sits in the
     | theme layer so that an unlayered `:root { --shape-seed: … }` in the
     | application beats it no matter which order the two are written in.
     */
@@ -81,7 +88,7 @@
     @layer base {
         /*
     | `[data-shape-seed]` re-derives the whole palette from whatever seed is in
-    | scope, so a section can carry its own accent:
+    | scope, so a section can carry its own brand:
     |
     |   <section data-shape-seed style="--shape-seed: oklch(52% 0.19 25)">
     |
@@ -91,7 +98,7 @@
         :root,
         [data-shape-seed] {
             /*
-        | The accent. Lightness is fixed per step; chroma is the seed's, scaled.
+        | The brand. Lightness is fixed per step; chroma is the seed's, scaled.
         | The multipliers are cyan's own chroma curve normalised to its 700 —
         | low at both ends, peaking around 400 — because a ramp that holds one
         | chroma the whole way reads flat at the dark end and garish at the light
@@ -105,35 +112,35 @@
         | to the gamut mapper. Measured, not guessed: uncapped, a violet seed put
         | the dark solid at 4.42:1.
         */
-            --color-shape-accent-50: oklch(
+            --color-shape-brand-50: oklch(
                 from var(--shape-seed) 98.4% calc(c * 0.181) h
             );
-            --color-shape-accent-100: oklch(
+            --color-shape-brand-100: oklch(
                 from var(--shape-seed) 95.6% calc(c * 0.429) h
             );
-            --color-shape-accent-200: oklch(
+            --color-shape-brand-200: oklch(
                 from var(--shape-seed) 91.7% calc(c * 0.762) h
             );
-            --color-shape-accent-300: oklch(
+            --color-shape-brand-300: oklch(
                 from var(--shape-seed) 86.5% calc(min(c * 1.21, 0.24)) h
             );
-            --color-shape-accent-400: oklch(
+            --color-shape-brand-400: oklch(
                 from var(--shape-seed) 78.9% calc(min(c * 1.467, 0.24)) h
             );
-            --color-shape-accent-500: oklch(
+            --color-shape-brand-500: oklch(
                 from var(--shape-seed) 71.5% calc(min(c * 1.362, 0.24)) h
             );
-            --color-shape-accent-600: oklch(
+            --color-shape-brand-600: oklch(
                 from var(--shape-seed) 60.9% calc(min(c * 1.2, 0.24)) h
             );
-            --color-shape-accent-700: oklch(from var(--shape-seed) 52% c h);
-            --color-shape-accent-800: oklch(
+            --color-shape-brand-700: oklch(from var(--shape-seed) 52% c h);
+            --color-shape-brand-800: oklch(
                 from var(--shape-seed) 45% calc(c * 0.81) h
             );
-            --color-shape-accent-900: oklch(
+            --color-shape-brand-900: oklch(
                 from var(--shape-seed) 39.8% calc(c * 0.667) h
             );
-            --color-shape-accent-950: oklch(
+            --color-shape-brand-950: oklch(
                 from var(--shape-seed) 30.2% calc(c * 0.533) h
             );
 

@@ -10,7 +10,7 @@ A setting that applies the moment it moves.
 
 ## Tones
 
-`tone` defaults to `accent` here rather than `neutral`, which is the one place
+`tone` defaults to `brand` here rather than `neutral`, which is the one place
 in the library that differs — a switch is a live setting, and reading as "on" is
 the whole point:
 
@@ -42,7 +42,7 @@ holds still for anyone who asked for reduced motion.
 | `label` | — | the text beside the switch |
 | `description` | — | a second line under the label |
 | `value` | — | the submitted value |
-| `tone` | `accent` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
+| `tone` | `brand` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `id` | the resolved name | the element id |
 
 `checked`, `disabled` and `wire:model` pass through to the `<input>`.

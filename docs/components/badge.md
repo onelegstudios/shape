@@ -40,14 +40,14 @@ it is:
 | `danger` | `shape-danger` |
 | `warning` | `shape-warning` |
 | `info` | `shape-info` |
-| `neutral`, `accent` | none — neither is a state to signal |
+| `neutral`, `brand`, `accent` | none — none of the three is a state to signal |
 
 ## Reference
 
 | Prop | Default | Values |
 | --- | --- | --- |
 | `label` | — | the text |
-| `tone` | `neutral` | `neutral`, `accent`, `danger`, `info`, `success`, `warning` |
+| `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `size` | `base` | `sm`, `base` |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` to omit |

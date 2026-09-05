@@ -125,8 +125,8 @@ without `!important`:
 
 Shape's theme layer is small on purpose. Tailwind's spacing, type and shadow
 scales are already the right ones, so the package adds only what Tailwind has no
-opinion about: a neutral ramp with a temperature, an accent, four state colours,
-one radius decision, and a per-surface foreground contract. Every ramp is aliased
+opinion about: a neutral ramp with a temperature, a brand and an accent, four
+state colours, one radius decision, and a per-surface foreground contract. Every ramp is aliased
 rather than copied, so retinting Tailwind's own colours retints Shape with them.
 
 ```css
@@ -134,12 +134,12 @@ rather than copied, so retinting Tailwind's own colours retints Shape with them.
 @import "../../vendor/onelegstudios/laravel-shape/resources/css/shape.css";
 
 @theme {
-    --color-shape-accent-700: oklch(45.7% 0.24 277.023);
+    --color-shape-brand-700: oklch(45.7% 0.24 277.023);
     --radius-shape: 0.25rem;
 }
 ```
 
-Or derive the accent and the neutrals from one colour, with an optional second
+Or derive the brand and the neutrals from one colour, with an optional second
 stylesheet:
 
 ```css

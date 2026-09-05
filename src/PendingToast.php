@@ -48,15 +48,15 @@ final class PendingToast
     }
 
     /**
-     * The tone: `accent`, `info`, `success`, `warning`, `danger`, or null for
-     * neutral.
+     * The tone: `brand`, `accent`, `info`, `success`, `warning`, `danger`, or
+     * null for neutral.
      *
      * It selects which of the toaster's templates gets cloned, so it also
      * decides the glyph — and there is deliberately no way to send a different
      * one. The script clones markup; it cannot resolve an SVG it was not already
-     * given, and six templates is where that stops being worth it. The rule it
-     * enforces by accident is the right one: the glyph and the tone say the
-     * same thing, and neither can be set without the other.
+     * given, and one template per tone is where that stops being worth it. The
+     * rule it enforces by accident is the right one: the glyph and the tone say
+     * the same thing, and neither can be set without the other.
      */
     public function tone(?string $tone): self
     {
@@ -80,14 +80,27 @@ final class PendingToast
         return $this->duration(0);
     }
 
+    /**
+     * The product's own colour — emphasis rather than a state, so it draws no
+     * glyph.
+     */
+    public function brand(?string $heading = null): self
+    {
+        return $this->preset('brand', $heading);
+    }
+
+    /**
+     * The colour kept for "look here": new, noteworthy, worth interrupting for.
+     * Emphasis too, and deliberately not the brand's hue — see shape.css.
+     */
     public function accent(?string $heading = null): self
     {
         return $this->preset('accent', $heading);
     }
 
     /**
-     * Something worth knowing. Blue whatever the application's accent is, which
-     * is the reason it is a tone of its own rather than `accent()`.
+     * Something worth knowing. Blue whatever the application's brand is, which
+     * is the reason it is a tone of its own rather than `brand()`.
      */
     public function info(?string $heading = null): self
     {

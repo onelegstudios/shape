@@ -101,11 +101,11 @@ it('leaves anchored placement to the script, with no second path to disagree wit
         ->and($js)->not->toContain('CSS.supports');
 });
 
-it('gives info a ramp of its own rather than pointing it at the accent', function () {
-    // The decision this guards: the accent is the one ramp an application is
+it('gives info a ramp of its own rather than pointing it at the brand', function () {
+    // The decision this guards: the brand is the one ramp an application is
     // invited to move — theming.md walks it to violet, and the seed layer
     // derives it from a single brand colour — so an informational message that
-    // reads the accent stops being blue the moment somebody brands the product.
+    // reads the brand stops being blue the moment somebody brands the product.
     // Info is aliased to Tailwind's blue for the reason danger is aliased to red.
     $css = shapeStylesheet();
 
@@ -113,10 +113,34 @@ it('gives info a ramp of its own rather than pointing it at the accent', functio
         ->toContain('--color-shape-info-700: var(--color-blue-700')
         ->toContain("[data-shape-tone='info']")
         ->toContain("[data-shape-surface='info']")
-        ->and(preg_match('/--color-shape-info-[0-9]+: var\(--color-shape-accent/', $css))->toBe(0);
+        ->and(preg_match('/--color-shape-info-[0-9]+: var\(--color-shape-brand/', $css))->toBe(0);
 });
 
-it('keeps info out of the seed layer, where the accent and the neutrals are derived', function () {
+it('gives the accent a ramp of its own, far from the brand it sits on top of', function () {
+    // Refactoring UI's split: the brand is what the product looks like, the
+    // accent is the colour kept for "look here". Sharing a ramp would collapse
+    // the two, and a `New` badge in the brand's own colour, on a page already
+    // full of it, announces nothing.
+    $css = shapeStylesheet();
+
+    expect($css)
+        ->toContain('--color-shape-accent-700: var(')
+        ->toContain('--color-fuchsia-700')
+        ->toContain("[data-shape-tone='accent']")
+        ->toContain("[data-shape-surface='accent']")
+        ->and(preg_match('/--color-shape-accent-[0-9]+: var\(--color-shape-brand/', $css))->toBe(0);
+});
+
+it('keeps the accent out of the seed layer, so it cannot follow the brand around', function () {
+    // The seed moves the brand. An accent derived from the same value would
+    // move with it and land back beside it, which is the one thing it exists
+    // not to do — the same argument that keeps info blue under any seed.
+    $seed = (string) file_get_contents(__DIR__.'/../../resources/css/shape-seed.css');
+
+    expect(preg_replace('#/\*.*?\*/#s', '', $seed))->not->toContain('--color-shape-accent-');
+});
+
+it('keeps info out of the seed layer, where the brand and the neutrals are derived', function () {
     // A seed that reached info would put the brand's hue back on the one tone
     // that exists to be independent of it — the same rule that keeps danger red
     // and success green under any seed.

@@ -54,7 +54,7 @@ $track = Shape::classes()
 <label
     class="group inline-flex items-start gap-2.5 has-disabled:cursor-not-allowed"
     data-shape-switch
-    data-shape-tone="{{ $tone ?? 'accent' }}"
+    data-shape-tone="{{ $tone ?? 'brand' }}"
 >
     <span class="relative inline-flex shrink-0 items-center">
         <input type="checkbox" role="switch" {{ $attributes->merge($defaults)->class($track) }} data-shape-control />

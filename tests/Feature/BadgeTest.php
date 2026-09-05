@@ -47,11 +47,11 @@ it('renders no icon for the neutral tone', function () {
         ->not->toContain('data-shape-icon');
 });
 
-it('renders none for the accent either, which is emphasis rather than a state', function () {
-    expect(Blade::render('<x-shape::badge label="Beta" tone="accent" />'))
-        ->toContain('data-shape-tone="accent"')
+it('renders none for the emphasis tones either, which are not states', function (string $tone) {
+    expect(Blade::render("<x-shape::badge label=\"New\" tone=\"{$tone}\" />"))
+        ->toContain("data-shape-tone=\"{$tone}\"")
         ->not->toContain('data-shape-icon');
-});
+})->with(['brand', 'accent']);
 
 it('lets a caller opt out of the icon', function () {
     expect(Blade::render('<x-shape::badge label="Paid" tone="success" :icon="false" />'))

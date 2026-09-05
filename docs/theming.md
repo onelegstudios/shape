@@ -6,9 +6,9 @@ book the rest of this library follows — so redefining any of it here would onl
 create a second scale to keep in tune with the first.
 
 What is left is what Tailwind has no opinion about: a neutral ramp with a
-temperature, an accent, four state colours, one radius decision, and the
-per-surface foreground contract that stops de-emphasized text turning to mud on
-a coloured background. That is the whole of `resources/css/shape.css`, and it is
+temperature, a brand and an accent, four state colours, one radius decision, and
+the per-surface foreground contract that stops de-emphasized text turning to mud
+on a coloured background. That is the whole of `resources/css/shape.css`, and it is
 all overridable from your own stylesheet.
 
 Customisation escalates in three steps. This page is the first one in full:
@@ -44,7 +44,8 @@ from your own file is the arrangement to prefer.
 | Token | Default | What reads it |
 | --- | --- | --- |
 | `--color-shape-50` … `-950` | Tailwind's `mist` | Every neutral surface, border and rule |
-| `--color-shape-accent-50` … `-950` | Tailwind's `cyan` | The accent tone, the focus ring, the active tab and page |
+| `--color-shape-brand-50` … `-950` | Tailwind's `cyan` | The brand tone, the focus ring, the active tab and page |
+| `--color-shape-accent-50` … `-950` | Tailwind's `fuchsia` | The accent tone |
 | `--color-shape-danger-*` | Tailwind's `red` | The danger tone |
 | `--color-shape-info-*` | Tailwind's `blue` | The info tone |
 | `--color-shape-success-*` | Tailwind's `green` | The success tone |
@@ -63,23 +64,23 @@ application has already chosen.
 Every ramp is *aliased* to a Tailwind colour rather than copied out of it:
 
 ```css
---color-shape-accent-700: var(--color-cyan-700, oklch(52% 0.105 223.128));
+--color-shape-brand-700: var(--color-cyan-700, oklch(52% 0.105 223.128));
 ```
 
 Which means there are two places to change a colour, and they mean different
 things. Retinting `--color-cyan-*` moves Shape and every `text-cyan-600` already
-in your application together. Redeclaring `--color-shape-accent-*` moves Shape
+in your application together. Redeclaring `--color-shape-brand-*` moves Shape
 alone and leaves the rest of your palette where it is. The literal fallback is
 there for the application that clears Tailwind's default palette with
 `--color-*: initial`.
 
 ```css
 @theme {
-    /* Shape's accent becomes violet; your own `cyan-*` utilities are untouched. */
-    --color-shape-accent-50: oklch(96.9% 0.016 293.756);
-    --color-shape-accent-100: oklch(94.3% 0.029 294.588);
+    /* Shape's brand becomes violet; your own `cyan-*` utilities are untouched. */
+    --color-shape-brand-50: oklch(96.9% 0.016 293.756);
+    --color-shape-brand-100: oklch(94.3% 0.029 294.588);
     /* … through … */
-    --color-shape-accent-950: oklch(28.3% 0.141 291.089);
+    --color-shape-brand-950: oklch(28.3% 0.141 291.089);
 }
 ```
 
@@ -103,6 +104,32 @@ longer reads as a warning, and the bright yellow that does read as one cannot
 carry white text at all — so warning fills with `500` and takes dark text from
 the bottom of its own ramp. If you retint warning, keep that shape.
 
+### Brand and accent are two colours, not one
+
+The brand is what the product looks like: the primary button, the focus ring,
+the active tab, the checked switch. It is everywhere — which is exactly why it
+cannot also be the colour that means *look here*. A `New` badge in the brand's
+own cyan, on a page already full of cyan, announces nothing.
+
+That second colour is `accent`, and it defaults to Tailwind's `fuchsia`. It is
+for the things that should interrupt the eye and nothing else: the new feature,
+the recommended plan, the rule under a section heading. Used sparingly, or it
+stops working — the same rule the brand is under, one level up.
+
+It is not derived from the seed, and that is the point. An accent that followed
+the brand around the hue wheel would land next to it and stop standing apart. It
+is still yours to retint, unlike danger and success — a magenta product will
+want it moved — but move it *away* from the brand, and mind the arc between
+280° and 350°, which is the only stretch the four state colours leave free.
+
+```blade
+<x-shape::badge label="New" tone="accent" />
+<x-shape::button variant="subtle" tone="accent">Try the beta</x-shape::button>
+```
+
+Like the brand, it resolves no glyph. Neither is a state, and a badge that draws
+an icon is claiming to be one.
+
 ### The state colours are not yours to rebrand
 
 Danger has to be red and success has to be green whatever the brand is. Retint
@@ -111,10 +138,10 @@ the only signal — the alert, the badge and the toast each resolve a glyph from
 the tone, so the message survives greyscale.
 
 `info` is in that set, and it is the one worth spelling out. It is blue and not
-the accent even though the default accent is a cyan that would pass for one,
-because the accent is the ramp this page has just finished inviting you to move.
+the brand even though the default brand is a cyan that would pass for one,
+because the brand is the ramp this page has just finished inviting you to move.
 Share it, and an informational alert is violet in a violet product and orange in
-an orange one — where it reads as a warning. `tone="accent"` still means
+an orange one — where it reads as a warning. `tone="brand"` still means
 emphasis, and resolves no glyph; `tone="info"` means "worth knowing", and stays
 blue however far the brand travels.
 
@@ -133,11 +160,12 @@ an optional second stylesheet that derives the whole palette from a single value
 }
 ```
 
-The accent takes the seed's hue and a chroma scaled per step; the neutrals take
+The brand takes the seed's hue and a chroma scaled per step; the neutrals take
 its hue at a fixed, very low chroma, so the greys carry a cast that is felt
 rather than seen. Which is exactly how Tailwind's `mist` relates to its `cyan` —
 the same relationship, generated instead of looked up. The state colours are
-**not** derived, for the reason above.
+**not** derived, for the reason above, and neither is the accent, for the one
+just above that.
 
 `npm run preview && composer serve` serves the gallery both ways: `/` is
 `shape.css` alone, `/seed` adds this file.
@@ -166,13 +194,13 @@ real constraint on the value you pass:
 > 3.15:1. There is no way to detect it in CSS, so it is a precondition rather
 > than something the file can enforce.
 
-### A section with its own accent
+### A section with its own brand
 
 `[data-shape-seed]` re-derives the palette from whatever seed is in scope:
 
 ```blade
 <section data-shape-seed style="--shape-seed: oklch(52% 0.19 25)">
-    <x-shape::button variant="primary" tone="accent">Upgrade</x-shape::button>
+    <x-shape::button variant="primary" tone="brand">Upgrade</x-shape::button>
 </section>
 ```
 
@@ -184,12 +212,12 @@ variables, and the tone variables read the palette.
 The seed layer is wrapped in `@supports (color: oklch(from red l c h))` —
 relative colour syntax, which is Chrome 119, Safari 16.4 and Firefox 128. Below
 that the block does not apply and the aliased palette in `shape.css` simply
-stands, so nothing breaks; the accent is just cyan.
+stands, so nothing breaks; the brand is just cyan.
 
 Importing the file without setting a seed leaves you close to where you started,
 but not identical. A Tailwind ramp drifts its hue as it darkens — cyan runs 201°
 at the `50` step to 230° at the `950` — and one seed carries one hue. The
-neutrals land within 2/255 of `mist`, the accent within 17/255 at its most
+neutrals land within 2/255 of `mist`, the brand within 17/255 at its most
 saturated steps.
 
 ## The surface contract
@@ -208,15 +236,16 @@ surface exports the pair that belongs on it:
 background" structurally impossible rather than merely documented. On a tinted
 surface the muted foreground is the same hue dialled down, not grey.
 
-`data-shape-surface` republishes the pair. The values are `accent`, `danger`,
-`info`, `success`, `warning` — the five filled surfaces — and `tint`, which is
-the pale wash whose foreground is the tone's own ink rather than white.
+`data-shape-surface` republishes the pair. The values are `brand`, `accent`,
+`danger`, `info`, `success`, `warning` — the six filled surfaces — and `tint`,
+which is the pale wash whose foreground is the tone's own ink rather than
+white.
 
 A surface of your own is two declarations:
 
 ```css
 @layer base {
-    [data-shape-surface='brand'] {
+    [data-shape-surface='promo'] {
         --shape-fg: var(--color-white);
         --shape-fg-muted: color-mix(in oklch, var(--color-white) 76%, transparent);
     }
@@ -224,7 +253,7 @@ A surface of your own is two declarations:
 ```
 
 ```blade
-<x-shape::card data-shape-surface="brand" class="bg-brand-700">
+<x-shape::card data-shape-surface="promo" class="bg-violet-700">
     <x-shape::heading size="lg">Upgrade</x-shape::heading>
     {{-- Muted, and still legible, because it isn't grey. --}}
     <x-shape::text variant="muted">Cancel any time.</x-shape::text>
@@ -239,8 +268,8 @@ into a variant × tone class matrix, so the tone half lives in CSS instead: a
 tone sets the variables, every variant reads them.
 
 ```css
-[data-shape-tone='accent'] {
-    --shape-tone: var(--color-shape-accent-700);
+[data-shape-tone='brand'] {
+    --shape-tone: var(--color-shape-brand-700);
     /* … */
 }
 ```
@@ -257,8 +286,8 @@ tone sets the variables, every variant reads them.
 | `--shape-tone-border` | The `outline` variant's border |
 
 The tones are `neutral` (the default, and the bare `[data-shape-tone]` block),
-`accent`, `danger`, `info`, `success` and `warning`. Retinting a ramp retones
-everything that reads it — a button, a badge, a checkbox and a progress bar all
+`brand`, `accent`, `danger`, `info`, `success` and `warning`. Retinting a ramp
+retones everything that reads it — a button, a badge, a checkbox and a progress bar all
 move together, because there is one set of variables and not four component
 palettes.
 
@@ -329,7 +358,7 @@ the import:
     [data-theme='dark'] {
         --shape-fg: var(--color-shape-50);
         --shape-fg-muted: var(--color-shape-400);
-        --shape-ring: var(--color-shape-accent-500);
+        --shape-ring: var(--color-shape-brand-500);
     }
 }
 ```

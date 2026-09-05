@@ -23,9 +23,9 @@ into a `<template>`, and `shape.js` clones the one the payload asked for.
 
 @docs('preview', name: 'toast-tones', layout: 'stack')
 
-`accent` is the one tone that draws nothing — it is the brand's colour rather
-than a state. A message that is simply worth knowing wants `info`, which stays
-blue however the accent is retinted.
+`brand` and `accent` are the two tones that draw nothing — both are emphasis
+rather than a state. A message that is simply worth knowing wants `info`, which
+stays blue however the brand is retinted.
 
 There is no `icon()` on the builder, deliberately: the script clones markup, and
 it cannot resolve an SVG it was not already given. The rule that falls out of it
@@ -46,8 +46,8 @@ Shape::toast()
 | --- | --- |
 | `heading(?string)` | the line in bold |
 | `description(?string)` | a second line under it |
-| `tone(?string)` | `info`, `success`, `warning`, `danger`, `accent` |
-| `info()` `success()` `warning()` `danger()` `accent()` | the tone, and optionally the heading, in one call |
+| `tone(?string)` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
+| `info()` `success()` `warning()` `danger()` `brand()` `accent()` | the tone, and optionally the heading, in one call |
 | `duration(int)` | milliseconds; default `5000` |
 | `sticky()` | stay until dismissed |
 | `send()` | dispatch it |
@@ -105,7 +105,7 @@ If a message is still true after someone has read it, it is an
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `accent` |
+| `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
 | `heading` | — | the line in bold |
 | `description` | — | a second line under it |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |

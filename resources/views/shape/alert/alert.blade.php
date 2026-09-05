@@ -41,10 +41,11 @@
 // Never colour alone — every state tone resolves a glyph, so an alert stays
 // readable in greyscale. `:icon="false"` opts out; forgetting isn't possible.
 //
-// `accent` is not one of them. It is the brand's colour, which an application is
-// free to move, and a glyph here would make it the fourth state under another
-// name — the one `info` now is, in a blue that stays blue whatever the accent
-// becomes.
+// `brand` and `accent` are not among them. Both are emphasis: the brand is the
+// product's colour, which an application is free to move, and the accent is the
+// one kept for "look here". A glyph on either would make it a state under
+// another name — the one `info` now is, in a blue that stays blue whatever the
+// brand becomes.
 $glyph = $icon ?? match ($tone) {
     'success' => 'shape-success',
     'danger' => 'shape-danger',

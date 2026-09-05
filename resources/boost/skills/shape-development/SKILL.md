@@ -65,12 +65,15 @@ own Tailwind build scans the package's Blade.
 Every component is `<x-shape::name>`. Props take scale keys, never raw values:
 `size="lg"`, not `size="18px"`; `tone="danger"`, not `tone="#b91c1c"`.
 
-`tone` is one of `neutral`, `accent`, `info`, `success`, `warning`, `danger`.
-The last four are the states, and the alert, the badge and the toast each resolve
-a glyph from them so colour is never the only signal. `accent` is emphasis rather
-than a state — it is the brand's ramp, the one an application retints, and it
-draws no glyph. An informational message wants `info`, which is blue whatever the
-accent becomes.
+`tone` is one of `neutral`, `brand`, `accent`, `info`, `success`, `warning`,
+`danger`. The last four are the states, and the alert, the badge and the toast
+each resolve a glyph from them so colour is never the only signal. `brand` and
+`accent` are emphasis rather than states and draw no glyph: `brand` is the
+product's own ramp, the one an application retints and the one the primary
+button, the focus ring and the active tab already use; `accent` is the second
+colour, kept for what is worth noticing — a `New` badge, the recommended plan —
+and used sparingly. An informational message wants neither: it wants `info`,
+which is blue whatever the brand becomes.
 
 | Component | Tier | Key props |
 | --- | --- | --- |
@@ -148,7 +151,7 @@ use Onelegstudios\Shape\Facades\Shape;
 
 Shape::toast()->success('Invoice sent')->description('A copy went to billing.')->send();
 
-Shape::toast()->info('Export queued')->send();   // info() success() warning() danger() accent()
+Shape::toast()->info('Export queued')->send();   // info() success() warning() danger() brand() accent()
 
 Shape::confirm('Delete project?')->accept('Delete')->tone('danger')->then('deleteProject')->send();
 ```

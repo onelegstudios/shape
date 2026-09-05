@@ -26,8 +26,8 @@ it('holds still for anyone who asked for less motion', function () {
     expect(Blade::render('<x-shape::switch name="notify" />'))->toContain('motion-reduce:transition-none');
 });
 
-it('defaults to the accent tone because a switch is a live setting', function () {
-    expect(Blade::render('<x-shape::switch name="notify" />'))->toContain('data-shape-tone="accent"');
+it('defaults to the brand tone because a switch is a live setting', function () {
+    expect(Blade::render('<x-shape::switch name="notify" />'))->toContain('data-shape-tone="brand"');
 });
 
 it('takes a colour like every other component that carries semantics', function () {

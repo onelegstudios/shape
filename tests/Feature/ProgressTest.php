@@ -28,9 +28,9 @@ it('drops the value attribute in the indeterminate state', function () {
         ->not->toContain('value=');
 });
 
-it('defaults to the accent tone and takes any other', function () {
+it('defaults to the brand tone and takes any other', function () {
     expect(Blade::render('<x-shape::progress :value="10" />'))
-        ->toContain('data-shape-tone="accent"');
+        ->toContain('data-shape-tone="brand"');
 
     expect(Blade::render('<x-shape::progress :value="10" tone="danger" />'))
         ->toContain('data-shape-tone="danger"');

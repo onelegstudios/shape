@@ -20,7 +20,7 @@
     /*
     | Greys don't have to be grey. Tailwind's `mist` is its cyan-matched
     | neutral — hue 197 at the light end, 214 through the middle — so the
-    | neutrals and the accent read as one family with no ramp of our own to
+    | neutrals and the brand read as one family with no ramp of our own to
     | keep in tune.
     |
     | Aliased rather than copied, so an application that retints `--color-mist-*`
@@ -39,27 +39,90 @@
     --color-shape-900: var(--color-mist-900, oklch(21.8% 0.008 223.9));
     --color-shape-950: var(--color-mist-950, oklch(14.8% 0.004 228.8));
 
-    /* The accent is Tailwind's `cyan`, the hue `mist` is built to sit under.
+    /* The brand is Tailwind's `cyan`, the hue `mist` is built to sit under.
        Same aliasing, same fallbacks, same reason. */
-    --color-shape-accent-50: var(--color-cyan-50, oklch(98.4% 0.019 200.873));
-    --color-shape-accent-100: var(--color-cyan-100, oklch(95.6% 0.045 203.388));
-    --color-shape-accent-200: var(--color-cyan-200, oklch(91.7% 0.08 205.041));
-    --color-shape-accent-300: var(--color-cyan-300, oklch(86.5% 0.127 207.078));
-    --color-shape-accent-400: var(--color-cyan-400, oklch(78.9% 0.154 211.53));
-    --color-shape-accent-500: var(--color-cyan-500, oklch(71.5% 0.143 215.221));
-    --color-shape-accent-600: var(--color-cyan-600, oklch(60.9% 0.126 221.723));
-    --color-shape-accent-700: var(--color-cyan-700, oklch(52% 0.105 223.128));
-    --color-shape-accent-800: var(--color-cyan-800, oklch(45% 0.085 224.283));
-    --color-shape-accent-900: var(--color-cyan-900, oklch(39.8% 0.07 227.392));
-    --color-shape-accent-950: var(--color-cyan-950, oklch(30.2% 0.056 229.695));
+    --color-shape-brand-50: var(--color-cyan-50, oklch(98.4% 0.019 200.873));
+    --color-shape-brand-100: var(--color-cyan-100, oklch(95.6% 0.045 203.388));
+    --color-shape-brand-200: var(--color-cyan-200, oklch(91.7% 0.08 205.041));
+    --color-shape-brand-300: var(--color-cyan-300, oklch(86.5% 0.127 207.078));
+    --color-shape-brand-400: var(--color-cyan-400, oklch(78.9% 0.154 211.53));
+    --color-shape-brand-500: var(--color-cyan-500, oklch(71.5% 0.143 215.221));
+    --color-shape-brand-600: var(--color-cyan-600, oklch(60.9% 0.126 221.723));
+    --color-shape-brand-700: var(--color-cyan-700, oklch(52% 0.105 223.128));
+    --color-shape-brand-800: var(--color-cyan-800, oklch(45% 0.085 224.283));
+    --color-shape-brand-900: var(--color-cyan-900, oklch(39.8% 0.07 227.392));
+    --color-shape-brand-950: var(--color-cyan-950, oklch(30.2% 0.056 229.695));
 
-    /* The pair that goes on top when the accent is used as a filled surface:
+    /* The pair that goes on top when the brand is used as a filled surface:
        the top of the ramp, recessed by chroma rather than by greying off. */
+    --color-shape-brand-fg: var(--color-shape-brand-50);
+    --color-shape-brand-fg-muted: var(--color-shape-brand-100);
+
+    /*
+    | The accent, which sits on top of the brand rather than beside it.
+    |
+    | The brand is what the product looks like — the primary button, the focus
+    | ring, the active tab. It is everywhere, and a colour that is everywhere
+    | cannot also be the colour that means "look here". The accent is the second
+    | one: used sparingly, for the `New` badge, the highlighted plan, the rule
+    | under a heading. Refactoring UI's split exactly, with `primary` spent on
+    | the variant axis, so the brand carries that half of the name.
+    |
+    | Fuchsia because the wheel is crowded. Danger sits at 27°, warning at 86°,
+    | success at 150°, info at 264°, and the brand at 223° until it is moved —
+    | which leaves 280-350° as the only arc where an eye-grabbing colour cannot
+    | be misread as a state. That is where the book's "yellow, pink, or teal"
+    | lands once yellow is warning and teal is the brand.
+    |
+    | Not derived from the seed, for the reason info is not: a seeded accent
+    | would follow the brand around and stop being the thing that stands apart
+    | from it. Unlike danger and success it is still yours to retint — a magenta
+    | brand will want it moved — it just has to stay far from the brand when you
+    | do, which is the whole of its job.
+    */
+    --color-shape-accent-50: var(--color-fuchsia-50, oklch(97.7% 0.017 320.058));
+    --color-shape-accent-100: var(
+        --color-fuchsia-100,
+        oklch(95.2% 0.037 318.852)
+    );
+    --color-shape-accent-200: var(
+        --color-fuchsia-200,
+        oklch(90.3% 0.076 319.62)
+    );
+    --color-shape-accent-300: var(
+        --color-fuchsia-300,
+        oklch(83.3% 0.145 321.434)
+    );
+    --color-shape-accent-400: var(--color-fuchsia-400, oklch(74% 0.238 322.16));
+    --color-shape-accent-500: var(
+        --color-fuchsia-500,
+        oklch(66.7% 0.295 322.15)
+    );
+    --color-shape-accent-600: var(
+        --color-fuchsia-600,
+        oklch(59.1% 0.293 322.896)
+    );
+    --color-shape-accent-700: var(
+        --color-fuchsia-700,
+        oklch(51.8% 0.253 323.949)
+    );
+    --color-shape-accent-800: var(
+        --color-fuchsia-800,
+        oklch(45.2% 0.211 324.591)
+    );
+    --color-shape-accent-900: var(
+        --color-fuchsia-900,
+        oklch(40.1% 0.17 325.612)
+    );
+    --color-shape-accent-950: var(
+        --color-fuchsia-950,
+        oklch(29.3% 0.136 325.661)
+    );
     --color-shape-accent-fg: var(--color-shape-accent-50);
     --color-shape-accent-fg-muted: var(--color-shape-accent-100);
 
     /* State colours: Tailwind's red, green, yellow and blue, aliased exactly as
-       the accent is, so a page that already uses `text-red-600` for its own
+       the brand is, so a page that already uses `text-red-600` for its own
        errors and Shape's danger tone side by side gets one red, not two that
        nearly match. Never the only signal — components pair them with an icon.
 
@@ -81,10 +144,10 @@
     --color-shape-danger-fg-muted: var(--color-shape-danger-100);
 
     /*
-    | Info is blue rather than the accent, even though the default accent is a
+    | Info is blue rather than the brand, even though the default brand is a
     | cyan that would pass for one.
     |
-    | The accent is the one ramp an application is invited to move: theming.md
+    | The brand is the one ramp an application is invited to move: theming.md
     | retints it to violet, and the seed layer derives it from a single brand
     | colour. "Here is something worth knowing" has to still mean that
     | afterwards. Sharing the ramp makes an informational alert violet in a
@@ -92,9 +155,9 @@
     | that has lost its glyph. Danger stays red whatever the brand is; this is
     | the same rule applied to the fourth state.
     |
-    | Blue's hue is 264 against the accent's 215 — far enough apart to separate
+    | Blue's hue is 264 against the brand's 215 — far enough apart to separate
     | at a glance, and the one case where they sit close is the case where the
-    | accent has not been moved and nothing yet depends on telling them apart.
+    | brand has not been moved and nothing yet depends on telling them apart.
     */
     --color-shape-info-50: var(--color-blue-50, oklch(97% 0.014 254.604));
     --color-shape-info-100: var(--color-blue-100, oklch(93.2% 0.032 255.585));
@@ -185,20 +248,25 @@
     :root {
         --shape-fg: var(--color-shape-900);
         --shape-fg-muted: var(--color-shape-600);
-        --shape-ring: var(--color-shape-accent-600);
+        --shape-ring: var(--color-shape-brand-600);
     }
 
     @media (prefers-color-scheme: dark) {
         :root {
             --shape-fg: var(--color-shape-50);
             --shape-fg-muted: var(--color-shape-400);
-            --shape-ring: var(--color-shape-accent-500);
+            --shape-ring: var(--color-shape-brand-500);
         }
     }
 
     [data-shape-surface='accent'] {
         --shape-fg: var(--color-shape-accent-fg);
         --shape-fg-muted: var(--color-shape-accent-fg-muted);
+    }
+
+    [data-shape-surface='brand'] {
+        --shape-fg: var(--color-shape-brand-fg);
+        --shape-fg-muted: var(--color-shape-brand-fg-muted);
     }
 
     [data-shape-surface='danger'] {
@@ -296,6 +364,15 @@
         --shape-tone-tint-hover: var(--color-shape-accent-200);
     }
 
+    [data-shape-tone='brand'] {
+        --shape-tone: var(--color-shape-brand-700);
+        --shape-tone-hover: var(--color-shape-brand-800);
+        --shape-tone-fg: white;
+        --shape-tone-ink: var(--color-shape-brand-800);
+        --shape-tone-tint: var(--color-shape-brand-100);
+        --shape-tone-tint-hover: var(--color-shape-brand-200);
+    }
+
     [data-shape-tone='danger'] {
         --shape-tone: var(--color-shape-danger-700);
         --shape-tone-hover: var(--color-shape-danger-800);
@@ -364,6 +441,15 @@
             --shape-tone-ink: var(--color-shape-accent-200);
             --shape-tone-tint: var(--color-shape-accent-950);
             --shape-tone-tint-hover: var(--color-shape-accent-900);
+        }
+
+        [data-shape-tone='brand'] {
+            --shape-tone: var(--color-shape-brand-500);
+            --shape-tone-hover: var(--color-shape-brand-400);
+            --shape-tone-fg: var(--color-shape-950);
+            --shape-tone-ink: var(--color-shape-brand-200);
+            --shape-tone-tint: var(--color-shape-brand-950);
+            --shape-tone-tint-hover: var(--color-shape-brand-900);
         }
 
         [data-shape-tone='danger'] {

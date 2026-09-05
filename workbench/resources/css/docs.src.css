@@ -42,7 +42,7 @@
 | `.laradocs-prose a`, `.laradocs-prose td`, `.laradocs-prose ul` and the rest
 | reach inside the previews and beat the components' own utilities, which are
 | in `@layer utilities` and cannot win. A preview of the button-as-link renders
-| as an underlined accent-coloured link; a table gets the documentation's cell
+| as an underlined brand-coloured link; a table gets the documentation's cell
 | padding and a margin under it; a list gets the prose indent and bullets.
 |
 | `revert-layer` is the way out, and it has to be unlayered itself to reach

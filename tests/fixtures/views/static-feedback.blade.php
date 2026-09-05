@@ -8,6 +8,6 @@
 
 <x-shape::progress :value="42" label="Storage used" />
 
-<x-shape::progress indeterminate size="sm" tone="accent" label="Uploading" />
+<x-shape::progress indeterminate size="sm" tone="brand" label="Uploading" />
 
 <x-shape::confirm />

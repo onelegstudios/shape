@@ -3,4 +3,5 @@
 <x-shape::alert tone="success" heading="Invoice sent">Acme Corp will get an email.</x-shape::alert>
 <x-shape::alert tone="warning" heading="Your trial ends on Friday">Add a payment method to keep your projects.</x-shape::alert>
 <x-shape::alert tone="danger" heading="Card declined">Update the card on file.</x-shape::alert>
-<x-shape::alert tone="accent" heading="You are on the beta">Emphasis rather than a state, so it draws no glyph.</x-shape::alert>
+<x-shape::alert tone="brand" heading="You are on the beta">Emphasis rather than a state, so it draws no glyph.</x-shape::alert>
+<x-shape::alert tone="accent" heading="Scheduled reports are here">The accent is the colour kept for what is worth noticing.</x-shape::alert>

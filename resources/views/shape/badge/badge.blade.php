@@ -31,9 +31,9 @@
 @php
 // Never rely on colour alone. Every state resolves a glyph of its own, so a
 // badge stays readable in greyscale and to anyone who can't separate the hues.
-// Opting out is `:icon="false"`; forgetting isn't possible. `accent` resolves
-// nothing: it is emphasis rather than a state, and `info` is the state it used
-// to stand in for.
+// Opting out is `:icon="false"`; forgetting isn't possible. `brand` and
+// `accent` resolve nothing: they are emphasis rather than states, and `info` is
+// the state the brand used to stand in for.
 $glyph = $icon ?? match ($tone) {
     'success' => 'shape-success',
     'danger' => 'shape-danger',

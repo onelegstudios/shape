@@ -25,10 +25,10 @@ Every state colour resolves a glyph of its own, so an alert stays readable in
 greyscale and to anyone who can't separate the hues. `icon` picks a different
 one, `:icon="false"` removes it, and `icon-size` changes how big it is:
 
-`accent` is the exception, and deliberately: it is the brand's colour rather than
-a state, so it draws nothing. An informational message wants
+`brand` and `accent` are the exceptions, and deliberately: both are emphasis
+rather than a state, so they draw nothing. An informational message wants
 [`info`](../theming.md#the-state-colours-are-not-yours-to-rebrand), which is blue
-whatever the accent becomes.
+whatever the brand becomes.
 
 @docs('preview', name: 'alert-icons', layout: 'stack')
 
@@ -65,7 +65,7 @@ the fact.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `accent` |
+| `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |

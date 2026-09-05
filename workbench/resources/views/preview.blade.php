@@ -105,13 +105,13 @@
     {{-- The splash. --}}
     <section class="relative isolate overflow-hidden border-b border-shape-200 dark:border-shape-800">
         <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10"
-             style="background-image: radial-gradient(60rem 34rem at 72% -18%, color-mix(in oklch, var(--color-shape-accent-500) 24%, transparent), transparent)"></div>
+             style="background-image: radial-gradient(60rem 34rem at 72% -18%, color-mix(in oklch, var(--color-shape-brand-500) 24%, transparent), transparent)"></div>
         <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 text-shape-400 opacity-35 dark:text-shape-600"
              style="background-image: radial-gradient(currentColor 1px, transparent 1px); background-size: 1.5rem 1.5rem; mask-image: linear-gradient(to bottom, black, transparent 65%)"></div>
 
         <div class="mx-auto max-w-6xl px-6 pt-20 pb-16 sm:pt-28 sm:pb-24">
             <p class="flex items-center gap-2 text-xs font-medium tracking-[0.18em] text-shape-500 uppercase">
-                <span class="inline-block size-1.5 rounded-full bg-shape-accent-600 dark:bg-shape-accent-500"></span>
+                <span class="inline-block size-1.5 rounded-full bg-shape-brand-600 dark:bg-shape-brand-500"></span>
                 Laravel &middot; Blade &middot; Tailwind v4
             </p>
 
@@ -143,7 +143,7 @@
                 <x-shape::card>
                     <x-shape::stat label="Invoices sent" value="1,204" delta="12%" trend="up" />
                     <x-shape::separator />
-                    <x-shape::progress :value="42" size="sm" tone="accent" label="Storage used" />
+                    <x-shape::progress :value="42" size="sm" tone="brand" label="Storage used" />
                 </x-shape::card>
 
                 <x-shape::card>
@@ -165,7 +165,7 @@
                             <x-shape::avatar initials="GH" size="sm" />
                             <x-shape::avatar initials="KJ" size="sm" />
                         </x-shape::avatar.group>
-                        <x-shape::badge label="Trial" tone="accent" size="sm" />
+                        <x-shape::badge label="Trial" tone="brand" size="sm" />
                     </div>
                 </x-shape::card>
             </div>
@@ -226,9 +226,12 @@
                                 This page is built with <code class="text-shape-700 dark:text-shape-300">shape-seed.css</code>
                                 imported on top of <code class="text-shape-700 dark:text-shape-300">shape.css</code>; the
                                 default page is not. Below, the same markup under six seeds &mdash; each strip
-                                sets one colour and nothing else, and the accent ramp, the neutrals behind the
+                                sets one colour and nothing else, and the brand ramp, the neutrals behind the
                                 text, the tint on the subtle button and the focus ring all derive from it.
-                                Every one clears AA without a per-hue exception.
+                                Every one clears AA without a per-hue exception. The accent badge is the
+                                one thing that does not move: it is the colour kept for &ldquo;look
+                                here&rdquo;, and an accent that followed the brand around the wheel would
+                                stop standing apart from it.
                             </p>
                         </div>
                         <div class="space-y-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
@@ -243,9 +246,10 @@
                                 <div data-shape-seed style="--shape-seed: {{ $seed }}"
                                      class="flex flex-wrap items-center gap-3 rounded-shape border border-shape-200 bg-shape-50 p-4 dark:border-shape-800 dark:bg-shape-900">
                                     <span class="w-36 shrink-0 text-xs font-medium text-shape-500">{{ $label }}</span>
-                                    <x-shape::button variant="primary" tone="accent">Primary</x-shape::button>
-                                    <x-shape::button variant="subtle" tone="accent">Subtle</x-shape::button>
-                                    <x-shape::button variant="ghost" tone="accent">Ghost</x-shape::button>
+                                    <x-shape::button variant="primary" tone="brand">Primary</x-shape::button>
+                                    <x-shape::button variant="subtle" tone="brand">Subtle</x-shape::button>
+                                    <x-shape::button variant="ghost" tone="brand">Ghost</x-shape::button>
+                                    <x-shape::badge label="New" tone="accent" />
                                     <span class="text-sm text-shape-600 dark:text-shape-400">Body copy on the derived neutral.</span>
                                 </div>
                             @endforeach
@@ -405,7 +409,7 @@
                     <div class="flex flex-wrap items-center gap-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
                         <x-shape::button variant="subtle" tone="danger" icon="shape-trash">Delete project</x-shape::button>
                         <x-shape::button variant="primary" tone="danger">Yes, delete it</x-shape::button>
-                        <x-shape::button variant="primary" tone="accent" icon="shape-checked">Approve</x-shape::button>
+                        <x-shape::button variant="primary" tone="brand" icon="shape-checked">Approve</x-shape::button>
                         <x-shape::button variant="subtle" tone="success" icon="shape-checked">Paid</x-shape::button>
                     </div>
                 </article>
@@ -486,7 +490,8 @@
                             <x-shape::badge label="Overdue" tone="danger" />
                             <x-shape::badge label="Pending" tone="warning" />
                             <x-shape::badge label="Sent" tone="info" />
-                            <x-shape::badge label="Trial" tone="accent" />
+                            <x-shape::badge label="Trial" tone="brand" />
+                            <x-shape::badge label="New" tone="accent" />
                             <x-shape::badge label="Draft" />
                         </div>
                         <div class="flex flex-wrap items-center gap-3">
@@ -551,7 +556,7 @@
                                     <x-shape::heading size="base">Bordered, tight</x-shape::heading>
                                     <x-shape::text size="sm" variant="muted">For cards on a surface too close to their own.</x-shape::text>
                                 </x-shape::card.header>
-                                <x-shape::badge label="Trial" tone="accent" size="sm" class="self-start" />
+                                <x-shape::badge label="Trial" tone="brand" size="sm" class="self-start" />
                             </x-shape::card>
                         </div>
                     </div>
@@ -968,7 +973,8 @@
                         <x-shape::button variant="subtle" tone="danger" data-toast="Card declined" data-toast-description="Announced assertively, unlike the rest." data-toast-tone="danger">Danger</x-shape::button>
                         <x-shape::button variant="subtle" tone="warning" data-toast="Trial ends Friday" data-toast-tone="warning">Warning</x-shape::button>
                         <x-shape::button variant="subtle" tone="info" data-toast="Digest is on" data-toast-tone="info">Info</x-shape::button>
-                        <x-shape::button variant="subtle" tone="accent" data-toast="Published" data-toast-tone="accent">Accent</x-shape::button>
+                        <x-shape::button variant="subtle" tone="brand" data-toast="Published" data-toast-tone="brand">Brand</x-shape::button>
+                        <x-shape::button variant="subtle" tone="accent" data-toast="Scheduled reports are here" data-toast-tone="accent">Accent</x-shape::button>
                         <x-shape::button variant="subtle" data-toast="Saved">Neutral</x-shape::button>
                         <x-shape::button variant="ghost" data-toast="Uploading" data-toast-description="Stays until dismissed." data-toast-duration="0">Sticky</x-shape::button>
                         <x-shape::button variant="ghost" as="a" href="/flash" icon-trailing="shape-arrow-right">Through the session</x-shape::button>
@@ -986,7 +992,7 @@
                     </div>
                     <div class="flex flex-wrap items-center gap-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
                         <x-shape::button variant="subtle" tone="danger" icon="shape-trash" data-confirm="Delete project?" data-confirm-message="Every invoice attached to it goes too." data-confirm-accept="Delete" data-confirm-tone="danger" data-confirm-then="deleteProject">Delete project</x-shape::button>
-                        <x-shape::button variant="subtle" data-confirm="Publish now?" data-confirm-message="It goes live immediately." data-confirm-accept="Publish" data-confirm-tone="accent" data-confirm-then="publish">Publish</x-shape::button>
+                        <x-shape::button variant="subtle" data-confirm="Publish now?" data-confirm-message="It goes live immediately." data-confirm-accept="Publish" data-confirm-tone="brand" data-confirm-then="publish">Publish</x-shape::button>
                     </div>
                 </article>
             </div>
@@ -1363,7 +1369,7 @@
 
         addEventListener('publish', (event) => {
             console.log('publish', event.detail)
-            dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Published', tone: 'accent' } } }))
+            dispatchEvent(new CustomEvent('shape:toast', { detail: { toast: { heading: 'Published', tone: 'brand' } } }))
         })
 
         // Diagnostics. Not part of the package — the preview only.

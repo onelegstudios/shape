@@ -2,7 +2,7 @@
 | The same gallery, built with the optional seed layer on top.
 |
 | preview.src.css is the default path: shape.css alone, the palette aliased to
-| Tailwind. This one adds shape-seed.css, which derives the accent and the
+| Tailwind. This one adds shape-seed.css, which derives the brand and the
 | neutrals from a single `--shape-seed` instead. Two builds rather than a flag,
 | because the difference is entirely in which stylesheets an application imports
 | and the gallery should show that honestly.
