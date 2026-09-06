@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         php: ['8.3', '8.4', '8.5']
         laravel: [12.*, 13.*]
         stability: [prefer-lowest, prefer-stable]
@@ -30,6 +30,14 @@ jobs:
             testbench: 10.*
           - laravel: 13.*
             testbench: 11.*
+          # Windows catches path separators, drive letters, and shell assumptions,
+          # none of which vary by PHP or Laravel version. One current lane carries
+          # the whole signal; the rest re-ran the same string handling twelve times.
+          - os: windows-latest
+            php: '8.5'
+            laravel: 13.*
+            testbench: 11.*
+            stability: prefer-stable
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
 
