@@ -41,7 +41,7 @@
     "larastan/larastan": "^3.9",
     "laravel/pao": "^1.0",
     "laravel/pint": "^1.29",
-    "livewire/blaze": "^1.0",
+    "livewire/blaze": "^1.0.12",
     "orchestra/testbench": "^10.0||^11.0",
     "pestphp/pest": "^4.6||^5.0",
     "pestphp/pest-plugin-laravel": "^4.1||^5.0",
@@ -50,7 +50,7 @@
     "phpstan/extension-installer": "^1.4"
   },
   "suggest": {
-    "livewire/blaze": "Compiles Shape's components into folded PHP for near-zero render cost (^1.0)."
+    "livewire/blaze": "Compiles Shape's components into folded PHP for near-zero render cost (^1.0.12)."
   },
   "autoload": {
     "psr-4": {

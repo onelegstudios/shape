@@ -4,6 +4,11 @@ Blaze pre-renders a component during Blade compilation and embeds the resulting
 HTML directly in the parent template. A folded component costs essentially
 nothing to render, no matter how many times it appears on the page.
 
+Folding needs `livewire/blaze` 1.0.12 or newer. Earlier 1.0 releases fold call
+sites Shape expects them to abandon — `@aware` props only became unsafe to fold
+in 1.0.12, and a field whose name is bound would take its label, control and
+error down with it.
+
 Shape annotates every component with the strategy it can safely use. What Shape
 cannot decide on your behalf is how you call them — and once you have
 [ejected](tooling.md#shapeeject) one, the annotation on it is yours to keep true.
