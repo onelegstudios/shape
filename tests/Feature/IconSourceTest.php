@@ -24,7 +24,7 @@ beforeAll(function () {
 
 afterAll(function () {
     if (TestCase::$componentsPath !== null) {
-        exec('rm -rf '.escapeshellarg(TestCase::$componentsPath));
+        removeDirectory(TestCase::$componentsPath);
     }
 
     TestCase::$componentsPath = null;
@@ -33,13 +33,13 @@ afterAll(function () {
 beforeEach(function () {
     $this->destination = (string) TestCase::$componentsPath;
 
-    exec('rm -rf '.escapeshellarg($this->destination));
+    removeDirectory($this->destination);
 
     mkdir($this->destination.'/icon', 0777, true);
 
     $this->cache = storage_path('framework/shape/icons');
 
-    exec('rm -rf '.escapeshellarg($this->cache));
+    removeDirectory($this->cache);
 
     $this->archive = (string) file_get_contents(__DIR__.'/../fixtures/icons-heroicons.tar.gz');
     $this->hostile = (string) file_get_contents(__DIR__.'/../fixtures/icons-hostile.tar.gz');

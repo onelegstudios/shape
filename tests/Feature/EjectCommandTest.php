@@ -16,7 +16,7 @@ beforeAll(function () {
 
 afterAll(function () {
     if (TestCase::$componentsPath !== null) {
-        exec('rm -rf '.escapeshellarg(TestCase::$componentsPath));
+        removeDirectory(TestCase::$componentsPath);
     }
 
     TestCase::$componentsPath = null;
@@ -25,7 +25,7 @@ afterAll(function () {
 beforeEach(function () {
     $this->destination = (string) TestCase::$componentsPath;
 
-    exec('rm -rf '.escapeshellarg($this->destination));
+    removeDirectory($this->destination);
 
     mkdir($this->destination, 0777, true);
 });

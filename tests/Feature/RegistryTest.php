@@ -66,7 +66,9 @@ it('accounts for every view the package ships', function () {
     $found = [];
 
     foreach (Finder::create()->files()->in($registry->views())->name('*.blade.php') as $file) {
-        $found[] = $file->getRelativePathname();
+        // The registry names a view the way Blade does, and Finder names it the
+        // way the filesystem does — which on Windows is the other separator.
+        $found[] = str_replace(DIRECTORY_SEPARATOR, '/', $file->getRelativePathname());
     }
 
     sort($listed);

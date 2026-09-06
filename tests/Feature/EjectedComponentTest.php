@@ -25,7 +25,7 @@ beforeAll(function () {
 
 afterAll(function () {
     if (TestCase::$componentsPath !== null) {
-        exec('rm -rf '.escapeshellarg(TestCase::$componentsPath));
+        removeDirectory(TestCase::$componentsPath);
     }
 
     TestCase::$componentsPath = null;

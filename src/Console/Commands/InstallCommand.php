@@ -345,11 +345,33 @@ class InstallCommand extends Command
      */
     protected function path(string $path): string
     {
-        return str_starts_with($path, '/') ? $path : base_path($path);
+        return $this->rooted($path) ? $path : base_path($path);
     }
 
+    /**
+     * Whether a path is already rooted, on either kind of filesystem.
+     *
+     * A Windows path is rooted from a drive letter or a leading slash of either
+     * kind, and a drive letter starts with neither — which would otherwise see a
+     * fully qualified path resolved a second time against the project, and the
+     * file that is plainly there reported as not found.
+     */
+    protected function rooted(string $path): bool
+    {
+        return str_starts_with($path, '/')
+            || str_starts_with($path, '\\')
+            || preg_match('/^[A-Za-z]:[\\\\\/]/', $path) === 1;
+    }
+
+    /**
+     * A path as it would be typed, which is from the project root and in the
+     * one separator every Laravel path is written with.
+     */
     protected function relative(string $path): string
     {
-        return str_replace(base_path().'/', '', $path);
+        $path = str_replace('\\', '/', $path);
+        $base = rtrim(str_replace('\\', '/', base_path()), '/').'/';
+
+        return str_starts_with($path, $base) ? substr($path, strlen($base)) : $path;
     }
 }

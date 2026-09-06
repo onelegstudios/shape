@@ -19,9 +19,9 @@ beforeAll(function () {
 });
 
 afterAll(function () {
-    exec('rm -rf '.escapeshellarg((string) TestCase::$configPath));
-    exec('rm -rf '.escapeshellarg((string) TestCase::$componentsPath));
-    exec('rm -rf '.escapeshellarg((string) TestCase::$storagePath));
+    removeDirectory((string) TestCase::$configPath);
+    removeDirectory((string) TestCase::$componentsPath);
+    removeDirectory((string) TestCase::$storagePath);
 
     TestCase::$configPath = null;
     TestCase::$componentsPath = null;
@@ -31,7 +31,7 @@ afterAll(function () {
 beforeEach(function () {
     $this->app_path = sys_get_temp_dir().'/shape-install-'.getmypid();
 
-    exec('rm -rf '.escapeshellarg($this->app_path));
+    removeDirectory($this->app_path);
 
     mkdir($this->app_path, 0777, true);
 
@@ -41,12 +41,12 @@ beforeEach(function () {
     $this->config = (string) TestCase::$configPath;
     $this->icons = (string) TestCase::$componentsPath;
 
-    exec('rm -rf '.escapeshellarg($this->config));
-    exec('rm -rf '.escapeshellarg($this->icons));
+    removeDirectory($this->config);
+    removeDirectory($this->icons);
 
     $this->storage = (string) TestCase::$storagePath;
 
-    exec('rm -rf '.escapeshellarg($this->storage));
+    removeDirectory($this->storage);
 
     mkdir($this->config, 0777, true);
     mkdir($this->icons.'/icon', 0777, true);
@@ -67,10 +67,10 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    exec('rm -rf '.escapeshellarg($this->app_path));
-    exec('rm -rf '.escapeshellarg($this->config));
-    exec('rm -rf '.escapeshellarg($this->icons));
-    exec('rm -rf '.escapeshellarg($this->storage));
+    removeDirectory($this->app_path);
+    removeDirectory($this->config);
+    removeDirectory($this->icons);
+    removeDirectory($this->storage);
 });
 
 /**

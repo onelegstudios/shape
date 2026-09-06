@@ -15,7 +15,7 @@ beforeAll(function () {
 
 afterAll(function () {
     if (TestCase::$componentsPath !== null) {
-        exec('rm -rf '.escapeshellarg(TestCase::$componentsPath));
+        removeDirectory(TestCase::$componentsPath);
     }
 
     TestCase::$componentsPath = null;
@@ -24,7 +24,7 @@ afterAll(function () {
 beforeEach(function () {
     $this->destination = (string) TestCase::$componentsPath;
 
-    exec('rm -rf '.escapeshellarg($this->destination));
+    removeDirectory($this->destination);
 
     mkdir($this->destination.'/icon', 0777, true);
 
@@ -55,7 +55,7 @@ function heroiconsFixture(): string
 {
     $directory = sys_get_temp_dir().'/shape-icons-heroicons-'.getmypid();
 
-    exec('rm -rf '.escapeshellarg($directory));
+    removeDirectory($directory);
 
     $set = IconSet::fromArray('hero', config('shape.icon_sets')['hero'], config('shape.icon_sizes'));
 
@@ -139,7 +139,7 @@ it('generates an icon whose name is spelled with underscores', function () {
 
     $from = sys_get_temp_dir().'/shape-icons-underscore-'.getmypid();
 
-    exec('rm -rf '.escapeshellarg($from));
+    removeDirectory($from);
     mkdir($from, 0777, true);
 
     file_put_contents($from.'/check_circle.svg', '<svg viewBox="0 0 24 24"><path d="M0 0" data-drawn="check_circle" /></svg>');
@@ -158,7 +158,7 @@ it('generates an icon whose name is spelled with underscores', function () {
     expect(Blade::render('<x-shape::icon.check_circle variant="solid" />'))
         ->toContain('data-drawn="check_circle-fill"');
 
-    exec('rm -rf '.escapeshellarg($from));
+    removeDirectory($from);
 });
 
 it('drops the attributes that describe how a drawing is used', function () {
@@ -297,7 +297,7 @@ it('lets --set read another set for the one run that asks', function () {
     expect(file_get_contents($this->destination.'/icon/hero/shape-close.blade.php'))
         ->toContain('data-drawn="x-mark"');
 
-    exec('rm -rf '.escapeshellarg($from));
+    removeDirectory($from);
 });
 
 it('says which key to write when no set is configured to read', function () {
@@ -1040,7 +1040,7 @@ describe('shape:icon:replace', function () {
         expect(written())->toHaveCount(13)
             ->and($this->destination.'/icon/shape-loading.blade.php')->not->toBeFile();
 
-        exec('rm -rf '.escapeshellarg($from));
+        removeDirectory($from);
     });
 
     it('spins the loading slot, and nothing else', function () {
@@ -1100,8 +1100,8 @@ describe('shape:icon:status', function () {
         // only the second is a reason to regenerate.
         $from = sys_get_temp_dir().'/shape-icons-upstream-'.getmypid();
 
-        exec('rm -rf '.escapeshellarg($from));
-        exec('cp -R '.escapeshellarg($this->heroicons).' '.escapeshellarg($from));
+        removeDirectory($from);
+        copyDirectory($this->heroicons, $from);
 
         $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $from])->assertSuccessful();
 
@@ -1118,7 +1118,7 @@ describe('shape:icon:status', function () {
             ->expectsOutputToContain('redrawn upstream')
             ->assertSuccessful();
 
-        exec('rm -rf '.escapeshellarg($from));
+        removeDirectory($from);
     });
 
     it('will not go to the network to check icons that came from a directory', function () {

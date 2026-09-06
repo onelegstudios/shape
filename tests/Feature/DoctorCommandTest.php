@@ -11,7 +11,7 @@ beforeAll(function () {
 
 afterAll(function () {
     if (TestCase::$componentsPath !== null) {
-        exec('rm -rf '.escapeshellarg(TestCase::$componentsPath));
+        removeDirectory(TestCase::$componentsPath);
     }
 
     TestCase::$componentsPath = null;
@@ -20,7 +20,7 @@ afterAll(function () {
 beforeEach(function () {
     $this->path = (string) TestCase::$componentsPath;
 
-    exec('rm -rf '.escapeshellarg($this->path));
+    removeDirectory($this->path);
 
     mkdir($this->path, 0777, true);
 });
@@ -124,7 +124,7 @@ it('reports a component that never states a strategy', function () {
 it('checks a directory it is pointed at', function () {
     $elsewhere = sys_get_temp_dir().'/shape-doctor-elsewhere-'.getmypid();
 
-    exec('rm -rf '.escapeshellarg($elsewhere));
+    removeDirectory($elsewhere);
 
     mkdir($elsewhere, 0777, true);
 
@@ -134,11 +134,11 @@ it('checks a directory it is pointed at', function () {
         ->expectsOutputToContain('config(')
         ->assertFailed();
 
-    exec('rm -rf '.escapeshellarg($elsewhere));
+    removeDirectory($elsewhere);
 });
 
 it('has nothing to check when nothing has been ejected', function () {
-    exec('rm -rf '.escapeshellarg($this->path));
+    removeDirectory($this->path);
 
     $this->artisan('shape:doctor')
         ->expectsOutputToContain('No components to check')
