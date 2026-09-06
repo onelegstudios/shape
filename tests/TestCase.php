@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Onelegstudios\Shape\Tests;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Http;
 use Onelegstudios\Shape\Facades\Shape as ShapeFacade;
 use Onelegstudios\Shape\ShapeServiceProvider;
@@ -48,6 +49,12 @@ abstract class TestCase extends Orchestra
     public static ?string $storagePath = null;
 
     /**
+     * Whether this process has already thrown away the compiled views it
+     * inherited from an older run — see `defineEnvironment`.
+     */
+    protected static bool $compiledViewsCleared = false;
+
+    /**
      * No test in this suite reaches the network.
      *
      * `shape:icon` can fetch an icon set from GitHub, and the components it
@@ -70,6 +77,19 @@ abstract class TestCase extends Orchestra
     protected function defineEnvironment($app): void
     {
         if (static::$componentsPath !== null) {
+            // The directory has to be there before the provider boots.
+            //
+            // Ejected components are registered only when their directory
+            // exists, which is what an application that has ejected nothing
+            // wants. A test file creates the directory in `beforeEach`, which
+            // runs after the application has booted — so whichever test the
+            // random order puts first would boot without the path registered,
+            // and the packaged component would answer where the ejected one
+            // should have.
+            if (! is_dir(static::$componentsPath)) {
+                mkdir(static::$componentsPath, 0777, true);
+            }
+
             $app['config']->set('shape.components_path', static::$componentsPath);
         }
 
@@ -90,6 +110,17 @@ abstract class TestCase extends Orchestra
         // component rendering as an empty string, in whichever test happened to
         // be running at the time.
         $compiled = sys_get_temp_dir().'/shape-compiled-views-'.getmypid();
+
+        // Process ids come round again, and the directory is named after one.
+        // Emptied once per process rather than once per test, because the
+        // directory is deliberately shared by the tests a worker runs: what is
+        // being thrown away is an older run's views, compiled against a
+        // different version of the package or of Blaze.
+        if (! static::$compiledViewsCleared) {
+            (new Filesystem)->deleteDirectory($compiled);
+
+            static::$compiledViewsCleared = true;
+        }
 
         if (! is_dir($compiled)) {
             mkdir($compiled, 0777, true);

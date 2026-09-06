@@ -51,13 +51,39 @@ function clearCompiledViews(): void
  */
 function foldedComponentsWhileRendering(string $view, array $data = []): array
 {
+    return foldedComponentsWhile(fn () => view($view, $data)->render());
+}
+
+/**
+ * The components folded into one template, compiling it rather than rendering it.
+ *
+ * Rendering compiles a template the first time it is asked for and never again
+ * in that process: Blaze writes each component into a function named after its
+ * path and guards the `require` with `function_exists`, so a second render
+ * reuses the function the first one left behind and never reaches the compiler.
+ * Clearing the view cache does not undo that — a function cannot be undefined —
+ * so a test that watches a template fold something another test has already
+ * rendered has to compile that template itself.
+ *
+ * @return list<string>
+ */
+function foldedComponentsWhileCompiling(string $path): array
+{
+    return foldedComponentsWhile(fn () => Blade::compile($path));
+}
+
+/**
+ * @return list<string>
+ */
+function foldedComponentsWhile(callable $callback): array
+{
     $folded = [];
 
     Event::listen(ComponentFolded::class, function (ComponentFolded $event) use (&$folded): void {
         $folded[] = $event->name;
     });
 
-    view($view, $data)->render();
+    $callback();
 
     return $folded;
 }
@@ -527,10 +553,13 @@ it('does not fold the toaster, and does not need to', function () {
     // and cost a boundary that variables cannot cross. Its templates fold on
     // their own — which is the part that matters, since they are what gets
     // cloned for every toast.
-    $folded = foldedComponentsWhileRendering('static-toaster');
+    // Compiled rather than rendered, and the two templates separately, because
+    // the test below renders the toaster too: whichever of the two the random
+    // order runs second would watch a render that never reaches the compiler.
+    expect(foldedComponentsWhileCompiling(__DIR__.'/../fixtures/views/static-toaster.blade.php'))
+        ->not->toContain('shape::toaster');
 
-    expect($folded)
-        ->not->toContain('shape::toaster')
+    expect(foldedComponentsWhileCompiling(__DIR__.'/../../resources/views/shape/toaster/toaster.blade.php'))
         ->toContain('shape::toast');
 });
 
