@@ -19,20 +19,18 @@
 
 /*
 | laradocs' theme switch stamps `data-theme` on the root element, and its "auto"
-| setting stamps nothing at all — so `dark:` has to mean both. Without this a
-| reader who switches the site to dark gets white preview boxes on a dark page.
+| setting stamps nothing at all — so `dark:` has to mean both, and so do Shape's
+| own tokens. That is the toggle `docs/theming.md` describes, and it is already
+| written out once for the gallery, so the docs site takes the same file rather
+| than a second copy of it: the custom variant for the utilities half, and the
+| three restated blocks for the token half.
+|
+| The token half is the part a docs-only build quietly does without. `dark:`
+| alone repaints the preview stage and nothing standing on it — a reader who
+| asks for light on a dark machine gets a white box full of dark buttons, since
+| `--shape-tone` is still being set by `prefers-color-scheme` inside shape.css.
 */
-@custom-variant dark {
-    &:where([data-theme="dark"], [data-theme="dark"] *) {
-        @slot;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        &:where(:not([data-theme="light"]) *) {
-            @slot;
-        }
-    }
-}
+@import "./theme.src.css";
 
 /*
 | The stage, taken back off the page it is standing on.

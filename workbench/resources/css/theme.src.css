@@ -1,22 +1,25 @@
 /*
 | The manual theme toggle. Workbench only — the package ships no part of this.
 |
-| Imported by preview.src.css and preview-seed.src.css rather than built on its
-| own; it produces no stylesheet of its own.
+| Imported by preview.src.css, preview-seed.src.css and docs.src.css rather than
+| built on its own; it produces no stylesheet of its own. All three pages carry a
+| switch — the gallery's own, and laradocs' on the docs site — and a switch is a
+| switch, so all three need both halves of this.
 |
 | Shape's dark treatment follows the operating system: three blocks in
 | shape.css sit behind `prefers-color-scheme: dark`, and a media query cannot
 | be re-pointed at a selector from outside. `docs/theming.md` tells an
 | application with a switch of its own what it has to do about that, and this
-| file is the gallery doing it — the gallery is a consuming application, so it
-| takes the documented path rather than one the documentation does not describe.
+| file is this repository's own pages doing it — the gallery and the docs site
+| are both consuming applications, so they take the documented path rather than
+| one the documentation does not describe.
 |
 | Two halves, because the toggle needs both.
 |
 | The utilities half is the custom variant below: `dark:` compiles against
-| `data-theme` as well as the media query, and that covers the gallery's own
-| markup and every `dark:` in the package's Blade, since this build already
-| scans the package's views.
+| `data-theme` as well as the media query, and that covers the page's own markup
+| — the gallery's, or the preview stage the docs macro prints — and every `dark:`
+| in the package's Blade, since these builds already scan the package's views.
 |
 | The token half is the three blocks, restated. Twice: once to turn the tokens
 | dark when the reader asks for dark on a light system, and once to turn them
