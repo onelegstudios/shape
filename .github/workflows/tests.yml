@@ -22,7 +22,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
-        php: [8.3, 8.4, 8.5]
+        php: ['8.3', '8.4', '8.5']
         laravel: [12.*, 13.*]
         stability: [prefer-lowest, prefer-stable]
         include:
@@ -58,8 +58,11 @@ jobs:
       - name: Linter
         run: composer lint:check
 
+      # Type coverage reads the package source alone, so one lane covers the matrix.
+      # It also keeps the run off pest-plugin-type-coverage 4.x, whose forked workers
+      # corrupt their own result cache; 5.x locks properly but needs PHP 8.4+.
       - name: Type Coverage
-        if: runner.os != 'Windows'
+        if: runner.os != 'Windows' && matrix.php == '8.5' && matrix.stability == 'prefer-stable'
         run: composer test:types
 
       - name: Test Suite
