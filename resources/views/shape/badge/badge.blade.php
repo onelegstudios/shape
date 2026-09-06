@@ -29,19 +29,6 @@
 ])
 
 @php
-// Never rely on colour alone. Every state resolves a glyph of its own, so a
-// badge stays readable in greyscale and to anyone who can't separate the hues.
-// Opting out is `:icon="false"`; forgetting isn't possible. `brand` and
-// `accent` resolve nothing: they are emphasis rather than states, and `info` is
-// the state the brand used to stand in for.
-$glyph = $icon ?? match ($tone) {
-    'success' => 'shape-success',
-    'danger' => 'shape-danger',
-    'warning' => 'shape-warning',
-    'info' => 'shape-info',
-    default => null,
-};
-
 $classes = Shape::classes()
     ->add('inline-flex items-center whitespace-nowrap align-middle')
     ->add('[:where(&)]:rounded-shape [:where(&)]:font-medium')
@@ -66,8 +53,31 @@ $classes = Shape::classes()
     data-shape-variant="{{ $variant }}"
     data-shape-tone="{{ $tone ?? 'neutral' }}"
 >
-    @if ($glyph)
-        <x-shape::icon :name="$glyph" :size="$iconSize" />
+    {{--
+        Never rely on colour alone. Every state resolves a glyph of its own, so
+        a badge stays readable in greyscale and to anyone who can't separate
+        the hues. Opting out is `:icon="false"`; forgetting isn't possible.
+        `brand` and `accent` resolve nothing: they are emphasis rather than
+        states, and `info` is the state the brand used to stand in for.
+
+        Written as a static tag per tone rather than `<x-shape::icon :name=".." />`
+        so that the four built-in states never touch `<x-dynamic-component>`,
+        which resolves through a temp file Blade writes and reads back on first
+        use. A caller's own `icon` name still needs that dynamic path — there is
+        no fixed set of those to special-case against.
+    --}}
+    @if ($icon !== false)
+        @if ($icon)
+            <x-shape::icon :name="$icon" :size="$iconSize" />
+        @elseif ($tone === 'success')
+            <x-shape::icon.shape-success :size="$iconSize" />
+        @elseif ($tone === 'danger')
+            <x-shape::icon.shape-danger :size="$iconSize" />
+        @elseif ($tone === 'warning')
+            <x-shape::icon.shape-warning :size="$iconSize" />
+        @elseif ($tone === 'info')
+            <x-shape::icon.shape-info :size="$iconSize" />
+        @endif
     @endif
 
     {{ $label }}

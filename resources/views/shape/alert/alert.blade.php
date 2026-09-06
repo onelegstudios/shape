@@ -46,22 +46,6 @@
 ])
 
 @php
-// Never colour alone — every state tone resolves a glyph, so an alert stays
-// readable in greyscale. `:icon="false"` opts out; forgetting isn't possible.
-//
-// `brand` and `accent` are not among them. Both are emphasis: the brand is the
-// product's colour, which an application is free to move, and the accent is the
-// one kept for "look here". A glyph on either would make it a state under
-// another name — the one `info` now is, in a blue that stays blue whatever the
-// brand becomes.
-$glyph = $icon ?? match ($tone) {
-    'success' => 'shape-success',
-    'danger' => 'shape-danger',
-    'warning' => 'shape-warning',
-    'info' => 'shape-info',
-    default => null,
-};
-
 // Variant is how loud the alert is; tone is what it means. The two never
 // multiply into a class matrix, because every arm below paints with the same
 // tone variables and the foreground comes from the surface rather than from
@@ -102,8 +86,34 @@ $classes = Shape::classes()
     data-shape-tone="{{ $tone ?? 'neutral' }}"
     data-shape-surface="{{ $variant === 'solid' ? 'solid' : 'tint' }}"
 >
-    @if ($glyph)
-        <x-shape::icon :name="$glyph" :size="$iconSize" class="mt-0.5" />
+    {{--
+        Never colour alone — every state tone resolves a glyph, so an alert
+        stays readable in greyscale. `:icon="false"` opts out; forgetting
+        isn't possible.
+
+        `brand` and `accent` are not among them. Both are emphasis: the brand
+        is the product's colour, which an application is free to move, and the
+        accent is the one kept for "look here". A glyph on either would make it
+        a state under another name — the one `info` now is, in a blue that
+        stays blue whatever the brand becomes.
+
+        A static tag per tone, as the badge does, rather than
+        `<x-shape::icon :name=".." />` — the four built-in states never need
+        `<x-dynamic-component>`'s temp-file round trip. A caller's own `icon`
+        still goes through it; there's no fixed set of those to special-case.
+    --}}
+    @if ($icon !== false)
+        @if ($icon)
+            <x-shape::icon :name="$icon" :size="$iconSize" class="mt-0.5" />
+        @elseif ($tone === 'success')
+            <x-shape::icon.shape-success :size="$iconSize" class="mt-0.5" />
+        @elseif ($tone === 'danger')
+            <x-shape::icon.shape-danger :size="$iconSize" class="mt-0.5" />
+        @elseif ($tone === 'warning')
+            <x-shape::icon.shape-warning :size="$iconSize" class="mt-0.5" />
+        @elseif ($tone === 'info')
+            <x-shape::icon.shape-info :size="$iconSize" class="mt-0.5" />
+        @endif
     @endif
 
     <div class="flex min-w-0 flex-1 flex-col gap-1">
