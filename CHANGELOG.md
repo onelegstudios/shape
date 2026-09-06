@@ -1,8 +1,4 @@
 # Release Notes
 
-## [Unreleased](https://github.com/onelegstudios/shape/compare/v0.1.0...1.x)
+## [Unreleased](https://github.com/onelegstudios/shape/compare/v0.1.0...main)
 
-
-## [v0.1.0](https://github.com/onelegstudios/shape/compare/...v0.1.0) - 202x-xx-xx
-
-Initial pre-release.
