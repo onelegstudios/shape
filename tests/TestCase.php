@@ -49,10 +49,12 @@ abstract class TestCase extends Orchestra
     public static ?string $storagePath = null;
 
     /**
-     * Whether this process has already thrown away the compiled views it
-     * inherited from an older run — see `defineEnvironment`.
+     * The compiled view directories this process has already thrown away the
+     * contents of — see `defineEnvironment`.
+     *
+     * @var array<string, true>
      */
-    protected static bool $compiledViewsCleared = false;
+    protected static array $compiledViewsCleared = [];
 
     /**
      * No test in this suite reaches the network.
@@ -101,25 +103,17 @@ abstract class TestCase extends Orchestra
             $app->useStoragePath(static::$storagePath);
         }
 
-        // Every worker compiles views into a directory it owns.
-        //
-        // The suite runs in parallel, components are compiled on demand, and
-        // `x-dynamic-component` writes temporary compiled views of its own. All
-        // of that shares one directory by default, so workers truncate files
-        // that other workers are midway through including — which surfaces as a
-        // component rendering as an empty string, in whichever test happened to
-        // be running at the time.
-        $compiled = sys_get_temp_dir().'/shape-compiled-views-'.getmypid();
+        $compiled = $this->compiledViewPath();
 
         // Process ids come round again, and the directory is named after one.
         // Emptied once per process rather than once per test, because the
         // directory is deliberately shared by the tests a worker runs: what is
         // being thrown away is an older run's views, compiled against a
         // different version of the package or of Blaze.
-        if (! static::$compiledViewsCleared) {
+        if (! isset(static::$compiledViewsCleared[$compiled])) {
             (new Filesystem)->deleteDirectory($compiled);
 
-            static::$compiledViewsCleared = true;
+            static::$compiledViewsCleared[$compiled] = true;
         }
 
         if (! is_dir($compiled)) {
@@ -132,6 +126,31 @@ abstract class TestCase extends Orchestra
             ...(array) $app['config']->get('view.paths'),
             __DIR__.'/fixtures/views',
         ]);
+    }
+
+    /**
+     * Where this test case's application compiles its views.
+     *
+     * A directory per worker, because the suite runs in parallel, components
+     * are compiled on demand, and `x-dynamic-component` writes temporary
+     * compiled views of its own. All of that shares one directory by default,
+     * so workers truncate files that other workers are midway through
+     * including — which surfaces as a component rendering as an empty string,
+     * in whichever test happened to be running at the time.
+     *
+     * And a directory per boot path on top of that, which is what
+     * `BlazeTestCase` overrides this for. Blaze compiles a component into a
+     * function definition its runtime then calls; included by an application
+     * that never booted Blaze, that file defines the function and prints
+     * nothing. Blade decides a compiled view is still current by comparing it
+     * against the modification time of its source, which is the same file
+     * either way — so with one directory between them, whichever suite
+     * compiled a component first answers for the other, and the other renders
+     * an empty string.
+     */
+    protected function compiledViewPath(): string
+    {
+        return sys_get_temp_dir().'/shape-compiled-views-'.getmypid();
     }
 
     protected function getPackageProviders($app): array

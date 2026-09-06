@@ -20,6 +20,19 @@ abstract class BlazeTestCase extends TestCase
         ];
     }
 
+    /**
+     * A compiled view directory of this suite's own — see the parent.
+     *
+     * The package's components are the same files whichever way it boots, and
+     * Blade's staleness check is their modification time, so one directory
+     * between the two suites has a folded component answering for the fallback
+     * boot path and the other way about.
+     */
+    protected function compiledViewPath(): string
+    {
+        return parent::compiledViewPath().'-blaze';
+    }
+
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);
