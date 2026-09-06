@@ -307,8 +307,17 @@
     | `<x-shape::text variant="muted">` inside a danger alert reads the global
     | grey, on a pink background, which is the exact failure the surface contract
     | exists to prevent. With it, nothing has to be passed down.
+    |
+    | The second selector is that failure arriving late. A ghost alert paints no
+    | fill at rest, so it publishes no foreground and its text is the page's own;
+    | hovering it paints this same tint. Painting the wash without the ink that
+    | belongs on it would put the global grey on a coloured background for as
+    | long as the pointer was there, so `data-shape-surface-hover` publishes the
+    | pair for exactly that long. Joined to the selector above rather than
+    | written out again, so the two readings of `tint` cannot drift apart.
     */
-    [data-shape-surface='tint'] {
+    [data-shape-surface='tint'],
+    [data-shape-surface-hover='tint']:hover {
         --shape-fg: var(--shape-tone-ink);
         --shape-fg-muted: color-mix(in oklch, var(--shape-tone-ink) 76%, transparent);
     }
@@ -970,6 +979,11 @@
 | surface's foreground, and hovers to a wash of it. Both halves of the pair move
 | together, which is what keeps the hover the same hue as the rest.
 |
+| A surface published only on hover counts as published, which is why each rule
+| below names it too. The alert that does it is the untoned ghost: pointing at
+| one turns it into a `subtle` alert, and a × still resolving neutral grey would
+| be the one grey thing on it.
+|
 | Scoped to `[data-shape-dismiss]` rather than to ghost buttons generally,
 | because the two are not the same claim. A ghost `danger` button someone put
 | inside a `brand` alert is meant to be red and stays red; a dismiss control was
@@ -992,11 +1006,13 @@
 | this; the button is the only component that reads a tone rather than a surface.
 */
 @layer shape-surface {
-    [data-shape-surface] [data-shape-dismiss] {
+    [data-shape-surface] [data-shape-dismiss],
+    [data-shape-surface-hover]:hover [data-shape-dismiss] {
         color: var(--shape-fg);
     }
 
-    [data-shape-surface] [data-shape-dismiss]:hover {
+    [data-shape-surface] [data-shape-dismiss]:hover,
+    [data-shape-surface-hover]:hover [data-shape-dismiss]:hover {
         background-color: color-mix(in oklch, var(--shape-fg) 15%, transparent);
     }
 

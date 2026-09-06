@@ -110,13 +110,69 @@ it('moves the foreground contract with the variant, not just the background', fu
     // here would put dark ink on a saturated fill.
     expect(Blade::render('<x-shape::alert tone="danger" variant="solid">Card declined.</x-shape::alert>'))
         ->toContain('data-shape-surface="solid"');
+});
 
-    // Outline and ghost paint no background, so the ink contract still applies.
-    expect(Blade::render('<x-shape::alert tone="danger" variant="outline">Card declined.</x-shape::alert>'))
+it('leaves the unpainted variants reading as the page they sit on', function (string $variant) {
+    // The border and the glyph carry the tone, so the body does not have to:
+    // neither of these publishes a foreground of its own, and each takes
+    // whatever it is standing on — which on a page is the ordinary ink.
+    // Publishing the page's colours instead of publishing nothing would be a
+    // different thing: an outline alert inside a solid card has to follow the
+    // card, and inheriting is what does that.
+    expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\">Card declined.</x-shape::alert>"))
+        ->not->toContain('data-shape-surface=')
+        ->toContain('text-[color:var(--shape-fg)]');
+})->with(['outline', 'ghost']);
+
+it('colours an unpainted alert when it is asked to', function (string $variant) {
+    expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\" toned>Card declined.</x-shape::alert>"))
         ->toContain('data-shape-surface="tint"');
+})->with(['outline', 'ghost']);
 
+it('publishes the foreground a ghost alert paints itself on hover', function () {
+    // The half a `hover:bg-` cannot reach. The tint arrives on hover, and the
+    // heading and the body paint their own `--shape-fg` — so a `hover:text-`
+    // on the root would leave both of them where they were, and the wash would
+    // carry the page's grey for as long as the pointer was on it. The pair is
+    // republished for exactly that long instead.
     expect(Blade::render('<x-shape::alert tone="danger" variant="ghost">Card declined.</x-shape::alert>'))
-        ->toContain('data-shape-surface="tint"');
+        ->toContain('hover:bg-[var(--shape-tone-tint)]')
+        ->toContain('data-shape-surface-hover="tint"');
+});
+
+it('leaves the hover foreground to the alert that paints one', function () {
+    // Outline never moves, so it has nothing to republish; a toned ghost is
+    // already reading the tint at rest, so its hover has nothing left to say.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="outline">Card declined.</x-shape::alert>'))
+        ->not->toContain('data-shape-surface-hover');
+
+    expect(Blade::render('<x-shape::alert tone="danger" variant="ghost" toned>Card declined.</x-shape::alert>'))
+        ->not->toContain('data-shape-surface-hover');
+});
+
+it('refuses to untone a variant that paints a fill, because the fill decides', function (string $variant, string $surface) {
+    // The two failures the surface contract exists to make impossible: the
+    // global grey on a pink wash, and dark ink on a saturated fill. Neither is
+    // a call site's to ask for, so `toned` is ignored wherever there is a
+    // background to be readable against.
+    expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\" :toned=\"false\">Card declined.</x-shape::alert>"))
+        ->toContain("data-shape-surface=\"{$surface}\"");
+})->with([
+    ['subtle', 'tint'],
+    ['solid', 'solid'],
+]);
+
+it('keeps the glyph toned when the text is not, so colour is not lost with it', function () {
+    // An untoned alert still has to say what it means at a glance, and a
+    // one-pixel border is thin. The icon holds the tone the body gave up.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="outline">Card declined.</x-shape::alert>'))
+        ->toContain('data-shape-icon')
+        ->toContain('text-[color:var(--shape-tone-ink)]');
+
+    // Toned, it reads the surface with everything else rather than painting
+    // itself a second time.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="outline" toned>Card declined.</x-shape::alert>'))
+        ->not->toContain('text-[color:var(--shape-tone-ink)]');
 });
 
 it('leaves the foreground to the surface instead of restating it per variant', function (string $variant) {
@@ -159,18 +215,47 @@ it('yields to a class passed at the call site', function () {
         ->toContain('p-8');
 });
 
-it('publishes a surface the dismiss control can be corrected against', function (string $variant) {
+it('publishes a surface the dismiss control can be corrected against', function (string $variant, string $toned) {
     // The Blade half of a fix that finishes in CSS. The rule at the foot of
     // shape.css is `[data-shape-surface] [data-shape-dismiss]`, so both halves
     // have to be in the markup or the close button silently goes back to
     // resolving the neutral ink from the `data-shape-tone` a button always
     // declares for itself.
-    $html = Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\" dismissible>Card declined.</x-shape::alert>");
+    $html = Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\" {$toned} dismissible>Card declined.</x-shape::alert>");
 
     expect($html)
         ->toContain('data-shape-surface="'.($variant === 'solid' ? 'solid' : 'tint').'"')
         ->toContain('data-shape-dismiss');
-})->with(['subtle', 'outline', 'ghost', 'solid']);
+})->with([
+    ['subtle', ''],
+    ['solid', ''],
+    ['outline', 'toned'],
+    ['ghost', 'toned'],
+]);
+
+it('leaves the dismiss control alone in an alert that publishes no foreground', function () {
+    // The correction is a descendant rule on `[data-shape-surface]`, so an
+    // untoned alert misses it and the close button goes on resolving its own
+    // neutral ink — which is the right answer on the page background, and the
+    // same miss the toast relies on. Inside something that does publish a
+    // surface, that ancestor still matches and the control follows it.
+    $html = Blade::render('<x-shape::alert tone="danger" variant="outline" dismissible>Card declined.</x-shape::alert>');
+
+    expect($html)
+        ->not->toContain('data-shape-surface=')
+        ->toContain('data-shape-dismiss');
+});
+
+it('hands the dismiss control the foreground a ghost alert takes on hover', function () {
+    // The same rule, on the attribute that publishes late: `[data-shape-surface-hover]`
+    // is in the selector list beside `[data-shape-surface]`, so the × follows
+    // the block into the tint rather than staying the one grey thing on it.
+    $html = Blade::render('<x-shape::alert tone="danger" variant="ghost" dismissible>Card declined.</x-shape::alert>');
+
+    expect($html)
+        ->toContain('data-shape-surface-hover="tint"')
+        ->toContain('data-shape-dismiss');
+});
 
 it('leaves the dismiss control untoned, because the surface is what it reads', function () {
     // Passing `:tone="$tone"` down would fix the tints and break `solid` —

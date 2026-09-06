@@ -521,6 +521,21 @@ it('keeps folding a toast whose text is bound dynamically', function () {
         ->toContain('shape::toast');
 });
 
+it('folds an outline alert that is toned at the call site', function () {
+    // The prop is read at compile time like every other one here, so choosing
+    // the coloured reading of an outline alert costs nothing at runtime.
+    expect(foldedComponentsWhileRendering('static-feedback-outline'))
+        ->toContain('shape::alert');
+});
+
+it('abandons folding an alert whose ink is bound dynamically', function () {
+    // `toned` resolves the surface the alert publishes, so it branches and
+    // cannot be safe — the same trade `variant` and `tone` make. Bind it only
+    // where the alert is not on a hot path.
+    expect(foldedComponentsWhileRendering('dynamic-alert-toned', ['toned' => true]))
+        ->not->toContain('shape::alert');
+});
+
 it('abandons folding an alert whose colour is bound dynamically', function () {
     // Same trade the badge makes, for the same reason: the alert branches on
     // `tone` to resolve its glyph, so colour cannot be safe here. It is the

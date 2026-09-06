@@ -17,15 +17,30 @@
     coloured background is the one thing the surface contract exists to make
     impossible.
 
-    Which is why `variant` and the surface are decided together. `subtle`,
-    `outline` and `ghost` all put the tone's ink on a light background, so all
-    three publish `tint`; `solid` fills with the tone and publishes `solid`,
-    where the readable foreground is the tone's own `-fg` instead. Nothing is
-    passed down in either case — the nested text finds it.
+    Which is why `variant` and the surface are decided together. `subtle` puts
+    the tone's ink on a light wash and publishes `tint`; `solid` fills with the
+    tone and publishes `solid`, where the readable foreground is the tone's own
+    `-fg` instead. Nothing is passed down in either case — the nested text
+    finds it.
+
+    `outline` and `ghost` paint no fill, so the ink is the one thing here a call
+    site gets a say in, and `toned` is that say. Both default to the page's own
+    ink: the tone is carried by the border and the glyph, and a paragraph of
+    coloured body copy is the loudest thing on a page for no reason. `subtle`
+    and `solid` ignore the prop — where there is a fill, the fill decides what
+    is readable on it.
+
+    Which leaves the ghost hover, where a fill arrives after the fact.
+    `data-shape-surface-hover` is the pair `data-shape-surface` publishes,
+    published for as long as the pointer is on the block — because a tint
+    without the ink that belongs on it is the failure the contract exists to
+    prevent, arriving a hundred milliseconds late.
 
     `tone` is branched on to resolve the glyph, exactly as the badge does, so it
-    is *not* declared safe here. The same prop is safe on the button, which only
-    ever interpolates it. Whatever a component does with a value decides that.
+    is *not* declared safe here — and neither are `variant` or `toned`, which
+    branch to resolve the paint. The same `tone` is safe on the button, which
+    only ever interpolates it. Whatever a component does with a value decides
+    that.
 
     `heading` is interpolated and nothing more, so an alert whose title comes from
     a variable still folds.
@@ -39,6 +54,7 @@
 @props([
     'tone' => null,
     'variant' => 'subtle',
+    'toned' => null,
     'heading' => null,
     'icon' => null,
     'iconSize' => 'sm',
@@ -51,22 +67,22 @@
 // tone variables and the foreground comes from the surface rather than from
 // here — one `text-` class serves all four.
 //
-// The badge's set, and the badge's recipe: `outline` takes the neutral border
-// and leaves the colour to the ink and the glyph, which is what keeps `brand`
-// and `accent` — the two tones that draw no glyph — visibly toned. `ghost` is
-// that arm with the border dropped: the quietest of the four, for a message
-// that belongs in the flow of a form or a panel that is already boxed.
+// The badge's set: `outline` takes the toned border and leaves the ink to
+// `toned` below. `ghost` is that arm with the border dropped: the quietest of
+// the four, for a message that belongs in the flow of a form or a panel that
+// is already boxed.
 //
 // Only the paint changes. The padding above stays with it, so swapping a
 // variant never moves the text, and the dismiss control's negative margins go
 // on pulling it back into the same corner.
 //
-// Ghost is the one arm that paints on hover, and it resolves to `subtle`: the
-// tint is the fill this alert would have had at rest, so pointing at one shows
-// its bounds — the block a dismiss control belongs to — rather than promising
-// a click. It is the ghost button's recipe and the same variable, which is why
-// the two agree without either knowing about the other. The transition rides
-// in this arm rather than on the root, since the other three never move.
+// Ghost is the one arm that paints on hover, and it resolves to `subtle`
+// entire: the tint is the fill this alert would have had at rest, and the ink
+// below is the foreground that belongs on it. Pointing at one shows its bounds
+// — the block a dismiss control belongs to — rather than promising a click. It
+// is the ghost button's recipe and the same variable, which is why the two
+// agree without either knowing about the other. The transition rides in this
+// arm rather than on the root, since the other three never move.
 $classes = Shape::classes()
     ->add('flex items-start')
     ->add('[:where(&)]:gap-3 [:where(&)]:rounded-shape [:where(&)]:p-4')
@@ -77,6 +93,50 @@ $classes = Shape::classes()
         default => '[:where(&)]:bg-[var(--shape-tone-tint)]',
     })
     ->add('[:where(&)]:text-[color:var(--shape-fg)]');
+
+// Whether the text is the tone's ink or the page's own foreground — the one
+// thing about the paint a call site decides rather than the variant.
+//
+// Only where there is no fill. `subtle` and `solid` both paint a background,
+// and what is readable on it is not a choice: dark ink on a saturated fill, or
+// the global grey on a pink wash, are the two failures the surface contract
+// exists to make impossible. `outline` and `ghost` sit on the page, where both
+// answers read, so they are the two arms that ask.
+//
+// Both default to the page's ink. The tone is not lost with it — the border
+// and the glyph go on carrying it — and what is gained is a block of body copy
+// that reads as body copy, which is the better default for the long ones.
+$toned = match ($variant) {
+    'subtle', 'solid' => true,
+    default => (bool) $toned,
+};
+
+// Untoned publishes no foreground at all rather than publishing the page's.
+// The difference shows inside something that has a surface of its own — an
+// outline alert in a solid card should take that card's ink, and inheritance
+// already does it. It also leaves the dismiss control resolving its own
+// neutral ink, which is the right answer on the page background and the same
+// miss the toast relies on.
+$surface = match (true) {
+    $variant === 'solid' => 'solid',
+    $toned => 'tint',
+    default => null,
+};
+
+// The other half of the ghost arm's hover, and the reason it is an attribute
+// rather than two more utilities: what changes on hover is the pair every
+// nested component reads, and a heading painting its own `--shape-fg` cannot
+// be reached by a `hover:text-` on this element. `data-shape-surface-hover`
+// publishes the tint's foregrounds for as long as the pointer is there, and
+// the heading, the body and the dismiss control all find them where they
+// already look. Outline never paints on hover, so it never needs one.
+$hoverSurface = $variant === 'ghost' && ! $toned ? 'tint' : null;
+
+// The glyph keeps the tone the text gave up. An untoned alert still has to say
+// what it means without colour being the only signal, and a one-pixel border
+// is thin: leaving the icon toned is what keeps a `danger` outline alert
+// readable as danger at a glance.
+$iconClasses = $toned ? 'mt-0.5' : 'mt-0.5 text-[color:var(--shape-tone-ink)]';
 @endphp
 
 <div
@@ -84,7 +144,8 @@ $classes = Shape::classes()
     data-shape-alert
     data-shape-variant="{{ $variant }}"
     data-shape-tone="{{ $tone ?? 'neutral' }}"
-    data-shape-surface="{{ $variant === 'solid' ? 'solid' : 'tint' }}"
+    @if ($surface) data-shape-surface="{{ $surface }}" @endif
+    @if ($hoverSurface) data-shape-surface-hover="{{ $hoverSurface }}" @endif
 >
     {{--
         Never colour alone — every state tone resolves a glyph, so an alert
@@ -104,15 +165,15 @@ $classes = Shape::classes()
     --}}
     @if ($icon !== false)
         @if ($icon)
-            <x-shape::icon :name="$icon" :size="$iconSize" class="mt-0.5" />
+            <x-shape::icon :name="$icon" :size="$iconSize" class="{{ $iconClasses }}" />
         @elseif ($tone === 'success')
-            <x-shape::icon.shape-success :size="$iconSize" class="mt-0.5" />
+            <x-shape::icon.shape-success :size="$iconSize" class="{{ $iconClasses }}" />
         @elseif ($tone === 'danger')
-            <x-shape::icon.shape-danger :size="$iconSize" class="mt-0.5" />
+            <x-shape::icon.shape-danger :size="$iconSize" class="{{ $iconClasses }}" />
         @elseif ($tone === 'warning')
-            <x-shape::icon.shape-warning :size="$iconSize" class="mt-0.5" />
+            <x-shape::icon.shape-warning :size="$iconSize" class="{{ $iconClasses }}" />
         @elseif ($tone === 'info')
-            <x-shape::icon.shape-info :size="$iconSize" class="mt-0.5" />
+            <x-shape::icon.shape-info :size="$iconSize" class="{{ $iconClasses }}" />
         @endif
     @endif
 

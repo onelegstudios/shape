@@ -19,30 +19,62 @@ default, because an alert is usually not the loudest thing on its page:
 
 @docs('preview', name: 'alert-variants', layout: 'stack')
 
-`outline` takes a neutral border and leaves the colour to the text and the glyph
-— the same recipe the [badge](badge.md#variants) uses, and what keeps `brand` and
-`accent`, the two tones that draw no glyph, visibly toned. `solid` fills with the
-tone and is worth spending sparingly: a saturated block that size competes with
-everything around it.
+`outline` draws the tone around the outside and leaves the text as the page's own
+ink, so a long alert reads as ordinary body copy inside a coloured edge. The glyph
+keeps the tone, which is what stops the message from losing its meaning along with
+its colour; [`toned`](#toning-the-text) puts the colour back in the text where you
+want it. `solid` fills with the tone and is worth spending sparingly: a saturated
+block that size competes with everything around it.
 
 `ghost` is `outline` with the border dropped, and the quietest of the four: no
-fill, no edge, just the glyph and the tone's ink in the flow of the page. Reach
-for it where the alert is already inside something boxed — a
+fill, no edge, just the glyph and the page's own ink in the flow of the content.
+Reach for it where the alert is already inside something boxed — a
 [card](card.md), a panel, a form section — and a second border would only draw a
 box inside a box. It keeps the padding the others have, so switching a variant
 never shifts the text.
 
-It is also the one variant that paints on hover, in `subtle`'s tint — the fill
-it would have had at rest. An alert is not a control and the hover promises no
-click; what it does is show the bounds an unpainted block has no other way of
-drawing, which is worth having when the block carries a
-[dismiss](#dismissing) button. The ghost [button](button.md#variants) hovers to
-the same variable, so a ghost control inside a ghost alert agrees with it.
+It is also the one variant that paints on hover, and what it paints is `subtle`
+entire: the tint it would have had at rest, and the tone's ink that belongs on
+that tint. An alert is not a control and the hover promises no click; what it
+does is show the bounds an unpainted block has no other way of drawing, which is
+worth having when the block carries a [dismiss](#dismissing) button. The ghost
+[button](button.md#variants) hovers to the same variable, so a ghost control
+inside a ghost alert agrees with it.
 
 Inside a `solid` alert the muted foreground is not dialled back, because there is
 nowhere for it to go. White on the 700 fills starts at 4.9:1 for `success`, so
 any tint that reads as recessed lands under AA. Hierarchy comes from the
 heading's size and weight instead.
+
+## Toning the text
+
+`outline` and `ghost` paint no fill, so an alert in either sits directly on the
+page and its text reads both ways. `toned` is which way:
+
+@docs('preview', name: 'alert-toned', layout: 'stack')
+
+Both default to the page's ink. Nothing about the message is lost with it — the
+glyph still says what the alert means and, on `outline`, so does the border — and
+what is gained is a block of body copy that reads as body copy. A full paragraph
+of red is the loudest thing on a page for no reason.
+
+A ghost alert takes the tone back under the pointer, because that is when it
+paints the tint it would have had as a `subtle` alert, and grey text on a coloured
+wash is the thing this library will not do. It is published as
+`data-shape-surface-hover`, for as long as the pointer is there — a `hover:text-`
+on the alert could not reach the heading and the body inside it, both of which
+paint their own foreground from the pair. The [dismiss](#dismissing) control
+follows the same attribute.
+
+`subtle` and `solid` ignore the prop. Both paint a background, and what is
+readable on one is not a call site's to choose — grey text on a pink wash and dark
+ink on a saturated fill are the two failures the
+[surface contract](../theming.md#the-surface-contract) exists to make impossible.
+
+An untoned alert publishes no `data-shape-surface` at all, rather than publishing
+the page's own colours under a name. The difference shows when it is not on the
+page: an outline alert inside a `solid` card should read in the card's foreground,
+and inheriting is what does that.
 
 ## Heading and body
 
@@ -86,6 +118,14 @@ the control belongs to whatever the variant painted:
 
 @docs('preview', name: 'alert-dismissible-solid', layout: 'stack')
 
+An [untoned](#toning-the-text) alert publishes no surface, so it misses the rule
+and the × goes on resolving its own neutral ink — which is the right answer on the
+page background, and grey beside a black heading rather than beside a coloured
+one. Inside something that does publish a surface, that ancestor still matches and
+the control follows it. So does `data-shape-surface-hover`, which is what carries
+the × into the tint with the rest of a ghost alert instead of leaving it the one
+grey thing on a block that has just gone coloured.
+
 This is the one component that reads a tone rather than a surface, so it is the
 one place the contract is corrected by a rule instead of being followed. The rule
 is scoped to the dismiss control rather than to ghost buttons generally: a ghost
@@ -108,8 +148,8 @@ is off-hue but never invisible.
 
 ## Muted text inside an alert
 
-An alert publishes its own foreground, so a nested muted paragraph reads a
-dialled-back version of the tone rather than grey on pink:
+An alert that carries a tone publishes its own foreground, so a nested muted
+paragraph reads a dialled-back version of the tone rather than grey on pink:
 
 @docs('preview', name: 'alert-surface', layout: 'stack')
 
@@ -131,6 +171,7 @@ the fact.
 | --- | --- | --- |
 | `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
 | `variant` | `subtle` | `subtle`, `outline`, `solid`, `ghost` |
+| `toned` | `false` | paints the text in the tone, on `outline` and `ghost`; ignored on `subtle` and `solid`, where the fill decides |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
@@ -143,7 +184,7 @@ The default slot is the body.
 Tier A — `@blaze(fold: true, safe: ['heading'])`.
 
 `heading` is interpolated and nothing more, so an alert whose title comes from a
-variable still folds. `tone` branches to resolve its glyph and `variant` branches
-to resolve its paint, so `:tone="$tone"` drops to the compiled path — the same
-prop is safe on the [button](button.md), which only ever interpolates it. See
-[Folding](../folding.md).
+variable still folds. `tone` branches to resolve its glyph, and `variant` and
+`toned` branch to resolve the paint, so `:tone="$tone"` drops to the compiled path
+— the same prop is safe on the [button](button.md), which only ever interpolates
+it. See [Folding](../folding.md).

@@ -379,6 +379,15 @@ own palette steps — and two that read the tone instead: `tint`, the pale wash
 whose foreground is the tone's own ink rather than white, and `solid`, its filled
 counterpart, whose foreground is the tone's own `-fg`.
 
+`data-shape-surface-hover` publishes the same pair for as long as the pointer is
+on the element, and takes the same values. One component uses it: a ghost
+[alert](components/alert.md#toning-the-text) paints no fill at rest, so it
+publishes no foreground either, and hovering it paints a tint that the page's own
+ink has no business sitting on. It is a separate attribute rather than a
+`hover:text-` utility because what has to change is the pair every nested
+component reads — a heading paints its own `--shape-fg`, and no utility on an
+ancestor reaches it.
+
 Reading the tone is what lets those two follow it into dark mode.
 `[data-shape-surface='danger']` is red-50 in both, while the danger *tone* flips
 from a 700 fill carrying white to a 500 fill carrying dark — so a component that
