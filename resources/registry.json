@@ -16,6 +16,7 @@
     "avatar": {
         "files": [
             "avatar/avatar.blade.php",
+            "avatar/element.blade.php",
             "avatar/group.blade.php"
         ],
         "requires": [

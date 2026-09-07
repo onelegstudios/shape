@@ -286,6 +286,84 @@ Where the avatar sits beside a name already on the page, the status has to go
 somewhere a reader can reach it — a `<x-shape::badge>` in the row, or text of its
 own. An avatar that announces nothing announces nothing about its badge either.
 
+## Buttons and links
+
+`as="button"` makes the circle a control, and an `href` makes it a link without
+being asked:
+
+@docs('preview', name: 'avatar-buttons')
+
+Most avatars are labels on a row. Some are the way into something — the account
+menu in a header, the face that opens a profile, the assignee that opens a
+picker — and those have to be pressable by a keyboard as well as by a pointer.
+
+`href` resolving to an `<a>` on its own is the same resolution the
+[tab](tabs.md) and the [menu item](dropdown.md) make. Middle-click, "open in new
+tab" and the status bar all work for a link and none of them work for a button
+pretending to be one. Pass `as` as well where you want a button that happens to
+carry an `href`; `as` wins.
+
+`as` also takes `div`, for an avatar inside something already clickable — the
+same escape hatch the [button](button.md#links) has, for the same reason.
+
+### The control is the circle
+
+It swaps the tag and nothing else. There is no button wrapped around the avatar:
+the same element carries the same classes, the same box, the same
+`data-shape-avatar` and the same attribute bag it always carried, so everything
+Shape doesn't claim as a prop lands on the thing being pressed.
+
+```blade
+<x-shape::avatar :initials="$user->initials" :alt="$user->name" as="button" popovertarget="account" />
+```
+
+```blade
+<x-shape::avatar :src="$user->avatar_url" :alt="$user->name" as="button" wire:click="$dispatch('open-profile')" />
+```
+
+A [group](#groups) rings it, a [badge](#badges) marks it and `square` squares it,
+all unchanged — they resolve onto whichever element the avatar turned out to be.
+
+The one thing that moves is the picture. An `<img>` takes no children and takes
+no press, so under `as` the photograph becomes a child of the control and the
+control takes the circle's classes. It is cropped exactly as before, but
+[letterboxing](#pictures) is now one selector further out:
+
+```blade
+<x-shape::avatar :src="$org->logo" alt="Acme" as="button" class="[&>img]:object-contain" />
+```
+
+### It dims rather than repaints
+
+A control does not change colour on hover, which is the one thing it does not
+borrow from the [button](button.md). The button's paint is chrome and its hover
+is a louder version of the same chrome. An avatar's paint is what the avatar
+means — and no `--shape-tone-hover` reaches a photograph. So it dims, which is
+the vocabulary `disabled` already uses here, and it reads the same on a face, on
+two letters and on a glyph.
+
+The focus ring is the button's exactly: `--shape-ring`, two pixels, offset two. A
+control that focused differently from every other control in the library would
+be reporting a difference that is not there.
+
+`disabled` and `aria-disabled` both dim the circle and remove pointer events,
+for the reason the button carries both — an anchor cannot be disabled.
+
+### A control has to be named
+
+An avatar beside a name already on the page [passes no
+`alt`](#the-initials-are-not-the-accessible-name) and announces nothing, which is
+right for a picture and wrong for a button: an unnamed one is announced as
+"button" and nothing else. Pass `alt` to anything that can be pressed, even where
+the name is on the row beside it.
+
+Inside a control, a photograph is named the way initials are — which is to say it
+is not. It carries `alt=""` and the name goes in the same screen-reader text the
+letters and the glyph use, because a photograph of a person is a picture of their
+name exactly as `AL` is, and a control carrying both would announce them twice.
+The bare `<img>` keeps its real `alt`, since there is no element around it to put
+the text in.
+
 ## Groups
 
 `avatar.group` overlaps its children in DOM order, and rings each one so the
@@ -330,6 +408,7 @@ all, and will announce nothing:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `src` | — | an image URL |
+| `as` | — | `button`, `a`, `div` — an `href` implies `a` |
 | `icon` | — | an icon name, shown when there is no image |
 | `icon-variant` | `solid` | `outline`, `solid` |
 | `initials` | — | shown when there is no image and no icon |
@@ -352,6 +431,7 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'ba
 | --- | --- | --- |
 | `initials` static or bound dynamically | folds | — |
 | `icon` named statically | folds | — |
+| `as` written statically | folds | — |
 | `badge` static, `badge-tone` bound per person | folds | — |
 | `badge` bound per row | no | one entry per value |
 | `src` bound per row | no | one entry per URL, no hits |
@@ -360,7 +440,9 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'ba
 [button](button.md) carries it, so a per-person tone still folds, and
 `badge-tone` rides with it for the same reason. `variant` branches to resolve
 the paint and `square` to resolve the radius, so neither can be `safe` — the
-badge's arrangement exactly.
+badge's arrangement exactly. `as` joins them: it chooses an element, so it
+branches — but it is a word a call site writes rather than binds, so an avatar
+that is a control folds like any other.
 
 `badge` branches twice, once for the wrapper and once for whether the mark has
 text in it, and `badge-position` resolves two insets, so both are static props

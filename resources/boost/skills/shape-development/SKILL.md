@@ -108,7 +108,8 @@ which is blue whatever the brand becomes.
 | `list` / `list.item` | fold | `as`, `empty*` |
 | `pagination` | compile | `paginator`, `simple` |
 | `stat` | fold + memo | `value`, `label`, `description`, `delta`, `trend` |
-| `avatar` / `avatar.group` | fold + memo | `src`, `icon`, `icon-variant` (default `solid`), `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `square`, `badge` (bare for a dot, otherwise its text), `badge-tone`, `badge-position` (bottom-right\|bottom-left\|top-right\|top-left) |
+| `avatar` / `avatar.group` | fold + memo | `src`, `icon`, `icon-variant` (default `solid`), `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `square`, `as` (button\|a\|div — an `href` implies `a`), `badge` (bare for a dot, otherwise its text), `badge-tone`, `badge-position` (bottom-right\|bottom-left\|top-right\|top-left) |
+| `avatar.element` | fold | `as` — the element an avatar renders; defaults to a `<span>`, not a `<button>` |
 | `tabs` / `tabs.tab` / `tabs.panel` | fold | `as`, `orientation` / `for`, `selected`, `icon` / `name` |
 
 ### 4. Keep the call site foldable
@@ -427,4 +428,10 @@ Read before executing:
   from the row still folds
 - do not rely on an avatar's badge to say anything to a screen reader; it is
   `aria-hidden`, and the status belongs in `alt` ("Ada Lovelace, online")
+- do not render an avatar as a control without an `alt`; a decorative avatar
+  beside a name is right to announce nothing, but `as="button"` or an `href`
+  without one is announced as "button" and nothing else
+- do not wrap an avatar in a `<x-shape::button>` to make it clickable; that
+  paints a second control around the circle — `as="button"` turns the circle
+  itself into one, keeping its classes, its box and the attribute bag
 - do not publish the stylesheet to change colours; redeclare the tokens instead

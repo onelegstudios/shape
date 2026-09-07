@@ -203,6 +203,60 @@
     that took the bag would move every class a call site has ever passed onto an
     element that is not the circle.
 
+    `as` makes the circle a control. Most avatars are labels on a row, but some
+    are the way into something — the account menu in a header, the face that
+    opens a profile, the assignee that opens a picker — and those have to be
+    pressable by a keyboard as well as by a pointer.
+
+    It swaps the tag and nothing else. The control *is* the circle rather than a
+    button wrapped around one: the same classes, the same box, the same
+    `data-shape-avatar`, the same bag. Wrapping would have lost the paragraph
+    above from the other side, moving every class a call site has ever passed
+    onto an element that is not the circle.
+
+    `href` implies `a` without being asked, the way the tab and the menu item
+    resolve their own element. Middle-click, "open in new tab" and the status bar
+    all work for a link and none of them work for a button pretending to be one
+    — and an `href` on the `<span>` this used to render did nothing at all, so
+    there is no call site that meant the other answer.
+
+    A picture cannot be a control, which is the one place the structure moves.
+    `<img>` takes no children and takes no press, so under `as` the photograph
+    becomes a child of the control and the control takes the circle's classes.
+    It fills the box and is cropped by it exactly as before; what changes is that
+    the bag is one element further out, so letterboxing is
+    `class="[&>img]:object-contain"` rather than `class="object-contain"`.
+
+    A control does not repaint on hover, which is the one thing it does not
+    borrow from the button. The button's paint is chrome and its hover is a
+    louder version of the same chrome. An avatar's paint is what the avatar
+    means, and there is no photograph anywhere that a `--shape-tone-hover` would
+    reach. So it dims, which is the vocabulary `disabled` already uses here and
+    the one answer that reads the same on a face, on two letters and on a glyph.
+
+    The focus ring is the button's exactly — `--shape-ring`, two pixels, offset
+    two — because that one is chrome, and a control that focused differently from
+    every other control in the library would be reporting a difference that is
+    not there. `disabled` and `aria-disabled` both dim and both stop the pointer,
+    for the reason the button carries both: an anchor cannot be disabled.
+
+    A control has to be named. An avatar beside a name already on the page
+    passes no `alt` and announces nothing, which is right for a picture and wrong
+    for a button — an unnamed one is announced as "button" and nothing else. So
+    pass `alt` to anything that can be pressed, even where the name is on the row
+    beside it.
+
+    Inside a control the photograph is named the way the initials are, which is
+    to say it is not. `alt=""` on the picture and the name in the same
+    screen-reader text the letters and the glyph use: a photograph of a person is
+    a picture of their name exactly as `AL` is, and a control that carried both
+    would announce them twice. The bare `<img>` keeps its real `alt`, because
+    there is no element around it to put the text in.
+
+    It chooses an element, so it branches and is not safe. It is also a word a
+    call site writes rather than binds, so an avatar that is a control folds like
+    any other.
+
     Initials are stated, never derived. Deriving them from a name inside a folded
     component would run the derivation once, at compile time, and bake one
     person's initials into every avatar the template renders — the same failure
@@ -243,6 +297,7 @@
 
 @props([
     'src' => null,
+    'as' => null,
     'icon' => null,
     'iconVariant' => 'solid',
     'initials' => null,
@@ -257,6 +312,10 @@
 ])
 
 @php
+// An avatar is a control when it is asked to be one, and an `href` asks without
+// saying so — the tab and the menu item resolve their own element the same way.
+$control = $as ?? ($attributes->has('href') ? 'a' : null);
+
 $iconSize = match ($size) {
     'xs', 'sm' => 'xs',
     'lg' => 'base',
@@ -268,7 +327,7 @@ $classes = Shape::classes()
     ->add($square ? '[:where(&)]:rounded-shape' : '[:where(&)]:rounded-full')
     ->add('[:where(&)]:font-medium')
 
-    ->add(['[:where(&)]:object-cover' => (bool) $src])
+    ->add(['[:where(&)]:object-cover' => $src && ! $control])
 
     ->add(match ($size) {
         'xs' => '[:where(&)]:size-6 [:where(&)]:text-2xs',
@@ -281,7 +340,16 @@ $classes = Shape::classes()
         'solid' => '[:where(&)]:bg-[var(--shape-tone)] [:where(&)]:text-[var(--shape-tone-fg)]',
         'outline' => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border-strong)] [:where(&)]:text-[var(--shape-tone-ink)]',
         default => '[:where(&)]:bg-[var(--shape-tone-tint)] [:where(&)]:text-[var(--shape-tone-ink)]',
-    });
+    })
+
+    // A control is the circle rather than a button around one, so all it adds is
+    // the chrome a control owes: something under the pointer, something under
+    // the keyboard, and a way to say it is taking neither. It does not repaint —
+    // the paint above is what the avatar means, and no `--shape-tone-hover`
+    // reaches a photograph — so it dims, the way `disabled` already does here.
+    ->add($control ? 'transition-opacity duration-100 hover:opacity-80' : null)
+    ->add($control ? 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--shape-ring)]' : null)
+    ->add($control ? 'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50' : null);
 
 // The badge's classes are not merged with anything, because the attribute bag
 // stays on the avatar, so they are written flat rather than through `:where()`.
@@ -348,12 +416,18 @@ $badgeClasses = Shape::classes()
 @endphp
 
 {{-- The wrapper is opened and closed around the avatar rather than repeated
-     inside both arms of the branch below, so there stays one `<img>` and one
-     `<span>` in this file to keep in step with each other. --}}
+     inside both arms of the branch below, so there stays one copy of what goes
+     inside the circle however that circle ends up being drawn.
+
+     A photograph with nothing around it is the one arm that cannot go through
+     the element, because an `<img>` carries its picture in an attribute and
+     takes no children. Every other arrangement — letters, a glyph, or a
+     photograph inside a control that can be pressed — is one element with
+     something in it. --}}
 @if ($badge)<span class="relative inline-flex shrink-0">@endif
-@if ($src)
+@if ($src && ! $control)
     <img src="{{ $src }}" alt="{{ $alt }}" {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">
 @else
-    <span {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">@if ($icon)<x-shape::icon :name="$icon" :variant="$iconVariant" :size="$iconSize" />@else<span aria-hidden="true">{{ $initials }}</span>@endif<span class="sr-only">{{ $alt }}</span></span>
+    <x-shape::avatar.element :as="$control" {{ $attributes->class($classes) }} data-shape-avatar="" data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">@if ($src)<img src="{{ $src }}" alt="" class="size-full [:where(&)]:object-cover">@elseif ($icon)<x-shape::icon :name="$icon" :variant="$iconVariant" :size="$iconSize" />@else<span aria-hidden="true">{{ $initials }}</span>@endif<span class="sr-only">{{ $alt }}</span></x-shape::avatar.element>
 @endif
 @if ($badge)<span class="{{ $badgeClasses }}" aria-hidden="true" data-shape-avatar-badge data-shape-position="{{ $badgePosition }}" data-shape-tone="{{ $badgeTone ?? 'neutral' }}">@if ($badge !== true){{ $badge }}@endif</span></span>@endif

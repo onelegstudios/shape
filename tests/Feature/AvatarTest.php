@@ -189,7 +189,7 @@ it('leaves the initials safe to fold by branching on the icon instead', function
 
     expect($source)
         ->toContain("safe: ['initials', 'alt', 'tone', 'badgeTone']")
-        ->toContain('@if ($icon)')
+        ->toContain('@elseif ($icon)')
         ->not->toContain('($initials)');
 });
 
@@ -461,4 +461,177 @@ it('rings the face inside a group rather than the shell around it', function () 
         ->toContain('[&amp;_[data-shape-avatar]]:ring-2')
         ->toContain('data-shape-avatar-badge')
         ->not->toContain('[&amp;&gt;*]:ring-2');
+});
+
+it('stays a span until it is asked for a control', function () {
+    // The default is a picture of a person and nothing that can be pressed, so
+    // none of the chrome a control owes is paid for by the avatars that are not
+    // one.
+    $html = Blade::render('<x-shape::avatar initials="AL" alt="Ada Lovelace" />');
+
+    expect($html)
+        ->toContain('<span')
+        ->not->toContain('<button')
+        ->not->toContain('focus-visible:outline-2')
+        ->not->toContain('hover:opacity-80');
+});
+
+it('becomes a button when it is asked to be one', function () {
+    $html = Blade::render('<x-shape::avatar initials="AL" alt="Ada Lovelace" as="button" />');
+
+    expect($html)
+        ->toContain('<button type="button"')
+        ->toContain('data-shape-avatar')
+        ->toContain('AL');
+});
+
+it('becomes a link on an href without being told to', function () {
+    // Middle-click, "open in new tab" and the status bar all work for a link and
+    // none of them work for a button pretending to be one — the same resolution
+    // the tab and the menu item make.
+    expect(Blade::render('<x-shape::avatar initials="AL" alt="Ada" href="/people/ada" />'))
+        ->toContain('<a ')
+        ->toContain('href="/people/ada"')
+        ->not->toContain('<button');
+});
+
+it('lets as beat an href, for a link that is really a control', function () {
+    expect(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" href="/people/ada" />'))
+        ->toContain('<button type="button"')
+        ->not->toContain('<a ');
+});
+
+it('makes the control the circle rather than a button around one', function () {
+    // Same element, same classes, same bag. A wrapper would have moved every
+    // class a call site has ever passed onto something that is not the circle,
+    // which is the argument the badge's shell loses from the other side.
+    $html = Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" class="ring-4" wire:click="open" />');
+
+    expect($html)
+        ->toContain('<button type="button"')
+        ->toContain('[:where(&amp;)]:size-10')
+        ->toContain('[:where(&amp;)]:rounded-full')
+        ->toContain('ring-4')
+        ->toContain('wire:click="open"')
+        ->and(substr_count($html, 'data-shape-avatar'))
+        ->toBe(1);
+});
+
+it('takes an as of div, for an avatar inside something already clickable', function () {
+    expect(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="div" />'))
+        ->toContain('<div ')
+        ->not->toContain('<button');
+});
+
+it('puts a picture inside the control, because an img cannot be pressed', function () {
+    // `<img>` takes no children and takes no press. It is the one arm the
+    // element cannot render, so under `as` the photograph becomes a child and
+    // the control takes the circle's classes.
+    $html = Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" as="button" />');
+
+    expect($html)
+        ->toContain('<button type="button"')
+        ->toContain('<img src="/ada.jpg"')
+        ->toContain('size-full')
+        ->toContain('[:where(&)]:object-cover');
+});
+
+it('leaves the crop reachable past the control', function () {
+    // The bag lands on the control the way it always lands on the circle, so
+    // letterboxing a picture that is now a child is one selector further out.
+    // The inner rule is zero-specificity, so the call site's wins.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada" as="button" class="[&>img]:object-contain" />'))
+        ->toContain('[&>img]:object-contain')
+        ->toContain('[:where(&)]:object-cover');
+});
+
+it('announces a picture in a control once, not twice', function () {
+    // Inside a control the photograph is a picture of a name exactly as the
+    // initials are, so it is hidden and the name is carried in the same
+    // screen-reader text. The bare picture keeps its real `alt`, because there
+    // is no element around it to put the text in.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" as="button" />'))
+        ->toContain('alt=""')
+        ->toContain('<span class="sr-only">Ada Lovelace</span>')
+        ->and(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" />'))
+        ->toContain('alt="Ada Lovelace"')
+        ->not->toContain('sr-only');
+});
+
+it('gives a control the library\'s focus ring and nothing louder', function () {
+    // The ring is chrome, and a control that focused differently from every
+    // other control would be reporting a difference that is not there.
+    expect(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" />'))
+        ->toContain('focus-visible:outline-2')
+        ->toContain('focus-visible:outline-offset-2')
+        ->toContain('focus-visible:outline-[var(--shape-ring)]');
+});
+
+it('dims on hover rather than repainting, because the paint is the meaning', function () {
+    // The button's paint is chrome and its hover is a louder version of it. An
+    // avatar's paint is what the avatar means, and no `--shape-tone-hover`
+    // reaches a photograph.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada" tone="brand" as="button" />'))
+        ->toContain('hover:opacity-80')
+        ->toContain('transition-opacity')
+        ->not->toContain('hover:bg-');
+});
+
+it('dims and stops the pointer on both spellings of disabled', function () {
+    // An anchor cannot be disabled, which is why the button carries both.
+    expect(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" />'))
+        ->toContain('disabled:pointer-events-none')
+        ->toContain('disabled:opacity-50')
+        ->toContain('aria-disabled:pointer-events-none')
+        ->toContain('aria-disabled:opacity-50');
+});
+
+it('squares and badges a control the way it squares and badges a span', function () {
+    // The control is the circle, so everything resolved above it lands on it.
+    $html = Blade::render('<x-shape::avatar initials="OL" alt="One Leg Studios" as="button" square badge="12" badge-tone="brand" />');
+
+    expect($html)
+        ->toContain('<span class="relative inline-flex shrink-0">')
+        ->toContain('<button type="button"')
+        ->toContain('[:where(&amp;)]:rounded-shape')
+        ->toContain('data-shape-avatar-badge')
+        ->toContain('rounded-shape ring-2');
+});
+
+it('rings a control inside a group like any other face', function () {
+    // The group finds `[data-shape-avatar]`, which is whichever element the
+    // avatar turned out to be.
+    $html = Blade::render(<<<'BLADE'
+    <x-shape::avatar.group>
+        <x-shape::avatar initials="AL" alt="Ada" href="/people/ada" />
+        <x-shape::avatar initials="GH" alt="Grace" href="/people/grace" />
+    </x-shape::avatar.group>
+    BLADE);
+
+    expect($html)
+        ->toContain('[&amp;_[data-shape-avatar]]:ring-2')
+        ->and(substr_count($html, '<a '))
+        ->toBe(2);
+});
+
+it('still resolves a glyph and initials inside a control', function () {
+    expect(Blade::render('<x-shape::avatar icon="shape-user" alt="Unassigned" as="button" />'))
+        ->toContain('<button type="button"')
+        ->toContain('data-shape-icon')
+        ->and(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" />'))
+        ->toContain('<span aria-hidden="true">AL</span>');
+});
+
+it('does not borrow the button\'s element, whose default is a button', function () {
+    // `button.element` defaults to a `<button>`, because the button, the tab and
+    // the menu item are controls before they are anything else. An avatar's
+    // default is a `<span>`, and reusing that file would have made every avatar
+    // that passed no `as` a control.
+    $source = (string) file_get_contents(__DIR__.'/../../resources/views/shape/avatar/element.blade.php');
+
+    expect($source)
+        ->toContain('<span {{ $attributes }}>')
+        ->and(Blade::render('<x-shape::avatar.element>AL</x-shape::avatar.element>'))
+        ->toContain('<span')
+        ->not->toContain('<button');
 });
