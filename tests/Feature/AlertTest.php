@@ -247,6 +247,123 @@ it('leaves the lift out of the tone, because elevation is not a colour', functio
         ->and($danger)->not->toContain('shadow-[var(');
 });
 
+it('draws no bar by default, because the variant is already how an alert says itself', function (string $variant) {
+    // Four variants say the same thing four ways. The bar is the fifth, for the
+    // alert that has to be findable down a long page without being filled — and
+    // one more edge on a block that already reads is noise.
+    expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\">Card declined.</x-shape::alert>"))
+        ->not->toContain('border-l-4')
+        ->not->toContain('border-r-4')
+        ->not->toContain('border-t-4')
+        ->not->toContain('border-b-4');
+})->with(['subtle', 'outline', 'solid', 'ghost']);
+
+it('draws the toast\'s edge down whichever side it is given', function (string $side, string $paint) {
+    // The same rule a toast carries its whole tone in, with a side to choose.
+    // Every side is a different border utility rather than a different value of
+    // one, which is why the component spells all four out.
+    expect(Blade::render("<x-shape::alert tone=\"danger\" bar=\"{$side}\">Card declined.</x-shape::alert>"))
+        ->toContain($paint);
+})->with([
+    ['left', '[:where(&amp;)]:border-l-4 [:where(&amp;)]:border-l-[var(--shape-tone)]'],
+    ['right', '[:where(&amp;)]:border-r-4 [:where(&amp;)]:border-r-[var(--shape-tone)]'],
+    ['top', '[:where(&amp;)]:border-t-4 [:where(&amp;)]:border-t-[var(--shape-tone)]'],
+    ['bottom', '[:where(&amp;)]:border-b-4 [:where(&amp;)]:border-b-[var(--shape-tone)]'],
+]);
+
+it('reads a bare bar as the left one, rather than drawing nothing at all', function () {
+    // `bar` with no value is `true`, and the toast's side is the answer that
+    // makes forgetting the value harmless. An attribute that silently painted
+    // nothing would be the easiest way to use this prop wrong.
+    expect(Blade::render('<x-shape::alert tone="danger" bar>Card declined.</x-shape::alert>'))
+        ->toContain('[:where(&amp;)]:border-l-4');
+});
+
+it('paints the bar in the tone itself rather than the step the border takes', function () {
+    // A border bounds the block and lets the fill speak, so it sits a step back
+    // down the ramp. A bar is the speaking: four pixels of the pale edge colour
+    // would say less than the one pixel it replaced.
+    expect(Blade::render('<x-shape::alert tone="danger" bar="left">Card declined.</x-shape::alert>'))
+        ->toContain('border-l-[var(--shape-tone)]')
+        ->not->toContain('border-l-[var(--shape-tone-border-strong)]');
+});
+
+it('takes the step past the fill on solid, where the tone is already the background', function () {
+    // The same break the border has on this variant, for the same reason: the
+    // fill is `--shape-tone` and a rule painted in it is no rule at all.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="solid" bar="left">Card declined.</x-shape::alert>'))
+        ->toContain('[:where(&amp;)]:border-l-[var(--shape-tone-hover)]')
+        ->toContain('[:where(&amp;)]:bg-[var(--shape-tone)]');
+});
+
+it('draws the ghost bar at rest, where the border and the shadow wait', function () {
+    // Both of those ring the block, and a ring around something that paints
+    // nothing is an edge nothing drew. A rule down one side rings nothing — it
+    // is the mark in the margin a blockquote takes, and it reads on the bare
+    // page as well as it reads on a fill.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="ghost" bar="left">Card declined.</x-shape::alert>'))
+        ->toContain('[:where(&amp;)]:border-l-4 [:where(&amp;)]:border-l-[var(--shape-tone)]');
+});
+
+it('holds the ghost bar\'s colour under the pointer, where the border would carry it off', function () {
+    // `border` paints `hover:border-` on this variant — the shorthand, which
+    // lands after the bar in the cascade and would recolour it with the other
+    // three sides. Naming the side again under the pointer is what keeps the
+    // bar the one thing on the block that does not change.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="ghost" bar="left" border>Card declined.</x-shape::alert>'))
+        ->toContain('hover:border-l-[var(--shape-tone)]')
+        ->toContain('hover:border-[var(--shape-tone-border-strong)]');
+});
+
+it('composes the bar with a border, which is the toast\'s own recipe', function () {
+    // A toast is an edge on three sides and a thick tone on the fourth. Asking
+    // for both here is how an alert gets there.
+    expect(Blade::render('<x-shape::alert tone="danger" bar="left" border>Card declined.</x-shape::alert>'))
+        ->toContain('[:where(&amp;)]:border [:where(&amp;)]:border-[var(--shape-tone-border-strong)]')
+        ->toContain('[:where(&amp;)]:border-l-4 [:where(&amp;)]:border-l-[var(--shape-tone)]');
+});
+
+it('squares only the corners the bar runs between', function (string $side, string $paint) {
+    // A radius bends the last few pixels of a four-pixel rule around the block,
+    // which reads as a stripe wrapped round a corner rather than a cut down one
+    // side. The other two corners stay rounded, so the alert still reads as one
+    // of these rather than as a rectangle of tint.
+    expect(Blade::render("<x-shape::alert tone=\"warning\" bar=\"{$side}\" bar-square>Check the plan.</x-shape::alert>"))
+        ->toContain('[:where(&amp;)]:rounded-shape')
+        ->toContain($paint);
+})->with([
+    ['left', '[:where(&amp;)]:rounded-l-none'],
+    ['right', '[:where(&amp;)]:rounded-r-none'],
+    ['top', '[:where(&amp;)]:rounded-t-none'],
+    ['bottom', '[:where(&amp;)]:rounded-b-none'],
+]);
+
+it('leaves the corners alone when there is no bar to straighten', function () {
+    // `bar-square` is the bar's own corner and nothing else. Unrounding a block
+    // that has no rule to straighten is a decision about the shape of the
+    // library, and a call site that wants it says `class="rounded-none"`. The
+    // name carries the prop it modifies for the same reason `icon-size` does —
+    // and because bare `square` is the button's word for an equal-sided control.
+    expect(Blade::render('<x-shape::alert tone="warning" bar-square>Check the plan.</x-shape::alert>'))
+        ->toContain('[:where(&amp;)]:rounded-shape')
+        ->not->toContain('rounded-l-none')
+        ->not->toContain('rounded-r-none')
+        ->not->toContain('rounded-t-none')
+        ->not->toContain('rounded-b-none');
+});
+
+it('draws nothing for a side it does not have', function (mixed $value) {
+    // The side is resolved once, before anything paints with it, so a value
+    // that is not one of the four words leaves the alert exactly as it was.
+    $html = Blade::render('<x-shape::alert tone="danger" :bar="$bar">Card declined.</x-shape::alert>', ['bar' => $value]);
+
+    expect($html)
+        ->not->toContain('border-l-4')
+        ->not->toContain('border-r-4')
+        ->not->toContain('border-t-4')
+        ->not->toContain('border-b-4');
+})->with([false, null, 'middle']);
+
 it('moves the foreground contract with the variant, not just the background', function () {
     // The failure this prevents is the one the tint surface was built for, a
     // step louder: a solid alert fills with the tone, so the readable

@@ -38,13 +38,30 @@
     has a border already; it only decides whether that border carries the tone
     or the neutral grey it carries by default.
 
-    `shadow` is the last of the three, and the only one that says nothing about
+    `shadow` is the third of them, and the only one that says nothing about
     the tone: it lifts the block off the page rather than colouring it. Off by
     default, because an alert belongs in the flow of the content it is about, and
     on it takes the raised step every other resting thing in the library takes.
     Ghost waits for the hover with it, for the same reason it waits with the
     border — a cast shadow around a block that paints nothing is an edge nothing
     drew.
+
+    `bar` is the fourth, and the one that comes from next door. A toast is drawn
+    with a thick rule down its left side, and this is that rule with a side to
+    choose. It takes `--shape-tone` at full strength rather than the border's
+    step back, because it is a mark rather than a boundary, and `solid` is the
+    one arm that cannot have it — the fill is already that colour, so there it
+    takes the step past the fill, exactly as `border` does. Ghost draws it at
+    rest, alone among these: what the border and the shadow wait for is a
+    surface to belong to, and a rule down one side belongs to nothing.
+
+    `bar-square` is the bar's own corner and says nothing without one. A radius
+    bends the last pixels of a 4px rule around the block, which reads as a
+    stripe wrapped round it rather than a cut down its side; squaring the two
+    corners the bar runs between straightens it and leaves the other two alone.
+    It is named for the prop it modifies, the way `icon-size` is: bare `square`
+    is the button's word for an equal-sided control, and one word cannot mean
+    two things across the library.
 
     Which leaves the ghost hover, where a fill arrives after the fact.
     `data-shape-surface-hover` is the pair `data-shape-surface` publishes,
@@ -53,10 +70,10 @@
     prevent, arriving a hundred milliseconds late.
 
     `tone` is branched on to resolve the glyph, exactly as the badge does, so it
-    is *not* declared safe here — and neither are `variant`, `toned`, `border` or
-    `shadow`, which branch to resolve the paint. The same `tone` is safe on the
-    button, which only ever interpolates it. Whatever a component does with a
-    value decides that.
+    is *not* declared safe here — and neither are `variant`, `toned`, `border`,
+    `shadow`, `bar` or `bar-square`, which branch to resolve the paint. The same
+    `tone` is safe on the button, which only ever interpolates it. Whatever a
+    component does with a value decides that.
 
     `heading` is interpolated and nothing more, so an alert whose title comes from
     a variable still folds.
@@ -73,6 +90,8 @@
     'toned' => null,
     'border' => false,
     'shadow' => false,
+    'bar' => null,
+    'barSquare' => false,
     'heading' => null,
     'icon' => null,
     'iconSize' => 'sm',
@@ -80,6 +99,18 @@
 ])
 
 @php
+// A side or nothing, resolved once here so that every arm below branches on the
+// same four words. `bar` written bare is `left` — the toast's own side, and the
+// one a page read left to right marks a block on — because an attribute that
+// silently drew nothing would be the easiest way to use this prop wrong.
+$bar = match ($bar) {
+    true, 'left' => 'left',
+    'right' => 'right',
+    'top' => 'top',
+    'bottom' => 'bottom',
+    default => null,
+};
+
 // Variant is how loud the alert is; tone is what it means. The two never
 // multiply into a class matrix, because every arm below paints with the same
 // tone variables and the foreground comes from the surface rather than from
@@ -178,6 +209,79 @@ $classes = Shape::classes()
         ! $shadow => null,
         $variant === 'ghost' => 'hover:shadow-sm',
         default => '[:where(&)]:shadow-sm',
+    })
+
+    // `bar` is the toast's edge, given a side. A toast carries its whole tone
+    // in a thick rule down its left, because its fill stays white so that the
+    // message reads over whatever it is floating above; an alert has four
+    // variants for saying the same thing, so here the rule is opt-in — for the
+    // block that has to be findable down a long page without being filled, and
+    // for the one whose fill is already spoken for.
+    //
+    // `--shape-tone` at full strength, and deliberately not the border's step.
+    // The two draw different things: a border bounds the block, so it sits a
+    // step back down the ramp and lets the fill speak, while a bar *is* the
+    // speaking. Four pixels of the pale 300 an edge reads would be a wide weak
+    // stripe saying less than the one pixel it replaced.
+    //
+    // `solid` is where that breaks, and it breaks the way the border broke
+    // there: the fill is already `--shape-tone` and a rule painted in it is no
+    // rule at all. It takes `--shape-tone-hover` for the same reason the border
+    // does — the step past the fill, darker in light mode and brighter in dark,
+    // rather than a fixed darkening that would invert between them.
+    //
+    // Ghost draws its bar at rest, which neither of the other two edges does.
+    // What the border and the shadow wait for is a surface to belong to: both
+    // ring the block, and a ring around something that paints nothing is an
+    // edge nothing drew. A rule down one side rings nothing — it is the mark in the
+    // margin a blockquote takes, and it reads on the bare page as well as it
+    // reads on a fill. Which makes `ghost` with a bar the quietest way this
+    // component has of saying which tone a message is.
+    //
+    // The restatement under the pointer is on that arm and no other, and it is
+    // there for `border`: the edge it paints on hover is the shorthand, which
+    // lands after this in the cascade and would carry the bar off to the
+    // border's colour along with the other three sides. Naming the side again
+    // holds it. Every side is spelled out rather than composed, because
+    // Tailwind reads these class names out of this file as text.
+    ->add(match (true) {
+        $bar === null => null,
+
+        $bar === 'left' && $variant === 'solid' => '[:where(&)]:border-l-4 [:where(&)]:border-l-[var(--shape-tone-hover)]',
+        $bar === 'left' && $variant === 'ghost' => '[:where(&)]:border-l-4 [:where(&)]:border-l-[var(--shape-tone)] hover:border-l-[var(--shape-tone)]',
+        $bar === 'left' => '[:where(&)]:border-l-4 [:where(&)]:border-l-[var(--shape-tone)]',
+
+        $bar === 'right' && $variant === 'solid' => '[:where(&)]:border-r-4 [:where(&)]:border-r-[var(--shape-tone-hover)]',
+        $bar === 'right' && $variant === 'ghost' => '[:where(&)]:border-r-4 [:where(&)]:border-r-[var(--shape-tone)] hover:border-r-[var(--shape-tone)]',
+        $bar === 'right' => '[:where(&)]:border-r-4 [:where(&)]:border-r-[var(--shape-tone)]',
+
+        $bar === 'top' && $variant === 'solid' => '[:where(&)]:border-t-4 [:where(&)]:border-t-[var(--shape-tone-hover)]',
+        $bar === 'top' && $variant === 'ghost' => '[:where(&)]:border-t-4 [:where(&)]:border-t-[var(--shape-tone)] hover:border-t-[var(--shape-tone)]',
+        $bar === 'top' => '[:where(&)]:border-t-4 [:where(&)]:border-t-[var(--shape-tone)]',
+
+        $variant === 'solid' => '[:where(&)]:border-b-4 [:where(&)]:border-b-[var(--shape-tone-hover)]',
+        $variant === 'ghost' => '[:where(&)]:border-b-4 [:where(&)]:border-b-[var(--shape-tone)] hover:border-b-[var(--shape-tone)]',
+        default => '[:where(&)]:border-b-4 [:where(&)]:border-b-[var(--shape-tone)]',
+    })
+    // `bar-square` is the bar's own corner, and the one prop here that does
+    // nothing by itself. `rounded-shape` bends the last few pixels of a four-pixel rule
+    // around the block, and the wider the rule the more that reads as a stripe
+    // wrapped round a corner rather than a cut down one side. Squaring the two
+    // corners the bar runs between straightens its ends and leaves the other
+    // two rounded, so the alert still reads as one of these rather than as a
+    // rectangle of tint.
+    //
+    // Without a bar it is inert, deliberately. Unrounding a block that has no
+    // rule to straighten is a different decision — one about the shape of the
+    // whole library rather than the end of one edge — and a call site that
+    // wants it says `class="rounded-none"`, which the zero specificity is there
+    // to let it win.
+    ->add(match (true) {
+        ! $barSquare || $bar === null => null,
+        $bar === 'left' => '[:where(&)]:rounded-l-none',
+        $bar === 'right' => '[:where(&)]:rounded-r-none',
+        $bar === 'top' => '[:where(&)]:rounded-t-none',
+        default => '[:where(&)]:rounded-b-none',
     })
 
     ->add('[:where(&)]:text-[color:var(--shape-fg)]');

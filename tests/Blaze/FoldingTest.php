@@ -566,6 +566,46 @@ it('abandons folding an alert whose lift is bound dynamically', function () {
         ->not->toContain('shape::alert');
 });
 
+it('folds an alert that is barred at the call site', function () {
+    // A side written literally is read at compile time like every other prop
+    // here, so the bar and the squared corner it takes are baked into the
+    // parent with the rest of the block.
+    expect(foldedComponentsWhileRendering('static-feedback-bar'))
+        ->toContain('shape::alert');
+});
+
+it('bakes the barred side into the compiled template rather than leaving a branch behind', function () {
+    // The point of the fold: the side is decided once, and what reaches the
+    // template is the border utility it chose and none of the `match` that
+    // picked it — including the corner `bar-square` straightens.
+    $fixture = __DIR__.'/../fixtures/views/static-feedback-bar.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('border-l-4')
+        ->toContain('border-t-4')
+        ->toContain('rounded-t-none')
+        ->toContain('data-shape-alert');
+});
+
+it('abandons folding an alert whose side is bound dynamically', function () {
+    // `bar` branches hardest of the paint props: each side is a different
+    // border utility rather than a different value of one, and Tailwind reads
+    // those names out of the component as text, so there is nothing here that
+    // could be interpolated safely.
+    expect(foldedComponentsWhileRendering('dynamic-alert-bar', ['bar' => 'left']))
+        ->not->toContain('shape::alert');
+});
+
+it('abandons folding an alert whose corner is bound dynamically', function () {
+    // `bar-square` picks a corner from the side the bar took, so it branches
+    // with it and stays off the safe list for the same reason.
+    expect(foldedComponentsWhileRendering('dynamic-alert-square', ['barSquare' => true]))
+        ->not->toContain('shape::alert');
+});
+
 it('abandons folding an alert whose colour is bound dynamically', function () {
     // Same trade the badge makes, for the same reason: the alert branches on
     // `tone` to resolve its glyph, so colour cannot be safe here. It is the

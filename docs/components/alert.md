@@ -147,6 +147,69 @@ The hover names the properties it transitions rather than taking
 `transition-colors`, so the cast fades in with the fill instead of appearing at
 once — `box-shadow` is not a colour, and Tailwind's shorthand does not carry it.
 
+## Bars
+
+`bar` draws one thick edge down a side of the alert, in the tone at full
+strength. It is the [toast](toast.md)'s edge, given a side to choose:
+
+@docs('preview', name: 'alert-bar', layout: 'stack')
+
+A toast carries its whole tone in that rule, because its fill stays white so the
+message reads over whatever it is floating above. An alert has four variants for
+saying the same thing, so here the rule is opt-in. Reach for it where the alert
+has to be findable down a long page without being filled — a `ghost` alert with a
+bar is the quietest way this component has of saying which tone a message is — or
+where the fill is already spoken for and the tone needs somewhere else to go.
+
+The colour is `--shape-tone` itself, not the step back that
+[`border`](#borders) takes. The two are drawing different things: a border bounds
+the block and lets the fill speak, so it sits a step down the ramp, where a bar
+*is* the speaking, and four pixels of a pale edge colour would say less than the
+one pixel it replaced. `solid` is the exception it has to be — the fill is already
+that colour — so there the bar takes the step *past* the fill, the same move the
+border makes on that variant and for the same reason.
+
+`left` is where a bare `bar` lands, because it is the toast's side and the one a
+page read left to right marks a block on. The other three are there for layouts
+that read better with the rule somewhere else — a `top` bar under a heading it
+belongs to, a `right` bar in a sidebar that already has a left edge of its own:
+
+@docs('preview', name: 'alert-bar-sides', layout: 'stack')
+
+Unlike the [border](#borders) and the [shadow](#elevation), `ghost` draws its bar
+at rest. What those two wait for is a surface to belong to: both ring the block,
+and a ring around something that paints nothing is an edge nothing drew. A rule
+down one side rings nothing — it is the mark in the margin a blockquote takes, and
+it reads on the bare page as well as it reads on a fill.
+
+A bar and a [`border`](#borders) compose: the border draws the other three sides
+and the bar thickens and recolours the one it runs along, which is the toast's own
+recipe.
+
+### Squaring the bar
+
+`bar-square` straightens the bar's ends. `rounded-shape` bends the last few
+pixels of a four-pixel rule around the block, which reads as a stripe wrapped
+round a corner rather than a cut down one side; squaring the two corners the bar
+runs between leaves the other two rounded:
+
+@docs('preview', name: 'alert-bar-square', layout: 'stack')
+
+It follows the bar, so `bar="top" bar-square` flattens the top two corners and
+`bar="right" bar-square` the right. Without a bar it does nothing, deliberately:
+unrounding a block that has no rule to straighten is a decision about the shape of
+the library rather than the end of one edge, and a call site that wants it says so
+directly:
+
+```blade
+<x-shape::alert tone="info" class="rounded-none">Deploy finished.</x-shape::alert>
+```
+
+The name carries the prop it modifies, the way [`icon-size`](#icons) does, because
+it does nothing on its own. Bare `square` is the
+[button](button.md#icon-only-buttons)'s word for an equal-sided control, and one word meaning two things across the
+library is worse than a longer name.
+
 ## Heading and body
 
 `heading` is a title above the body; the default slot is the body. Either can
@@ -245,6 +308,8 @@ the fact.
 | `toned` | `false` | paints the text in the tone, on `outline` and `ghost`; ignored on `subtle` and `solid`, where the fill decides |
 | `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
 | `shadow` | `false` | lifts the alert with `shadow-sm`; on `ghost` shows it on hover only |
+| `bar` | — | draws one thick edge in the tone: `left`, `right`, `top`, `bottom`; bare `bar` is `left` |
+| `bar-square` | `false` | squares the two corners the `bar` runs between; nothing without a bar |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
@@ -258,11 +323,15 @@ Tier A — `@blaze(fold: true, safe: ['heading'])`.
 
 `heading` is interpolated and nothing more, so an alert whose title comes from a
 variable still folds. `tone` branches to resolve its glyph, and `variant`,
-`toned`, `border` and `shadow` branch to resolve the paint, so `:tone="$tone"`
-drops to the compiled path — the same prop is safe on the [button](button.md),
+`toned`, `border`, `shadow`, `bar` and `bar-square` branch to resolve the paint,
+so
+`:tone="$tone"` drops to the compiled path — the same prop is safe on the [button](button.md),
 which only ever interpolates it. See [Folding](../folding.md).
 
-`shadow` branches because `ghost` waits for the hover with it, which is a
+`bar` branches hardest of the six: a side is a different border utility rather
+than a different value of one, and Tailwind reads those class names out of the
+component as text, so every side is spelled out and the arm is chosen at compile
+time. `shadow` branches because `ghost` waits for the hover with it, which is a
 different class and not a different value of one. Written literally —
 `<x-shape::alert shadow>` — it is read at compile time like every other prop
 here and costs nothing; `:shadow="$isFloating"` is what drops the alert to the
