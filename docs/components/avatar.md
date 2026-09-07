@@ -6,6 +6,36 @@ A person, as a picture or as initials.
 
 `src` renders an `<img>`; without one, `initials` render in a tinted circle.
 
+## Tones
+
+`tone` says what an avatar means, and is the same set every other component
+carries:
+
+@docs('preview', name: 'avatar-tones')
+
+## Variants
+
+`variant` is how loud the circle is. `subtle` is the default, because an avatar
+is almost always identifying a row rather than being the thing you look at:
+
+@docs('preview', name: 'avatar-variants')
+
+The three arms are the [badge](badge.md)'s, and read the same tone variables, so
+an avatar and a badge given the same tone agree without either knowing about the
+other. There is no `ghost`: it is the arm that paints nothing until it is
+pointed at, and an avatar that paints nothing is two letters loose in a line of
+text.
+
+`outline` rings itself in the tone's own `--shape-tone-border-strong` rather
+than the neutral border the outline badge and button take. Those two are chrome,
+and their edge draws the control rather than what it means; with no fill under
+it, an avatar's ring is the whole of the paint.
+
+Every arm paints on the image form as well. Under an opaque photograph the fill
+is not seen, under a transparent one it is the ground the face sits on, and in
+either case it is what fills the circle while the image is still arriving. The
+border rings the picture.
+
 ## Sizes
 
 @docs('preview', name: 'avatar-sizes')
@@ -57,17 +87,24 @@ all, and will announce nothing:
 | `initials` | — | shown when there is no image |
 | `alt` | — | the person's name |
 | `size` | `base` | `xs`, `sm`, `base`, `lg` |
+| `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
+| `variant` | `subtle` | `subtle`, `solid`, `outline` |
 
 `avatar.group` takes no props.
 
 ## Folding
 
-Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt'])`.
+Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone'])`.
 
 | Call site | Fold | Memo |
 | --- | --- | --- |
 | `initials` static or bound dynamically | folds | — |
 | `src` bound per row | no | one entry per URL, no hits |
+
+`tone` is interpolated into an attribute and nothing more, the way the
+[button](button.md) carries it, so a per-person tone still folds. `variant`
+branches to resolve the paint, so it cannot be `safe` — the badge's arrangement
+exactly.
 
 `src` decides which element renders — an `<img>` with no source is a broken
 image request, and a `<span>` cannot show a photograph — so it branches and

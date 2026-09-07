@@ -108,7 +108,7 @@ which is blue whatever the brand becomes.
 | `list` / `list.item` | fold | `as`, `empty*` |
 | `pagination` | compile | `paginator`, `simple` |
 | `stat` | fold + memo | `value`, `label`, `description`, `delta`, `trend` |
-| `avatar` / `avatar.group` | fold + memo | `src`, `initials`, `alt`, `size` |
+| `avatar` / `avatar.group` | fold + memo | `src`, `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline) |
 | `tabs` / `tabs.tab` / `tabs.panel` | fold | `as`, `orientation` / `for`, `selected`, `icon` / `name` |
 
 ### 4. Keep the call site foldable

@@ -46,6 +46,53 @@ it('takes one of four sizes', function (string $size, string $class) {
     ['lg', '[:where(&amp;)]:size-12'],
 ]);
 
+it('paints one of three variants from the tone variables', function (string $variant, string $class) {
+    expect(Blade::render("<x-shape::avatar initials=\"AL\" tone=\"brand\" variant=\"{$variant}\" />"))
+        ->toContain($class)
+        ->toContain("data-shape-variant=\"{$variant}\"");
+})->with([
+    ['subtle', 'bg-[var(--shape-tone-tint)]'],
+    ['solid', 'bg-[var(--shape-tone)]'],
+    ['outline', 'border-[var(--shape-tone-border-strong)]'],
+]);
+
+it('rings the outline arm in the tone rather than the neutral chrome border', function () {
+    // The outline badge and button take `--shape-tone-border`, which never takes
+    // a tone, because a control is a control whatever it means. An avatar with no
+    // fill has nothing else carrying the tone, so its ring carries it.
+    $html = Blade::render('<x-shape::avatar initials="AL" tone="brand" variant="outline" />');
+
+    expect($html)
+        ->toContain('border-[var(--shape-tone-border-strong)]')
+        ->not->toContain('border-[var(--shape-tone-border)]');
+});
+
+it('carries a tone so the variants have variables to read', function () {
+    expect(Blade::render('<x-shape::avatar initials="AL" tone="danger" />'))
+        ->toContain('data-shape-tone="danger"')
+        ->and(Blade::render('<x-shape::avatar initials="AL" />'))
+        ->toContain('data-shape-tone="neutral"');
+});
+
+it('takes its ink from the tone rather than from whatever surface it landed on', function () {
+    // `--shape-fg-muted` is republished by every surface, so initials inside a
+    // solid alert used to take that alert's white onto their own pale circle.
+    $html = Blade::render('<x-shape::avatar initials="AL" />');
+
+    expect($html)
+        ->toContain('text-[var(--shape-tone-ink)]')
+        ->not->toContain('--shape-fg-muted');
+});
+
+it('paints the variant on a picture as well as on initials', function () {
+    // One set of classes for both elements, so this is no new branch. The fill
+    // is the ground under a transparent image and while any image is arriving.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" tone="brand" variant="outline" />'))
+        ->toContain('<img')
+        ->toContain('border-[var(--shape-tone-border-strong)]')
+        ->toContain('data-shape-variant="outline"');
+});
+
 it('overlaps a group with two utilities and no stylesheet rule', function () {
     // The ring is what keeps the face underneath from reading as a smudge.
     // Which face is on top is DOM order, because choosing it would be a z-index.
