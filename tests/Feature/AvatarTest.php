@@ -213,6 +213,16 @@ it('draws the glyph solid at every size', function (string $size) {
         ->not->toContain('stroke-width');
 })->with(['xs', 'sm', 'base', 'lg']);
 
+it('lets a call site name the glyph style, which no class could reach', function () {
+    // `solid` is a default and not a constant. Every other decision here is a
+    // class a call site can beat with its own; a style picks which of the set's
+    // drawings renders, so written into the tag it would have been the one
+    // setting with no way round it.
+    expect(Blade::render('<x-shape::avatar icon="shape-user" icon-variant="outline" />'))
+        ->toContain('stroke-width')
+        ->not->toContain('fill="currentColor"');
+});
+
 it('keeps the name in text beside the glyph rather than on it', function () {
     // The glyph is a picture of a name the same way the initials are, so it
     // arrives `aria-hidden` from the icon component and `alt` is carried in the

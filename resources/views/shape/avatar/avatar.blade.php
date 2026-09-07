@@ -89,13 +89,20 @@
     smallest drawing an icon set has. Squeezing that drawing into 12px with a
     utility would throw away the optical work that made it a drawing of its own.
 
-    `solid` at every size, against the icon's own rule that `base` prefers the
-    stroked drawing. That rule is about what reads at a size; this is about four
-    avatars agreeing, and a `lg` avatar wearing a stroked glyph above three
-    wearing filled ones would make `size` change more than the size. The filled
-    drawing is also the one that matches what it stands in for — initials are
-    ink at `font-medium`, not an outline. A set that draws a single style
+    `solid` at every size by default, against the icon's own rule that `base`
+    prefers the stroked drawing. That rule is about what reads at a size; this is
+    about four avatars agreeing, and a `lg` avatar wearing a stroked glyph above
+    three wearing filled ones would make `size` change more than the size. The
+    filled drawing is also the one that matches what it stands in for — initials
+    are ink at `font-medium`, not an outline. A set that draws a single style
     ignores the word rather than rendering it, so naming it costs nothing there.
+
+    A default and not a constant, which is `icon-variant`. Every other decision
+    this component makes is a class a call site can beat with one of its own, and
+    a style is the exception: it picks which of the set's drawings renders, so no
+    class can reach it. Written into the tag it would have been the only setting
+    here with no way round it. Named for the thing it modifies, the way the alert
+    names its own, because `variant` already means the circle's.
 
     Initials are stated, never derived. Deriving them from a name inside a folded
     component would run the derivation once, at compile time, and bake one
@@ -121,6 +128,8 @@
     `icon` branches for the same reason from the other side: it decides what goes
     inside the element rather than which element renders, and there is no
     arrangement of the two that leaves both it and `initials` safe.
+    `icon-variant` rides with it — nothing here reads the word, but the icon it
+    is handed to chooses a drawing with it.
 
     `tone` does not branch. It is interpolated into an attribute and nothing
     more, the way the button carries it, so it is safe and a per-person tone
@@ -136,6 +145,7 @@
 @props([
     'src' => null,
     'icon' => null,
+    'iconVariant' => 'solid',
     'initials' => null,
     'alt' => null,
     'size' => 'base',
@@ -175,5 +185,5 @@ $classes = Shape::classes()
 @if ($src)
     <img src="{{ $src }}" alt="{{ $alt }}" {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">
 @else
-    <span {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">@if ($icon)<x-shape::icon :name="$icon" variant="solid" :size="$iconSize" />@else<span aria-hidden="true">{{ $initials }}</span>@endif<span class="sr-only">{{ $alt }}</span></span>
+    <span {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">@if ($icon)<x-shape::icon :name="$icon" :variant="$iconVariant" :size="$iconSize" />@else<span aria-hidden="true">{{ $initials }}</span>@endif<span class="sr-only">{{ $alt }}</span></span>
 @endif

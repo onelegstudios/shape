@@ -92,10 +92,26 @@ About half the circle, except at `xs` — 16px is the smallest drawing an icon s
 has, and squeezing it into 12px would throw away the work that made it a
 separate drawing. See [Size and style](icon.md#size-and-style).
 
-Every size draws the glyph `solid`, including `lg`, where an icon left to itself
-would take the stroked drawing. Four avatars in a row should wear the same
-weight, and the filled drawing is the one that matches the initials it stands in
-for. A set that draws a single style ignores the word.
+Every size draws the glyph `solid` by default, including `lg`, where an icon left
+to itself would take the stroked drawing. Four avatars in a row should wear the
+same weight, and the filled drawing is the one that matches the initials it
+stands in for.
+
+`icon-variant` is the way out of that, named for what it modifies the way the
+[alert](alert.md#icons) names its own:
+
+@docs('preview', name: 'avatar-icon-variants')
+
+It is a prop rather than a decision written into the component because a style
+picks which of the set's drawings renders, and no class can reach that — every
+other default here is one a call site beats with a class of its own. A set that
+draws a single style, like Lucide, ignores the word rather than rendering it, so
+naming it costs nothing there.
+
+`lg` is the size it pays off at. Heroicons draws no outline below 24px, so a
+stroked glyph on the three smaller avatars is [the 24px drawing sized
+down](icon.md#size-and-style) and lands thinner than the one it replaced — which
+is the other half of why `solid` is the default.
 
 The glyph paints in `currentColor`, so it takes the variant's ink exactly as the
 initials do, and it is `aria-hidden` — `alt` is carried in the same
@@ -199,6 +215,7 @@ all, and will announce nothing:
 | --- | --- | --- |
 | `src` | — | an image URL |
 | `icon` | — | an icon name, shown when there is no image |
+| `icon-variant` | `solid` | `outline`, `solid` |
 | `initials` | — | shown when there is no image and no icon |
 | `alt` | — | the person's name |
 | `size` | `base` | `xs`, `sm`, `base`, `lg` |
