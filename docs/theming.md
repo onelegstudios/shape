@@ -445,13 +445,22 @@ tone sets the variables, every variant reads them.
 | Variable                                 | Used by                                                           |
 | ---------------------------------------- | ----------------------------------------------------------------- |
 | `--shape-tone`                           | The `primary` fill; the progress bar; a checked control; the alert's `solid` |
-| `--shape-tone-hover`                     | That fill, hovered                                                          |
+| `--shape-tone-hover`                     | That fill, hovered; the alert's `solid` border                              |
 | `--shape-tone-fg`                        | What goes on the fill, and the `solid` surface's foreground                 |
 | `--shape-tone-ink`                       | The `subtle` and `ghost` label, and the tint surface's foreground           |
 | `--shape-tone-tint`                      | The `subtle` background, and the alert's                                    |
 | `--shape-tone-tint-hover`                | That tint, hovered                                                          |
 | `--shape-tone-surface`, `-surface-hover` | The `outline` variant's background                                          |
-| `--shape-tone-border`                    | The `outline` variant's border, on the button and the alert                 |
+| `--shape-tone-border`                    | The `outline` variant's border, on the button, the badge and the alert      |
+| `--shape-tone-border-strong`             | The alert's toned edge, under its `border` prop                             |
+
+The two borders are a pair, and which one a component reads says what its edge is
+for. `--shape-tone-border` is neutral at every tone and stays that way: an
+outlined button is a control whatever it means, and toning its edge would make
+every secondary action on a page a coloured box. `--shape-tone-border-strong` is
+the tone's own, a step further along the ramp, for an edge that carries the
+meaning rather than draws the control. Only the [alert](components/alert.md#borders)
+reads it today.
 
 The tones are `neutral` (the default, and the bare `[data-shape-tone]` block),
 `brand`, `accent`, `danger`, `info`, `success` and `warning`. Retinting a ramp
@@ -499,19 +508,23 @@ go wrong in the browser fails later and elsewhere — the table under
         --shape-tone-ink: var(--color-shape-spotlight-800);
         --shape-tone-tint: var(--color-shape-spotlight-100);
         --shape-tone-tint-hover: var(--color-shape-spotlight-200);
+        --shape-tone-border-strong: var(--color-shape-spotlight-300);
     }
 }
 ```
 
-Six lines and not nine, because the `neutral` block sets all nine variables and
+Seven lines and not ten, because the `neutral` block sets all ten variables and
 a tone that overrides only some of them inherits the rest.
 `--shape-tone-surface`, `-surface-hover` and `-border` are the three left
 inherited, and the shipped tones leave them alone too: the `outline` variant is
-neutral chrome with a coloured label, in every tone.
+neutral chrome with a coloured label, in every tone. `-border-strong` is not
+among them — it is the toned edge, so a tone that leaves it inherited gets the
+neutral grey where it asked for a colour.
 
-**3. The dark tone block.** The same six variables at the dark mode's steps —
-the fill drops to `500` and brightens on hover instead of darkening, and the
-tint inverts to the bottom of the ramp:
+**3. The dark tone block.** The same seven variables at the dark mode's steps —
+the fill drops to `500` and brightens on hover instead of darkening, the tint
+inverts to the bottom of the ramp, and the edge goes *up* it, because stronger on
+a dark page is lighter:
 
 ```css
 @layer components {
@@ -523,6 +536,7 @@ tint inverts to the bottom of the ramp:
             --shape-tone-ink: var(--color-shape-spotlight-200);
             --shape-tone-tint: var(--color-shape-spotlight-950);
             --shape-tone-tint-hover: var(--color-shape-spotlight-900);
+            --shape-tone-border-strong: var(--color-shape-spotlight-800);
         }
     }
 }

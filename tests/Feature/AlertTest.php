@@ -103,6 +103,71 @@ it('leaves the other variants still on hover, because only ghost is unpainted', 
         ->not->toContain('transition-colors');
 })->with(['subtle', 'solid', 'outline']);
 
+it('draws no border by default, because the fill is already the boundary', function (string $variant) {
+    // Three of the four arms paint something, and where there is a fill there
+    // is an edge. `border` is the opt-in for where there is not one — or where
+    // the alert has to hold its own next to something already drawn with one.
+    expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\">Card declined.</x-shape::alert>"))
+        ->not->toContain('[:where(&amp;)]:border ');
+})->with(['subtle', 'solid', 'ghost']);
+
+it('draws the border in a step of the tone rather than a palette of its own', function (string $variant, string $paint) {
+    // The same rule the fills follow: every arm reads `--shape-tone-*`, so a
+    // border never has to know a hue and a retheme carries it with everything
+    // else. Which step is the only thing that varies, and it follows what the
+    // edge sits against.
+    expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\" border>Card declined.</x-shape::alert>"))
+        ->toContain('[:where(&amp;)]:border ')
+        ->toContain($paint);
+})->with([
+    // Both arms read the same variable, because the edge is doing the same job
+    // in each: bounding the wash on one, and the whole of the paint on the
+    // other. `--shape-tone-border-strong` is the tone's answer to the neutral
+    // `--shape-tone-border` the outline arm takes by default.
+    ['subtle', 'border-[var(--shape-tone-border-strong)]'],
+    ['outline', 'border-[var(--shape-tone-border-strong)]'],
+    // The step past the fill, not the step past the tint — a 200 edge on a 700
+    // fill reads as a highlight. Darker in light mode and brighter in dark,
+    // which is why it is the tone's hover and not a fixed darkening.
+    ['solid', 'border-[var(--shape-tone-hover)]'],
+]);
+
+it('leaves the outline border grey until it is asked for the tone', function () {
+    // The one arm the prop adds no border to, because it has one already. All
+    // it decides there is the colour, and the default stays the neutral edge
+    // the outline button and badge take, so the three go on agreeing.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="outline">Card declined.</x-shape::alert>'))
+        ->toContain('border-[var(--shape-tone-border)]');
+
+    expect(Blade::render('<x-shape::alert tone="danger" variant="outline" border>Card declined.</x-shape::alert>'))
+        ->not->toContain('border-[var(--shape-tone-border)]');
+});
+
+it('shows the ghost border only under the pointer, with the fill it arrives with', function () {
+    // The arm stays unpainted at rest, so the edge waits with the tint rather
+    // than drawing a box around nothing. `transition-colors` is already in the
+    // ghost arm and carries the border with the background.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="ghost" border>Card declined.</x-shape::alert>'))
+        ->toContain('hover:border-[var(--shape-tone-border-strong)]')
+        ->toContain('hover:bg-[var(--shape-tone-tint)]')
+        ->toContain('transition-colors');
+});
+
+it('reserves the ghost border before it paints it, so the hover moves nothing', function () {
+    // A border that appears on hover is a pixel of layout that appears with
+    // it. Drawing it transparent at rest is what keeps the text still.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="ghost" border>Card declined.</x-shape::alert>'))
+        ->toContain('[:where(&amp;)]:border-transparent');
+});
+
+it('keeps the other variants still on hover once they have a border', function (string $variant) {
+    // Only ghost moves. A border on the other three is drawn at rest and stays
+    // where it is, so none of them gains a transition it did not have.
+    expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\" border>Card declined.</x-shape::alert>"))
+        ->not->toContain('hover:border-')
+        ->not->toContain('transition-colors');
+})->with(['subtle', 'solid', 'outline']);
+
 it('moves the foreground contract with the variant, not just the background', function () {
     // The failure this prevents is the one the tint surface was built for, a
     // step louder: a solid alert fills with the tone, so the readable

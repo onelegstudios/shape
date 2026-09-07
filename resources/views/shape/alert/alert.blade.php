@@ -30,6 +30,14 @@
     and `solid` ignore the prop — where there is a fill, the fill decides what
     is readable on it.
 
+    `border` is the other say, and the only one all four arms answer. It is off
+    by default — a fill is already a boundary — and on, it draws the tone's own
+    edge rather than a grey one: `--shape-tone-border-strong` on `subtle` and
+    `outline`, the step past the fill on `solid`, and on `ghost` that same edge
+    arriving with the tint it paints. On `outline` it adds nothing, because that arm
+    has a border already; it only decides whether that border carries the tone
+    or the neutral grey it carries by default.
+
     Which leaves the ghost hover, where a fill arrives after the fact.
     `data-shape-surface-hover` is the pair `data-shape-surface` publishes,
     published for as long as the pointer is on the block — because a tint
@@ -37,8 +45,8 @@
     prevent, arriving a hundred milliseconds late.
 
     `tone` is branched on to resolve the glyph, exactly as the badge does, so it
-    is *not* declared safe here — and neither are `variant` or `toned`, which
-    branch to resolve the paint. The same `tone` is safe on the button, which
+    is *not* declared safe here — and neither are `variant`, `toned` or `border`,
+    which branch to resolve the paint. The same `tone` is safe on the button, which
     only ever interpolates it. Whatever a component does with a value decides
     that.
 
@@ -55,6 +63,7 @@
     'tone' => null,
     'variant' => 'subtle',
     'toned' => null,
+    'border' => false,
     'heading' => null,
     'icon' => null,
     'iconSize' => 'sm',
@@ -67,10 +76,10 @@
 // tone variables and the foreground comes from the surface rather than from
 // here — one `text-` class serves all four.
 //
-// The badge's set: `outline` takes the toned border and leaves the ink to
-// `toned` below. `ghost` is that arm with the border dropped: the quietest of
-// the four, for a message that belongs in the flow of a form or a panel that
-// is already boxed.
+// The badge's set: `outline` takes a border and leaves the ink to `toned`
+// below — the neutral one by default, the tone's own under `border`. `ghost`
+// is that arm with the border dropped: the quietest of the four, for a message
+// that belongs in the flow of a form or a panel that is already boxed.
 //
 // Only the paint changes. The padding above stays with it, so swapping a
 // variant never moves the text, and the dismiss control's negative margins go
@@ -88,9 +97,46 @@ $classes = Shape::classes()
     ->add('[:where(&)]:gap-3 [:where(&)]:rounded-shape [:where(&)]:p-4')
     ->add(match ($variant) {
         'solid' => '[:where(&)]:bg-[var(--shape-tone)]',
-        'outline' => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border)]',
         'ghost' => 'transition-colors duration-100 hover:bg-[var(--shape-tone-tint)]',
+        'outline' => null,
         default => '[:where(&)]:bg-[var(--shape-tone-tint)]',
+    })
+    // `border` is the edge, and it is opt-in because three of the four arms
+    // read fine without one — the fill is the boundary. It earns its place
+    // where the alert has to hold its own against a busy page, or sit next to
+    // a card that is already drawn with one.
+    //
+    // The colour is a step of the tone rather than a border palette of its own.
+    // `subtle` and `outline` take `--shape-tone-border-strong`, which is the
+    // tone's answer to the neutral `--shape-tone-border` the outline arm reads
+    // by default: the same job, a step further along so it reads as an edge
+    // someone chose rather than a definition line. It is one variable for both
+    // arms because the edge is doing the same thing in each — on `subtle` it
+    // bounds the wash, on `outline` it is the whole of the paint — and a border
+    // that changed weight between them would make swapping the variant move
+    // more than the fill.
+    //
+    // `solid` cannot use it. The fill is the 700 and a 300 edge on it would
+    // read as a highlight, so it takes `--shape-tone-hover` — the step past
+    // the fill, which is darker in light mode and brighter in dark. Not
+    // "darker" literally, then, but the same thing the fill's own hover means:
+    // one step further from the page. A fixed darkening would invert in dark
+    // mode, where the solid fill is already the light end of the ramp.
+    //
+    // Ghost draws the edge on hover with the tint it fills with, so the two
+    // arrive together. The transparent border at rest is what keeps that from
+    // moving the text a pixel — the box is reserved before the colour lands,
+    // and `transition-colors` in the arm above already carries the border.
+    //
+    // Outline is the one arm the prop does not add a border to, because it
+    // already has one; here the prop only decides its colour. Which is why
+    // that arm's border moved out of the fill match above and into this one.
+    ->add(match (true) {
+        ! $border && $variant === 'outline' => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border)]',
+        ! $border => null,
+        $variant === 'solid' => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-hover)]',
+        $variant === 'ghost' => '[:where(&)]:border [:where(&)]:border-transparent hover:border-[var(--shape-tone-border-strong)]',
+        default => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border-strong)]',
     })
     ->add('[:where(&)]:text-[color:var(--shape-fg)]');
 

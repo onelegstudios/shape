@@ -19,11 +19,13 @@ default, because an alert is usually not the loudest thing on its page:
 
 @docs('preview', name: 'alert-variants', layout: 'stack')
 
-`outline` draws the tone around the outside and leaves the text as the page's own
-ink, so a long alert reads as ordinary body copy inside a coloured edge. The glyph
-keeps the tone, which is what stops the message from losing its meaning along with
-its colour; [`toned`](#toning-the-text) puts the colour back in the text where you
-want it. `solid` fills with the tone and is worth spending sparingly: a saturated
+`outline` draws an edge around the outside and leaves the text as the page's own
+ink, so a long alert reads as ordinary body copy inside a box. The edge is the
+neutral border every outlined thing in the library takes — the same one the
+outline [button](button.md#variants) and [badge](badge.md) take — so the glyph is
+what carries the tone, and it is what stops the message from losing its meaning
+along with its colour. [`toned`](#toning-the-text) puts the colour back in the
+text where you want it, and [`border`](#borders) puts it in the edge. `solid` fills with the tone and is worth spending sparingly: a saturated
 block that size competes with everything around it.
 
 `ghost` is `outline` with the border dropped, and the quietest of the four: no
@@ -54,9 +56,10 @@ page and its text reads both ways. `toned` is which way:
 @docs('preview', name: 'alert-toned', layout: 'stack')
 
 Both default to the page's ink. Nothing about the message is lost with it — the
-glyph still says what the alert means and, on `outline`, so does the border — and
-what is gained is a block of body copy that reads as body copy. A full paragraph
-of red is the loudest thing on a page for no reason.
+glyph still says what the alert means, and on `outline` with a toned
+[`border`](#borders) so does the edge — and what is gained is a block of body copy
+that reads as body copy. A full paragraph of red is the loudest thing on a page
+for no reason.
 
 A ghost alert takes the tone back under the pointer, because that is when it
 paints the tint it would have had as a `subtle` alert, and grey text on a coloured
@@ -75,6 +78,39 @@ An untoned alert publishes no `data-shape-surface` at all, rather than publishin
 the page's own colours under a name. The difference shows when it is not on the
 page: an outline alert inside a `solid` card should read in the card's foreground,
 and inheriting is what does that.
+
+## Borders
+
+`border` draws the alert's edge in its own tone. It is off by default, because on
+three of the four variants the fill is already the boundary; turn it on where the
+alert has to hold its own against a busy page, or sit beside a [card](card.md)
+that is drawn with one:
+
+@docs('preview', name: 'alert-border', layout: 'stack')
+
+`subtle` and `outline` draw the same edge, from
+[`--shape-tone-border-strong`](../theming.md#the-tone-variables) — the tone's
+answer to the neutral `--shape-tone-border` that an outlined thing takes by
+default. It sits a step further along the ramp than the tint pair does, which is
+what makes it read as an edge someone chose rather than a definition line. Both
+arms read the one variable because the edge is doing the same job in each: on
+`subtle` it bounds the wash, on `outline` it is the whole of the paint. `outline`
+is the one variant the prop adds no border to — it has one already — so there it
+only decides whether that border carries the tone or the grey.
+
+`solid` cannot use that step: a pale edge on a saturated fill reads as a
+highlight, so it takes the step *past* the fill instead — darker in light mode,
+brighter in dark, which is the same move the tone's own hover makes and the reason
+it is not a fixed darkening.
+
+`ghost` shows its edge only under the pointer, arriving with the tint it already
+paints there, so the alert stays unpainted at rest and the hover draws the whole
+block at once. The border is reserved as a transparent one, so nothing shifts by a
+pixel when it lands.
+
+Both colours are steps of `--shape-tone`, not a palette of their own, so a border
+follows a [retheme](../theming.md) with everything else. To make every toned edge
+in the library heavier or lighter at once, move `--shape-tone-border-strong`.
 
 ## Heading and body
 
@@ -172,6 +208,7 @@ the fact.
 | `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
 | `variant` | `subtle` | `subtle`, `outline`, `solid`, `ghost` |
 | `toned` | `false` | paints the text in the tone, on `outline` and `ghost`; ignored on `subtle` and `solid`, where the fill decides |
+| `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
