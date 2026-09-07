@@ -93,6 +93,17 @@ it('paints the variant on a picture as well as on initials', function () {
         ->toContain('data-shape-variant="outline"');
 });
 
+it('crops a picture to the circle rather than squashing it into one', function () {
+    // `size` is a width and a height, and a photograph of a person is taller
+    // than it is wide. Without this the face arrives stretched.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" />'))
+        ->toContain('[:where(&amp;)]:object-cover');
+});
+
+it('does not ask the initials to fit anything', function () {
+    expect(Blade::render('<x-shape::avatar initials="AL" />'))->not->toContain('object-cover');
+});
+
 it('overlaps a group with two utilities and no stylesheet rule', function () {
     // The ring is what keeps the face underneath from reading as a smudge.
     // Which face is on top is DOM order, because choosing it would be a z-index.

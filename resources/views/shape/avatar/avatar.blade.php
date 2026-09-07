@@ -33,6 +33,17 @@
     what fills the circle while the image is still arriving. The border rings
     the picture, which is the same edge doing the same job.
 
+    `size` sets a width and a height, which on an `<img>` is an instruction to
+    squash whatever arrives into that square. Photographs of people are mostly
+    taller than they are wide, so the default answer is the wrong one almost
+    every time: `object-cover` fills the circle and crops what does not fit,
+    which is what the circle was always implying. It rides the same `:where()`
+    wrapper as everything else here, so a call site that wants the whole frame
+    letterboxed passes `object-contain` and wins.
+
+    The span never gets it. There is nothing inside it to fit — the initials are
+    text, and text in a flex centre is already where it should be.
+
     Initials are stated, never derived. Deriving them from a name inside a folded
     component would run the derivation once, at compile time, and bake one
     person's initials into every avatar the template renders — the same failure
@@ -74,6 +85,8 @@
 $classes = Shape::classes()
     ->add('inline-flex shrink-0 items-center justify-center overflow-hidden')
     ->add('[:where(&)]:rounded-full [:where(&)]:font-medium')
+
+    ->add(['[:where(&)]:object-cover' => (bool) $src])
 
     ->add(match ($size) {
         'xs' => '[:where(&)]:size-6 [:where(&)]:text-2xs',

@@ -17,6 +17,11 @@ is no `onerror` swapping a broken URL for the letters: the initials are what a
 call site holding no picture shows, not what a picture that fails to arrive
 leaves behind.
 
+The image is cropped to the circle, not squashed into it. `size` sets a width
+and a height, and a photograph of a person is usually taller than it is wide, so
+the picture takes `object-cover`. Pass `class="object-contain"` to letterbox the
+whole frame instead.
+
 `alt` is a real `alt` attribute on this form, and screen-reader-only text on the
 initials one — [the initials are not the accessible
 name](#the-initials-are-not-the-accessible-name) says what to pass and when to
