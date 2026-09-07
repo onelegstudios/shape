@@ -142,6 +142,7 @@
     'barSquare' => false,
     'heading' => null,
     'icon' => null,
+    'iconVariant' => null,
     'iconSize' => 'sm',
     'dismissible' => false,
     'actions' => null,
@@ -506,18 +507,36 @@ $bodyClasses = match (true) {
         `<x-shape::icon :name=".." />` — the four built-in states never need
         `<x-dynamic-component>`'s temp-file round trip. A caller's own `icon`
         still goes through it; there's no fixed set of those to special-case.
+
+        `icon-size` and `icon-variant` are the icon's own two props, handed
+        along to whichever arm resolved above. Both are named for the thing they
+        modify rather than taken bare, the way `bar-square` is: `size` and
+        `variant` already mean the alert's own on every other component in the
+        library, and one word cannot mean two things across it.
+
+        `icon-variant` defaults to null rather than to a style, so that an alert
+        naming nothing leaves the choice with the icon — where the set's rule
+        about which drawing a size prefers is baked in, solid at `xs` and `sm`
+        and outline at `base`. A default named here would override that rule for
+        every alert in order to serve the few that want the other drawing.
+
+        Which is the whole of what the prop is for. `icon-size` defaults to
+        `sm`, so an alert's glyph is solid, and the stroked one at that size was
+        reachable no other way: the only lever on the style was a size that also
+        changes how big the glyph is. Two questions were riding on one prop, and
+        this is the second of them given somewhere to go.
     --}}
     @if ($icon !== false)
         @if ($icon)
-            <x-shape::icon :name="$icon" :size="$iconSize" class="{{ $iconClasses }}" />
+            <x-shape::icon :name="$icon" :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
         @elseif ($tone === 'success')
-            <x-shape::icon.shape-success :size="$iconSize" class="{{ $iconClasses }}" />
+            <x-shape::icon.shape-success :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
         @elseif ($tone === 'danger')
-            <x-shape::icon.shape-danger :size="$iconSize" class="{{ $iconClasses }}" />
+            <x-shape::icon.shape-danger :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
         @elseif ($tone === 'warning')
-            <x-shape::icon.shape-warning :size="$iconSize" class="{{ $iconClasses }}" />
+            <x-shape::icon.shape-warning :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
         @elseif ($tone === 'info')
-            <x-shape::icon.shape-info :size="$iconSize" class="{{ $iconClasses }}" />
+            <x-shape::icon.shape-info :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
         @endif
     @endif
 

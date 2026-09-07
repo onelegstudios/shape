@@ -638,6 +638,16 @@ it('abandons folding an alert whose corner is bound dynamically', function () {
         ->not->toContain('shape::alert');
 });
 
+it('abandons folding an alert whose glyph style is bound dynamically', function () {
+    // The alert only hands `icon-variant` along, but the icon it hands it to
+    // branches on it — a style is a different drawing rather than a different
+    // value of one — so there is nothing to bake in and the fold gives up here
+    // rather than one level down. The same trade `icon-size` makes, and the
+    // reason neither of the icon's own props can be declared safe anywhere.
+    expect(foldedComponentsWhileRendering('dynamic-alert-icon-variant', ['iconVariant' => 'outline']))
+        ->not->toContain('shape::alert');
+});
+
 it('abandons folding an alert whose colour is bound dynamically', function () {
     // Same trade the badge makes, for the same reason: the alert branches on
     // `tone` to resolve its glyph, so colour cannot be safe here. It is the

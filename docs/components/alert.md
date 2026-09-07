@@ -339,7 +339,8 @@ saturated fill. Give those a tone matching the alert's, or reach for `outline`.
 
 Every state colour resolves a glyph of its own, so an alert stays readable in
 greyscale and to anyone who can't separate the hues. `icon` picks a different
-one, `:icon="false"` removes it, and `icon-size` changes how big it is:
+one, `:icon="false"` removes it, `icon-size` changes how big it is, and
+`icon-variant` changes which style it is drawn in:
 
 `brand` and `accent` are the exceptions, and deliberately: both are emphasis
 rather than a state, so they draw nothing. An informational message wants
@@ -347,6 +348,13 @@ rather than a state, so they draw nothing. An informational message wants
 whatever the brand becomes.
 
 @docs('preview', name: 'alert-icons', layout: 'stack')
+
+An icon picks its own style from its size — [solid at `xs` and `sm`, outline at
+`base`](icon.md#size-and-style) — so an alert leaves `icon-variant` unset by
+default and takes whichever drawing the set prefers at the size it asked for.
+Name it where you want the other one: the stroked glyph at `sm` is reachable no
+other way, because until this prop the only lever on the style was a size that
+also changes how big the glyph is.
 
 ## Dismissing
 
@@ -431,6 +439,7 @@ the fact.
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
+| `icon-variant` | chosen by `icon-size` | `outline`, `solid` |
 | `dismissible` | `false` | adds a close button |
 | `actions-placement` | `lg` | the width the `actions` row flips beside the message at: `sm`, `md`, `lg`, `xl`, `2xl` ([container sizes](#choosing-the-step), not breakpoints); `below` and `side` pin it instead |
 

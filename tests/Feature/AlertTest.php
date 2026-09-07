@@ -46,6 +46,34 @@ it('lets a caller opt out of the glyph', function () {
         ->not->toContain('data-shape-icon');
 });
 
+it('draws the glyph in the style its size prefers, which at the default size is the solid one', function () {
+    // The rule belongs to the icon set — solid at `xs` and `sm`, outline at
+    // `base` — and the alert names no style of its own, so the default
+    // `icon-size` of `sm` arrives as the filled drawing.
+    expect(Blade::render('<x-shape::alert tone="success">Invoice sent.</x-shape::alert>'))
+        ->toContain('fill="currentColor"')
+        ->not->toContain('stroke="currentColor"');
+});
+
+it('lets a caller name the glyph style without changing how big the glyph is', function () {
+    // The whole of what `icon-variant` is for: the stroked drawing at `sm` was
+    // reachable no other way, because the only lever on the style was a size
+    // that also changes how big the glyph is. `size-5` is what says the size
+    // stayed where it was.
+    expect(Blade::render('<x-shape::alert tone="success" icon-variant="outline">Invoice sent.</x-shape::alert>'))
+        ->toContain('stroke="currentColor"')
+        ->toContain('size-5');
+});
+
+it('hands the style to a caller\'s own glyph as well as to the state ones', function () {
+    // One arm resolves through `<x-dynamic-component>` and four resolve as
+    // static tags, and the prop reaches all five — an alert that names its own
+    // icon is no less entitled to say how it is drawn.
+    expect(Blade::render('<x-shape::alert icon="shape-arrow-right" icon-variant="solid">Next step.</x-shape::alert>'))
+        ->toContain('fill="currentColor"')
+        ->not->toContain('stroke="currentColor"');
+});
+
 it('publishes the tone as its own foreground contract', function () {
     // The point of `data-shape-surface="tint"`: a muted paragraph inside a
     // coloured alert has to read a dialled-back version of the tone, not the
