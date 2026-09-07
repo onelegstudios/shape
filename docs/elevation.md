@@ -12,13 +12,18 @@ component reaches for, and the discipline of never reaching outside this list.
 | Elevation | Class | Used by |
 | --- | --- | --- |
 | Resting | `shadow-xs` | Nothing, yet — see below |
-| Raised | `shadow-sm` | Buttons, cards, inputs — anything sitting on the page |
+| Raised | `shadow-sm` | Buttons, cards, inputs — anything sitting on the page, and alerts that ask for one |
 | Floating | `shadow-md` | Popovers, tooltips |
 | Overlay | `shadow-lg` | Dropdowns, menus, toasts |
 | Modal | `shadow-xl` | Dialogs, drawers, command palette |
 
 `shadow-2xs` and `shadow-2xl` are deliberately unused. Five options is plenty,
 and leaving two on the shelf costs nothing.
+
+The alert is the one component that takes its step through a prop rather than
+having it always. It belongs in the flow of the page by default and has nothing
+to lift away from there, so [`shadow`](components/alert.md#elevation) is opt-in
+and lands on the raised step with everything else that rests on the page.
 
 The resting step was written here for table rows and list items, and neither
 turned out to want it. A row separates itself from the row above with a rule, and

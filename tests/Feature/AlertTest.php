@@ -92,15 +92,18 @@ it('shows a ghost alert its own bounds on hover, in the fill it would have had',
     // read from the same variable, so a ghost alert and the ghost control
     // inside it agree without either knowing about the other. It is the only
     // arm that moves, so the transition is scoped to it rather than the root.
+    // It names its properties rather than taking `transition-colors`, because
+    // the cast under `shadow` has to fade in with the fill and `box-shadow` is
+    // not a colour.
     expect(Blade::render('<x-shape::alert tone="danger" variant="ghost">Card declined.</x-shape::alert>'))
         ->toContain('hover:bg-[var(--shape-tone-tint)]')
-        ->toContain('transition-colors');
+        ->toContain('transition-[color,background-color,border-color,box-shadow]');
 });
 
 it('leaves the other variants still on hover, because only ghost is unpainted', function (string $variant) {
     expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\">Card declined.</x-shape::alert>"))
         ->not->toContain('hover:bg-')
-        ->not->toContain('transition-colors');
+        ->not->toContain('transition-');
 })->with(['subtle', 'solid', 'outline']);
 
 it('draws no border by default, because the fill is already the boundary', function (string $variant) {
@@ -145,12 +148,12 @@ it('leaves the outline border grey until it is asked for the tone', function () 
 
 it('shows the ghost border only under the pointer, with the fill it arrives with', function () {
     // The arm stays unpainted at rest, so the edge waits with the tint rather
-    // than drawing a box around nothing. `transition-colors` is already in the
-    // ghost arm and carries the border with the background.
+    // than drawing a box around nothing. The ghost arm's transition already
+    // names `border-color`, so the edge fades in with the background.
     expect(Blade::render('<x-shape::alert tone="danger" variant="ghost" border>Card declined.</x-shape::alert>'))
         ->toContain('hover:border-[var(--shape-tone-border-strong)]')
         ->toContain('hover:bg-[var(--shape-tone-tint)]')
-        ->toContain('transition-colors');
+        ->toContain('transition-[color,background-color,border-color,box-shadow]');
 });
 
 it('reserves the ghost border before it paints it, so the hover moves nothing', function () {
@@ -165,8 +168,84 @@ it('keeps the other variants still on hover once they have a border', function (
     // where it is, so none of them gains a transition it did not have.
     expect(Blade::render("<x-shape::alert tone=\"danger\" variant=\"{$variant}\" border>Card declined.</x-shape::alert>"))
         ->not->toContain('hover:border-')
-        ->not->toContain('transition-colors');
+        ->not->toContain('transition-');
 })->with(['subtle', 'solid', 'outline']);
+
+it('sits flat in the flow of the page until it is asked to lift', function (string $variant) {
+    // An alert is part of the content it is about, so there is nothing to lift
+    // away from by default. `shadow` is the opt-in for the alert that has to
+    // read as laid on the page instead — over a dense table, or beside a card
+    // drawn with a resting shadow of its own.
+    expect(Blade::render("<x-shape::alert tone=\"info\" variant=\"{$variant}\">Deploy finished.</x-shape::alert>"))
+        ->not->toContain('shadow-');
+})->with(['subtle', 'outline', 'solid', 'ghost']);
+
+it('lifts the alert on the raised step, the one everything resting on the page takes', function (string $variant) {
+    // One step, and it is the same `shadow-sm` the button, the card and the
+    // input already reach for. Shape defines no elevation scale of its own, so
+    // this is Tailwind's own token and a retheme of it carries the alert with
+    // the rest of the interface.
+    expect(Blade::render("<x-shape::alert tone=\"info\" variant=\"{$variant}\" shadow>Deploy finished.</x-shape::alert>"))
+        ->toContain('[:where(&amp;)]:shadow-sm');
+})->with(['subtle', 'outline', 'solid']);
+
+it('applies the lift at zero specificity, so a call site can take another step', function () {
+    // Elevation is a convention rather than a token set, and the discipline is
+    // in which step a component reaches for — not in stopping a caller who
+    // needs a different one.
+    expect(Blade::render('<x-shape::alert tone="info" shadow class="shadow-lg">Deploy finished.</x-shape::alert>'))
+        ->toContain('[:where(&amp;)]:shadow-sm')
+        ->toContain('shadow-lg');
+});
+
+it('holds the ghost lift back until the pointer paints it a surface', function () {
+    // A shadow is a cast from a surface and the ghost arm has none at rest, so
+    // drawn there it would ring a transparent block with an edge nothing in it
+    // drew. It arrives with the tint, the same way the border does.
+    expect(Blade::render('<x-shape::alert tone="info" variant="ghost" shadow>Deploy finished.</x-shape::alert>'))
+        ->toContain('hover:shadow-sm')
+        ->toContain('hover:bg-[var(--shape-tone-tint)]')
+        ->not->toContain('[:where(&amp;)]:shadow-sm');
+});
+
+it('fades the ghost cast in with the fill rather than letting it appear at once', function () {
+    // `box-shadow` is not a colour and `transition-colors` does not carry it, so
+    // the arm names the properties it changes. A fill easing in over a hundred
+    // milliseconds under a shadow that snapped into place is the one way to make
+    // a hover look broken.
+    expect(Blade::render('<x-shape::alert tone="info" variant="ghost" shadow>Deploy finished.</x-shape::alert>'))
+        ->toContain('transition-[color,background-color,border-color,box-shadow]')
+        ->toContain('duration-100');
+});
+
+it('keeps the other variants still on hover once they are lifted', function (string $variant) {
+    // Only ghost waits. A shadow on the other three is drawn at rest and stays
+    // where it is, so none of them gains a hover it did not have.
+    expect(Blade::render("<x-shape::alert tone=\"info\" variant=\"{$variant}\" shadow>Deploy finished.</x-shape::alert>"))
+        ->not->toContain('hover:shadow-')
+        ->not->toContain('transition-');
+})->with(['subtle', 'solid', 'outline']);
+
+it('carries the lift with the edge and the fill when a ghost alert takes both', function () {
+    // The whole block arrives at once under the pointer: the tint it would have
+    // had at rest, the tone's edge, and the cast that lifts it off the page.
+    expect(Blade::render('<x-shape::alert tone="info" variant="ghost" shadow border>Deploy finished.</x-shape::alert>'))
+        ->toContain('hover:shadow-sm')
+        ->toContain('hover:border-[var(--shape-tone-border-strong)]')
+        ->toContain('hover:bg-[var(--shape-tone-tint)]');
+});
+
+it('leaves the lift out of the tone, because elevation is not a colour', function () {
+    // Every other paint prop here reads a `--shape-tone-*` variable. This one
+    // reads Tailwind's shadow token and nothing else, so a retheme of the tone
+    // never moves it and a retheme of the scale always does.
+    $danger = Blade::render('<x-shape::alert tone="danger" shadow>Card declined.</x-shape::alert>');
+    $success = Blade::render('<x-shape::alert tone="success" shadow>Payment received.</x-shape::alert>');
+
+    expect($danger)->toContain('[:where(&amp;)]:shadow-sm')
+        ->and($success)->toContain('[:where(&amp;)]:shadow-sm')
+        ->and($danger)->not->toContain('shadow-[var(');
+});
 
 it('moves the foreground contract with the variant, not just the background', function () {
     // The failure this prevents is the one the tint surface was built for, a

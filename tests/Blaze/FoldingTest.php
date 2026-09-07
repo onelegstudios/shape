@@ -536,6 +536,36 @@ it('abandons folding an alert whose ink is bound dynamically', function () {
         ->not->toContain('shape::alert');
 });
 
+it('folds an alert that is lifted at the call site', function () {
+    // `shadow` is read at compile time like every other prop here, so opting an
+    // alert onto the raised step costs nothing at runtime — the class is baked
+    // into the parent with the rest of the block.
+    expect(foldedComponentsWhileRendering('static-feedback-shadow'))
+        ->toContain('shape::alert');
+});
+
+it('bakes the lift into the compiled template rather than leaving a branch behind', function () {
+    // The point of the fold: the arm `shadow` chose is decided once, at compile
+    // time, and what reaches the template is the class and none of the `match`
+    // that picked it.
+    $fixture = __DIR__.'/../fixtures/views/static-feedback-shadow.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('shadow-sm')
+        ->toContain('data-shape-alert');
+});
+
+it('abandons folding an alert whose lift is bound dynamically', function () {
+    // `shadow` branches because ghost waits for the hover with it, so it is a
+    // different class rather than a different value of one — which is what
+    // keeps it off the safe list, next to `variant`, `toned` and `border`.
+    expect(foldedComponentsWhileRendering('dynamic-alert-shadow', ['shadow' => true]))
+        ->not->toContain('shape::alert');
+});
+
 it('abandons folding an alert whose colour is bound dynamically', function () {
     // Same trade the badge makes, for the same reason: the alert branches on
     // `tone` to resolve its glyph, so colour cannot be safe here. It is the

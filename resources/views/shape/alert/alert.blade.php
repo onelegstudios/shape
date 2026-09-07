@@ -38,6 +38,14 @@
     has a border already; it only decides whether that border carries the tone
     or the neutral grey it carries by default.
 
+    `shadow` is the last of the three, and the only one that says nothing about
+    the tone: it lifts the block off the page rather than colouring it. Off by
+    default, because an alert belongs in the flow of the content it is about, and
+    on it takes the raised step every other resting thing in the library takes.
+    Ghost waits for the hover with it, for the same reason it waits with the
+    border — a cast shadow around a block that paints nothing is an edge nothing
+    drew.
+
     Which leaves the ghost hover, where a fill arrives after the fact.
     `data-shape-surface-hover` is the pair `data-shape-surface` publishes,
     published for as long as the pointer is on the block — because a tint
@@ -45,10 +53,10 @@
     prevent, arriving a hundred milliseconds late.
 
     `tone` is branched on to resolve the glyph, exactly as the badge does, so it
-    is *not* declared safe here — and neither are `variant`, `toned` or `border`,
-    which branch to resolve the paint. The same `tone` is safe on the button, which
-    only ever interpolates it. Whatever a component does with a value decides
-    that.
+    is *not* declared safe here — and neither are `variant`, `toned`, `border` or
+    `shadow`, which branch to resolve the paint. The same `tone` is safe on the
+    button, which only ever interpolates it. Whatever a component does with a
+    value decides that.
 
     `heading` is interpolated and nothing more, so an alert whose title comes from
     a variable still folds.
@@ -64,6 +72,7 @@
     'variant' => 'subtle',
     'toned' => null,
     'border' => false,
+    'shadow' => false,
     'heading' => null,
     'icon' => null,
     'iconSize' => 'sm',
@@ -92,12 +101,20 @@
 // is the ghost button's recipe and the same variable, which is why the two
 // agree without either knowing about the other. The transition rides in this
 // arm rather than on the root, since the other three never move.
+//
+// It names its properties rather than taking `transition-colors`, because the
+// cast under `shadow` is not a colour and Tailwind's shorthand does not carry
+// `box-shadow`. Left to the shorthand the fill would fade in over a hundred
+// milliseconds and the shadow would appear at once, which is the one way to
+// make a hover look broken. The four named here are the whole of what this arm
+// changes — fewer than the shorthand's, which reaches for gradients and strokes
+// an alert has none of.
 $classes = Shape::classes()
     ->add('flex items-start')
     ->add('[:where(&)]:gap-3 [:where(&)]:rounded-shape [:where(&)]:p-4')
     ->add(match ($variant) {
         'solid' => '[:where(&)]:bg-[var(--shape-tone)]',
-        'ghost' => 'transition-colors duration-100 hover:bg-[var(--shape-tone-tint)]',
+        'ghost' => 'transition-[color,background-color,border-color,box-shadow] duration-100 hover:bg-[var(--shape-tone-tint)]',
         'outline' => null,
         default => '[:where(&)]:bg-[var(--shape-tone-tint)]',
     })
@@ -138,6 +155,31 @@ $classes = Shape::classes()
         $variant === 'ghost' => '[:where(&)]:border [:where(&)]:border-transparent hover:border-[var(--shape-tone-border-strong)]',
         default => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border-strong)]',
     })
+    // `shadow` is elevation, and the one prop here that carries no tone. An
+    // alert is part of the page by default and a resting block in the flow of
+    // the content it is about has nothing to lift away from; the prop is for
+    // the alert that has to read as laid *on* the page rather than set into it
+    // — over a dense table, beside a card drawn with its own.
+    //
+    // One step, and it is `shadow-sm`: the raised one, which is what buttons,
+    // cards and inputs already take for sitting on the page. Shape owns no
+    // elevation scale of its own — Tailwind's is already two-part and already
+    // steps the way one should — so this reads the same `--shadow-sm` a
+    // consumer rethemes, and docs/elevation.md is where the convention lives.
+    // A call site wanting another step passes `class="shadow-lg"`, which the
+    // zero specificity below is there to let it win.
+    //
+    // Ghost takes it on hover, with the fill and the border. A shadow is a cast
+    // from a surface, and that arm has no surface until the pointer arrives —
+    // drawn at rest it would ring a transparent block with an edge nothing in
+    // it drew. Unlike the border there is nothing to reserve: a shadow is
+    // painted outside the box and moves no text when it lands.
+    ->add(match (true) {
+        ! $shadow => null,
+        $variant === 'ghost' => 'hover:shadow-sm',
+        default => '[:where(&)]:shadow-sm',
+    })
+
     ->add('[:where(&)]:text-[color:var(--shape-fg)]');
 
 // Whether the text is the tone's ink or the page's own foreground — the one

@@ -112,6 +112,41 @@ Both colours are steps of `--shape-tone`, not a palette of their own, so a borde
 follows a [retheme](../theming.md) with everything else. To make every toned edge
 in the library heavier or lighter at once, move `--shape-tone-border-strong`.
 
+## Elevation
+
+`shadow` lifts the alert off the page. It is the one prop here that says nothing
+about the tone, and like [`border`](#borders) it is off by default — an alert is
+part of the content it is about, and a block in the flow of that content has
+nothing to lift away from:
+
+@docs('preview', name: 'alert-shadow', layout: 'stack')
+
+There is one step and it is `shadow-sm`, the raised one that buttons, cards and
+inputs already take for sitting on the page. Shape defines no elevation scale of
+its own, so this is Tailwind's `--shadow-sm` and a
+[retheme](../elevation.md#overriding) of it carries the alert with everything
+else. It is applied at zero specificity, so a call site that wants another step
+of the scale asks for it directly:
+
+```blade
+<x-shape::alert tone="info" shadow class="shadow-lg">Deploy finished.</x-shape::alert>
+```
+
+Reach for it where the alert has to read as laid *on* the page rather than set
+into it — floating over a dense table, or sitting beside a [card](card.md) that
+has a resting shadow of its own and would otherwise look like the only raised
+thing there. A `subtle` alert in the flow of a form does not need one.
+
+`ghost` shows it only under the pointer, with the fill and the
+[border](#borders), because a shadow is a cast from a surface and that variant
+has none until the hover paints one. Drawn at rest it would ring a transparent
+block with an edge nothing in it drew. Nothing has to be reserved for it the way
+the border is: a shadow paints outside the box and moves no text when it lands.
+
+The hover names the properties it transitions rather than taking
+`transition-colors`, so the cast fades in with the fill instead of appearing at
+once — `box-shadow` is not a colour, and Tailwind's shorthand does not carry it.
+
 ## Heading and body
 
 `heading` is a title above the body; the default slot is the body. Either can
@@ -209,6 +244,7 @@ the fact.
 | `variant` | `subtle` | `subtle`, `outline`, `solid`, `ghost` |
 | `toned` | `false` | paints the text in the tone, on `outline` and `ghost`; ignored on `subtle` and `solid`, where the fill decides |
 | `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
+| `shadow` | `false` | lifts the alert with `shadow-sm`; on `ghost` shows it on hover only |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
@@ -221,7 +257,13 @@ The default slot is the body.
 Tier A — `@blaze(fold: true, safe: ['heading'])`.
 
 `heading` is interpolated and nothing more, so an alert whose title comes from a
-variable still folds. `tone` branches to resolve its glyph, and `variant` and
-`toned` branch to resolve the paint, so `:tone="$tone"` drops to the compiled path
-— the same prop is safe on the [button](button.md), which only ever interpolates
-it. See [Folding](../folding.md).
+variable still folds. `tone` branches to resolve its glyph, and `variant`,
+`toned`, `border` and `shadow` branch to resolve the paint, so `:tone="$tone"`
+drops to the compiled path — the same prop is safe on the [button](button.md),
+which only ever interpolates it. See [Folding](../folding.md).
+
+`shadow` branches because `ghost` waits for the hover with it, which is a
+different class and not a different value of one. Written literally —
+`<x-shape::alert shadow>` — it is read at compile time like every other prop
+here and costs nothing; `:shadow="$isFloating"` is what drops the alert to the
+compiled path.
