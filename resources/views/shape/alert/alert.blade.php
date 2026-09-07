@@ -1,4 +1,4 @@
-@blaze(fold: true, safe: ['heading'])
+@blaze(fold: true, safe: ['heading', 'actions'])
 
 {{--
     A message that stays on the page, in the flow of the content it belongs to.
@@ -63,6 +63,44 @@
     is the button's word for an equal-sided control, and one word cannot mean
     two things across the library.
 
+    `actions` is the row of buttons a message sometimes ends in, and it is a slot
+    rather than the loose content of the default one, because the default slot is
+    wrapped in an `<x-shape::text>` — a button written there would render inside a
+    small muted paragraph. Named, it is a sibling of the prose instead of a child
+    of it.
+
+    Where it sits is the interesting half. A narrow alert wants the row beneath
+    the message; a wide one has room for a single call to action out on the
+    right, level with the text. That is a question about the alert's width and
+    not about what the call site meant, so `actions-placement` names a width and
+    lets a container query answer it — the alert declares itself a query
+    container and the row flips at `@lg` by default, which is the alert grown
+    past a form field and out to the width of a column of prose.
+
+    One step cannot be right for every alert, though, because what fits beside a
+    message depends on the message. A three-word notice with an `Undo` shares a
+    line at 416px; a heading, a paragraph and three buttons are still cramped at
+    700px. So the prop takes any of `sm`, `md`, `lg`, `xl` and `2xl`, and
+    `below` and `side` pin the row at the two ends for the cases no width can
+    decide.
+
+    Those are Tailwind's *container* sizes, which is the distinction the whole
+    prop rests on: `md` here is 28rem of alert and has nothing to do with the
+    768px of viewport `md:` means everywhere else. They are not this library's
+    `size` scale either, and the missing name is the tell — a `size` runs `sm`,
+    `base`, `lg`, because that is Tailwind's type scale and `text-md` does not
+    exist. The container scale has an `md` and no `base`. Calling the default
+    step `base` here would put an invented name in a borrowed scale and land it
+    in a slot the scale it was borrowed from has never had.
+
+    A container query rather than a breakpoint because nothing else in this
+    library ships a `sm:` or an `md:`, and deliberately — a component cannot see
+    the viewport it landed in, and an alert in a sidebar and an alert across a
+    page are the same markup at two widths. Querying its own width is the version
+    of that rule a component can actually keep. The query container is declared
+    only where there is an actions row to move, so the containment it brings with
+    it lands on the alerts that use it and no others.
+
     Which leaves the ghost hover, where a fill arrives after the fact.
     `data-shape-surface-hover` is the pair `data-shape-surface` publishes,
     published for as long as the pointer is on the block — because a tint
@@ -71,12 +109,22 @@
 
     `tone` is branched on to resolve the glyph, exactly as the badge does, so it
     is *not* declared safe here — and neither are `variant`, `toned`, `border`,
-    `shadow`, `bar` or `bar-square`, which branch to resolve the paint. The same
-    `tone` is safe on the button, which only ever interpolates it. Whatever a
-    component does with a value decides that.
+    `shadow`, `bar` or `bar-square`, which branch to resolve the paint, nor
+    `actions-placement`, which branches to resolve the layout. The same `tone` is
+    safe on the button, which only ever interpolates it. Whatever a component
+    does with a value decides that.
 
     `heading` is interpolated and nothing more, so an alert whose title comes from
     a variable still folds.
+
+    `actions` is declared safe despite the `@if` below it, which is the one entry
+    here that wants a sentence. A named slot listed in `@props` is unsafe to Blaze
+    by default, because a component that branches on a prop usually branches on
+    its *value* and a slot's value is whatever the call site wrote. This one
+    branches on its presence, and presence is not a runtime fact: a call site
+    either wrote `<x-slot:actions>` or it did not, and Blaze resolves the branch
+    per call site while it folds. Anything that reached inside the slot would
+    break that; nothing here does.
 
     Not a live region. This is markup that was on the page when it loaded;
     announcing it would repeat what a screen reader is about to read anyway. The
@@ -96,6 +144,8 @@
     'icon' => null,
     'iconSize' => 'sm',
     'dismissible' => false,
+    'actions' => null,
+    'actionsPlacement' => 'lg',
 ])
 
 @php
@@ -109,6 +159,45 @@ $bar = match ($bar) {
     'top' => 'top',
     'bottom' => 'bottom',
     default => null,
+};
+
+// The width the actions row flips at, resolved here for the same reason the
+// side above is: two arms below branch on it, and both want the same answer.
+//
+// These are Tailwind's *container* sizes and not its breakpoints, which is the
+// whole distinction this prop rests on. `md:` is 768px of viewport; `@md:` is
+// 28rem of the nearest query container, which here is the alert. An alert in a
+// sidebar and an alert across a page hit `@md` at different viewport widths and
+// the same alert width, which is the only reading that makes sense for a
+// component that does not know where it was put.
+//
+// Every step is spelled out rather than composed, for the reason `bar` spells
+// out its four sides: Tailwind reads these class names out of this file as
+// text, so `'@'.$step.':flex-row'` would generate nothing at all.
+//
+// Five steps and not the fourteen the scale has. Below `@sm` the row and the
+// message are fighting over 350px and neither wins; above `@2xl` an alert that
+// wide is rare enough that `below` is the honest answer. The span they cover —
+// 416px to 704px of alert — is the whole of the interesting range.
+//
+// There is no `auto` among them, and there was for a while. It named the step
+// the library had settled on, so that a call site could follow the default when
+// it moved rather than pinning a width — which sounded useful until you ask who
+// would type it. Omitting the prop already does that, and does it for the
+// people who never thought about the question, which is the whole population
+// `auto` was for. A value meaning "unset" inside a prop that has an unset state
+// is one word for two things.
+//
+// So the default is a step like any other, and `lg` is that step. Anything
+// unrecognised lands on it too, the same way `bar` falls back rather than
+// drawing something no call site asked for.
+$actionsQuery = match ($actionsPlacement) {
+    'side', 'below' => null,
+    'sm' => '@sm:flex-row @sm:items-center @sm:justify-between',
+    'md' => '@md:flex-row @md:items-center @md:justify-between',
+    'xl' => '@xl:flex-row @xl:items-center @xl:justify-between',
+    '2xl' => '@2xl:flex-row @2xl:items-center @2xl:justify-between',
+    default => '@lg:flex-row @lg:items-center @lg:justify-between',
 };
 
 // Variant is how loud the alert is; tone is what it means. The two never
@@ -286,6 +375,21 @@ $classes = Shape::classes()
         default => '[:where(&)]:rounded-b-none',
     })
 
+    // The query container the placement steps below read, declared here and
+    // nowhere else. `container-type: inline-size` is not free — it takes the
+    // element out of intrinsic sizing and brings layout containment with it —
+    // and an alert with no actions row has nothing to move, so it stays an
+    // ordinary block. An alert that has pinned the row with `below` or `side`
+    // has nothing to ask either.
+    //
+    // On the root rather than on the body below, because an element cannot
+    // query itself: a container query resolves against the nearest *ancestor*
+    // container, so the element that flips has to be inside the one that
+    // measures. Which is the more useful of the two anyway — it means the
+    // threshold is stated in the alert's own width, which is what a call site
+    // can see, rather than in the width of a column it cannot.
+    ->add($actions !== null && $actionsQuery !== null ? '@container' : null)
+
     ->add('[:where(&)]:text-[color:var(--shape-fg)]');
 
 // Whether the text is the tone's ink or the page's own foreground — the one
@@ -331,6 +435,52 @@ $hoverSurface = $variant === 'ghost' && ! $toned ? 'tint' : null;
 // is thin: leaving the icon toned is what keeps a `danger` outline alert
 // readable as danger at a glance.
 $iconClasses = $toned ? 'mt-0.5' : 'mt-0.5 text-[color:var(--shape-tone-ink)]';
+
+// Where the actions row sits, which is the only thing the body element decides.
+//
+// Every named step resolves to a container query above; the two arms here are
+// the pins, which ask nothing. `side` is the row entire and
+// `below` is the column, and both are the same string the query would have
+// produced at one end of its range — which is why they read as the ends of one
+// scale rather than as a second prop.
+//
+// The default step, `@lg`, is 32rem of the root's content box: an alert of
+// about 544px and wider. The boundary it draws is between an alert inside
+// something — a form, a panel, a sidebar — and an alert across a column of
+// content. Below it sit `max-w-sm` through `max-w-lg`, which is most of the
+// alerts in a form; above it sits the 640-to-720px column that documentation
+// and settings pages are built out of, which is where a call to action out on
+// the right stops looking marooned.
+//
+// It was `@xl` first, and that was wrong by about one step: a 736px content
+// column — this package's own documentation, and a common enough measure — puts
+// an alert at 638px, which cleared 36rem by thirty pixels and stacked again the
+// moment the page was read in a narrower window. A threshold the canonical case
+// only just reaches is a threshold in the wrong place. It is also the reason a
+// call site can name its own: the right width to flip at depends on how much is
+// in the alert, and one number cannot serve a terse notice with one button and
+// a heading with a paragraph and three.
+//
+// `justify-between` rather than `ml-auto` on the row itself, so the message
+// keeps the space it needs and the actions take what is left. `items-center`
+// with it: side placement only happens where there is room, and a button level
+// with the middle of a two-line message reads better than one hung off its
+// first line.
+//
+// The stacked gap is `gap-3` against the `gap-1` the heading and the message
+// keep between them. A row of buttons is a different thing from the sentence
+// above it, and the two gaps are what say so.
+//
+// Nothing at all without a row to place — the classes would be inert either way
+// (a gap needs two children, and a container query with no container never
+// matches), but an alert that renders three dead utilities is one that has to
+// be explained every time someone reads its output.
+$bodyClasses = match (true) {
+    $actions === null => 'flex min-w-0 flex-1 flex-col',
+    $actionsQuery === null && $actionsPlacement === 'side' => 'flex min-w-0 flex-1 flex-row items-center justify-between gap-3',
+    $actionsQuery === null => 'flex min-w-0 flex-1 flex-col gap-3',
+    default => 'flex min-w-0 flex-1 flex-col gap-3 '.$actionsQuery,
+};
 @endphp
 
 <div
@@ -371,12 +521,33 @@ $iconClasses = $toned ? 'mt-0.5' : 'mt-0.5 text-[color:var(--shape-tone-ink)]';
         @endif
     @endif
 
-    <div class="flex min-w-0 flex-1 flex-col gap-1">
-        @if ($heading)
-            <x-shape::heading :level="3" size="sm">{{ $heading }}</x-shape::heading>
-        @endif
+    <div class="{{ $bodyClasses }}">
+        {{-- The message keeps a column of its own so that the actions row is its
+             sibling rather than another line of it: `gap-1` holds the heading to
+             the sentence under it whichever way the element above is running,
+             and `min-w-0` is what lets a long word inside it wrap instead of
+             pushing the actions off the side. --}}
+        <div class="flex min-w-0 flex-col gap-1">
+            @if ($heading)
+                <x-shape::heading :level="3" size="sm">{{ $heading }}</x-shape::heading>
+            @endif
 
-        <x-shape::text size="sm" variant="muted" class="empty:hidden">{{ $slot }}</x-shape::text>
+            <x-shape::text size="sm" variant="muted" class="empty:hidden">{{ $slot }}</x-shape::text>
+        </div>
+
+        {{-- Rendered only where the slot was written, rather than always and
+             hidden when empty. `actions` is declared in `@props` above, so the
+             question here is the same compile-time one `heading` asks — whether
+             the call site passed it — and not the runtime one about what a slot
+             happens to contain.
+
+             `shrink-0` beside the message's `min-w-0`: when the two share a row
+             the buttons are the fixed part and the sentence is the part that
+             gives. `flex-wrap` for when even that is not enough, the way the
+             card's footer wraps for the same reason. --}}
+        @if ($actions)
+            <div class="flex shrink-0 flex-wrap items-center gap-3" data-shape-alert-actions>{{ $actions }}</div>
+        @endif
     </div>
 
     @if ($dismissible)

@@ -590,6 +590,38 @@ it('bakes the barred side into the compiled template rather than leaving a branc
         ->toContain('data-shape-alert');
 });
 
+it('folds an alert that carries an actions row', function () {
+    // The row is a named slot, and Blaze folds through slots the way it folds
+    // through the default one — so an alert with a button in it is still baked
+    // into the parent, button and all.
+    expect(foldedComponentsWhileRendering('static-alert-actions'))
+        ->toContain('shape::alert');
+});
+
+it('bakes the placement of the actions row into the compiled template', function () {
+    // The point of the fold, again: what reaches the template is the query
+    // container and the flip it chose, and none of the `match` that picked
+    // them.
+    $fixture = __DIR__.'/../fixtures/views/static-alert-actions.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('@container')
+        ->toContain('@lg:flex-row')
+        ->toContain('data-shape-alert-actions');
+});
+
+it('abandons folding an alert whose actions are placed dynamically', function () {
+    // `actions-placement` branches to resolve the layout rather than to
+    // interpolate a value — a named step is a container query and `side` is a
+    // row that never asks — so there is nothing here to interpolate safely
+    // either.
+    expect(foldedComponentsWhileRendering('dynamic-alert-actions-placement', ['actionsPlacement' => 'side']))
+        ->not->toContain('shape::alert');
+});
+
 it('abandons folding an alert whose side is bound dynamically', function () {
     // `bar` branches hardest of the paint props: each side is a different
     // border utility rather than a different value of one, and Tailwind reads

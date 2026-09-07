@@ -99,7 +99,7 @@ which is blue whatever the brand becomes.
 | `popover` / `popover.trigger` | fold | `name`, `placement`, `padding` / `for` |
 | `tooltip` | fold | `name`, `text`, `placement` |
 | `overlay.trigger` / `overlay.close` / `overlay.footer` | fold | `for` |
-| `alert` | fold | `tone`, `variant` (subtle\|outline\|solid\|ghost), `toned`, `border`, `shadow`, `bar` (left\|right\|top\|bottom), `bar-square`, `heading`, `icon`, `dismissible` |
+| `alert` | fold | `tone`, `variant` (subtle\|outline\|solid\|ghost), `toned`, `border`, `shadow`, `bar` (left\|right\|top\|bottom), `bar-square`, `heading`, `icon`, `dismissible`, `actions-placement` (sm\|md\|lg\|xl\|2xl\|below\|side — Tailwind container sizes, not viewport breakpoints; default `lg`); `actions` slot |
 | `toast` | fold | `tone`, `heading`, `description`, `dismissible` |
 | `toaster` | compile | `position` — put one in the layout |
 | `confirm` | fold | `name`, `heading`, `message`, `accept`, `cancel` — put one in the layout |

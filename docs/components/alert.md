@@ -217,6 +217,124 @@ stand alone:
 
 @docs('preview', name: 'alert-heading', layout: 'stack')
 
+## Actions
+
+Some messages end in something to do about them. `actions` is a named slot for
+that row:
+
+@docs('preview', name: 'alert-actions', layout: 'stack')
+
+It is a named slot rather than something you write into the body, because the
+body is wrapped in a small muted [`<x-shape::text>`](text.md) — a button written
+there would render inside a paragraph. As a named slot it is the prose's sibling
+instead of its child, and the row is only rendered where you wrote one.
+
+Most alerts don't need it. The commonest action in a message is a single link in
+the sentence itself — "[Verify your email address](#actions)." — and that already
+works with no slot at all. Reach for `actions` when the thing to do is a button.
+
+### Where the row sits
+
+A narrow alert wants the row beneath the message. A wide one has room for a
+single call to action out on the right, level with the text. That is a question
+about how wide the alert turned out to be, not about what you meant when you
+wrote it, so `actions-placement` names a width and lets the alert's own width
+answer it. It defaults to `lg`: the row is stacked, and flips to a side-by-side
+row once the alert is about 544px across:
+
+@docs('preview', name: 'alert-actions-width', layout: 'stack')
+
+Both of those are the same markup. The second is in a `max-w-sm` wrapper, which
+is the whole difference. Nothing about the message decides it — the query
+measures the alert, so the same block with three words in it or thirty flips at
+the same width.
+
+544px is the boundary between an alert inside something and an alert across
+something. `max-w-sm` through `max-w-lg` sit below it, which is most of the
+alerts in a form or a panel; the 640-to-720px column that documentation and
+settings pages are built out of sits above it. Narrow this page's window far
+enough and the first example will stack too, which is the behaviour rather than
+a fault in the example.
+
+#### Choosing the step
+
+One width cannot be right for every alert, because what fits beside a message
+depends on the message. A three-word notice with an `Undo` shares a line
+comfortably at 416px; a heading, a paragraph and three buttons are still cramped
+at 700px. So `actions-placement` also takes the step itself:
+
+| Value | Flips at | Alert width |
+| --- | --- | --- |
+| `sm` | `@sm` — 24rem | 416px |
+| `md` | `@md` — 28rem | 480px |
+| `lg` | `@lg` — 32rem | 544px |
+| `xl` | `@xl` — 36rem | 608px |
+| `2xl` | `@2xl` — 42rem | 704px |
+
+The alert width column is the step plus the `p-4` gutters, since a size query
+measures the container's content box.
+
+Both of these are 448px wide. The first takes the default `lg`, which wants
+544px and so stacks; the second says `sm`, which is enough room for two words and
+a ghost button:
+
+@docs('preview', name: 'alert-actions-step', layout: 'stack')
+
+**These are Tailwind's container sizes, not its breakpoints.** `md:` is 768px of
+viewport; `@md:` is 28rem of the nearest query container, which here is the alert
+itself. The same alert in a sidebar and across a page reaches `@md` at two very
+different viewport widths and the same alert width, which is the only reading
+that makes sense for a component that does not know where it was put. Nothing in
+this library ships a viewport breakpoint, and this prop is not the exception.
+
+There is no `auto`, deliberately. Omitting the prop is how you ask for the
+library's step, and it is how the alerts written before this paragraph existed
+will pick up the step if it moves again. A value that meant the same thing would
+be a second spelling of leaving the prop off. Name a step when you have looked at
+an alert and found the default wrong for what is in it; leave it alone otherwise.
+
+`base` is not among them either, and the missing name is the tell. A `size` in
+this library runs `sm`, `base`, `lg`, because that is Tailwind's *type* scale and
+`text-md` does not exist. The container scale is a different one: it has an `md`
+and no `base`. Calling the default step `base` would put an invented name into a
+borrowed scale, in a slot the scale it was borrowed from has never had.
+
+It is a container query, not a breakpoint. Nothing else in this library ships a
+`sm:` or an `md:`, deliberately: a component cannot see the viewport it landed
+in, and the same alert in a sidebar and across a page is the same markup at two
+widths. Asking about its own width is the version of that rule a component can
+keep. The alert declares itself the query container only when there is a row to
+move, so an alert with no actions is an ordinary block with no `container-type`
+on it.
+
+`below` and `side` pin the row, for the two things a width cannot know. Three
+buttons should stack whatever the room; one small "Leave" should stay out on the
+right even in a narrow panel:
+
+@docs('preview', name: 'alert-actions-placement', layout: 'stack')
+
+When the row shares a line with the message, the message is the part that gives —
+it takes `min-w-0` and the actions take `shrink-0` — and the row wraps before it
+overflows, the way a [card](card.md)'s footer does.
+
+The prop is named for the slot it places, the way `bar-square` is named for
+`bar` and `icon-size` for `icon`.
+
+### Buttons on a fill
+
+Nothing is passed to the buttons you put in the row, and nothing corrects them
+either. A [button](button.md) declares a `data-shape-tone` of its own, so it
+keeps whatever tone you gave it — that is the point of the rule the
+[dismiss](#dismissing) control is scoped by, and a button you put here is not a
+control that was never given a tone.
+
+Which mostly takes care of itself. The default `outline` button paints
+`--shape-tone-surface`, which is white, so it reads as a white button on a
+`solid` alert of any tone — a shape that has been on coloured banners for as long
+as there have been coloured banners. The two to think about are `ghost` and
+`subtle` on `solid`: both paint the neutral tint, which is a grey wash on a
+saturated fill. Give those a tone matching the alert's, or reach for `outline`.
+
 ## Icons
 
 Every state colour resolves a glyph of its own, so an alert stays readable in
@@ -314,19 +432,29 @@ the fact.
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `dismissible` | `false` | adds a close button |
+| `actions-placement` | `lg` | the width the `actions` row flips beside the message at: `sm`, `md`, `lg`, `xl`, `2xl` ([container sizes](#choosing-the-step), not breakpoints); `below` and `side` pin it instead |
 
-The default slot is the body.
+The default slot is the body. `actions` is a named slot for a row of
+buttons.
 
 ## Folding
 
-Tier A — `@blaze(fold: true, safe: ['heading'])`.
+Tier A — `@blaze(fold: true, safe: ['heading', 'actions'])`.
 
 `heading` is interpolated and nothing more, so an alert whose title comes from a
-variable still folds. `tone` branches to resolve its glyph, and `variant`,
-`toned`, `border`, `shadow`, `bar` and `bar-square` branch to resolve the paint,
-so
+variable still folds. `tone` branches to resolve its glyph, `variant`, `toned`,
+`border`, `shadow`, `bar` and `bar-square` branch to resolve the paint, and
+`actions-placement` branches to resolve the layout, so
 `:tone="$tone"` drops to the compiled path — the same prop is safe on the [button](button.md),
 which only ever interpolates it. See [Folding](../folding.md).
+
+`actions` is a named slot and is declared safe anyway, which is the one entry
+worth a sentence. Blaze treats a named slot listed in `@props` as unsafe by
+default, on the reasonable assumption that a component branching on a prop is
+branching on its value — and a slot's value is whatever the call site wrote. This
+one branches on whether the slot is *there*, which is not a runtime fact: a call
+site either wrote `<x-slot:actions>` or it did not, and Blaze resolves that while
+it folds.
 
 `bar` branches hardest of the six: a side is a different border utility rather
 than a different value of one, and Tailwind reads those class names out of the

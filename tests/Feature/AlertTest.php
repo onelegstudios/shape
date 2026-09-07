@@ -527,3 +527,156 @@ it('leaves the dismiss control untoned, because the surface is what it reads', f
 
     expect($html)->toContain('data-shape-tone="neutral"');
 });
+
+it('renders an actions row only when the slot is written', function () {
+    // The row is guarded rather than rendered-and-hidden, because `actions` is
+    // declared in `@props`: the question is the compile-time one `heading`
+    // asks — whether the call site passed it — and not the runtime one about
+    // what a slot happens to hold.
+    $html = Blade::render(<<<'BLADE'
+        <x-shape::alert>Your trial ends on Friday.<x-slot:actions><x-shape::button>Upgrade</x-shape::button></x-slot:actions></x-shape::alert>
+        BLADE);
+
+    expect($html)
+        ->toContain('data-shape-alert-actions')
+        ->toContain('Upgrade');
+
+    expect(Blade::render('<x-shape::alert>Your trial ends on Friday.</x-shape::alert>'))
+        ->not->toContain('data-shape-alert-actions');
+});
+
+it('keeps the actions out of the paragraph the body is wrapped in', function () {
+    // The reason this is a named slot at all. The default slot renders inside
+    // an `<x-shape::text>`, so a button written there would be a control in a
+    // small muted paragraph; named, the row is the prose's sibling.
+    $html = Blade::render(<<<'BLADE'
+        <x-shape::alert>Your trial ends on Friday.<x-slot:actions><x-shape::button>Upgrade</x-shape::button></x-slot:actions></x-shape::alert>
+        BLADE);
+
+    preg_match('/<p[^>]*data-shape-text.*?<\/p>/s', $html, $paragraph);
+
+    expect($paragraph[0])->not->toContain('<button');
+    expect($html)->toContain('data-shape-alert-actions');
+});
+
+it('lets the alert\'s own width place the row, rather than a breakpoint', function () {
+    // Nothing else in this library ships a `sm:` or an `md:`: a component
+    // cannot see the viewport it landed in, and the same alert in a sidebar
+    // and across a page is the same markup at two widths. A container query is
+    // the version of that rule a component can keep.
+    $html = Blade::render(<<<'BLADE'
+        <x-shape::alert>Your trial ends on Friday.<x-slot:actions><x-shape::button>Upgrade</x-shape::button></x-slot:actions></x-shape::alert>
+        BLADE);
+
+    expect($html)
+        ->toContain('@container')
+        ->toContain('@lg:flex-row')
+        ->not->toContain('sm:flex-row')
+        ->not->toContain('md:flex-row');
+});
+
+it('declares no query container on an alert with no row to move', function () {
+    // `container-type: inline-size` takes an element out of intrinsic sizing
+    // and brings layout containment with it, so it is declared where it is
+    // read and nowhere else — not on every alert in an application.
+    expect(Blade::render('<x-shape::alert>Your trial ends on Friday.</x-shape::alert>'))
+        ->not->toContain('@container');
+
+    expect(Blade::render(<<<'BLADE'
+        <x-shape::alert actions-placement="below">Your trial ends on Friday.<x-slot:actions><x-shape::button>Upgrade</x-shape::button></x-slot:actions></x-shape::alert>
+        BLADE))
+        ->not->toContain('@container');
+});
+
+it('pins the row where the width is not the thing that should decide', function (string $placement, string $paint, string $absent) {
+    // Three buttons should stack whatever the room, and one small control
+    // should be able to stay out on the right in a narrow panel.
+    $html = Blade::render(<<<BLADE
+        <x-shape::alert actions-placement="{$placement}">Your trial ends on Friday.<x-slot:actions><x-shape::button>Upgrade</x-shape::button></x-slot:actions></x-shape::alert>
+        BLADE);
+
+    expect($html)
+        ->toContain($paint)
+        ->not->toContain($absent);
+})->with([
+    ['side', 'flex-row items-center justify-between', '@lg:'],
+    ['below', 'flex min-w-0 flex-1 flex-col gap-3', '@lg:'],
+]);
+
+it('takes the step the row flips at, because what fits beside a message depends on it', function (string $placement, string $step) {
+    // One threshold cannot serve a three-word notice with an `Undo` and a
+    // heading with a paragraph and three buttons. The prop takes the container
+    // size itself for the alerts where the default step is the wrong one.
+    $html = Blade::render(<<<BLADE
+        <x-shape::alert actions-placement="{$placement}">Your trial ends on Friday.<x-slot:actions><x-shape::button>Upgrade</x-shape::button></x-slot:actions></x-shape::alert>
+        BLADE);
+
+    expect($html)
+        ->toContain('@container')
+        ->toContain($step.':flex-row')
+        ->toContain($step.':items-center')
+        ->toContain($step.':justify-between');
+})->with([
+    ['sm', '@sm'],
+    ['md', '@md'],
+    ['lg', '@lg'],
+    ['xl', '@xl'],
+    ['2xl', '@2xl'],
+]);
+
+it('falls back to the default step rather than to nothing', function (mixed $value) {
+    // There is no `auto`: omitting the prop is how a call site asks for the
+    // library's own step, so a value that meant the same thing would be a
+    // second spelling of the unset state. Anything unrecognised lands there
+    // too, rather than drawing a placement nobody asked for.
+    $rendered = $value === null
+        ? '<x-shape::alert>Saved.<x-slot:actions><x-shape::button>Undo</x-shape::button></x-slot:actions></x-shape::alert>'
+        : "<x-shape::alert actions-placement=\"{$value}\">Saved.<x-slot:actions><x-shape::button>Undo</x-shape::button></x-slot:actions></x-shape::alert>";
+
+    expect(Blade::render($rendered))
+        ->toContain('@container')
+        ->toContain('@lg:flex-row');
+})->with([null, 'lg', 'base', 'auto']);
+
+it('measures the alert and never the viewport, whichever step is named', function (string $placement) {
+    // The distinction the prop rests on. `md:` is 768px of viewport; `@md:` is
+    // 28rem of the alert. A component cannot see the viewport it landed in, so
+    // only one of those is a reading it could honour.
+    expect(Blade::render(<<<BLADE
+        <x-shape::alert actions-placement="{$placement}">Your trial ends on Friday.<x-slot:actions><x-shape::button>Upgrade</x-shape::button></x-slot:actions></x-shape::alert>
+        BLADE))
+        ->not->toMatch('/(?<!@)\b(sm|md|lg|xl):(flex-row|items-center|justify-between)/');
+})->with(['sm', 'md', 'lg', 'xl', '2xl']);
+
+it('spells every step out, because Tailwind reads these names as text', function () {
+    // `'@'.$step.':flex-row'` would generate no CSS at all, which is the same
+    // reason `bar` spells out its four sides rather than composing them.
+    $component = (string) file_get_contents(__DIR__.'/../../resources/views/shape/alert/alert.blade.php');
+
+    foreach (['@sm', '@md', '@lg', '@xl', '@2xl'] as $step) {
+        expect($component)->toContain($step.':flex-row');
+    }
+});
+
+it('gives the message the squeeze and the buttons their width', function () {
+    // When the two share a line the sentence is the part that gives: `min-w-0`
+    // on the message and `shrink-0` on the row, with a wrap underneath for when
+    // even that is not enough — the card's footer wraps for the same reason.
+    $html = Blade::render(<<<'BLADE'
+        <x-shape::alert actions-placement="side">Your trial ends on Friday.<x-slot:actions><x-shape::button>Upgrade</x-shape::button></x-slot:actions></x-shape::alert>
+        BLADE);
+
+    expect($html)
+        ->toContain('<div class="flex min-w-0 flex-col gap-1">')
+        ->toContain('flex shrink-0 flex-wrap items-center gap-3');
+});
+
+it('leaves an alert with no actions the column it always had', function () {
+    // The row's gap and its container query would both be inert without a row
+    // — a gap needs two children, and a container query with no container never
+    // matches — but an alert that renders dead utilities is one that has to be
+    // explained every time someone reads its output.
+    expect(Blade::render('<x-shape::alert>Your trial ends on Friday.</x-shape::alert>'))
+        ->toContain('<div class="flex min-w-0 flex-1 flex-col">')
+        ->not->toContain('gap-3 @lg:flex-row');
+});
