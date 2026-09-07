@@ -1,6 +1,6 @@
 # Avatar
 
-A person, as a picture or as initials.
+A person, as a picture, as initials, or as a glyph standing in for both.
 
 @docs('preview', name: 'avatar')
 
@@ -29,6 +29,77 @@ pass nothing.
 
 Choosing the element rather than describing it is also the one thing about `src`
 that costs something at compile time, which [Folding](#folding) sets out.
+
+## Icons
+
+`icon` fills the circle with a glyph instead of letters, for the rows that have
+neither a face nor a name — an invitation nobody has accepted, an account that
+has been deleted, a service acting on its own:
+
+@docs('preview', name: 'avatar-icons')
+
+It takes an icon name, and there is no default: an avatar with nothing to show
+still shows nothing, as it always has. The glyph is a thing you name.
+
+`shape-user` above is the drawing this package ships so that these previews
+render for a reader who has generated nothing. It is [not a
+slot](icon.md#every-other-icon-is-yours) — nothing in Shape resolves it, and
+`shape:icon:replace` will not swap it for the set you are wearing. The person in
+your own avatars is one you generate, under the name your set gives it:
+
+```bash
+php artisan shape:icon user
+```
+
+```blade
+<x-shape::avatar icon="user" alt="Unassigned" />
+```
+
+The circle is squared as often as not here. A glyph in an avatar usually means
+the row is not a person, which is what [`square`](#squares) is for.
+
+### Which one wins
+
+Three props can fill the same circle, and they resolve in one order: `src`,
+then `icon`, then `initials`. A prop bound to null drops through to the next, so
+a call site holding all three writes the ladder out and gets whichever it has:
+
+```blade
+<x-shape::avatar :src="$user->avatar_url" :icon="$user->isBot ? 'cpu-chip' : null" :initials="$user->initials" />
+```
+
+The glyph sits above the initials rather than below them for a reason that is
+about [folding](#folding) rather than about meaning: asking whether initials are
+present would make `initials` a prop this component branches on, and it is
+`safe` today. One of the two has to take the branch, and the icon is the one a
+call site names deliberately.
+
+None of it is a runtime fallback, for the same reason [`src` is not](#pictures):
+a picture that fails to load leaves a broken image, never a glyph.
+
+### Size and style
+
+The glyph's size follows the circle's, so there is nothing to pass:
+
+| `size` | Circle | Glyph |
+| --- | --- | --- |
+| `xs` | 24px | 16px |
+| `sm` | 32px | 16px |
+| `base` | 40px | 20px |
+| `lg` | 48px | 24px |
+
+About half the circle, except at `xs` — 16px is the smallest drawing an icon set
+has, and squeezing it into 12px would throw away the work that made it a
+separate drawing. See [Size and style](icon.md#size-and-style).
+
+Every size draws the glyph `solid`, including `lg`, where an icon left to itself
+would take the stroked drawing. Four avatars in a row should wear the same
+weight, and the filled drawing is the one that matches the initials it stands in
+for. A set that draws a single style ignores the word.
+
+The glyph paints in `currentColor`, so it takes the variant's ink exactly as the
+initials do, and it is `aria-hidden` — `alt` is carried in the same
+screen-reader-only text the initials form uses.
 
 ## Tones
 
@@ -127,7 +198,8 @@ all, and will announce nothing:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `src` | — | an image URL |
-| `initials` | — | shown when there is no image |
+| `icon` | — | an icon name, shown when there is no image |
+| `initials` | — | shown when there is no image and no icon |
 | `alt` | — | the person's name |
 | `size` | `base` | `xs`, `sm`, `base`, `lg` |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
@@ -143,6 +215,7 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone'])`.
 | Call site | Fold | Memo |
 | --- | --- | --- |
 | `initials` static or bound dynamically | folds | — |
+| `icon` named statically | folds | — |
 | `src` bound per row | no | one entry per URL, no hits |
 
 `tone` is interpolated into an attribute and nothing more, the way the
@@ -152,7 +225,9 @@ be `safe` — the badge's arrangement exactly.
 
 `src` decides which element renders — an `<img>` with no source is a broken
 image request, and a `<span>` cannot show a photograph — so it branches and
-cannot be `safe`. An avatar list built from per-row URLs therefore neither folds
+cannot be `safe`. `icon` decides what goes inside that element and branches for
+the same reason, which is [why it resolves above `initials`](#which-one-wins)
+rather than below: there is no arrangement of the two that leaves both safe. An avatar list built from per-row URLs therefore neither folds
 nor usefully memoizes. That is worth knowing rather than worth avoiding: twenty
 avatars is twenty components, not two hundred cells.
 

@@ -150,8 +150,8 @@ stops folding and says nothing about it.
 
 The fourteen are not a catalogue to pick from. They are what Shape keeps level
 with your set, and nothing else in your interface should come from them. Where a
-preview on this site names one — a `shape-plus` on a button, a `shape-trash` in a
-dropdown — it is because the site has to render for a reader who has generated
+preview on this site names one — a `shape-plus` on a button, a `shape-user` on an
+avatar — it is because the site has to render for a reader who has generated
 nothing, not because that is what a call site of yours would say.
 
 Icons of your own are generated the same way, from a set Shape fetches for you or

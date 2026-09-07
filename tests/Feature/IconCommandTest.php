@@ -96,18 +96,33 @@ function written(): array
     return $names;
 }
 
-it('reproduces a shipped icon from the SVGs it was drawn from', function () {
+it('reproduces a shipped icon from the SVGs it was drawn from', function (string $drawn, string $shipped) {
     // The header on every icon says "Regenerate; don't hand-edit". This is the
     // assertion that makes that sentence true rather than aspirational: the
-    // fixture holds Heroicons' four source files for `check`, which is what
-    // fills `shape-checked`, and what comes out has to be the file this package
-    // ships, byte for byte. Only the filename moved in the rename to slots; the
-    // drawing behind it did not.
-    $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $this->heroicons])->assertSuccessful();
+    // fixture holds Heroicons' four source files for `check` and for `user`, and
+    // what comes out has to be the file this package ships, byte for byte. Only
+    // the filename moved — in the rename to slots, and in the prefix the four
+    // examples carry — and the drawing behind it did not.
+    //
+    // Which is why the two are named separately here. `check` fills a slot, so
+    // `shape:icon shape-checked` finds it through the set's map; `user` fills
+    // none, so nothing maps `shape-user` to it and the drawing is asked for by
+    // the name Heroicons gives it. That the contents match either way is the
+    // point: a prefixed example is the same generated file under another name.
+    //
+    // `user` is here for a second reason. A run that fetches its set records the
+    // version it resolved in the header, and a run given `--from` has none to
+    // record — so an icon generated the first way and shipped beside seventeen
+    // generated the second way carries a line none of its siblings do. This is
+    // what keeps the directory of one mind about that.
+    $this->artisan('shape:icon', ['icons' => [$drawn], '--from' => $this->heroicons])->assertSuccessful();
 
-    expect(file_get_contents($this->destination.'/icon/shape-checked.blade.php'))
-        ->toBe(file_get_contents(__DIR__.'/../../resources/views/shape/icon/shape-checked.blade.php'));
-});
+    expect(file_get_contents($this->destination.'/icon/'.$drawn.'.blade.php'))
+        ->toBe(file_get_contents(__DIR__.'/../../resources/views/shape/icon/'.$shipped.'.blade.php'));
+})->with([
+    ['check', 'shape-checked'],
+    ['user', 'shape-user'],
+]);
 
 it('generates an icon that renders across the whole matrix', function () {
     $this->artisan('shape:icon', ['icons' => ['shape-checked'], '--from' => $this->heroicons])->assertSuccessful();
@@ -1014,15 +1029,16 @@ describe('shape:icon:replace', function () {
         expect(written())->toBe($slots)->toHaveCount(14);
     });
 
-    it('leaves the three examples alone, because they are not the library\'s', function () {
-        // `shape-arrow-right`, `shape-plus` and `shape-trash` ship so the README and
-        // the previews render. Nothing resolves them and the documentation does not
-        // offer them as a catalogue, so `shape:icon:replace` skipping them is the
-        // design: an application that wants a trash can generates its own.
+    it('leaves the four examples alone, because they are not the library\'s', function () {
+        // `shape-arrow-right`, `shape-plus`, `shape-trash` and `shape-user` ship so
+        // the README and the previews render. Nothing resolves them and the
+        // documentation does not offer them as a catalogue, so `shape:icon:replace`
+        // skipping them is the design: an application that wants a trash can, or a
+        // person in an avatar, generates its own.
         $this->artisan('shape:icon:replace', ['--set' => 'lucide', '--from' => $this->lucide])
             ->assertSuccessful();
 
-        foreach (['shape-arrow-right', 'shape-plus', 'shape-trash'] as $example) {
+        foreach (['shape-arrow-right', 'shape-plus', 'shape-trash', 'shape-user'] as $example) {
             expect($this->destination.'/icon/'.$example.'.blade.php')->not->toBeFile();
         }
     });

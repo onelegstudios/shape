@@ -71,15 +71,15 @@ return [
     | to it — which for a packaged slot is the designed outcome rather than a
     | hole.
     |
-    | Not everything this package ships under `icon/` is here. Three drawings —
-    | `shape-arrow-right`, `shape-plus` and `shape-trash` — exist so that the
-    | README and the previews render for somebody who has configured nothing.
-    | They are not part of the library's vocabulary: nothing resolves them, they
-    | are not documented as a catalogue to pick from, and `shape:icon:replace`
-    | leaves them alone. They carry the prefix anyway, so that `trash` and `plus`
-    | stay free for the icons you generate yourself — reaching for a bare `trash`
-    | you never generated is a "component not found" rather than a Heroicon
-    | nobody chose.
+    | Not everything this package ships under `icon/` is here. Four drawings —
+    | `shape-arrow-right`, `shape-plus`, `shape-trash` and `shape-user` — exist
+    | so that the README and the previews render for somebody who has configured
+    | nothing. They are not part of the library's vocabulary: nothing resolves
+    | them, they are not documented as a catalogue to pick from, and
+    | `shape:icon:replace` leaves them alone. They carry the prefix anyway, so
+    | that `trash` and `plus` stay free for the icons you generate yourself —
+    | reaching for a bare `trash` you never generated is a "component not found"
+    | rather than a Heroicon nobody chose.
     |
     */
 

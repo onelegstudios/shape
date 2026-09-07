@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Blade;
+use Onelegstudios\Shape\IconSlots;
 
 it('renders a picture when it has one and initials when it does not', function () {
     expect(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" />'))
@@ -134,6 +135,106 @@ it('squares a picture as well as initials', function () {
         ->toContain('<img')
         ->toContain('[:where(&amp;)]:rounded-shape')
         ->toContain('[:where(&amp;)]:object-cover')
+        ->not->toContain('rounded-full');
+});
+
+it('holds a glyph where a call site has neither a face nor a name', function () {
+    $html = Blade::render('<x-shape::avatar icon="shape-user" alt="Unassigned" />');
+
+    expect($html)
+        ->toContain('data-shape-avatar')
+        ->toContain('data-shape-icon')
+        ->not->toContain('<img');
+});
+
+it('has a person to wear that is an example rather than vocabulary', function () {
+    // `shape-user` ships so the previews on this component's page render for a
+    // reader who has generated nothing. It is deliberately not a slot: nothing
+    // resolves it, so there is nothing for a set to be kept level with, and
+    // declaring it would report a coverage gap to every application that has
+    // already replaced its icons. The person in real avatars is generated.
+    expect(IconSlots::fromConfig()->has('shape-user'))->toBeFalse()
+        ->and(Blade::render('<x-shape::avatar icon="shape-user" />'))->toContain('data-shape-icon');
+});
+
+it('still shows nothing when it has nothing to show', function () {
+    // `shape-user` ships and this component does not default to it. A default
+    // would have had to ask whether the initials were there to be preferred,
+    // which is the branch `initials` stays safe by never having.
+    expect(Blade::render('<x-shape::avatar />'))
+        ->toContain('data-shape-avatar')
+        ->not->toContain('data-shape-icon');
+});
+
+it('fills the circle with the first of src, icon and initials it was given', function () {
+    // One order, and a prop bound to null drops through to the next. This is
+    // not a runtime fallback: a picture that fails to load leaves a broken
+    // image rather than a glyph, exactly as it does over initials.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" icon="shape-user" initials="AL" />'))
+        ->toContain('<img src="/ada.jpg"')
+        ->not->toContain('data-shape-icon')
+        ->and(Blade::render('<x-shape::avatar icon="shape-user" initials="AL" />'))
+        ->toContain('data-shape-icon')
+        ->not->toContain('>AL<')
+        ->and(Blade::render('<x-shape::avatar initials="AL" />'))
+        ->toContain('>AL<')
+        ->not->toContain('data-shape-icon');
+});
+
+it('leaves the initials safe to fold by branching on the icon instead', function () {
+    // The order above is settled by this: asking whether initials are present
+    // would make `initials` a prop this component branches on, and it is
+    // declared safe. Only one of the two can take the branch.
+    $source = (string) file_get_contents(__DIR__.'/../../resources/views/shape/avatar/avatar.blade.php');
+
+    expect($source)
+        ->toContain("safe: ['initials', 'alt', 'tone']")
+        ->toContain('@if ($icon)')
+        ->not->toContain('($initials)');
+});
+
+it('sizes the glyph from the circle rather than from a prop of its own', function (string $size, string $class) {
+    // About half the circle, and no `icon-size` to restate what `size` said.
+    // `xs` is the one that misses: 16px is the smallest drawing a set has.
+    expect(Blade::render("<x-shape::avatar icon=\"shape-user\" size=\"{$size}\" />"))
+        ->toContain($class);
+})->with([
+    ['xs', '[:where(&amp;)]:size-4'],
+    ['sm', '[:where(&amp;)]:size-4'],
+    ['base', '[:where(&amp;)]:size-5'],
+    ['lg', '[:where(&amp;)]:size-6'],
+]);
+
+it('draws the glyph solid at every size', function (string $size) {
+    // An icon left to itself takes the stroked drawing at `base`, which is the
+    // size an `lg` avatar asks for. Four avatars in a row wear one weight.
+    expect(Blade::render("<x-shape::avatar icon=\"shape-user\" size=\"{$size}\" />"))
+        ->toContain('fill="currentColor"')
+        ->not->toContain('stroke-width');
+})->with(['xs', 'sm', 'base', 'lg']);
+
+it('keeps the name in text beside the glyph rather than on it', function () {
+    // The glyph is a picture of a name the same way the initials are, so it
+    // arrives `aria-hidden` from the icon component and `alt` is carried in the
+    // same screen-reader-only span.
+    $html = Blade::render('<x-shape::avatar icon="shape-user" alt="Unassigned" />');
+
+    expect($html)
+        ->toContain('aria-hidden="true"')
+        ->toContain('<span class="sr-only">Unassigned</span>');
+});
+
+it('paints the glyph with the variant, which it inherits rather than is given', function () {
+    // `currentColor`, so the ink the circle resolved is the ink the glyph takes.
+    expect(Blade::render('<x-shape::avatar icon="shape-user" tone="brand" variant="solid" />'))
+        ->toContain('text-[var(--shape-tone-fg)]')
+        ->toContain('data-shape-icon');
+});
+
+it('squares a glyph as well as initials and pictures', function () {
+    expect(Blade::render('<x-shape::avatar icon="shape-user" alt="Unassigned" square />'))
+        ->toContain('[:where(&amp;)]:rounded-shape')
+        ->toContain('data-shape-icon')
         ->not->toContain('rounded-full');
 });
 

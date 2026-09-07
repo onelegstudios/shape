@@ -108,7 +108,7 @@ which is blue whatever the brand becomes.
 | `list` / `list.item` | fold | `as`, `empty*` |
 | `pagination` | compile | `paginator`, `simple` |
 | `stat` | fold + memo | `value`, `label`, `description`, `delta`, `trend` |
-| `avatar` / `avatar.group` | fold + memo | `src`, `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `square` |
+| `avatar` / `avatar.group` | fold + memo | `src`, `icon`, `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `square` |
 | `tabs` / `tabs.tab` / `tabs.panel` | fold | `as`, `orientation` / `for`, `selected`, `icon` / `name` |
 
 ### 4. Keep the call site foldable
@@ -417,7 +417,8 @@ Read before executing:
   `<x-shape::icon.bell />` form is the one that folds and memoizes
 - do not put a `shape-*` name in an application's own markup; those fourteen are
   Shape's slots, and an icon of your own is one you generated
-  (`php artisan shape:icon bell`), under the name its set uses
+  (`php artisan shape:icon bell`), under the name its set uses — `shape-user` on
+  an avatar is a documentation example, not an exception to this
 - name a `size` on an icon and leave `variant` alone unless the style is the
   point; the small sizes are drawn solid because a stroke does not read at 16px,
   and a call site that names only a size works with any icon set

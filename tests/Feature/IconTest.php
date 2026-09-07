@@ -95,12 +95,14 @@ it('renders every slot it declares', function () {
     }
 });
 
-it('ships the three its own examples use', function (string $icon) {
+it('ships the four its own examples use', function (string $icon) {
     // Resolved by no component: the README and the previews render these, which
     // is the only reason they are files. Not slots — `shape:icon:replace` leaves
-    // them alone — and not offered as a catalogue either.
+    // them alone — and not offered as a catalogue either. `shape-user` is the
+    // one of them a reader is most likely to take for a slot, because the
+    // avatar's `icon` prop is documented with it; nothing resolves it either.
     expect(Blade::render("<x-shape::icon.{$icon} />"))->toContain('<svg');
-})->with(['shape-arrow-right', 'shape-plus', 'shape-trash']);
+})->with(['shape-arrow-right', 'shape-plus', 'shape-trash', 'shape-user']);
 
 it('ships a distinct glyph for every badge state', function (string $icon) {
     expect(Blade::render("<x-shape::icon.{$icon} />"))->toContain('<svg');

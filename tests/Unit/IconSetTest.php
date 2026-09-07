@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Onelegstudios\Shape\IconSet;
+use Onelegstudios\Shape\IconSlots;
 
 /**
  * The library's scale, which is the same one for every set below — that being
@@ -504,6 +505,28 @@ it('reads the subdirectory a set is written into', function () {
     ], scale());
 
     expect($set->namespace)->toBe('lucide');
+});
+
+it('asks every shipped set every slot the library declares', function () {
+    // The invariant the slot list exists for, and the one nothing else checks:
+    // a slot added to `icon_slots` and not to the seven maps beside it leaves
+    // whichever set an application is wearing with a hole, and only
+    // `shape:doctor` would ever say so — after the icons had been generated.
+    //
+    // `null` is an answer and passes here. A set that has nothing for a slot
+    // says so out loud; a set that has never been asked is the failure.
+    $slots = IconSlots::fromConfig()->names();
+    $sets = (array) config('shape.icon_sets');
+
+    expect($sets)->not->toBeEmpty();
+
+    foreach (array_keys($sets) as $name) {
+        $set = IconSet::fromArray((string) $name, $sets[$name], config('shape.icon_sizes'));
+
+        foreach ($slots as $slot) {
+            expect($set->declares($slot))->toBeTrue("[{$name}] has no answer for [{$slot}].");
+        }
+    }
 });
 
 it('ships both sets flat, so a call site has one spelling for an icon', function () {
