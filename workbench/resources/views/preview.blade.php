@@ -1126,10 +1126,14 @@
                         <x-shape::avatar initials="AL" alt="Alex Lindqvist" />
                         <x-shape::avatar initials="AL" alt="Alex Lindqvist" size="lg" />
 
+                        <x-shape::avatar initials="AL" alt="Alex Lindqvist, online" badge badge-tone="success" />
+                        <x-shape::avatar initials="GH" alt="Gabriel Haas, 3 unread" badge="3" badge-tone="danger" badge-position="top-right" />
+                        <x-shape::avatar icon="shape-user" alt="Acme Corp, 12 open issues" badge="12" badge-tone="brand" badge-position="top-right" square />
+
                         <x-shape::avatar.group>
                             <x-shape::avatar initials="AL" size="sm" />
                             <x-shape::avatar initials="GH" size="sm" />
-                            <x-shape::avatar initials="KJ" size="sm" />
+                            <x-shape::avatar initials="KJ" size="sm" badge badge-tone="success" />
                         </x-shape::avatar.group>
                     </div>
                 </article>

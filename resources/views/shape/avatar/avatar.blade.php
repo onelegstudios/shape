@@ -1,4 +1,4 @@
-@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone'])
+@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'badgeTone'])
 
 {{--
     A person, at one of four sizes, as a picture, as their initials, or as a
@@ -104,6 +104,105 @@
     here with no way round it. Named for the thing it modifies, the way the alert
     names its own, because `variant` already means the circle's.
 
+    `badge` is the mark on the corner: a presence dot, a count of things waiting,
+    a check standing for verified. Written bare it is a dot, and given anything
+    else that thing is the mark's text.
+
+    One prop for both, because they are one drawing at two widths — a dot is a
+    badge with nothing in it. Splitting them into `badge` and `badge-count` would
+    ask a call site to name the shape it wanted when the only thing it knows is
+    the fact it is reporting.
+
+    A count of zero paints nothing, which falls out of the prop being read for
+    truth rather than for presence. `:badge="$person->unread"` is the whole of
+    the call site, and the badge that would have said `0` is one that should not
+    have been there.
+
+    The mark is solid at every one of the circle's variants. `subtle` is a tint,
+    a tint on a photograph is a pale smudge on a face, and being seen against
+    whatever it landed on is the entire job. There is no `badge-variant` for the
+    reason there is no `ghost` avatar: the quiet arm of a mark this small is the
+    mark not being there.
+
+    `badge-tone` is its own colour rather than the avatar's, because the common
+    call site is a `brand` avatar wearing a green dot. Inheriting would have made
+    that the one arrangement the component could not draw, and a status that
+    agreed with the person's initials would be reporting nothing.
+
+    It carries the tone on itself, so the badge resolves `--shape-tone` from its
+    own element and the avatar beside it goes on resolving its own. Two tones in
+    one component and no third set of variables to invent.
+
+    What holds the two apart is a ring in the page's colours — the same pair the
+    group rings its children with, for the same reason. Without it a green dot on
+    a green-shirted photograph has no edge of its own; with it there are two
+    pixels of page between the mark and everything under it, in both modes.
+
+    The mark is absolute and its ring is a shadow, so neither takes any room: an
+    avatar with a badge lays out exactly as one without. A group still overlaps
+    by the same eight pixels, and a row of faces does not shift when one of them
+    comes online. It does draw outside the box, which is the trade — a mark
+    centred on an edge is half over that edge by definition.
+
+    Centred on the edge and not inscribed in the corner, which is the difference
+    between a mark sitting on the circle and a mark eating it. The corner of the
+    box is not the corner of the shape: the arc crosses the diagonal `1 - 1/√2`
+    of the corner radius inside the box on both axes — 14.6% of the width for a
+    circle, whose radius is half of it, and `--radius-shape` for a squared
+    avatar, which is a length rather than a fraction and so the same two pixels
+    at all four sizes. Half the mark is then pulled back over that point.
+
+    A count grows both ways from there rather than only inwards, which is the
+    whole reason the anchor is the mark's centre and not its corner. Inscribed
+    instead, a pill wide enough for three digits would walk across the face while
+    the dot beside it sat on the edge, and the two would stop reading as the same
+    component.
+
+    It takes the corner the avatar took as well. On a dot that is the same circle
+    either way — `--radius-shape` is 8px and a dot is 6 to 12 — so what it
+    changes is the counts, the only marks wide enough to have ends. A squared
+    avatar is not a person, and a company's unread count should not be the one
+    round thing on it.
+
+    Its size is the circle's, resolved here the way the glyph's is. The dot is
+    6px, 8px, 10px and 12px, about a quarter of the circle at every size, and the
+    pill is that dot with room for a number in it — eight pixels more, each time.
+    Padding is half a step at the two small circles and grows with them, because
+    what makes a count unreadable on a 24px avatar is the box around the digits
+    rather than the digits.
+
+    `badge-position` moves it, named for the corners the way the toaster names
+    its own. `bottom-right` is the default because presence is what a dot on a
+    person means nearly every time it is not a count, and presence has been drawn
+    there for as long as anyone has drawn it.
+
+    In a group it wants to be on the last avatar, or at `bottom-left`. Later
+    siblings paint over earlier ones and this library has no z-index — the group
+    says why — so a mark on the right-hand corner of an overlapped face is under
+    the next one.
+
+    It is `aria-hidden`, exactly as the initials are. A dot is a colour with no
+    words in it and a count is a number with no noun attached; both mean
+    something only in a sentence, and the sentence is `alt`. "Ada Lovelace,
+    online" is the avatar announcing itself once, in the order a person reads.
+
+    It branches twice — whether there is a wrapper at all, then whether the mark
+    has text in it — so it is not safe, and `badge-position` resolves insets so
+    it is not either. `badge-tone` joins `tone` in the safe list, because it is
+    interpolated into an attribute and nothing more: a presence colour bound per
+    person still folds, which is the arrangement worth writing at a call site —
+    `badge` bare and its tone from the row.
+
+    The wrapper is scaffolding rather than a box. It exists to be the thing the
+    mark is positioned against, it renders only when there is a mark to position,
+    and it carries no attribute of its own: naming it would promise a box that
+    is not there on the avatars that have no badge.
+
+    The attributes stay on the avatar, which is the answer that keeps
+    `class="object-contain"` landing on the picture it was written for. A wrapper
+    that took the bag would move every class a call site has ever passed onto an
+    element that is not the circle.
+
     Initials are stated, never derived. Deriving them from a name inside a folded
     component would run the derivation once, at compile time, and bake one
     person's initials into every avatar the template renders — the same failure
@@ -152,6 +251,9 @@
     'tone' => null,
     'variant' => 'subtle',
     'square' => false,
+    'badge' => false,
+    'badgeTone' => null,
+    'badgePosition' => 'bottom-right',
 ])
 
 @php
@@ -180,10 +282,78 @@ $classes = Shape::classes()
         'outline' => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border-strong)] [:where(&)]:text-[var(--shape-tone-ink)]',
         default => '[:where(&)]:bg-[var(--shape-tone-tint)] [:where(&)]:text-[var(--shape-tone-ink)]',
     });
+
+// The badge's classes are not merged with anything, because the attribute bag
+// stays on the avatar, so they are written flat rather than through `:where()`.
+// Nothing here is a default a call site could beat with a class of its own.
+$badgeClasses = Shape::classes()
+    ->add('pointer-events-none absolute inline-flex items-center justify-center')
+    ->add('bg-[var(--shape-tone)] text-[var(--shape-tone-fg)]')
+
+    // The mark takes the corner the avatar took, which on a dot is the same
+    // circle either way — `--radius-shape` is 8px and a dot is 6 to 12 — and
+    // shows up on the counts, which are the marks wide enough to have ends.
+    ->add($square ? 'rounded-shape' : 'rounded-full')
+
+    // Two pixels of page between the mark and whatever it landed on, in the same
+    // colours the group rings its children with.
+    ->add('ring-2 ring-white dark:ring-shape-900')
+
+    // Half the mark, on each axis, pulled back over the corner it is anchored
+    // to. Which is what puts its centre on the edge rather than its corner in
+    // the box, and what makes a count grow both ways instead of only inwards.
+    ->add(match ($badgePosition) {
+        'top-left' => '-translate-x-1/2 -translate-y-1/2',
+        'top-right' => 'translate-x-1/2 -translate-y-1/2',
+        'bottom-left' => '-translate-x-1/2 translate-y-1/2',
+        default => 'translate-x-1/2 translate-y-1/2',
+    })
+
+    // And the corner is the point where the shape's own arc crosses the
+    // diagonal, which sits `1 - 1/√2` of the corner radius inside the box on
+    // both axes. A circle's radius is half its width, so that is 14.6% of it; a
+    // squared avatar's is `--radius-shape`, which is a length rather than a
+    // fraction and stays where it is at all four sizes.
+    ->add($square
+        ? match ($badgePosition) {
+            'top-left' => 'top-[calc(var(--radius-shape)*0.293)] left-[calc(var(--radius-shape)*0.293)]',
+            'top-right' => 'top-[calc(var(--radius-shape)*0.293)] right-[calc(var(--radius-shape)*0.293)]',
+            'bottom-left' => 'bottom-[calc(var(--radius-shape)*0.293)] left-[calc(var(--radius-shape)*0.293)]',
+            default => 'bottom-[calc(var(--radius-shape)*0.293)] right-[calc(var(--radius-shape)*0.293)]',
+        }
+        : match ($badgePosition) {
+            'top-left' => 'top-[14.6%] left-[14.6%]',
+            'top-right' => 'top-[14.6%] right-[14.6%]',
+            'bottom-left' => 'bottom-[14.6%] left-[14.6%]',
+            default => 'bottom-[14.6%] right-[14.6%]',
+        })
+
+    // A dot is a fixed circle; anything with text in it is that dot with room
+    // for a number in it, which is eight pixels more at every size. It never
+    // goes narrower than it is tall, and `tabular-nums` keeps a count from
+    // changing width as it counts.
+    ->add($badge === true
+        ? match ($size) {
+            'xs' => 'size-1.5',
+            'sm' => 'size-2',
+            'lg' => 'size-3',
+            default => 'size-2.5',
+        }
+        : match ($size) {
+            'xs' => 'h-3.5 min-w-3.5 px-0.5 text-2xs font-medium tabular-nums',
+            'sm' => 'h-4 min-w-4 px-0.5 text-2xs font-medium tabular-nums',
+            'lg' => 'h-5 min-w-5 px-1.5 text-xs font-medium tabular-nums',
+            default => 'h-4.5 min-w-4.5 px-1 text-2xs font-medium tabular-nums',
+        });
 @endphp
 
+{{-- The wrapper is opened and closed around the avatar rather than repeated
+     inside both arms of the branch below, so there stays one `<img>` and one
+     `<span>` in this file to keep in step with each other. --}}
+@if ($badge)<span class="relative inline-flex shrink-0">@endif
 @if ($src)
     <img src="{{ $src }}" alt="{{ $alt }}" {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">
 @else
     <span {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">@if ($icon)<x-shape::icon :name="$icon" :variant="$iconVariant" :size="$iconSize" />@else<span aria-hidden="true">{{ $initials }}</span>@endif<span class="sr-only">{{ $alt }}</span></span>
 @endif
+@if ($badge)<span class="{{ $badgeClasses }}" aria-hidden="true" data-shape-avatar-badge data-shape-position="{{ $badgePosition }}" data-shape-tone="{{ $badgeTone ?? 'neutral' }}">@if ($badge !== true){{ $badge }}@endif</span></span>@endif

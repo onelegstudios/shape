@@ -170,6 +170,122 @@ per-size radius would undo.
 Nothing else moves. The picture is still cropped, because the box is still
 fixed, and a squared avatar in a group is ringed and overlapped like any other.
 
+## Badges
+
+`badge` marks the corner of the circle. Written bare it is a dot; given anything
+else, that thing is the mark's text:
+
+@docs('preview', name: 'avatar-badges')
+
+One prop for both, because a dot is a badge with nothing in it. A `badge` and a
+`badge-count` would ask the call site to name the shape it wanted, when the only
+thing it holds is the fact it is reporting.
+
+A count of zero paints nothing — the prop is read for truth, not for presence —
+so a badge bound straight to a number is the whole of the call site:
+
+```blade
+<x-shape::avatar :initials="$person->initials" :badge="$person->unread" badge-tone="danger" />
+```
+
+The mark takes no room — it is absolutely positioned and its ring is a shadow —
+so an avatar with a badge lays out exactly as one without, and a row of faces
+does not shift when one of them comes online. It does draw outside the avatar's
+box, which is what being centred on an edge means.
+
+| `size` | Circle | Dot | Count |
+| --- | --- | --- | --- |
+| `xs` | 24px | 6px | 14px |
+| `sm` | 32px | 8px | 16px |
+| `base` | 40px | 10px | 18px |
+| `lg` | 48px | 12px | 20px |
+
+The dot is about a quarter of the circle, and a count is that dot with room for
+a number in it: eight pixels more at every size, never narrower than it is tall,
+and growing with the digits. Padding is half a step at the two small circles,
+because what makes a count unreadable on a 24px avatar is the box around the
+digits rather than the digits.
+
+### Tone
+
+`badge-tone` is the mark's own colour, not the avatar's. A `brand` avatar with a
+green dot on it is the ordinary case, and a status that agreed with the person's
+initials would be reporting nothing:
+
+```blade
+<x-shape::avatar initials="AL" tone="brand" badge badge-tone="success" alt="Alex Lindqvist, online" />
+```
+
+It is always solid, whatever the avatar's `variant`, and there is no
+`badge-variant`. `subtle` is a tint, and a tint on a photograph is a pale smudge
+on a face — being seen against whatever it landed on is the whole of the job.
+
+A ring in the page's colours holds the two apart, the same pair the
+[group](#groups) rings its children with. Without it a green dot on a
+green-shirted photograph has no edge of its own.
+
+### Position
+
+`badge-position` moves the mark to any of the four corners, named the way the
+[toaster](../feedback.md) names its own:
+
+@docs('preview', name: 'avatar-badge-positions')
+
+`bottom-right` is the default, because presence is what a dot on a person means
+nearly every time it is not a count, and presence has been drawn there for as
+long as anyone has drawn it. Counts are the reason `top-right` is here.
+
+The mark is centred on the edge rather than inscribed in the corner of the box,
+which is the difference between a mark sitting on the circle and a mark eating
+it. The corner of the box is not the corner of the shape: the arc crosses the
+diagonal `1 - 1/√2` of the corner radius inside the box on both axes — 14.6% of
+the width on a circle, whose radius is half of it, and `--radius-shape` on a
+[squared](#squares) avatar, which is a length and so the same two pixels at all
+four sizes.
+
+That is also why a count grows both ways from the corner instead of only
+inwards. Anchored by its own corner, a pill wide enough for three digits would
+walk across the face while the dot beside it sat on the edge.
+
+### Shape
+
+The mark takes the corner the avatar took. A squared avatar squares its badge to
+the same `--radius-shape`:
+
+@docs('preview', name: 'avatar-badge-squares')
+
+On a dot that is the same circle either way — `--radius-shape` is 8px and a dot
+is 6 to 12 — so what it changes is the counts, the only marks wide enough to
+have ends. A squared avatar is not a person, and a company's unread count should
+not be the one round thing on it.
+
+### Badges in a group
+
+Put the mark on the last avatar, or at `bottom-left`:
+
+@docs('preview', name: 'avatar-badge-group')
+
+Later siblings paint over earlier ones and this library has no z-index, so a
+badge on the right-hand corner of an overlapped face sits under the next one.
+
+The group finds the avatar rather than its own child when it rings them. A
+badged avatar arrives wrapped in the shell its mark is positioned against, and
+ringing that shell would draw a square ring around a circle.
+
+### The badge is not the accessible name either
+
+It is `aria-hidden`, exactly as [the initials are](#the-initials-are-not-the-accessible-name).
+A dot is a colour with no words in it and a count is a number with no noun
+attached; both mean something only in a sentence, and the sentence is `alt`:
+
+```blade
+<x-shape::avatar :initials="$person->initials" :alt="$person->name.', online'" badge badge-tone="success" />
+```
+
+Where the avatar sits beside a name already on the page, the status has to go
+somewhere a reader can reach it — a `<x-shape::badge>` in the row, or text of its
+own. An avatar that announces nothing announces nothing about its badge either.
+
 ## Groups
 
 `avatar.group` overlaps its children in DOM order, and rings each one so the
@@ -222,23 +338,34 @@ all, and will announce nothing:
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `square` | `false` | squares the circle to `--radius-shape` |
+| `badge` | `false` | `true` for a dot, or the mark's text |
+| `badge-tone` | `neutral` | the same tones as `tone` |
+| `badge-position` | `bottom-right` | `bottom-right`, `bottom-left`, `top-right`, `top-left` |
 
 `avatar.group` takes no props.
 
 ## Folding
 
-Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone'])`.
+Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'badgeTone'])`.
 
 | Call site | Fold | Memo |
 | --- | --- | --- |
 | `initials` static or bound dynamically | folds | — |
 | `icon` named statically | folds | — |
+| `badge` static, `badge-tone` bound per person | folds | — |
+| `badge` bound per row | no | one entry per value |
 | `src` bound per row | no | one entry per URL, no hits |
 
 `tone` is interpolated into an attribute and nothing more, the way the
-[button](button.md) carries it, so a per-person tone still folds. `variant`
-branches to resolve the paint and `square` to resolve the radius, so neither can
-be `safe` — the badge's arrangement exactly.
+[button](button.md) carries it, so a per-person tone still folds, and
+`badge-tone` rides with it for the same reason. `variant` branches to resolve
+the paint and `square` to resolve the radius, so neither can be `safe` — the
+badge's arrangement exactly.
+
+`badge` branches twice, once for the wrapper and once for whether the mark has
+text in it, and `badge-position` resolves two insets, so both are static props
+if the call site is to fold. A presence dot whose colour changes per person is
+the arrangement that keeps folding: write `badge` bare and bind `badge-tone`.
 
 `src` decides which element renders — an `<img>` with no source is a broken
 image request, and a `<span>` cannot show a photograph — so it branches and

@@ -188,7 +188,7 @@ it('leaves the initials safe to fold by branching on the icon instead', function
     $source = (string) file_get_contents(__DIR__.'/../../resources/views/shape/avatar/avatar.blade.php');
 
     expect($source)
-        ->toContain("safe: ['initials', 'alt', 'tone']")
+        ->toContain("safe: ['initials', 'alt', 'tone', 'badgeTone']")
         ->toContain('@if ($icon)')
         ->not->toContain('($initials)');
 });
@@ -261,7 +261,7 @@ it('overlaps a group with two utilities and no stylesheet rule', function () {
     expect($html)
         ->toContain('data-shape-avatar-group')
         ->toContain('[:where(&amp;)]:-space-x-2')
-        ->toContain('[&amp;&gt;*]:ring-2')
+        ->toContain('[&amp;_[data-shape-avatar]]:ring-2')
         ->not->toContain('z-');
 });
 
@@ -275,4 +275,190 @@ it('passes attributes straight through', function () {
     expect(Blade::render('<x-shape::avatar initials="AL" wire:key="ada" title="Ada" />'))
         ->toContain('wire:key="ada"')
         ->toContain('title="Ada"');
+});
+
+it('marks the corner with a dot when it is asked bare', function () {
+    $html = Blade::render('<x-shape::avatar initials="AL" badge badge-tone="success" />');
+
+    expect($html)
+        ->toContain('data-shape-avatar-badge')
+        ->toContain('data-shape-tone="success"')
+        ->toContain('size-2.5')
+        ->toContain('bg-[var(--shape-tone)]');
+});
+
+it('puts anything else it is given inside the mark as text', function () {
+    // One prop for both, because a dot is a badge with nothing in it. A `badge`
+    // and a `badge-count` would ask the call site to name the shape it wanted.
+    expect(Blade::render('<x-shape::avatar initials="AL" badge="3" />'))
+        ->toContain('data-shape-avatar-badge')
+        ->toContain('>3</span>')
+        ->toContain('min-w-4.5')
+        ->not->toContain('size-2.5');
+});
+
+it('makes a count the dot with room for a number in it', function (string $size, string $dot, string $count) {
+    // Eight pixels more than the dot at every size, never narrower than it is
+    // tall, and padding at half a step on the two small circles — what makes a
+    // count unreadable on a 24px avatar is the box around the digits.
+    expect(Blade::render("<x-shape::avatar initials=\"AL\" size=\"{$size}\" badge />"))
+        ->toContain($dot)
+        ->and(Blade::render("<x-shape::avatar initials=\"AL\" size=\"{$size}\" badge=\"12\" />"))
+        ->toContain($count);
+})->with([
+    ['xs', 'size-1.5', 'h-3.5 min-w-3.5 px-0.5'],
+    ['sm', 'size-2"', 'h-4 min-w-4 px-0.5'],
+    ['base', 'size-2.5', 'h-4.5 min-w-4.5 px-1 '],
+    ['lg', 'size-3"', 'h-5 min-w-5 px-1.5'],
+]);
+
+it('paints nothing at all when there is no badge to paint', function () {
+    // Including the wrapper. An avatar without a mark is the element it has
+    // always been, with nothing around it.
+    expect(Blade::render('<x-shape::avatar initials="AL" />'))
+        ->not->toContain('data-shape-avatar-badge')
+        ->not->toContain('relative inline-flex shrink-0');
+});
+
+it('paints no badge for a count of zero', function () {
+    // The prop is read for truth rather than for presence, so `:badge="$unread"`
+    // is the whole of the call site and the badge that would have said `0` is
+    // one that should not have been there.
+    expect(Blade::render('<x-shape::avatar initials="AL" :badge="0" />'))
+        ->not->toContain('data-shape-avatar-badge')
+        ->and(Blade::render('<x-shape::avatar initials="AL" :badge="null" />'))
+        ->not->toContain('data-shape-avatar-badge');
+});
+
+it('gives the mark a tone of its own rather than the circle it sits on', function () {
+    // A `brand` avatar wearing a green dot is the ordinary case. Inheriting
+    // would have made it the one arrangement this component could not draw.
+    $html = Blade::render('<x-shape::avatar initials="AL" tone="brand" badge badge-tone="success" />');
+
+    expect($html)
+        ->toContain('data-shape-tone="brand"')
+        ->toContain('data-shape-tone="success"');
+});
+
+it('leaves the mark neutral when it is given no tone', function () {
+    expect(Blade::render('<x-shape::avatar initials="AL" badge />'))
+        ->toContain('data-shape-avatar-badge data-shape-position="bottom-right" data-shape-tone="neutral"');
+});
+
+it('paints the mark solid whatever the circle is painted', function () {
+    // `subtle` is a tint, and a tint on a photograph is a pale smudge on a face.
+    // Being seen against whatever it landed on is the whole of the job.
+    foreach (['subtle', 'solid', 'outline'] as $variant) {
+        expect(Blade::render("<x-shape::avatar initials=\"AL\" variant=\"{$variant}\" badge badge-tone=\"success\" />"))
+            ->toContain('bg-[var(--shape-tone)] text-[var(--shape-tone-fg)]');
+    }
+});
+
+it('rings the mark in the page so it has an edge on any photograph', function () {
+    // The same pair the group rings its children with. Without it a green dot
+    // on a green-shirted photograph has no edge of its own.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" badge badge-tone="success" />'))
+        ->toContain('ring-2 ring-white dark:ring-shape-900');
+});
+
+it('takes the mark to any of the four corners', function (string $position, string $inset, string $pull) {
+    expect(Blade::render("<x-shape::avatar initials=\"AL\" badge badge-position=\"{$position}\" />"))
+        ->toContain($inset)
+        ->toContain($pull)
+        ->toContain("data-shape-position=\"{$position}\"");
+})->with([
+    ['bottom-right', 'bottom-[14.6%] right-[14.6%]', 'translate-x-1/2 translate-y-1/2'],
+    ['bottom-left', 'bottom-[14.6%] left-[14.6%]', '-translate-x-1/2 translate-y-1/2'],
+    ['top-right', 'top-[14.6%] right-[14.6%]', 'translate-x-1/2 -translate-y-1/2'],
+    ['top-left', 'top-[14.6%] left-[14.6%]', '-translate-x-1/2 -translate-y-1/2'],
+]);
+
+it('centres the mark on the edge rather than inscribing it in the corner', function () {
+    // The corner of the box is not the corner of the shape: a circle's arc
+    // crosses the diagonal 14.6% of the width inside it. Anchored by its own
+    // corner instead, a three-digit count would walk across the face while the
+    // dot beside it sat on the edge.
+    expect(Blade::render('<x-shape::avatar initials="AL" badge="123" />'))
+        ->toContain('translate-x-1/2 translate-y-1/2')
+        ->toContain('bottom-[14.6%] right-[14.6%]')
+        ->not->toContain('bottom-0 right-0');
+});
+
+it('squares the mark when the avatar is squared', function () {
+    // The same `--radius-shape` the circle took, and the corner it is anchored
+    // to becomes that radius rather than half the width.
+    expect(Blade::render('<x-shape::avatar initials="AC" badge="12" square />'))
+        ->toContain('rounded-shape')
+        ->toContain('bottom-[calc(var(--radius-shape)*0.293)] right-[calc(var(--radius-shape)*0.293)]')
+        ->and(Blade::render('<x-shape::avatar initials="AC" badge="12" />'))
+        ->toContain('bottom-[14.6%]')
+        ->not->toContain('rounded-shape');
+});
+
+it('sizes the mark from the circle rather than from a prop of its own', function (string $size, string $class) {
+    expect(Blade::render("<x-shape::avatar initials=\"AL\" size=\"{$size}\" badge />"))
+        ->toContain($class);
+})->with([
+    ['xs', 'size-1.5'],
+    ['sm', 'size-2"'],
+    ['base', 'size-2.5'],
+    ['lg', 'size-3"'],
+]);
+
+it('takes the mark no room, so a row of faces does not move when one lights up', function () {
+    // The mark is absolute and its ring is a shadow. It draws outside the box,
+    // which is what being centred on an edge means, but it lays out nothing.
+    expect(Blade::render('<x-shape::avatar initials="AL" badge />'))
+        ->toContain('pointer-events-none absolute')
+        ->toContain('<span class="relative inline-flex shrink-0">');
+});
+
+it('marks a picture on the same corner it marks initials', function () {
+    // One wrapper around whichever element the branch above rendered, so the
+    // mark is not a second copy of itself.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" badge badge-tone="success" />'))
+        ->toContain('<img src="/ada.jpg"')
+        ->toContain('data-shape-avatar-badge')
+        ->and(substr_count(Blade::render('<x-shape::avatar src="/ada.jpg" badge />'), 'data-shape-avatar-badge'))
+        ->toBe(1);
+});
+
+it('keeps the attributes on the avatar rather than moving them to the wrapper', function () {
+    // The answer that keeps `class="object-contain"` landing on the picture it
+    // was written for. A wrapper holding the bag would move every class a call
+    // site has ever passed onto an element that is not the circle.
+    $html = Blade::render('<x-shape::avatar src="/ada.jpg" class="object-contain" wire:key="ada" badge />');
+
+    expect($html)
+        ->toContain('<span class="relative inline-flex shrink-0">')
+        ->toContain('object-contain')
+        ->toContain('wire:key="ada"')
+        ->not->toContain('<span class="relative inline-flex shrink-0" wire:key');
+});
+
+it('says nothing about the mark, because a dot has no words in it', function () {
+    // A dot is a colour and a count is a number with no noun attached. Both
+    // mean something only in a sentence, and the sentence is `alt`.
+    $html = Blade::render('<x-shape::avatar initials="AL" alt="Ada Lovelace, online" badge badge-tone="success" />');
+
+    expect($html)
+        ->toContain('<span class="sr-only">Ada Lovelace, online</span>')
+        ->and(substr_count($html, 'aria-hidden="true"'))
+        ->toBe(2);
+});
+
+it('rings the face inside a group rather than the shell around it', function () {
+    // A badged avatar arrives wrapped in the shell its mark is positioned
+    // against, so ringing the child would draw a square ring around a circle.
+    $html = Blade::render(<<<'BLADE'
+    <x-shape::avatar.group>
+        <x-shape::avatar initials="AL" />
+        <x-shape::avatar initials="GH" badge badge-tone="success" />
+    </x-shape::avatar.group>
+    BLADE);
+
+    expect($html)
+        ->toContain('[&amp;_[data-shape-avatar]]:ring-2')
+        ->toContain('data-shape-avatar-badge')
+        ->not->toContain('[&amp;&gt;*]:ring-2');
 });
