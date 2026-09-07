@@ -377,14 +377,37 @@
     | is carrying the semantics rather than drawing the control — the alert's
     | `border` prop is the one that reads it.
     |
-    | It is the 300 rather than the 200 the tint pair would suggest. A 200 edge
-    | on the 100 tint is a two-step difference at the pale end of the ramp, which
-    | is a definition line at best and invisible against the page at worst; the
-    | 300 is the first step that reads as a border someone chose, and it stops
-    | there — a 400 edge on the 100 tint is louder than the heading it is boxing,
-    | which is not what `subtle` is for. Dark goes to the 800 rather than the 900
-    | for the same reason and the opposite direction — "stronger" is lighter on a
-    | dark page, exactly as `-hover` is.
+    | The step is the 300 rather than the 200 the tint pair would suggest. A 200
+    | edge on the 100 tint is a two-step difference at the pale end of the ramp,
+    | which is a definition line at best and invisible against the page at worst;
+    | the 300 is the first step that reads as a border someone chose.
+    |
+    | It stops there on the coloured tones, and what stops it is chroma rather
+    | than lightness. Their 300 to 400 is a modest step down in lightness and a
+    | large one up in saturation — red 0.114 to 0.191, blue 0.105 to 0.165, green
+    | 0.150 to 0.209 — so a 400 edge on the 100 tint buys a little separation and
+    | pays for it by being louder than the heading it is boxing, which is not
+    | what `subtle` is for.
+    |
+    | Neutral is the exception and takes the 400. It is the one tone with no
+    | chroma to get loud with — 0.007 to 0.014 is nothing — and the one where
+    | both borders come off the same ramp. On a coloured tone the alert's
+    | `border` prop swaps the neutral 200 for the tone's own 300, so what changes
+    | is a hue and it reads at a glance; on neutral it is the 200 against the 300
+    | and nothing else, which is 1.18:1 — a difference you can only see with the
+    | two held side by side. The 400 makes it 1.96:1.
+    |
+    | Mist is also not spaced like the colour ramps, which is what makes "one
+    | step past the chrome border" mean different things depending on which ramp
+    | it is said about: 300 to 400 drops 14.9 points of lightness in the neutral
+    | against roughly 7.6 in cyan and green. Neutral has to travel two of its own
+    | steps to cover what the coloured tones cover in one.
+    |
+    | Dark is the check on all of it. There the neutral pair is the 800 and the
+    | 600 — "stronger" is lighter on a dark page, exactly as `-hover` is — and it
+    | already sits 2.00:1 apart while putting a 2.00:1 edge on its tint. Light
+    | neutral at the 400 lands at 1.96:1 and 2.19:1, so this is the light side
+    | catching up to a weight dark has shipped all along rather than a new one.
     */
     [data-shape-tone] {
         --shape-tone: var(--color-shape-900);
@@ -396,7 +419,7 @@
         --shape-tone-surface: white;
         --shape-tone-surface-hover: var(--color-shape-50);
         --shape-tone-border: var(--color-shape-200);
-        --shape-tone-border-strong: var(--color-shape-300);
+        --shape-tone-border-strong: var(--color-shape-400);
     }
 
     /*

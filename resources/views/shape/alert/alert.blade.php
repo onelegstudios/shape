@@ -157,12 +157,14 @@ $classes = Shape::classes()
     // The colour is a step of the tone rather than a border palette of its own.
     // `subtle` and `outline` take `--shape-tone-border-strong`, which is the
     // tone's answer to the neutral `--shape-tone-border` the outline arm reads
-    // by default: the same job, a step further along so it reads as an edge
-    // someone chose rather than a definition line. It is one variable for both
-    // arms because the edge is doing the same thing in each — on `subtle` it
-    // bounds the wash, on `outline` it is the whole of the paint — and a border
-    // that changed weight between them would make swapping the variant move
-    // more than the fill.
+    // by default: the same job, far enough along the ramp that it reads as an
+    // edge someone chose rather than a definition line. How far that is belongs
+    // to the tone and not here — the coloured ones stop at their 300 and the
+    // neutral goes on to its 400, for reasons shape.css sets out where the
+    // variable is defined. It is one variable for both arms because the edge is
+    // doing the same thing in each — on `subtle` it bounds the wash, on
+    // `outline` it is the whole of the paint — and a border that changed weight
+    // between them would make swapping the variant move more than the fill.
     //
     // `solid` cannot use it. The fill is the 700 and a 300 edge on it would
     // read as a highlight, so it takes `--shape-tone-hover` — the step past
