@@ -74,6 +74,86 @@ it('hands the style to a caller\'s own glyph as well as to the state ones', func
         ->not->toContain('stroke="currentColor"');
 });
 
+it('sets the glyph in a gutter beside the message by default', function () {
+    // The placement this component was drawn with: a column of its own, level
+    // with the first line and beside everything under it — which is what a
+    // heading, a paragraph and a row of buttons all want to be indented past.
+    expect(Blade::render('<x-shape::alert tone="info" heading="Heads up">Your trial ends on Friday.</x-shape::alert>'))
+        ->toContain('data-shape-icon')
+        ->toContain('flex min-w-0 flex-col gap-1')
+        ->not->toContain('float-left');
+});
+
+it('sets the glyph on the first line when the placement asks for it', function () {
+    // A float rather than an inline-level glyph, and that is the whole of what
+    // this prop changes. Out of flow, the glyph clears after the line it sits
+    // on, so the sentence wraps *under* it instead of into a column beside it.
+    expect(Blade::render('<x-shape::alert tone="info" icon-placement="inline">Your trial ends on Friday.</x-shape::alert>'))
+        ->toContain('data-shape-icon')
+        ->toContain('float-left')
+        ->toContain('flow-root');
+});
+
+it('puts the inline glyph inside the message rather than beside it', function () {
+    // Where it sits in the markup is the mechanism, not a detail: a float only
+    // shifts the lines of the block it is in, so a glyph left out in the root's
+    // flex row could never reach the first line of the message.
+    $html = Blade::render('<x-shape::alert tone="info" icon-placement="inline">Your trial ends on Friday.</x-shape::alert>');
+
+    expect(strpos($html, 'flow-root'))->toBeLessThan(strpos($html, 'data-shape-icon'));
+});
+
+it('lands the inline glyph on the heading when there is one, without asking which', function () {
+    // The reason it is a float and not a glyph nested in one element or the
+    // other: it is set before both and lands beside whichever holds the first
+    // line, so the heading takes it when there is one and the sentence takes it
+    // when there is not. One arm, either way.
+    $html = Blade::render('<x-shape::alert tone="danger" icon-placement="inline" heading="Card declined">The bank gave no reason.</x-shape::alert>');
+
+    // `<h3` rather than the heading's data attribute, which the message
+    // column's own selector names too.
+    expect(strpos($html, 'data-shape-icon'))->toBeLessThan(strpos($html, '<h3'));
+});
+
+it('restates the gap between heading and body that block layout has no gap for', function () {
+    // `gap-1` belongs to the flex column the gutter arm keeps, and the inline
+    // arm cannot have it — a flex item is out of the flow the float would have
+    // shifted. Four pixels between the heading and the body says the same
+    // thing, and says nothing when the body is hidden by `empty:hidden`,
+    // because a margin on a `display: none` element is a margin on nothing.
+    expect(Blade::render('<x-shape::alert tone="info" icon-placement="inline" heading="Heads up">Your trial ends on Friday.</x-shape::alert>'))
+        ->toContain('[&amp;&gt;[data-shape-heading]+[data-shape-text]]:mt-1');
+});
+
+it('leaves no gap where an inline glyph would have been when there is none to draw', function () {
+    // The float carries its own margin rather than the root's `gap-3`, so
+    // opting out of the glyph takes the spacing with it. The gutter arm gets
+    // that from flexbox; this one has to not draw it.
+    expect(Blade::render('<x-shape::alert tone="info" icon-placement="inline" :icon="false">Nothing to draw.</x-shape::alert>'))
+        ->not->toContain('data-shape-icon')
+        ->not->toContain('float-left');
+});
+
+it('keeps an inline glyph toned when the text is not, exactly as the gutter does', function () {
+    // The placement moves the glyph; it does not change what the glyph is for.
+    // An untoned alert still has to say what it means without colour being the
+    // only signal, whichever side of the first line the mark sits on.
+    expect(Blade::render('<x-shape::alert tone="danger" variant="outline" icon-placement="inline">Card declined.</x-shape::alert>'))
+        ->toContain('float-left')
+        ->toContain('text-[color:var(--shape-tone-ink)]');
+});
+
+it('falls back to the gutter for a placement it does not have', function (mixed $value) {
+    // The same fallback `bar` makes: a placement is resolved once, before
+    // anything is laid out with it, so a word this component has never heard of
+    // leaves the alert exactly as it was rather than half-moving the glyph.
+    $html = Blade::render('<x-shape::alert tone="info" :icon-placement="$value">Your trial ends on Friday.</x-shape::alert>', ['value' => $value]);
+
+    expect($html)
+        ->toContain('flex min-w-0 flex-col gap-1')
+        ->not->toContain('float-left');
+})->with([['gutter'], ['beside'], [true], [null]]);
+
 it('publishes the tone as its own foreground contract', function () {
     // The point of `data-shape-surface="tint"`: a muted paragraph inside a
     // coloured alert has to read a dialled-back version of the tone, not the

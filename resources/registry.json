@@ -1,7 +1,8 @@
 {
     "alert": {
         "files": [
-            "alert/alert.blade.php"
+            "alert/alert.blade.php",
+            "alert/glyph.blade.php"
         ],
         "requires": [
             "button",

@@ -63,6 +63,19 @@
     is the button's word for an equal-sided control, and one word cannot mean
     two things across the library.
 
+    `icon-placement` moves the glyph rather than paints it, and there are two
+    places it can go. `gutter` is the default and the one this component was
+    drawn with: a column of its own, level with the first line and beside
+    everything under it, which is what a heading and a paragraph and a row of
+    buttons all want to be indented past. `inline` sets it at the head of the
+    first line instead, so the sentence wraps under the glyph rather than into a
+    column beside it — the shape a one-line alert wants, and the one that stops
+    a notice in a form field's width from reading as a layout.
+
+    It is a float rather than an inline-level glyph, which is what lets the same
+    markup serve an alert with a heading and one without: the glyph is set
+    before both and lands beside whichever turns out to hold the first line.
+
     `actions` is the row of buttons a message sometimes ends in, and it is a slot
     rather than the loose content of the default one, because the default slot is
     wrapped in an `<x-shape::text>` — a button written there would render inside a
@@ -110,9 +123,9 @@
     `tone` is branched on to resolve the glyph, exactly as the badge does, so it
     is *not* declared safe here — and neither are `variant`, `toned`, `border`,
     `shadow`, `bar` or `bar-square`, which branch to resolve the paint, nor
-    `actions-placement`, which branches to resolve the layout. The same `tone` is
-    safe on the button, which only ever interpolates it. Whatever a component
-    does with a value decides that.
+    `actions-placement` and `icon-placement`, which branch to resolve the layout.
+    The same `tone` is safe on the button, which only ever interpolates it.
+    Whatever a component does with a value decides that.
 
     `heading` is interpolated and nothing more, so an alert whose title comes from
     a variable still folds.
@@ -144,6 +157,7 @@
     'icon' => null,
     'iconVariant' => null,
     'iconSize' => 'sm',
+    'iconPlacement' => 'gutter',
     'dismissible' => false,
     'actions' => null,
     'actionsPlacement' => 'lg',
@@ -431,11 +445,55 @@ $surface = match (true) {
 // already look. Outline never paints on hover, so it never needs one.
 $hoverSurface = $variant === 'ghost' && ! $toned ? 'tint' : null;
 
+// Where the glyph sits, and the only prop here that moves it rather than
+// paints it. Anything unrecognised is the gutter, the way `bar` falls back
+// rather than drawing something no call site asked for.
+$iconPlacement = $iconPlacement === 'inline' ? 'inline' : 'gutter';
+
 // The glyph keeps the tone the text gave up. An untoned alert still has to say
 // what it means without colour being the only signal, and a one-pixel border
 // is thin: leaving the icon toned is what keeps a `danger` outline alert
 // readable as danger at a glance.
+//
+// `mt-0.5` is the two pixels that centre a 20px glyph in the 24px line beside
+// it, and it is the same two pixels in both placements — the heading and the
+// body are both `leading-6` here, so the gutter's first line and the inline
+// line box are the same height.
+//
+// Inline adds the float, which is the whole of what the placement changes.
+// Taking the glyph out of flow is what makes the second line wrap *under* it
+// rather than into a column beside it: the float is 20px against a 24px line,
+// so it clears after the first one and the paragraph goes flush left. An
+// inline-level glyph would do the same to the first line and then push the
+// line box taller; a flex gutter cannot do it at all.
+//
+// `mr-2` rather than the root's `gap-3`. Twelve pixels is the distance between
+// two blocks; eight is the distance between a glyph and the words it belongs
+// to, and inline the glyph belongs to them.
 $iconClasses = $toned ? 'mt-0.5' : 'mt-0.5 text-[color:var(--shape-tone-ink)]';
+
+if ($iconPlacement === 'inline') {
+    $iconClasses .= ' float-left mr-2';
+}
+
+// The message keeps a column of its own in both placements, so that the actions
+// row is its sibling rather than another line of it, and `min-w-0` is what lets
+// a long word inside it wrap instead of pushing the actions off the side.
+//
+// What changes is the formatting context. A flex column cannot hold a float —
+// a flex item is taken out of the flow the float would have shifted — so the
+// inline arm is block layout, `flow-root` to say out loud that the float is
+// contained here rather than leaving it to the fact that this element happens
+// to be a flex item of the body below.
+//
+// Which costs the `gap-1` block layout has no answer for. `mt-1` on the body
+// where a heading precedes it is that gap restated: the same four pixels, and
+// the same absence when the body is hidden by `empty:hidden`, because a margin
+// on a `display: none` element is a margin on nothing. A margin under the
+// heading instead would have left four pixels below a heading standing alone.
+$messageClasses = $iconPlacement === 'inline'
+    ? 'flow-root min-w-0 [&>[data-shape-heading]+[data-shape-text]]:mt-1'
+    : 'flex min-w-0 flex-col gap-1';
 
 // Where the actions row sits, which is the only thing the body element decides.
 //
@@ -493,60 +551,59 @@ $bodyClasses = match (true) {
     @if ($hoverSurface) data-shape-surface-hover="{{ $hoverSurface }}" @endif
 >
     {{--
-        Never colour alone — every state tone resolves a glyph, so an alert
-        stays readable in greyscale. `:icon="false"` opts out; forgetting
-        isn't possible.
-
-        `brand` and `accent` are not among them. Both are emphasis: the brand
-        is the product's colour, which an application is free to move, and the
-        accent is the one kept for "look here". A glyph on either would make it
-        a state under another name — the one `info` now is, in a blue that
-        stays blue whatever the brand becomes.
-
-        A static tag per tone, as the badge does, rather than
-        `<x-shape::icon :name=".." />` — the four built-in states never need
-        `<x-dynamic-component>`'s temp-file round trip. A caller's own `icon`
-        still goes through it; there's no fixed set of those to special-case.
+        The gutter: the glyph in a column of its own, level with the first line
+        and beside everything under it. It is the placement that suits the alert
+        with something to say — a heading, a paragraph, a row of buttons all
+        indented past one mark in the margin.
 
         `icon-size` and `icon-variant` are the icon's own two props, handed
-        along to whichever arm resolved above. Both are named for the thing they
-        modify rather than taken bare, the way `bar-square` is: `size` and
-        `variant` already mean the alert's own on every other component in the
-        library, and one word cannot mean two things across it.
+        along to the glyph. Both are named for the thing they modify rather than
+        taken bare, the way `bar-square` is: `size` and `variant` already mean
+        the alert's own on every other component in the library, and one word
+        cannot mean two things across it. `icon-placement` is the third of them
+        and named on the same rule — `actions-placement` is the alert's other
+        one, and neither is `placement`.
 
-        `icon-variant` defaults to null rather than to a style, so that an alert
-        naming nothing leaves the choice with the icon — where the set's rule
-        about which drawing a size prefers is baked in, solid at `xs` and `sm`
-        and outline at `base`. A default named here would override that rule for
-        every alert in order to serve the few that want the other drawing.
-
-        Which is the whole of what the prop is for. `icon-size` defaults to
-        `sm`, so an alert's glyph is solid, and the stroked one at that size was
-        reachable no other way: the only lever on the style was a size that also
-        changes how big the glyph is. Two questions were riding on one prop, and
-        this is the second of them given somewhere to go.
+        `icon-size` defaults to `sm`, so an alert's glyph is solid. Which
+        drawing that is belongs to the icon set and is the whole of what
+        `icon-variant` is for; the glyph says why on its own page.
     --}}
-    @if ($icon !== false)
-        @if ($icon)
-            <x-shape::icon :name="$icon" :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
-        @elseif ($tone === 'success')
-            <x-shape::icon.shape-success :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
-        @elseif ($tone === 'danger')
-            <x-shape::icon.shape-danger :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
-        @elseif ($tone === 'warning')
-            <x-shape::icon.shape-warning :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
-        @elseif ($tone === 'info')
-            <x-shape::icon.shape-info :variant="$iconVariant" :size="$iconSize" class="{{ $iconClasses }}" />
-        @endif
+    @if ($iconPlacement === 'gutter')
+        <x-shape::alert.glyph
+            :tone="$tone"
+            :icon="$icon"
+            :variant="$iconVariant"
+            :size="$iconSize"
+            class="{{ $iconClasses }}"
+        />
     @endif
 
     <div class="{{ $bodyClasses }}">
-        {{-- The message keeps a column of its own so that the actions row is its
-             sibling rather than another line of it: `gap-1` holds the heading to
-             the sentence under it whichever way the element above is running,
-             and `min-w-0` is what lets a long word inside it wrap instead of
-             pushing the actions off the side. --}}
-        <div class="flex min-w-0 flex-col gap-1">
+        <div class="{{ $messageClasses }}">
+            {{--
+                The other placement: the glyph at the head of the first line,
+                whichever element that line belongs to. There is no arm here
+                choosing between the heading and the body, and that is the point
+                of doing it with a float — the glyph is set before both of them
+                and lands beside whatever the first line box turns out to be, so
+                a heading takes it when there is one and the sentence takes it
+                when there is not.
+
+                Which makes it the placement for the alert that is one line
+                long. A gutter under a single sentence is a column holding one
+                thing; inline, the glyph reads as part of the sentence it marks,
+                and an alert in a form field's width stops looking like a layout.
+            --}}
+            @if ($iconPlacement === 'inline')
+                <x-shape::alert.glyph
+                    :tone="$tone"
+                    :icon="$icon"
+                    :variant="$iconVariant"
+                    :size="$iconSize"
+                    class="{{ $iconClasses }}"
+                />
+            @endif
+
             @if ($heading)
                 <x-shape::heading :level="3" size="sm">{{ $heading }}</x-shape::heading>
             @endif

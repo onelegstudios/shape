@@ -648,6 +648,15 @@ it('abandons folding an alert whose glyph style is bound dynamically', function 
         ->not->toContain('shape::alert');
 });
 
+it('abandons folding an alert whose glyph is placed dynamically', function () {
+    // `icon-placement` branches to resolve the layout, the way
+    // `actions-placement` does: one arm is a flex column with the glyph out
+    // beside it and the other is block layout with the glyph floated into the
+    // first line, and neither is a value of the other.
+    expect(foldedComponentsWhileRendering('dynamic-alert-icon-placement', ['iconPlacement' => 'inline']))
+        ->not->toContain('shape::alert');
+});
+
 it('abandons folding an alert whose colour is bound dynamically', function () {
     // Same trade the badge makes, for the same reason: the alert branches on
     // `tone` to resolve its glyph, so colour cannot be safe here. It is the

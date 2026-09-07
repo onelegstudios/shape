@@ -356,6 +356,32 @@ Name it where you want the other one: the stroked glyph at `sm` is reachable no
 other way, because until this prop the only lever on the style was a size that
 also changes how big the glyph is.
 
+### Where the glyph sits
+
+By default the glyph sits in a gutter: a column of its own, level with the first
+line and beside everything under it. That is what a heading, a paragraph and a
+row of buttons all want to be indented past, and it is the right shape for an
+alert that has something to say.
+
+It is the wrong shape for an alert that is one sentence long. A gutter under a
+single line is a column holding one thing, and in a form field's width the
+message wraps into a narrow channel beside a mark that has nothing left to mark.
+`icon-placement="inline"` sets the glyph at the head of the first line instead,
+so the sentence wraps under it:
+
+@docs('preview', name: 'alert-icon-placement', layout: 'stack')
+
+The glyph is floated rather than set inline, which is what lets the same markup
+serve an alert with a heading and one without: it is placed before both and
+lands beside whichever turns out to hold the first line. A heading takes it when
+there is one, as the third example shows, and the sentence takes it when there
+is not. Nothing about the message decides which.
+
+The glyph stays the same size in both, because `icon-size` is a separate
+question from where the glyph goes. At the default `sm` it is a 20px mark on a
+24px line, which sits comfortably; `icon-size="xs"` is the quieter one where the
+message is the point and the mark is only there to say which kind it is.
+
 ## Dismissing
 
 `dismissible` adds a close button. `shape.js` removes the nearest alert when it
@@ -440,6 +466,7 @@ the fact.
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `icon-variant` | chosen by `icon-size` | `outline`, `solid` |
+| `icon-placement` | `gutter` | `inline` sets the glyph at the head of the first line and wraps the message under it |
 | `dismissible` | `false` | adds a close button |
 | `actions-placement` | `lg` | the width the `actions` row flips beside the message at: `sm`, `md`, `lg`, `xl`, `2xl` ([container sizes](#choosing-the-step), not breakpoints); `below` and `side` pin it instead |
 
@@ -453,7 +480,7 @@ Tier A — `@blaze(fold: true, safe: ['heading', 'actions'])`.
 `heading` is interpolated and nothing more, so an alert whose title comes from a
 variable still folds. `tone` branches to resolve its glyph, `variant`, `toned`,
 `border`, `shadow`, `bar` and `bar-square` branch to resolve the paint, and
-`actions-placement` branches to resolve the layout, so
+`actions-placement` and `icon-placement` branch to resolve the layout, so
 `:tone="$tone"` drops to the compiled path — the same prop is safe on the [button](button.md),
 which only ever interpolates it. See [Folding](../folding.md).
 

@@ -935,6 +935,10 @@
                         <x-shape::alert tone="danger" variant="solid" heading="Card declined" dismissible>
                             <x-shape::text size="sm" variant="muted">Solid: the muted line holds its colour on the fill, and so does the dismiss control.</x-shape::text>
                         </x-shape::alert>
+
+                        <x-shape::alert tone="info" icon-placement="inline">
+                            <x-shape::text size="sm" variant="muted">Inline: the glyph sits at the head of the first line and the message wraps under it, rather than into a column beside it.</x-shape::text>
+                        </x-shape::alert>
                     </div>
                 </article>
 
