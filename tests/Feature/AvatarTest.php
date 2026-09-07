@@ -104,6 +104,39 @@ it('does not ask the initials to fit anything', function () {
     expect(Blade::render('<x-shape::avatar initials="AL" />'))->not->toContain('object-cover');
 });
 
+it('squares the circle when it is asked to', function () {
+    // `square` is the corners and nothing else. The size, the paint and the
+    // crop are all the same avatar; only the radius moves.
+    expect(Blade::render('<x-shape::avatar initials="AL" square />'))
+        ->toContain('[:where(&amp;)]:rounded-shape')
+        ->not->toContain('rounded-full');
+});
+
+it('is a circle when it is not', function () {
+    expect(Blade::render('<x-shape::avatar initials="AL" />'))
+        ->toContain('[:where(&amp;)]:rounded-full')
+        ->not->toContain('rounded-shape');
+});
+
+it('takes the library radius rather than one of its own per size', function () {
+    // Every size squares to the same `--radius-shape` the button and the card
+    // take, so a squared avatar beside either of them agrees with it.
+    foreach (['xs', 'sm', 'base', 'lg'] as $size) {
+        expect(Blade::render("<x-shape::avatar initials=\"AL\" size=\"{$size}\" square />"))
+            ->toContain('[:where(&amp;)]:rounded-shape ');
+    }
+});
+
+it('squares a picture as well as initials', function () {
+    // One set of classes for both elements. The crop is unchanged: a squared
+    // avatar is still a fixed box, so the photograph still has to fill it.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" square />'))
+        ->toContain('<img')
+        ->toContain('[:where(&amp;)]:rounded-shape')
+        ->toContain('[:where(&amp;)]:object-cover')
+        ->not->toContain('rounded-full');
+});
+
 it('overlaps a group with two utilities and no stylesheet rule', function () {
     // The ring is what keeps the face underneath from reading as a smudge.
     // Which face is on top is DOM order, because choosing it would be a z-index.

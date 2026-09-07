@@ -64,6 +64,25 @@ border rings the picture.
 
 @docs('preview', name: 'avatar-sizes')
 
+## Squares
+
+`square` swaps the circle for the library's own corner radius:
+
+@docs('preview', name: 'avatar-squares')
+
+The circle is the default because a circle is how a person is drawn everywhere
+else on the page. Square is for the rows where the avatar is not a person — a
+company, a repository, a product, an initial standing for something that was
+never a face.
+
+Every size squares to the same `--radius-shape` the [button](button.md) and the
+[card](card.md) take, rather than to a radius proportional to `size`. A squared
+avatar's job is to sit beside squared things and agree with them, which a
+per-size radius would undo.
+
+Nothing else moves. The picture is still cropped, because the box is still
+fixed, and a squared avatar in a group is ringed and overlapped like any other.
+
 ## Groups
 
 `avatar.group` overlaps its children in DOM order, and rings each one so the
@@ -113,6 +132,7 @@ all, and will announce nothing:
 | `size` | `base` | `xs`, `sm`, `base`, `lg` |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
+| `square` | `false` | squares the circle to `--radius-shape` |
 
 `avatar.group` takes no props.
 
@@ -127,8 +147,8 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone'])`.
 
 `tone` is interpolated into an attribute and nothing more, the way the
 [button](button.md) carries it, so a per-person tone still folds. `variant`
-branches to resolve the paint, so it cannot be `safe` — the badge's arrangement
-exactly.
+branches to resolve the paint and `square` to resolve the radius, so neither can
+be `safe` — the badge's arrangement exactly.
 
 `src` decides which element renders — an `<img>` with no source is a broken
 image request, and a `<span>` cannot show a photograph — so it branches and

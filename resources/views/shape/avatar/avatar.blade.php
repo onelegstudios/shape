@@ -44,6 +44,23 @@
     The span never gets it. There is nothing inside it to fit — the initials are
     text, and text in a flex centre is already where it should be.
 
+    `square` moves the corners and nothing else. The circle stays the default,
+    because a circle is how a person is drawn everywhere else on the page and an
+    avatar that disagreed with the rest of them would be read as a different kind
+    of thing. Which is the point of the prop: the squared form is for the call
+    sites where it *is* a different kind of thing — a company, a repository, a
+    product, an initial standing for something that was never a face.
+
+    It takes `--radius-shape`, the same radius the button and the card take,
+    rather than a radius proportional to `size`. A squared avatar's whole job is
+    to sit next to squared things and agree with them, and a per-size radius
+    would put an 8px corner beside a 3px one for no reason a call site could see.
+
+    Everything else survives the change untouched. The picture is still cropped,
+    because the box is still fixed. The group still rings each child, because a
+    ring follows whatever radius it finds. There is no branch here beyond the one
+    class.
+
     Initials are stated, never derived. Deriving them from a name inside a folded
     component would run the derivation once, at compile time, and bake one
     person's initials into every avatar the template renders — the same failure
@@ -63,8 +80,8 @@
 
     `tone` does not. It is interpolated into an attribute and nothing more, the
     way the button carries it, so it is safe and a per-person tone still folds.
-    `variant` resolves the paint above and is not, which is the badge's
-    arrangement as well.
+    `variant` resolves the paint above and `square` the radius, so neither is
+    safe — the badge's arrangement as well.
 
     The consequence is worth stating rather than discovering: an avatar list
     built from per-row URLs neither folds nor usefully memoizes, because every
@@ -79,12 +96,14 @@
     'size' => 'base',
     'tone' => null,
     'variant' => 'subtle',
+    'square' => false,
 ])
 
 @php
 $classes = Shape::classes()
     ->add('inline-flex shrink-0 items-center justify-center overflow-hidden')
-    ->add('[:where(&)]:rounded-full [:where(&)]:font-medium')
+    ->add($square ? '[:where(&)]:rounded-shape' : '[:where(&)]:rounded-full')
+    ->add('[:where(&)]:font-medium')
 
     ->add(['[:where(&)]:object-cover' => (bool) $src])
 
