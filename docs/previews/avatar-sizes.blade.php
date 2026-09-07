@@ -1,4 +1,4 @@
-<x-shape::avatar initials="AL" alt="Ada Lovelace" size="xs" />
-<x-shape::avatar initials="AL" alt="Ada Lovelace" size="sm" />
-<x-shape::avatar initials="AL" alt="Ada Lovelace" size="base" />
-<x-shape::avatar initials="AL" alt="Ada Lovelace" size="lg" />
+<x-shape::avatar initials="AL" alt="Alex Lindqvist" size="xs" />
+<x-shape::avatar initials="AL" alt="Alex Lindqvist" size="sm" />
+<x-shape::avatar initials="AL" alt="Alex Lindqvist" size="base" />
+<x-shape::avatar initials="AL" alt="Alex Lindqvist" size="lg" />

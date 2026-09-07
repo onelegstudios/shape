@@ -4,7 +4,26 @@ A person, as a picture or as initials.
 
 @docs('preview', name: 'avatar')
 
-`src` renders an `<img>`; without one, `initials` render in a tinted circle.
+## Pictures
+
+`src` renders an `<img>`. Without one the component renders a `<span>` with
+`initials` inside it — the same circle at the same size, painted the same way,
+around a different element:
+
+@docs('preview', name: 'avatar-pictures')
+
+Passing both is not a fallback. `src` decides which element renders, and there
+is no `onerror` swapping a broken URL for the letters: the initials are what a
+call site holding no picture shows, not what a picture that fails to arrive
+leaves behind.
+
+`alt` is a real `alt` attribute on this form, and screen-reader-only text on the
+initials one — [the initials are not the accessible
+name](#the-initials-are-not-the-accessible-name) says what to pass and when to
+pass nothing.
+
+Choosing the element rather than describing it is also the one thing about `src`
+that costs something at compile time, which [Folding](#folding) sets out.
 
 ## Tones
 

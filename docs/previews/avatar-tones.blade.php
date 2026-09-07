@@ -1,5 +1,5 @@
-<x-shape::avatar initials="AL" alt="Ada Lovelace" tone="neutral" />
-<x-shape::avatar initials="GH" alt="Grace Hopper" tone="brand" />
-<x-shape::avatar initials="KJ" alt="Katherine Johnson" tone="accent" />
-<x-shape::avatar initials="MH" alt="Margaret Hamilton" tone="success" />
-<x-shape::avatar initials="BL" alt="Barbara Liskov" tone="info" />
+<x-shape::avatar initials="AL" alt="Alex Lindqvist" tone="neutral" />
+<x-shape::avatar initials="GH" alt="Gabriel Haas" tone="brand" />
+<x-shape::avatar initials="KJ" alt="Kim Jansen" tone="accent" />
+<x-shape::avatar initials="MH" alt="Maya Holm" tone="success" />
+<x-shape::avatar initials="BL" alt="Ben Larsen" tone="info" />

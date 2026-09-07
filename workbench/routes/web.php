@@ -30,9 +30,9 @@ $gallery = function (string $stylesheet, bool $seeded) {
     ]);
 
     $people = collect([
-        ['name' => 'Ada Lovelace', 'initials' => 'AL', 'role' => 'Owner'],
-        ['name' => 'Grace Hopper', 'initials' => 'GH', 'role' => 'Admin'],
-        ['name' => 'Katherine Johnson', 'initials' => 'KJ', 'role' => 'Member'],
+        ['name' => 'Alex Lindqvist', 'initials' => 'AL', 'role' => 'Owner'],
+        ['name' => 'Gabriel Haas', 'initials' => 'GH', 'role' => 'Admin'],
+        ['name' => 'Kim Jansen', 'initials' => 'KJ', 'role' => 'Member'],
     ]);
 
     $pages = new LengthAwarePaginator(
@@ -69,21 +69,29 @@ Route::get('/flash', function () {
 // A face for the avatar preview.
 //
 // The avatar's `src` is a prop with a picture attached to it, so the page about
-// it has to show one — and a real photograph is a file this package would then
-// have to carry, license and keep. This draws one instead, in the palette the
-// rest of the page is already using.
-Route::get('/avatars/{name}.svg', function (string $name) {
-    $hue = crc32($name) % 360;
+// it has to show one, and a drawn placeholder shows the shape of the prop rather
+// than the thing it is for — a photograph is cropped, lit and off-centre in ways
+// an icon never is, which is the whole reason the component paints a fill under
+// it and clips it to a circle.
+//
+// These three are stock portraits from Unsplash, cropped square and small enough
+// to sit in the repository without ceremony. `workbench/` is export-ignored, so
+// they stay here and never reach an application's vendor directory. Their
+// photographers and licence are in `workbench/resources/images/README.md`.
+//
+// The people in them are strangers, which is why the docs cast is invented: an
+// avatar's `alt` is the person's accessible name, and a stock face labelled with
+// a real person's name announces that person to a screen reader.
+//
+// Only those three exist. A name with no file 404s rather than falling back to
+// something drawn: the previews name people deliberately, and a missing face
+// should fail where it is introduced rather than quietly become someone else.
+Route::get('/avatars/{name}.webp', function (string $name) {
+    $file = \Orchestra\Testbench\package_path('workbench/resources/images/'.basename($name).'.webp');
 
-    $svg = <<<SVG
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img">
-            <rect width="80" height="80" fill="oklch(86% 0.09 {$hue})"/>
-            <circle cx="40" cy="31" r="14" fill="oklch(45% 0.09 {$hue})"/>
-            <path d="M8 80a32 32 0 0 1 64 0Z" fill="oklch(45% 0.09 {$hue})"/>
-        </svg>
-        SVG;
+    abort_unless(is_file($file), 404);
 
-    return response($svg, 200, ['Content-Type' => 'image/svg+xml']);
+    return response()->file($file, ['Content-Type' => 'image/webp']);
 })->name('shape.docs.avatar');
 
 // The overlays in the docs previews are meant to open.
