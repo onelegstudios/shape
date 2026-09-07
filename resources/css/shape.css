@@ -307,8 +307,17 @@
     | `<x-shape::text variant="muted">` inside a danger alert reads the global
     | grey, on a pink background, which is the exact failure the surface contract
     | exists to prevent. With it, nothing has to be passed down.
+    |
+    | The second selector is that failure arriving late. A ghost alert paints no
+    | fill at rest, so it publishes no foreground and its text is the page's own;
+    | hovering it paints this same tint. Painting the wash without the ink that
+    | belongs on it would put the global grey on a coloured background for as
+    | long as the pointer was there, so `data-shape-surface-hover` publishes the
+    | pair for exactly that long. Joined to the selector above rather than
+    | written out again, so the two readings of `tint` cannot drift apart.
     */
-    [data-shape-surface='tint'] {
+    [data-shape-surface='tint'],
+    [data-shape-surface-hover='tint']:hover {
         --shape-fg: var(--shape-tone-ink);
         --shape-fg-muted: color-mix(in oklch, var(--shape-tone-ink) 76%, transparent);
     }
@@ -359,6 +368,46 @@
     | The variables are named for the tone rather than for any one component, so
     | every component that carries semantics reads the same set. Only the button
     | uses the `-hover` and `-surface` halves; a badge is not interactive.
+    |
+    | The two borders are a pair, and which one a component reads says what its
+    | edge is for. `-border` is the neutral 200 and never takes a tone, because
+    | the outline button and badge are chrome: an outlined button is a control
+    | whatever it means, and toning its edge would make every secondary action on
+    | a page a coloured box. `-border-strong` is the tone's own, for the edge that
+    | is carrying the semantics rather than drawing the control — the alert's
+    | `border` prop is the one that reads it.
+    |
+    | The step is the 300 rather than the 200 the tint pair would suggest. A 200
+    | edge on the 100 tint is a two-step difference at the pale end of the ramp,
+    | which is a definition line at best and invisible against the page at worst;
+    | the 300 is the first step that reads as a border someone chose.
+    |
+    | It stops there on the coloured tones, and what stops it is chroma rather
+    | than lightness. Their 300 to 400 is a modest step down in lightness and a
+    | large one up in saturation — red 0.114 to 0.191, blue 0.105 to 0.165, green
+    | 0.150 to 0.209 — so a 400 edge on the 100 tint buys a little separation and
+    | pays for it by being louder than the heading it is boxing, which is not
+    | what `subtle` is for.
+    |
+    | Neutral is the exception and takes the 400. It is the one tone with no
+    | chroma to get loud with — 0.007 to 0.014 is nothing — and the one where
+    | both borders come off the same ramp. On a coloured tone the alert's
+    | `border` prop swaps the neutral 200 for the tone's own 300, so what changes
+    | is a hue and it reads at a glance; on neutral it is the 200 against the 300
+    | and nothing else, which is 1.18:1 — a difference you can only see with the
+    | two held side by side. The 400 makes it 1.96:1.
+    |
+    | Mist is also not spaced like the colour ramps, which is what makes "one
+    | step past the chrome border" mean different things depending on which ramp
+    | it is said about: 300 to 400 drops 14.9 points of lightness in the neutral
+    | against roughly 7.6 in cyan and green. Neutral has to travel two of its own
+    | steps to cover what the coloured tones cover in one.
+    |
+    | Dark is the check on all of it. There the neutral pair is the 800 and the
+    | 600 — "stronger" is lighter on a dark page, exactly as `-hover` is — and it
+    | already sits 2.00:1 apart while putting a 2.00:1 edge on its tint. Light
+    | neutral at the 400 lands at 1.96:1 and 2.19:1, so this is the light side
+    | catching up to a weight dark has shipped all along rather than a new one.
     */
     [data-shape-tone] {
         --shape-tone: var(--color-shape-900);
@@ -370,6 +419,7 @@
         --shape-tone-surface: white;
         --shape-tone-surface-hover: var(--color-shape-50);
         --shape-tone-border: var(--color-shape-200);
+        --shape-tone-border-strong: var(--color-shape-400);
     }
 
     /*
@@ -386,6 +436,7 @@
         --shape-tone-ink: var(--color-shape-accent-800);
         --shape-tone-tint: var(--color-shape-accent-100);
         --shape-tone-tint-hover: var(--color-shape-accent-200);
+        --shape-tone-border-strong: var(--color-shape-accent-300);
     }
 
     [data-shape-tone='brand'] {
@@ -395,6 +446,7 @@
         --shape-tone-ink: var(--color-shape-brand-800);
         --shape-tone-tint: var(--color-shape-brand-100);
         --shape-tone-tint-hover: var(--color-shape-brand-200);
+        --shape-tone-border-strong: var(--color-shape-brand-300);
     }
 
     [data-shape-tone='danger'] {
@@ -404,6 +456,7 @@
         --shape-tone-ink: var(--color-shape-danger-800);
         --shape-tone-tint: var(--color-shape-danger-100);
         --shape-tone-tint-hover: var(--color-shape-danger-200);
+        --shape-tone-border-strong: var(--color-shape-danger-300);
     }
 
     [data-shape-tone='info'] {
@@ -413,6 +466,7 @@
         --shape-tone-ink: var(--color-shape-info-800);
         --shape-tone-tint: var(--color-shape-info-100);
         --shape-tone-tint-hover: var(--color-shape-info-200);
+        --shape-tone-border-strong: var(--color-shape-info-300);
     }
 
     [data-shape-tone='success'] {
@@ -422,6 +476,7 @@
         --shape-tone-ink: var(--color-shape-success-800);
         --shape-tone-tint: var(--color-shape-success-100);
         --shape-tone-tint-hover: var(--color-shape-success-200);
+        --shape-tone-border-strong: var(--color-shape-success-300);
     }
 
     /*
@@ -437,6 +492,7 @@
         --shape-tone-ink: var(--color-shape-warning-800);
         --shape-tone-tint: var(--color-shape-warning-100);
         --shape-tone-tint-hover: var(--color-shape-warning-200);
+        --shape-tone-border-strong: var(--color-shape-warning-300);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -456,6 +512,7 @@
             --shape-tone-surface: var(--color-shape-900);
             --shape-tone-surface-hover: var(--color-shape-800);
             --shape-tone-border: var(--color-shape-800);
+            --shape-tone-border-strong: var(--color-shape-600);
         }
 
         [data-shape-tone='accent'] {
@@ -465,6 +522,7 @@
             --shape-tone-ink: var(--color-shape-accent-200);
             --shape-tone-tint: var(--color-shape-accent-950);
             --shape-tone-tint-hover: var(--color-shape-accent-900);
+            --shape-tone-border-strong: var(--color-shape-accent-800);
         }
 
         [data-shape-tone='brand'] {
@@ -474,6 +532,7 @@
             --shape-tone-ink: var(--color-shape-brand-200);
             --shape-tone-tint: var(--color-shape-brand-950);
             --shape-tone-tint-hover: var(--color-shape-brand-900);
+            --shape-tone-border-strong: var(--color-shape-brand-800);
         }
 
         [data-shape-tone='danger'] {
@@ -483,6 +542,7 @@
             --shape-tone-ink: var(--color-shape-danger-200);
             --shape-tone-tint: var(--color-shape-danger-950);
             --shape-tone-tint-hover: var(--color-shape-danger-900);
+            --shape-tone-border-strong: var(--color-shape-danger-800);
         }
 
         [data-shape-tone='info'] {
@@ -492,6 +552,7 @@
             --shape-tone-ink: var(--color-shape-info-200);
             --shape-tone-tint: var(--color-shape-info-950);
             --shape-tone-tint-hover: var(--color-shape-info-900);
+            --shape-tone-border-strong: var(--color-shape-info-800);
         }
 
         [data-shape-tone='success'] {
@@ -501,6 +562,7 @@
             --shape-tone-ink: var(--color-shape-success-200);
             --shape-tone-tint: var(--color-shape-success-950);
             --shape-tone-tint-hover: var(--color-shape-success-900);
+            --shape-tone-border-strong: var(--color-shape-success-800);
         }
 
         [data-shape-tone='warning'] {
@@ -510,6 +572,7 @@
             --shape-tone-ink: var(--color-shape-warning-200);
             --shape-tone-tint: var(--color-shape-warning-950);
             --shape-tone-tint-hover: var(--color-shape-warning-900);
+            --shape-tone-border-strong: var(--color-shape-warning-800);
         }
     }
 }
@@ -970,6 +1033,11 @@
 | surface's foreground, and hovers to a wash of it. Both halves of the pair move
 | together, which is what keeps the hover the same hue as the rest.
 |
+| A surface published only on hover counts as published, which is why each rule
+| below names it too. The alert that does it is the untoned ghost: pointing at
+| one turns it into a `subtle` alert, and a × still resolving neutral grey would
+| be the one grey thing on it.
+|
 | Scoped to `[data-shape-dismiss]` rather than to ghost buttons generally,
 | because the two are not the same claim. A ghost `danger` button someone put
 | inside a `brand` alert is meant to be red and stays red; a dismiss control was
@@ -992,11 +1060,13 @@
 | this; the button is the only component that reads a tone rather than a surface.
 */
 @layer shape-surface {
-    [data-shape-surface] [data-shape-dismiss] {
+    [data-shape-surface] [data-shape-dismiss],
+    [data-shape-surface-hover]:hover [data-shape-dismiss] {
         color: var(--shape-fg);
     }
 
-    [data-shape-surface] [data-shape-dismiss]:hover {
+    [data-shape-surface] [data-shape-dismiss]:hover,
+    [data-shape-surface-hover]:hover [data-shape-dismiss]:hover {
         background-color: color-mix(in oklch, var(--shape-fg) 15%, transparent);
     }
 

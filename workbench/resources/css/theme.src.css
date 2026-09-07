@@ -89,6 +89,7 @@
         --shape-tone-surface: var(--color-shape-900);
         --shape-tone-surface-hover: var(--color-shape-800);
         --shape-tone-border: var(--color-shape-800);
+        --shape-tone-border-strong: var(--color-shape-600);
     }
 
     [data-theme='dark'] [data-shape-tone='brand'] {
@@ -98,6 +99,7 @@
         --shape-tone-ink: var(--color-shape-brand-200);
         --shape-tone-tint: var(--color-shape-brand-950);
         --shape-tone-tint-hover: var(--color-shape-brand-900);
+        --shape-tone-border-strong: var(--color-shape-brand-800);
     }
 
     [data-theme='dark'] [data-shape-tone='accent'] {
@@ -107,6 +109,7 @@
         --shape-tone-ink: var(--color-shape-accent-200);
         --shape-tone-tint: var(--color-shape-accent-950);
         --shape-tone-tint-hover: var(--color-shape-accent-900);
+        --shape-tone-border-strong: var(--color-shape-accent-800);
     }
 
     [data-theme='dark'] [data-shape-tone='danger'] {
@@ -116,6 +119,7 @@
         --shape-tone-ink: var(--color-shape-danger-200);
         --shape-tone-tint: var(--color-shape-danger-950);
         --shape-tone-tint-hover: var(--color-shape-danger-900);
+        --shape-tone-border-strong: var(--color-shape-danger-800);
     }
 
     [data-theme='dark'] [data-shape-tone='info'] {
@@ -125,6 +129,7 @@
         --shape-tone-ink: var(--color-shape-info-200);
         --shape-tone-tint: var(--color-shape-info-950);
         --shape-tone-tint-hover: var(--color-shape-info-900);
+        --shape-tone-border-strong: var(--color-shape-info-800);
     }
 
     [data-theme='dark'] [data-shape-tone='success'] {
@@ -134,6 +139,7 @@
         --shape-tone-ink: var(--color-shape-success-200);
         --shape-tone-tint: var(--color-shape-success-950);
         --shape-tone-tint-hover: var(--color-shape-success-900);
+        --shape-tone-border-strong: var(--color-shape-success-800);
     }
 
     [data-theme='dark'] [data-shape-tone='warning'] {
@@ -143,6 +149,7 @@
         --shape-tone-ink: var(--color-shape-warning-200);
         --shape-tone-tint: var(--color-shape-warning-950);
         --shape-tone-tint-hover: var(--color-shape-warning-900);
+        --shape-tone-border-strong: var(--color-shape-warning-800);
     }
 
     /* The progress track, the third. */
@@ -173,6 +180,7 @@
             --shape-tone-surface: white;
             --shape-tone-surface-hover: var(--color-shape-50);
             --shape-tone-border: var(--color-shape-200);
+            --shape-tone-border-strong: var(--color-shape-300);
         }
 
         [data-theme='light'] [data-shape-tone='brand'] {
@@ -182,6 +190,7 @@
             --shape-tone-ink: var(--color-shape-brand-800);
             --shape-tone-tint: var(--color-shape-brand-100);
             --shape-tone-tint-hover: var(--color-shape-brand-200);
+            --shape-tone-border-strong: var(--color-shape-brand-300);
         }
 
         [data-theme='light'] [data-shape-tone='accent'] {
@@ -191,6 +200,7 @@
             --shape-tone-ink: var(--color-shape-accent-800);
             --shape-tone-tint: var(--color-shape-accent-100);
             --shape-tone-tint-hover: var(--color-shape-accent-200);
+            --shape-tone-border-strong: var(--color-shape-accent-300);
         }
 
         [data-theme='light'] [data-shape-tone='danger'] {
@@ -200,6 +210,7 @@
             --shape-tone-ink: var(--color-shape-danger-800);
             --shape-tone-tint: var(--color-shape-danger-100);
             --shape-tone-tint-hover: var(--color-shape-danger-200);
+            --shape-tone-border-strong: var(--color-shape-danger-300);
         }
 
         [data-theme='light'] [data-shape-tone='info'] {
@@ -209,6 +220,7 @@
             --shape-tone-ink: var(--color-shape-info-800);
             --shape-tone-tint: var(--color-shape-info-100);
             --shape-tone-tint-hover: var(--color-shape-info-200);
+            --shape-tone-border-strong: var(--color-shape-info-300);
         }
 
         [data-theme='light'] [data-shape-tone='success'] {
@@ -218,6 +230,7 @@
             --shape-tone-ink: var(--color-shape-success-800);
             --shape-tone-tint: var(--color-shape-success-100);
             --shape-tone-tint-hover: var(--color-shape-success-200);
+            --shape-tone-border-strong: var(--color-shape-success-300);
         }
 
         [data-theme='light'] [data-shape-tone='warning'] {
@@ -227,6 +240,7 @@
             --shape-tone-ink: var(--color-shape-warning-800);
             --shape-tone-tint: var(--color-shape-warning-100);
             --shape-tone-tint-hover: var(--color-shape-warning-200);
+            --shape-tone-border-strong: var(--color-shape-warning-300);
         }
 
         [data-theme='light'] [data-shape-progress],

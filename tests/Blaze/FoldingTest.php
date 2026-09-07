@@ -521,6 +521,142 @@ it('keeps folding a toast whose text is bound dynamically', function () {
         ->toContain('shape::toast');
 });
 
+it('folds an outline alert that is toned at the call site', function () {
+    // The prop is read at compile time like every other one here, so choosing
+    // the coloured reading of an outline alert costs nothing at runtime.
+    expect(foldedComponentsWhileRendering('static-feedback-outline'))
+        ->toContain('shape::alert');
+});
+
+it('abandons folding an alert whose ink is bound dynamically', function () {
+    // `toned` resolves the surface the alert publishes, so it branches and
+    // cannot be safe — the same trade `variant` and `tone` make. Bind it only
+    // where the alert is not on a hot path.
+    expect(foldedComponentsWhileRendering('dynamic-alert-toned', ['toned' => true]))
+        ->not->toContain('shape::alert');
+});
+
+it('folds an alert that is lifted at the call site', function () {
+    // `shadow` is read at compile time like every other prop here, so opting an
+    // alert onto the raised step costs nothing at runtime — the class is baked
+    // into the parent with the rest of the block.
+    expect(foldedComponentsWhileRendering('static-feedback-shadow'))
+        ->toContain('shape::alert');
+});
+
+it('bakes the lift into the compiled template rather than leaving a branch behind', function () {
+    // The point of the fold: the arm `shadow` chose is decided once, at compile
+    // time, and what reaches the template is the class and none of the `match`
+    // that picked it.
+    $fixture = __DIR__.'/../fixtures/views/static-feedback-shadow.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('shadow-sm')
+        ->toContain('data-shape-alert');
+});
+
+it('abandons folding an alert whose lift is bound dynamically', function () {
+    // `shadow` branches because ghost waits for the hover with it, so it is a
+    // different class rather than a different value of one — which is what
+    // keeps it off the safe list, next to `variant`, `toned` and `border`.
+    expect(foldedComponentsWhileRendering('dynamic-alert-shadow', ['shadow' => true]))
+        ->not->toContain('shape::alert');
+});
+
+it('folds an alert that is barred at the call site', function () {
+    // A side written literally is read at compile time like every other prop
+    // here, so the bar and the squared corner it takes are baked into the
+    // parent with the rest of the block.
+    expect(foldedComponentsWhileRendering('static-feedback-bar'))
+        ->toContain('shape::alert');
+});
+
+it('bakes the barred side into the compiled template rather than leaving a branch behind', function () {
+    // The point of the fold: the side is decided once, and what reaches the
+    // template is the border utility it chose and none of the `match` that
+    // picked it — including the corner `bar-square` straightens.
+    $fixture = __DIR__.'/../fixtures/views/static-feedback-bar.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('border-l-4')
+        ->toContain('border-t-4')
+        ->toContain('rounded-t-none')
+        ->toContain('data-shape-alert');
+});
+
+it('folds an alert that carries an actions row', function () {
+    // The row is a named slot, and Blaze folds through slots the way it folds
+    // through the default one — so an alert with a button in it is still baked
+    // into the parent, button and all.
+    expect(foldedComponentsWhileRendering('static-alert-actions'))
+        ->toContain('shape::alert');
+});
+
+it('bakes the placement of the actions row into the compiled template', function () {
+    // The point of the fold, again: what reaches the template is the query
+    // container and the flip it chose, and none of the `match` that picked
+    // them.
+    $fixture = __DIR__.'/../fixtures/views/static-alert-actions.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('@container')
+        ->toContain('@lg:flex-row')
+        ->toContain('data-shape-alert-actions');
+});
+
+it('abandons folding an alert whose actions are placed dynamically', function () {
+    // `actions-placement` branches to resolve the layout rather than to
+    // interpolate a value — a named step is a container query and `side` is a
+    // row that never asks — so there is nothing here to interpolate safely
+    // either.
+    expect(foldedComponentsWhileRendering('dynamic-alert-actions-placement', ['actionsPlacement' => 'side']))
+        ->not->toContain('shape::alert');
+});
+
+it('abandons folding an alert whose side is bound dynamically', function () {
+    // `bar` branches hardest of the paint props: each side is a different
+    // border utility rather than a different value of one, and Tailwind reads
+    // those names out of the component as text, so there is nothing here that
+    // could be interpolated safely.
+    expect(foldedComponentsWhileRendering('dynamic-alert-bar', ['bar' => 'left']))
+        ->not->toContain('shape::alert');
+});
+
+it('abandons folding an alert whose corner is bound dynamically', function () {
+    // `bar-square` picks a corner from the side the bar took, so it branches
+    // with it and stays off the safe list for the same reason.
+    expect(foldedComponentsWhileRendering('dynamic-alert-square', ['barSquare' => true]))
+        ->not->toContain('shape::alert');
+});
+
+it('abandons folding an alert whose glyph style is bound dynamically', function () {
+    // The alert only hands `icon-variant` along, but the icon it hands it to
+    // branches on it — a style is a different drawing rather than a different
+    // value of one — so there is nothing to bake in and the fold gives up here
+    // rather than one level down. The same trade `icon-size` makes, and the
+    // reason neither of the icon's own props can be declared safe anywhere.
+    expect(foldedComponentsWhileRendering('dynamic-alert-icon-variant', ['iconVariant' => 'outline']))
+        ->not->toContain('shape::alert');
+});
+
+it('abandons folding an alert whose glyph is placed dynamically', function () {
+    // `icon-placement` branches to resolve the layout, the way
+    // `actions-placement` does: one arm is a flex column with the glyph out
+    // beside it and the other is block layout with the glyph floated into the
+    // first line, and neither is a value of the other.
+    expect(foldedComponentsWhileRendering('dynamic-alert-icon-placement', ['iconPlacement' => 'inline']))
+        ->not->toContain('shape::alert');
+});
+
 it('abandons folding an alert whose colour is bound dynamically', function () {
     // Same trade the badge makes, for the same reason: the alert branches on
     // `tone` to resolve its glyph, so colour cannot be safe here. It is the

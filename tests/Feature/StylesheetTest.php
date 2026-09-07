@@ -153,8 +153,35 @@ it('corrects every surface the control can sit on, not only the filled one', fun
     preg_match('/@layer shape-surface \{(.*?)\n\}/s', $css, $matches);
 
     expect($matches[1] ?? '')
-        ->toContain('[data-shape-surface] [data-shape-dismiss] {')
-        ->toContain('[data-shape-surface] [data-shape-dismiss]:hover');
+        ->toContain('[data-shape-surface] [data-shape-dismiss],')
+        ->toContain('[data-shape-surface] [data-shape-dismiss]:hover,');
+});
+
+it('counts a surface published only on hover as published', function () {
+    // A ghost alert paints `subtle`'s tint under the pointer and republishes
+    // that surface's foregrounds with it, so the × has to follow the block into
+    // the tint. Left out of these two selectors it stays neutral grey — the one
+    // grey thing on a block that has just gone coloured.
+    $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
+
+    preg_match('/@layer shape-surface \{(.*?)\n\}/s', $css, $matches);
+
+    expect($matches[1] ?? '')
+        ->toContain('[data-shape-surface-hover]:hover [data-shape-dismiss] {')
+        ->toContain('[data-shape-surface-hover]:hover [data-shape-dismiss]:hover {');
+});
+
+it('gives the hover surface the tint it names rather than a second copy of it', function () {
+    // The values are declared once, for both readings of `tint`: a copy would
+    // let the resting surface and the hovered one drift apart on the next
+    // change to either.
+    $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
+
+    preg_match("/\[data-shape-surface='tint'\],\s*\[data-shape-surface-hover='tint'\]:hover \{(.*?)\}/s", $css, $matches);
+
+    expect($matches[1] ?? '')
+        ->toContain('--shape-fg: var(--shape-tone-ink)')
+        ->toContain('--shape-fg-muted: color-mix(');
 });
 
 it('moves the hover with the foreground so the wash is never a second hue', function () {
@@ -164,9 +191,9 @@ it('moves the hover with the foreground so the wash is never a second hue', func
     // same mismatch one property along.
     $css = preg_replace('#/\*.*?\*/#s', '', shapeStylesheet()) ?? '';
 
-    preg_match('/\[data-shape-surface\] \[data-shape-dismiss\]:hover \{(.*?)\}/s', $css, $matches);
+    preg_match('/\[data-shape-surface\] \[data-shape-dismiss\]:hover,(.*?)\{(.*?)\}/s', $css, $matches);
 
-    expect($matches[1] ?? '')->toContain('var(--shape-fg)');
+    expect($matches[2] ?? '')->toContain('var(--shape-fg)');
 });
 
 it('gives the ring somewhere to be seen on a fill the brand ring disappears into', function () {
