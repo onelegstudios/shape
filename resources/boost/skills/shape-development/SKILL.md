@@ -108,7 +108,7 @@ which is blue whatever the brand becomes.
 | `list` / `list.item` | fold | `as`, `empty*` |
 | `pagination` | compile | `paginator`, `simple` |
 | `stat` | fold + memo | `value`, `label`, `description`, `delta`, `trend` |
-| `avatar` / `avatar.group` | fold + memo | `src`, `icon`, `icon-variant` (default `solid`), `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `square`, `ground` (draws `icon` or `initials` under the picture rather than instead of it, for a picture that may be transparent), `as` (button\|a\|div — an `href` implies `a`), `badge` (bare for a dot, otherwise its text), `badge-tone`, `badge-position` (bottom-right\|bottom-left\|top-right\|top-left) |
+| `avatar` / `avatar.group` | fold + memo | `src`, `icon`, `icon-variant` (default `solid`), `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `border` (rings the circle in the tone's edge on any variant, so a picture can have one; `outline` has one already), `square`, `ground` (draws `icon` or `initials` under the picture rather than instead of it, for a picture that may be transparent), `as` (button\|a\|div — an `href` implies `a`), `badge` (bare for a dot, otherwise its text), `badge-tone`, `badge-position` (bottom-right\|bottom-left\|top-right\|top-left) |
 | `avatar.element` | fold | `as` — the element an avatar renders; defaults to a `<span>`, not a `<button>` |
 | `tabs` / `tabs.tab` / `tabs.panel` | fold | `as`, `orientation` / `for`, `selected`, `icon` / `name` |
 
@@ -435,6 +435,11 @@ Read before executing:
   still run — its `default:` is a second ladder beside that one, where `mp`
   always wins, `blank` leaves the circle's own paint showing, and `404` is a
   broken image
+- do not reach for `variant="outline"` to put an edge on a photograph; that arm
+  drops the fill, which is the ground a transparent picture sits on and what
+  fills the circle while any picture arrives — `border` rings any variant and
+  leaves the fill alone (`outline` already has the same edge, so the prop adds
+  nothing there)
 - do not reach for `ground` to survive a picture that fails to load; it is for a
   picture that arrives and is see-through (`d=blank`), and a broken image still
   paints over the letters — pair it with `default: 'blank'` and nothing else

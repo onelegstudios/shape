@@ -94,6 +94,65 @@ it('paints the variant on a picture as well as on initials', function () {
         ->toContain('data-shape-variant="outline"');
 });
 
+it('draws no edge until it is asked for one', function () {
+    // Two of the three arms are a fill and nothing else. `border` is what rings
+    // them, and until it is passed there is no edge to find.
+    expect(Blade::render('<x-shape::avatar initials="AL" tone="brand" />'))
+        ->not->toContain('border')
+        ->and(Blade::render('<x-shape::avatar initials="AL" tone="brand" variant="solid" />'))
+        ->not->toContain('border');
+});
+
+it('rings the arm it is asked to ring, in the tone the arm can carry', function (string $variant, string $class) {
+    expect(Blade::render("<x-shape::avatar initials=\"AL\" tone=\"brand\" variant=\"{$variant}\" border />"))
+        ->toContain('[:where(&amp;)]:border ')
+        ->toContain($class);
+})->with([
+    // The same edge `outline` draws, so the prop and the variant agree about
+    // what the tone's edge is.
+    ['subtle', 'border-[var(--shape-tone-border-strong)]'],
+
+    // Except on the fill, where that step would read as a highlight, so the
+    // edge is the step past the fill instead.
+    ['solid', 'border-[var(--shape-tone-hover)]'],
+
+    ['outline', 'border-[var(--shape-tone-border-strong)]'],
+]);
+
+it('adds nothing to the outline arm, which is ringed already', function () {
+    // The alert's `border` tones an outline that is drawn in neutral chrome.
+    // An avatar's outline is the tone's own to begin with, so the ring the prop
+    // would draw is the ring that is there.
+    $html = Blade::render('<x-shape::avatar initials="AL" tone="brand" variant="outline" />');
+
+    expect(Blade::render('<x-shape::avatar initials="AL" tone="brand" variant="outline" border />'))
+        ->toBe($html);
+});
+
+it('rings a picture without giving up the fill under it', function () {
+    // `outline` was the only edge before this, and taking it dropped the tint —
+    // which is the ground a transparent picture sits on and what fills the
+    // circle while any picture is arriving.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" border />'))
+        ->toContain('<img')
+        ->toContain('border-[var(--shape-tone-border-strong)]')
+        ->toContain('bg-[var(--shape-tone-tint)]');
+});
+
+it('rings a grounded picture and a control the same way', function () {
+    // The edge rides the circle's own classes, so it lands on whichever element
+    // is the circle rather than on one arrangement of it.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" initials="AL" ground border />'))
+        ->toContain('border-[var(--shape-tone-border-strong)]')
+        ->and(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" as="button" border />'))
+        ->toContain('border-[var(--shape-tone-border-strong)]');
+});
+
+it('gives the edge zero specificity, so a heavier one is a class away', function () {
+    expect(Blade::render('<x-shape::avatar initials="AL" border />'))
+        ->toContain('[:where(&amp;)]:border [:where(&amp;)]:border-[var(--shape-tone-border-strong)]');
+});
+
 it('crops a picture to the circle rather than squashing it into one', function () {
     // `size` is a width and a height, and a photograph of a person is taller
     // than it is wide. Without this the face arrives stretched.

@@ -34,6 +34,36 @@
     what fills the circle while the image is still arriving. The border rings
     the picture, which is the same edge doing the same job.
 
+    `border` is that edge, asked for rather than arrived at through the variant.
+    `outline` was the only way to ring an avatar, and ringing a photograph that
+    way meant giving up the fill under it — the ground a transparent picture
+    sits on, and what fills the circle while any picture is arriving. The prop
+    holds the two apart: the fill stays whatever the variant paints and the edge
+    is a separate question.
+
+    It draws `--shape-tone-border-strong`, the same edge `outline` draws, so the
+    two agree about what the tone's edge is and swapping the variant moves the
+    fill rather than the ring. `solid` cannot take that step — a pale edge on a
+    saturated fill reads as a highlight — so it takes the one past the fill,
+    `--shape-tone-hover`, which is darker in light mode and brighter in dark for
+    the same reason the fill's own hover is.
+
+    `outline` is the arm the prop does nothing to, because the ring it would
+    draw is the ring already there. Which is the one place this parts from the
+    alert, whose outline arm draws the neutral chrome border and whose `border`
+    tones it: an avatar's outline is the tone's own already, for the reason
+    above.
+
+    A border and not the ring the group draws, which is the other edge in this
+    file. The ring is outside the box in the page's own colours, holding
+    overlapping faces apart; the border is inside it in the tone's, saying the
+    circle has an edge. A bordered avatar in a group has both, because they are
+    answering different questions.
+
+    It takes no room either way. The box is a fixed width and a height and the
+    border is drawn inside it, so a bordered avatar lays out exactly as one
+    without and a row of faces does not move when one of them is ringed.
+
     `ground` is for the pictures that do not cover the circle. A Gravatar asked
     for `d=blank` answers for a stranger with a transparent GIF, and a
     transparent GIF over a tint is an empty circle where two letters would have
@@ -334,8 +364,9 @@
 
     `tone` does not branch. It is interpolated into an attribute and nothing
     more, the way the button carries it, so it is safe and a per-person tone
-    still folds. `variant` resolves the paint above and `square` the radius, so
-    neither is safe — the badge's arrangement as well.
+    still folds. `variant` resolves the paint above, `border` the edge and
+    `square` the radius, so none of the three is safe — the badge's arrangement
+    as well.
 
     The consequence is worth stating rather than discovering: an avatar list
     built from per-row URLs neither folds nor usefully memoizes, because every
@@ -353,6 +384,7 @@
     'size' => 'base',
     'tone' => null,
     'variant' => 'subtle',
+    'border' => false,
     'square' => false,
     'ground' => false,
     'badge' => false,
@@ -404,8 +436,20 @@ $classes = Shape::classes()
 
     ->add(match ($variant) {
         'solid' => '[:where(&)]:bg-[var(--shape-tone)] [:where(&)]:text-[var(--shape-tone-fg)]',
-        'outline' => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border-strong)] [:where(&)]:text-[var(--shape-tone-ink)]',
+        'outline' => '[:where(&)]:text-[var(--shape-tone-ink)]',
         default => '[:where(&)]:bg-[var(--shape-tone-tint)] [:where(&)]:text-[var(--shape-tone-ink)]',
+    })
+
+    // The edge, which `outline` draws whether or not it was asked for one and
+    // the other two arms draw only when they are. It is the same
+    // `--shape-tone-border-strong` in both places, so the prop and the variant
+    // agree about what the tone's edge is; `solid` takes the step past its fill
+    // instead, because a pale edge on a saturated one reads as a highlight.
+    // Drawn inside the fixed box, so nothing it is beside moves.
+    ->add(match (true) {
+        ! $border && $variant !== 'outline' => null,
+        $variant === 'solid' => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-hover)]',
+        default => '[:where(&)]:border [:where(&)]:border-[var(--shape-tone-border-strong)]',
     })
 
     // A control is the circle rather than a button around one, so all it adds is

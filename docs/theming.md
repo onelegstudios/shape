@@ -452,15 +452,17 @@ tone sets the variables, every variant reads them.
 | `--shape-tone-tint-hover`                | That tint, hovered                                                          |
 | `--shape-tone-surface`, `-surface-hover` | The `outline` variant's background                                          |
 | `--shape-tone-border`                    | The `outline` variant's border, on the button, the badge and the alert      |
-| `--shape-tone-border-strong`             | The alert's toned edge, under its `border` prop                             |
+| `--shape-tone-border-strong`             | The alert's and the avatar's toned edge, under their `border` props          |
 
 The two borders are a pair, and which one a component reads says what its edge is
 for. `--shape-tone-border` is neutral at every tone and stays that way: an
 outlined button is a control whatever it means, and toning its edge would make
 every secondary action on a page a coloured box. `--shape-tone-border-strong` is
 the tone's own, a step further along the ramp, for an edge that carries the
-meaning rather than draws the control. Only the [alert](components/alert.md#borders)
-reads it today.
+meaning rather than draws the control. The [alert](components/alert.md#borders)
+and the [avatar](components/avatar.md#borders) read it — the avatar at its
+`outline` variant as well as under the prop, because a circle with no fill has
+nothing else carrying the tone.
 
 The tones are `neutral` (the default, and the bare `[data-shape-tone]` block),
 `brand`, `accent`, `danger`, `info`, `success` and `warning`. Retinting a ramp

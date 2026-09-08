@@ -23,6 +23,10 @@ and a height, and a photograph of a person is usually taller than it is wide, so
 the picture takes `object-cover`. Pass `class="object-contain"` to letterbox the
 whole frame instead.
 
+A photograph is ringed the same way initials are, with
+[`border`](#borders) — an edge on a picture that would otherwise run into the
+page behind it.
+
 `alt` is a real `alt` attribute on this form, and screen-reader-only text on the
 initials one — [the initials are not the accessible
 name](#the-initials-are-not-the-accessible-name) says what to pass and when to
@@ -412,7 +416,50 @@ it, an avatar's ring is the whole of the paint.
 Every arm paints on the image form as well. Under an opaque photograph the fill
 is not seen, under a transparent one it is the ground the face sits on, and in
 either case it is what fills the circle while the image is still arriving. The
-border rings the picture.
+border rings the picture, which is [`border`](#borders) drawn by the variant
+rather than asked for.
+
+## Borders
+
+`border` rings the circle without going through the variant. It is off by
+default, because a face on a page is a face and an edge around it is something
+someone chose; turn it on where the circle has to hold its own — a photograph
+that is nearly the colour of the page behind it, a row of faces on a busy
+surface, an avatar sitting beside a [card](card.md) drawn with an edge of its
+own:
+
+@docs('preview', name: 'avatar-border')
+
+Before this prop, `outline` was the only way to ring an avatar, and taking it
+meant giving up the fill: the tint that is [the ground a transparent picture
+sits on](#ground), and what fills the circle while any picture is arriving. The
+two are separate questions now. The fill stays whatever the variant paints and
+the border is asked for on top of it, which is what makes a bordered photograph
+a thing this component can draw.
+
+`subtle` takes
+[`--shape-tone-border-strong`](../theming.md#the-tone-variables) — the same edge
+`outline` draws, so the prop and the variant agree about what the tone's edge
+is, and swapping one for the other moves the fill rather than the ring. `solid`
+cannot take that step: a pale edge on a saturated fill reads as a highlight, so
+it takes the step *past* the fill instead, which is darker in light mode and
+brighter in dark for the same reason the tone's own hover is.
+
+`outline` is the arm the prop does nothing to, because the ring it would draw is
+the ring already there. That is the one place this parts from the
+[alert](alert.md#borders), whose outline arm draws the neutral chrome border and
+whose `border` tones it.
+
+It is not the ring a [group](#groups) draws, which is the other edge on this
+page. The ring is outside the box in the page's own colours, and its job is to
+hold overlapping faces apart; the border is inside the box in the tone's, and
+its job is to say the circle has an edge. A bordered avatar in a group has both.
+
+It costs no layout either way. The box is a fixed width and a height and the
+border is drawn inside it, so a bordered avatar sits in a row exactly as an
+unbordered one does. Weight and colour are a class away — the edge is declared
+at `[:where(&)]:` like the rest of the paint, so `class="border-2"` or
+`class="border-white"` beats it.
 
 ## Sizes
 
@@ -757,6 +804,7 @@ all, and will announce nothing:
 | `size` | `base` | `xs`, `sm`, `base`, `lg` |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
+| `border` | `false` | rings the circle in the tone's own edge; `outline` has one already |
 | `square` | `false` | squares the circle to `--radius-shape` |
 | `ground` | `false` | draws `icon` or `initials` under the picture rather than instead of it |
 | `badge` | `false` | `true` for a dot, or the mark's text |
@@ -784,8 +832,8 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'ba
 `badge-tone` rides with it for the same reason. `class` is merged rather than
 branched on, so [a colour per person](#a-colour-per-person) folds as well —
 which is what makes a hand-painted palette cheaper than it looks. `variant` branches to resolve
-the paint and `square` to resolve the radius, so neither can be `safe` — the
-badge's arrangement exactly. `as` joins them: it chooses an element, so it
+the paint, `border` to resolve the edge and `square` to resolve the radius, so
+none of the three can be `safe` — the badge's arrangement exactly. `as` joins them: it chooses an element, so it
 branches — but it is a word a call site writes rather than binds, so an avatar
 that is a control folds like any other. `ground` is in exactly that position:
 it decides whether the picture replaces what is under it or lies over it, so it
