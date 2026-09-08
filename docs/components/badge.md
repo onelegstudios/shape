@@ -63,6 +63,40 @@ the line it's on:
 
 @docs('preview', name: 'badge-inset', layout: 'stack')
 
+## Overriding styles
+
+The badge's geometry and type are written at zero specificity, so your own
+classes win without `!important`. A badge takes `rounded-shape` like the rest
+of the library; `rounded-full` makes it a pill. Nothing else in the badge
+assumes square corners, and the radius reaches nothing else — the state glyph
+is a flex child and `inset` is a margin.
+
+The side padding is left where it was, which keeps the label the same distance
+from the cap as it was from a straight edge. Widen it by a step if you want the
+ends looser:
+
+@docs('preview', name: 'badge-pill')
+
+To round every badge at once, say so in your own stylesheet rather than in the
+radius token. `--radius-shape` is one decision for the whole library, so moving
+it there would round the cards and the inputs with it:
+
+```css
+[data-shape-badge] { border-radius: 9999px; }
+```
+
+Unlayered CSS beats anything in a layer, so that wins without a specificity
+fight. It also beats a `rounded-shape` passed at a call site, which is the
+trade for setting the corners in one place.
+
+The tone colours are the exception. `variant` emits its `bg-*` and `text-*`
+as plain classes rather than at `[:where(&)]:`, so a colour of your own only
+ties with them, and wins or loses on Tailwind's emit order. Reach for a
+[tone](../theming.md) first; when the colour is not one the system has, make
+it important:
+
+@docs('preview', name: 'badge-tone-override')
+
 ## Reference
 
 | Prop | Default | Values |
