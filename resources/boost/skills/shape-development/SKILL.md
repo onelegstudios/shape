@@ -108,7 +108,7 @@ which is blue whatever the brand becomes.
 | `list` / `list.item` | fold | `as`, `empty*` |
 | `pagination` | compile | `paginator`, `simple` |
 | `stat` | fold + memo | `value`, `label`, `description`, `delta`, `trend` |
-| `avatar` / `avatar.group` | fold + memo | `src`, `icon`, `icon-variant` (default `solid`), `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `square`, `as` (button\|a\|div — an `href` implies `a`), `badge` (bare for a dot, otherwise its text), `badge-tone`, `badge-position` (bottom-right\|bottom-left\|top-right\|top-left) |
+| `avatar` / `avatar.group` | fold + memo | `src`, `icon`, `icon-variant` (default `solid`), `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `square`, `ground` (draws `icon` or `initials` under the picture rather than instead of it, for a picture that may be transparent), `as` (button\|a\|div — an `href` implies `a`), `badge` (bare for a dot, otherwise its text), `badge-tone`, `badge-position` (bottom-right\|bottom-left\|top-right\|top-left) |
 | `avatar.element` | fold | `as` — the element an avatar renders; defaults to a `<span>`, not a `<button>` |
 | `tabs` / `tabs.tab` / `tabs.panel` | fold | `as`, `orientation` / `for`, `selected`, `icon` / `name` |
 
@@ -428,6 +428,23 @@ Read before executing:
   reports a status nobody set — pass the fill and ink as `class` instead
   (`bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200`),
   resolved per person in an accessor rather than inside the folded component
+- do not build a Gravatar URL by hand, and do not reach for a
+  `<x-shape::gravatar>` that does not exist; `Shape::gravatar($user->email)` is a
+  `src` like any other, takes the avatar's own size word (`size: 'lg'`) rather
+  than pixels, and returns null for a missing address so `icon` and `initials`
+  still run — its `default:` is a second ladder beside that one, where `mp`
+  always wins, `blank` leaves the circle's own paint showing, and `404` is a
+  broken image
+- do not reach for `ground` to survive a picture that fails to load; it is for a
+  picture that arrives and is see-through (`d=blank`), and a broken image still
+  paints over the letters — pair it with `default: 'blank'` and nothing else
+- do not pass `ground` to letterbox with `class="object-contain"`; a ground moves
+  the bag one element out the way `as` does, so it is `class="[&>img]:object-contain"`
+- do not call `Shape::gravatar()` in the template; resolve it in the Livewire
+  component and pass the result down, the way initials and a per-person colour
+  are — a `#[Computed]` property memoizes for the request, and for a list it goes
+  in the same pass that builds the list (a model accessor when more than one
+  component draws the same face)
 - do not bind `badge` per row on an avatar when a bare `badge` will do; it
   branches, while `badge-tone` is safe, so a presence dot whose colour comes
   from the row still folds

@@ -34,6 +34,31 @@
     what fills the circle while the image is still arriving. The border rings
     the picture, which is the same edge doing the same job.
 
+    `ground` is for the pictures that do not cover the circle. A Gravatar asked
+    for `d=blank` answers for a stranger with a transparent GIF, and a
+    transparent GIF over a tint is an empty circle where two letters would have
+    done. So the letters — or the glyph, on the same ladder they always take —
+    are drawn first and the picture is laid over them.
+
+    It is asked for rather than assumed, and the bare `<img>` is the reason. A
+    picture with nothing around it is the one arm that carries the attribute bag
+    on the picture itself, which is what keeps `class="object-contain"` landing
+    on the thing it was written for. A ground needs an element to sit in, so
+    `ground` moves the bag one element out exactly as `as` does, and letterboxing
+    becomes `class="[&>img]:object-contain"`. Made the default, that would have
+    moved under every call site that never asked for it.
+
+    It is still not a runtime fallback, which is the thing it will be mistaken
+    for. A picture that fails to load leaves a broken image sitting on the
+    letters rather than the letters, because a broken image is something the
+    browser draws rather than something it does not. What `ground` answers is a
+    picture that arrives and is see-through, and the moment before any picture
+    arrives at all.
+
+    The picture is positioned and the ground is not, so it paints over without a
+    z-index — positioned elements paint after in-flow ones, which is the rule
+    the group leans on from the other side.
+
     `size` sets a width and a height, which on an `<img>` is an instruction to
     squash whatever arrives into that square. Photographs of people are mostly
     taller than they are wide, so the default answer is the wrong one almost
@@ -329,6 +354,7 @@
     'tone' => null,
     'variant' => 'subtle',
     'square' => false,
+    'ground' => false,
     'badge' => false,
     'badgeTone' => null,
     'badgePosition' => 'bottom-right',
@@ -362,7 +388,12 @@ $classes = Shape::classes()
     ->add($square ? '[:where(&)]:rounded-shape' : '[:where(&)]:rounded-full')
     ->add('[:where(&)]:font-medium')
 
-    ->add(['[:where(&)]:object-cover' => $src && ! $control])
+    ->add(['[:where(&)]:object-cover' => $src && ! $control && ! $ground])
+
+    // Only when there is something laid over it. Structural rather than a
+    // default, so it is not written through `:where()`: a call site that beat it
+    // would drop the picture out of the circle it is meant to be filling.
+    ->add($src && $ground ? 'relative' : null)
 
     ->add(match ($size) {
         'xs' => '[:where(&)]:size-6 [:where(&)]:text-2xs',
@@ -390,6 +421,15 @@ $classes = Shape::classes()
     // keep in step.
     ->add($control && ! $badge ? 'transition-opacity duration-100 hover:opacity-80' : null)
     ->add($control && ! $badge ? 'disabled:opacity-50 aria-disabled:opacity-50' : null);
+
+// The picture inside an element, which is every arrangement but the bare one:
+// a control, or a ground. `absolute` is what lays it over the letters, and it
+// paints above them without a z-index because positioned elements paint after
+// in-flow ones.
+$pictureClasses = Shape::classes()
+    ->add($ground ? 'absolute inset-0' : null)
+    ->add('size-full')
+    ->add('[:where(&)]:object-cover');
 
 // The badge's classes are not merged with anything, because the attribute bag
 // stays on the avatar, so they are written flat rather than through `:where()`.
@@ -465,9 +505,12 @@ $badgeClasses = Shape::classes()
      photograph inside a control that can be pressed — is one element with
      something in it. --}}
 @if ($badge)<span class="{{ $shellClasses }}">@endif
-@if ($src && ! $control)
+@if ($src && ! $control && ! $ground)
     <img src="{{ $src }}" alt="{{ $alt }}" {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">
 @else
-    <x-shape::avatar.element :as="$control" {{ $attributes->class($classes) }} data-shape-avatar="" data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">@if ($src)<img src="{{ $src }}" alt="" class="size-full [:where(&)]:object-cover">@elseif ($icon)<x-shape::icon :name="$icon" :variant="$iconVariant" :size="$iconSize" />@else<span aria-hidden="true">{{ $initials }}</span>@endif<span class="sr-only">{{ $alt }}</span></x-shape::avatar.element>
+    <x-shape::avatar.element :as="$control" {{ $attributes->class($classes) }} data-shape-avatar="" data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">@if (! $src || $ground)
+@if ($icon)<x-shape::icon :name="$icon" :variant="$iconVariant" :size="$iconSize" />@else<span aria-hidden="true">{{ $initials }}</span>@endif
+@endif
+@if ($src)<img src="{{ $src }}" alt="" class="{{ $pictureClasses }}">@endif<span class="sr-only">{{ $alt }}</span></x-shape::avatar.element>
 @endif
 @if ($badge)<span class="{{ $badgeClasses }}" aria-hidden="true" data-shape-avatar-badge data-shape-position="{{ $badgePosition }}" data-shape-tone="{{ $badgeTone ?? 'neutral' }}">@if ($badge !== true){{ $badge }}@endif</span></span>@endif

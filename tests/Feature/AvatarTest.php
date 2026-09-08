@@ -189,7 +189,7 @@ it('leaves the initials safe to fold by branching on the icon instead', function
 
     expect($source)
         ->toContain("safe: ['initials', 'alt', 'tone', 'badgeTone']")
-        ->toContain('@elseif ($icon)')
+        ->toContain('@if ($icon)')
         ->not->toContain('($initials)');
 });
 
@@ -548,7 +548,7 @@ it('puts a picture inside the control, because an img cannot be pressed', functi
         ->toContain('<button type="button"')
         ->toContain('<img src="/ada.jpg"')
         ->toContain('size-full')
-        ->toContain('[:where(&)]:object-cover');
+        ->toContain('[:where(&amp;)]:object-cover');
 });
 
 it('leaves the crop reachable past the control', function () {
@@ -557,7 +557,7 @@ it('leaves the crop reachable past the control', function () {
     // The inner rule is zero-specificity, so the call site's wins.
     expect(Blade::render('<x-shape::avatar src="/ada.jpg" alt="Ada" as="button" class="[&>img]:object-contain" />'))
         ->toContain('[&>img]:object-contain')
-        ->toContain('[:where(&)]:object-cover');
+        ->toContain('[:where(&amp;)]:object-cover');
 });
 
 it('announces a picture in a control once, not twice', function () {
@@ -688,4 +688,79 @@ it('does not borrow the button\'s element, whose default is a button', function 
         ->and(Blade::render('<x-shape::avatar.element>AL</x-shape::avatar.element>'))
         ->toContain('<span')
         ->not->toContain('<button');
+});
+
+it('lays a picture over the letters when it is asked for a ground', function () {
+    // A Gravatar asked for `d=blank` answers for a stranger with a transparent
+    // GIF, and a transparent GIF over a tint is an empty circle where two
+    // letters would have done.
+    $html = Blade::render('<x-shape::avatar src="/ada.jpg" initials="AL" alt="Ada Lovelace" ground />');
+
+    expect($html)
+        ->toContain('>AL<')
+        ->toContain('<img src="/ada.jpg"')
+        ->toContain('absolute inset-0');
+});
+
+it('takes the same ladder for the ground that it takes for the circle', function () {
+    // The glyph sits above the initials under a picture exactly as it does
+    // without one. There is no second order to learn.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" icon="shape-user" initials="AL" ground />'))
+        ->toContain('data-shape-icon')
+        ->not->toContain('>AL<');
+});
+
+it('makes the circle a positioning context only when something is laid over it', function () {
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" initials="AL" ground />'))
+        ->toContain('relative')
+        ->and(Blade::render('<x-shape::avatar src="/ada.jpg" initials="AL" />'))
+        ->not->toContain('relative')
+        ->and(Blade::render('<x-shape::avatar initials="AL" />'))
+        ->not->toContain('relative');
+});
+
+it('goes on replacing the letters when it is not asked', function () {
+    // The ladder is unchanged for every call site that never wrote the word:
+    // `src` wins outright and the letters are not rendered at all.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" initials="AL" />'))
+        ->toContain('<img src="/ada.jpg"')
+        ->not->toContain('>AL<');
+});
+
+it('keeps the bare picture bare, so the bag stays on the picture', function () {
+    // Which is the whole reason `ground` is asked for rather than assumed: a
+    // ground needs an element to sit in, and that moves the bag one element out
+    // exactly as `as` does.
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" class="object-contain" />'))
+        ->toContain('<img src="/ada.jpg"')
+        ->toContain('object-contain" data-shape-avatar')
+        ->and(Blade::render('<x-shape::avatar src="/ada.jpg" initials="AL" ground class="[&>img]:object-contain" />'))
+        ->toContain('<span')
+        ->toContain('[&>img]:object-contain');
+});
+
+it('names the person once under a ground, not twice', function () {
+    // The picture is a picture of a name exactly as the letters are, so it is
+    // hidden and the name is carried in the text beside them — the same answer
+    // the control arm gives.
+    $html = Blade::render('<x-shape::avatar src="/ada.jpg" initials="AL" alt="Ada Lovelace" ground />');
+
+    expect($html)
+        ->toContain('alt=""')
+        ->toContain('<span class="sr-only">Ada Lovelace</span>')
+        ->and(substr_count($html, 'Ada Lovelace'))->toBe(1);
+});
+
+it('grounds a picture inside a control as well', function () {
+    expect(Blade::render('<x-shape::avatar src="/ada.jpg" initials="AL" alt="Ada" as="button" ground />'))
+        ->toContain('<button type="button"')
+        ->toContain('>AL<')
+        ->toContain('absolute inset-0');
+});
+
+it('ignores a ground when there is no picture to lay over one', function () {
+    expect(Blade::render('<x-shape::avatar initials="AL" ground />'))
+        ->toContain('>AL<')
+        ->not->toContain('<img')
+        ->not->toContain('absolute');
 });

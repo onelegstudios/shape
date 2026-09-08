@@ -15,7 +15,8 @@ around a different element:
 Passing both is not a fallback. `src` decides which element renders, and there
 is no `onerror` swapping a broken URL for the letters: the initials are what a
 call site holding no picture shows, not what a picture that fails to arrive
-leaves behind.
+leaves behind. [`ground`](#ground) is the prop for a picture that arrives and
+does not cover the circle, which is a different thing.
 
 The image is cropped to the circle, not squashed into it. `size` sets a width
 and a height, and a photograph of a person is usually taller than it is wide, so
@@ -29,6 +30,158 @@ pass nothing.
 
 Choosing the element rather than describing it is also the one thing about `src`
 that costs something at compile time, which [Folding](#folding) sets out.
+
+### Ground
+
+`ground` draws the glyph or the letters *under* the picture instead of in place
+of it:
+
+```blade
+<x-shape::avatar :src="$this->avatarUrl" :initials="$user->initials" ground />
+```
+
+It is for the pictures that do not cover the circle. A [Gravatar](#gravatar)
+asked for `d=blank` answers for a stranger with a transparent GIF, and a
+transparent GIF over a tint is an empty circle where two letters would have
+done. The ground takes the same ladder the circle takes — `icon` above
+`initials` — so there is no second order to learn.
+
+It is still not a runtime fallback, which is the thing it will be mistaken for.
+A picture that fails to load leaves a broken image sitting on the letters rather
+than the letters, because a broken image is something the browser draws rather
+than something it does not. What `ground` answers is a picture that arrives and
+is see-through, and the moment before any picture arrives at all.
+
+It is asked for rather than assumed, and the bare `<img>` is why. A picture with
+nothing around it is the one arrangement that carries the attribute bag on the
+picture itself, which is what keeps `class="object-contain"` landing on the
+thing it was written for. A ground needs an element to sit in, so `ground` moves
+the bag one element out exactly as [`as`](#the-control-is-the-circle) does, and
+letterboxing becomes `class="[&>img]:object-contain"`. Made the default, that
+would have moved under every call site that never asked for it.
+
+The picture is positioned and the ground is not, so it paints over without a
+z-index — positioned elements paint after in-flow ones.
+
+### Gravatar
+
+`Shape::gravatar()` builds the URL for an email address, so a Gravatar is a
+`src` like any other. Resolve it in the Livewire component, the way [initials
+are](#initials-are-stated-never-derived) and [a colour per person
+is](#a-colour-per-person), and pass the result down:
+
+```php
+#[Computed]
+public function avatarUrl(): ?string
+{
+    return Shape::gravatar($this->user->email, size: 'sm');
+}
+```
+
+```blade
+<x-shape::avatar size="sm" :src="$this->avatarUrl" :initials="$this->user->initials" />
+```
+
+`#[Computed]` memoizes for the request, so the hash runs once however many times
+the view reads it. Calling the facade in the template instead works, and is fine
+for a one-off, but it hashes on every render and puts the vendor's name in the
+view — moving to a different service later should be one method, not every
+template that draws a face.
+
+For a list, resolve it in the same pass that builds the list:
+
+```php
+#[Computed]
+public function members(): Collection
+{
+    return $this->team->members->map(fn (User $member) => [
+        'name' => $member->name,
+        'initials' => $member->initials,
+        'avatar' => Shape::gravatar($member->email, size: 'sm'),
+    ]);
+}
+```
+
+```blade
+@foreach ($this->members as $member)
+    <x-shape::avatar size="sm" :src="$member['avatar']" :initials="$member['initials']" :alt="$member['name']" />
+@endforeach
+```
+
+A model accessor is the other place it can live, and the one to reach for when
+more than one component draws the same face. It is the same move one level
+further out.
+
+It is a facade method rather than a component of its own because a Gravatar is a
+URL and nothing else. The avatar already draws a person at four sizes, in a
+group, under a badge, as a control — a `<x-shape::gravatar>` would have restated
+every one of those decisions in order to change where the bytes come from.
+
+An address that is missing returns `null`, which drops through the ladder to
+`icon` and then `initials` the way [any absent `src` does](#which-one-wins). A
+list where some people have an address and some do not is one call site, not a
+branch.
+
+#### Size
+
+`size` takes the avatar's own word, and the pixels are resolved for you:
+
+```php
+Shape::gravatar($this->user->email, size: 'lg');
+```
+
+```blade
+<x-shape::avatar size="lg" :src="$this->avatarUrl" :initials="$this->user->initials" />
+```
+
+Gravatar serves a square and almost nobody is looking at a 1x display, so each
+word asks for twice its circle — 48, 64, 80 and 96 for `xs` through `lg`. `base`
+is the default, the same one the component has. A word it does not know resolves
+to `base` as well, because that is what the component does with it, and a URL
+that disagreed would be the one place two readings of the same word came apart.
+
+An `int` is taken as pixels instead, for the display that wants three times and
+for the call site that is not an avatar at all.
+
+The word is named where the URL is built rather than read off the avatar,
+because a URL cannot see the component it is about to be handed to. Which means
+it is written twice — once on the component, once beside it — and a computed
+property whose name says which circle it is for is the cheapest way to keep the
+two in step.
+
+#### `default` is a second ladder
+
+`default` is what Gravatar sends back for an address that has no avatar, and it
+is worth reading twice, because it is a fallback ladder arriving beside the one
+this component already has. Only one of them can win:
+
+| `default` | What renders for an address with no avatar |
+| --- | --- |
+| `mp`, `identicon`, `retro`, … | Gravatar's drawing. `icon` and `initials` never render for anyone with an email address. |
+| `blank` | A transparent GIF, so the circle shows whatever is under it — its own [variant](#variants) paint, or the letters when [`ground`](#ground) drew them. |
+| `404` | A broken image. |
+
+`mp` is the default here, because it is the arm that always answers with a
+picture and never with a broken one. `blank` with [`ground`](#ground) is the
+pairing that keeps both ladders — Gravatar draws the face when it has one, the
+letters show through when it does not:
+
+```blade
+<x-shape::avatar :src="Shape::gravatar($user->email, default: 'blank')" :initials="$user->initials" ground />
+```
+
+Do not pass `404` — a picture that fails to arrive leaves a broken image, never
+a glyph, which is the same thing [Pictures](#pictures) says about `src`.
+
+`rating` sends Gravatar's `r=` and is omitted unless you pass it.
+
+#### It is a third party
+
+The URL contains a hash of the address, and rendering it sends that hash and a
+`Referer` to Automattic on every page a face appears on. Hashes of addresses
+somebody already holds are reversible by lookup. That is a decision an
+application makes deliberately, which is the other reason the host lives in one
+method you can grep for rather than inside a component.
 
 ## Icons
 
@@ -76,6 +229,8 @@ call site names deliberately.
 
 None of it is a runtime fallback, for the same reason [`src` is not](#pictures):
 a picture that fails to load leaves a broken image, never a glyph.
+[`ground`](#ground) is the one prop that changes the order into a layering
+rather than a choice, and it changes only what the picture sits on.
 
 ### Size and style
 
@@ -603,6 +758,7 @@ all, and will announce nothing:
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `square` | `false` | squares the circle to `--radius-shape` |
+| `ground` | `false` | draws `icon` or `initials` under the picture rather than instead of it |
 | `badge` | `false` | `true` for a dot, or the mark's text |
 | `badge-tone` | `neutral` | the same tones as `tone`, or [one of your own](../theming.md#a-tone-of-your-own) |
 | `badge-position` | `bottom-right` | `bottom-right`, `bottom-left`, `top-right`, `top-left` |
@@ -631,7 +787,10 @@ which is what makes a hand-painted palette cheaper than it looks. `variant` bran
 the paint and `square` to resolve the radius, so neither can be `safe` — the
 badge's arrangement exactly. `as` joins them: it chooses an element, so it
 branches — but it is a word a call site writes rather than binds, so an avatar
-that is a control folds like any other.
+that is a control folds like any other. `ground` is in exactly that position:
+it decides whether the picture replaces what is under it or lies over it, so it
+branches, and it is written rather than bound, so it costs a folding call site
+nothing.
 
 `badge` branches twice, once for the wrapper and once for whether the mark has
 text in it, and `badge-position` resolves two insets, so both are static props
