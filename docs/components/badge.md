@@ -51,6 +51,18 @@ Nothing is ever resolved into `icon-trailing`: the state glyph belongs in front
 of the label, and a second copy behind it would say the same thing twice. It is
 for a drawing of your own — a chevron on a badge that opens something.
 
+## Inline text
+
+A badge is `inline-flex`, so it sits on its line as one atomic box. When its
+padding makes it taller than the surrounding text's line-height, the browser
+grows that line to fit it — a `base` badge is 24px tall, which is taller than
+a 21px `text-sm` line, so the line carrying the badge sits further from its
+neighbours than the rest of the paragraph. `inset` cancels the padding above
+with an equal negative margin, so the badge keeps its size without growing
+the line it's on:
+
+@docs('preview', name: 'badge-inset', layout: 'stack')
+
 ## Reference
 
 | Prop | Default | Values |
@@ -62,6 +74,7 @@ for a drawing of your own — a chevron on a badge that opens something.
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` to omit |
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
+| `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |
 
 There is no slot: Blaze memoizes a component only when it has none and is called
 self-closing, and a badge — one per row, every row, every page — is the best

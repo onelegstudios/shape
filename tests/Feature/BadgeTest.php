@@ -139,3 +139,22 @@ it('passes attributes straight through', function () {
         ->toContain('wire:key="b"')
         ->toContain('title="Paid in full"');
 });
+
+it('adds no vertical margin by default', function () {
+    expect(Blade::render('<x-shape::badge label="Paid" size="base" />'))
+        ->not->toContain('-my-1');
+});
+
+it('cancels its vertical padding with an equal negative margin when inset', function (string $size, string $expected) {
+    expect(Blade::render("<x-shape::badge label='Paid' size='{$size}' inset />"))
+        ->toContain($expected);
+})->with([
+    ['sm', '[:where(&amp;)]:-my-0.5'],
+    ['base', '[:where(&amp;)]:-my-1'],
+    ['lg', '[:where(&amp;)]:-my-1'],
+]);
+
+it('has no vertical padding to cancel at xs, inset or not', function () {
+    expect(Blade::render('<x-shape::badge label="Paid" size="xs" inset />'))
+        ->not->toContain('-my-');
+});

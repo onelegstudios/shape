@@ -27,6 +27,7 @@
     'icon' => null,
     'iconTrailing' => null,
     'iconSize' => 'xs',
+    'inset' => false,
 ])
 
 @php
@@ -44,6 +45,18 @@ $classes = Shape::classes()
         'lg' => '[:where(&)]:gap-1.5 [:where(&)]:px-3 [:where(&)]:py-1 [:where(&)]:text-sm',
         default => '[:where(&)]:gap-1.5 [:where(&)]:px-2.5 [:where(&)]:py-1 [:where(&)]:text-xs',
     })
+
+    // `inline-flex` makes a badge an atomic box on its line, so a caller
+    // dropping one into running text gets that line's height grown to fit the
+    // badge's padding — 24px of badge in a 21px line, say. `inset` cancels
+    // exactly the padding added above with an equal negative margin, so the
+    // badge keeps its size but stops pushing its own line apart from the
+    // ones around it. `xs` has no vertical padding to cancel.
+    ->add($inset ? match ($size) {
+        'xs' => null,
+        'sm' => '[:where(&)]:-my-0.5',
+        default => '[:where(&)]:-my-1',
+    } : null)
 
     // The same tone variables the button reads, so a badge and a button given
     // the same colour agree without either knowing about the other.
