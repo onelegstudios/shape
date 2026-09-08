@@ -601,6 +601,36 @@ it('dims and stops the pointer on both spellings of disabled', function () {
         ->toContain('aria-disabled:opacity-50');
 });
 
+it('dims a badge with the control it sits on', function () {
+    // The mark is a sibling of the circle rather than a child, so neither of the
+    // control's dims stops anywhere but the circle. A presence dot held at full
+    // strength on a face that has dimmed is the half of the component still
+    // reporting that it is live.
+    $html = Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" badge badge-tone="success" />');
+
+    expect($html)
+        ->toMatch('/<button[^>]*\bpeer\b/')
+        ->toContain('peer-hover:opacity-80')
+        ->toContain('peer-disabled:opacity-50')
+        ->toContain('peer-aria-disabled:opacity-50');
+});
+
+it('moves the mark and the circle together rather than one of them snapping', function () {
+    // The mark takes the circle's own transition, so a badged control fades as
+    // one thing under the pointer.
+    expect(substr_count(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" badge />'), 'transition-opacity duration-100'))
+        ->toBe(2);
+});
+
+it('writes no peer where there is nothing to follow it', function () {
+    // A badge on a plain avatar has no disabled state to follow, and a control
+    // with no badge has nothing written after it to do the following.
+    expect(Blade::render('<x-shape::avatar initials="AL" badge badge-tone="success" />'))
+        ->not->toContain('peer')
+        ->and(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" />'))
+        ->not->toContain('peer');
+});
+
 it('squares and badges a control the way it squares and badges a span', function () {
     // The control is the circle, so everything resolved above it lands on it.
     $html = Blade::render('<x-shape::avatar initials="OL" alt="One Leg Studios" as="button" square badge="12" badge-tone="brand" />');

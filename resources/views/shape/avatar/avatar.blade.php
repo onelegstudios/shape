@@ -240,6 +240,15 @@
     not there. `disabled` and `aria-disabled` both dim and both stop the pointer,
     for the reason the button carries both: an anchor cannot be disabled.
 
+    A badge dims with the control it is on, under the pointer and at both
+    spellings of disabled. The mark is a sibling of the circle rather than a
+    child, so neither dim reaches it on its own, and a presence dot held at full
+    strength beside a face that has dimmed is the half of the component still
+    reporting that it is live. It follows through `peer-`, which is available
+    because the mark is written after the circle it belongs to, and it carries
+    the circle's transition so the two move together rather than one snapping
+    while the other fades.
+
     A control has to be named. An avatar beside a name already on the page
     passes no `alt` and announces nothing, which is right for a picture and wrong
     for a button — an unnamed one is announced as "button" and nothing else. So
@@ -349,7 +358,13 @@ $classes = Shape::classes()
     // reaches a photograph — so it dims, the way `disabled` already does here.
     ->add($control ? 'transition-opacity duration-100 hover:opacity-80' : null)
     ->add($control ? 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--shape-ring)]' : null)
-    ->add($control ? 'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50' : null);
+    ->add($control ? 'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50' : null)
+
+    // Both dims above stop at the circle, because the mark is a sibling of it
+    // rather than a child. `peer` is what lets the mark follow them, and it is
+    // worth writing only where there is both a control that dims and a mark to
+    // do the following.
+    ->add($control && $badge ? 'peer' : null);
 
 // The badge's classes are not merged with anything, because the attribute bag
 // stays on the avatar, so they are written flat rather than through `:where()`.
@@ -366,6 +381,15 @@ $badgeClasses = Shape::classes()
     // Two pixels of page between the mark and whatever it landed on, in the same
     // colours the group rings its children with.
     ->add('ring-2 ring-white dark:ring-shape-900')
+
+    // A control dims and its mark dims with it, at both the depths the circle
+    // uses and over the same 100ms. The two are one thing, and a presence dot
+    // held at full strength on a face that has dimmed is the half of that thing
+    // still claiming to be live. `peer-` reaches back to the circle because the
+    // mark is written after it, and the two states cannot collide: a disabled
+    // control takes no pointer, so it is never the hovered one.
+    ->add($control ? 'transition-opacity duration-100 peer-hover:opacity-80' : null)
+    ->add($control ? 'peer-disabled:opacity-50 peer-aria-disabled:opacity-50' : null)
 
     // Half the mark, on each axis, pulled back over the corner it is anchored
     // to. Which is what puts its centre on the edge rather than its corner in
