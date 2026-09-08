@@ -17,6 +17,17 @@
     only cheap while labels repeat — with a dynamic tone AND a label unique to
     each row, every call is a memo miss, which measures around sixty times the
     cost of folding. Keep the tone static where you can.
+
+    `as` makes the badge a control, and an `href` makes it a link without being
+    asked — the same resolution the avatar, the tab and the menu item make. It
+    swaps the tag and adds the chrome a control owes; the box, the padding and
+    the paint are the ones a badge has anyway, because the control *is* the
+    badge rather than a button wrapped around one. Everything Shape does not
+    claim as a prop therefore lands on the thing being pressed.
+
+    It branches, so it is not safe, and in practice that costs nothing: `as` is
+    a word a call site writes rather than binds, so a badge that is a control
+    folds like any other.
 --}}
 
 @props([
@@ -28,9 +39,17 @@
     'iconTrailing' => null,
     'iconSize' => 'xs',
     'inset' => false,
+    'as' => null,
 ])
 
 @php
+// A badge is a control when it is asked to be one, and an `href` asks without
+// saying so — the avatar, the tab and the menu item resolve their own element
+// the same way. Middle-click, "open in new tab" and the status bar all work for
+// a link and none of them work for a button pretending to be one, and `as` wins
+// where a call site wants a control that happens to carry an `href`.
+$control = $as ?? ($attributes->has('href') ? 'a' : null);
+
 $classes = Shape::classes()
     ->add('inline-flex items-center whitespace-nowrap align-middle')
     ->add('[:where(&)]:rounded-shape [:where(&)]:font-medium')
@@ -64,10 +83,35 @@ $classes = Shape::classes()
         'solid' => 'bg-[var(--shape-tone)] text-[var(--shape-tone-fg)]',
         'outline' => 'border border-[var(--shape-tone-border)] text-[var(--shape-tone-ink)]',
         default => 'bg-[var(--shape-tone-tint)] text-[var(--shape-tone-ink)]',
-    });
+    })
+
+    // All a control adds, because everything else about it is already drawn
+    // above. The focus ring is the button's exactly — two pixels, offset two,
+    // `--shape-ring` — since a control that focused differently from every
+    // other control in the library would be reporting a difference that is not
+    // there. `disabled` and `aria-disabled` both dim it and stop it taking a
+    // pointer, for the reason the button carries both: an anchor cannot be
+    // disabled.
+    ->add($control ? 'select-none transition-colors duration-100' : null)
+    ->add($control ? 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--shape-ring)]' : null)
+    ->add($control ? 'disabled:pointer-events-none disabled:opacity-50' : null)
+    ->add($control ? 'aria-disabled:pointer-events-none aria-disabled:opacity-50' : null)
+
+    // It repaints on hover rather than dimming, which is where it parts from the
+    // avatar: an avatar's paint is what the avatar means, and a badge's is the
+    // same chrome the button paints out of the same variables. So the hover is
+    // the button's too — a louder version of the same paint, one step per
+    // variant. `outline` has no fill to lift, so it takes the tint the ghost
+    // button takes.
+    ->add($control ? match ($variant) {
+        'solid' => 'hover:bg-[var(--shape-tone-hover)]',
+        'outline' => 'hover:bg-[var(--shape-tone-tint)]',
+        default => 'hover:bg-[var(--shape-tone-tint-hover)]',
+    } : null);
 @endphp
 
-<span
+<x-shape::badge.element
+    :as="$control"
     {{ $attributes->class($classes) }}
     data-shape-badge
     data-shape-variant="{{ $variant }}"
@@ -111,4 +155,4 @@ $classes = Shape::classes()
     @if ($iconTrailing)
         <x-shape::icon :name="$iconTrailing" :size="$iconSize" />
     @endif
-</span>
+</x-shape::badge.element>

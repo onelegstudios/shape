@@ -63,6 +63,60 @@ the line it's on:
 
 @docs('preview', name: 'badge-inset', layout: 'stack')
 
+## Buttons and links
+
+`as="button"` makes the badge a control, and an `href` makes it a link without
+being asked:
+
+@docs('preview', name: 'badge-controls')
+
+Most badges are labels on a row. Some are the way into something — a filter chip
+that clears itself, a state that opens the record behind it — and those have to
+be pressable by a keyboard as well as by a pointer.
+
+`href` resolving to an `<a>` on its own is the same resolution the
+[avatar](avatar.md), the [tab](tabs.md) and the [menu item](dropdown.md) make.
+Middle-click, "open in new tab" and the status bar all work for a link and none
+of them work for a button pretending to be one. Pass `as` as well where you want
+a button that happens to carry an `href`; `as` wins.
+
+`as` also takes `div`, for a badge inside something already clickable — the same
+escape hatch the [button](button.md#links) has, for the same reason.
+
+### The control is the badge
+
+It swaps the tag and nothing else about the box. The same element carries the
+same classes, the same padding, the same `data-shape-badge` and the same
+attribute bag it always carried, so everything Shape doesn't claim as a prop
+lands on the thing being pressed:
+
+```blade
+<x-shape::badge :label="$filter->name" tone="brand" icon-trailing="shape-arrow-right" as="button" wire:click="clear" />
+```
+
+The label is the accessible name, exactly as it is the text — there is nothing
+else in a badge to name it with. A control whose `label` is a glyph and an
+`:icon="false"` is a control announced as "button" and nothing else, so give it
+`aria-label` where the text isn't the name.
+
+### It repaints rather than dims
+
+Which is where it parts from the [avatar](avatar.md#it-dims-rather-than-repaints).
+An avatar's paint is what the avatar means; a badge's is the same chrome the
+button paints, out of the same variables. So the hover is the button's too — a
+louder version of the same paint, one step per `variant`, and `outline` takes
+the tint the ghost button takes because it has no fill to lift.
+
+The focus ring is the button's exactly: `--shape-ring`, two pixels, offset two.
+A control that focused differently from every other control in the library would
+be reporting a difference that is not there. `disabled` and `aria-disabled` both
+dim the badge and remove pointer events, for the reason the button carries both
+— an anchor cannot be disabled.
+
+A badge that is not a control gets none of it: no transition, no hover, no ring,
+no dimming. A `<span>` that lit up under the pointer would be promising a press
+that isn't there.
+
 ## Overriding styles
 
 The badge's geometry and type are written at zero specificity, so your own
@@ -109,6 +163,7 @@ it important:
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
 | `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |
+| `as` | `span` | `button`, `a`, `div` — an `href` implies `a` |
 
 There is no slot: Blaze memoizes a component only when it has none and is called
 self-closing, and a badge — one per row, every row, every page — is the best
@@ -120,7 +175,9 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['label'])`.
 
 `label` is interpolated and nothing more, so a badge folds even though its text
 differs on every row. `tone` branches to resolve the state icon, so it cannot
-be `safe`:
+be `safe`, and neither can `as`, which decides the element and the chrome that
+comes with it — a word written at a call site rather than bound, so a badge that
+is a control folds like any other:
 
 ```blade
 {{-- Folds. --}}

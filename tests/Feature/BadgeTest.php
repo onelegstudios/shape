@@ -158,3 +158,92 @@ it('has no vertical padding to cancel at xs, inset or not', function () {
     expect(Blade::render('<x-shape::badge label="Paid" size="xs" inset />'))
         ->not->toContain('-my-');
 });
+
+it('is a span until a call site asks for something that can be pressed', function () {
+    expect(Blade::render('<x-shape::badge label="Paid" />'))
+        ->toContain('<span')
+        ->not->toContain('<button');
+});
+
+it('becomes a control when asked to be one', function () {
+    $html = Blade::render('<x-shape::badge label="Overdue" tone="danger" as="button" />');
+
+    expect($html)
+        ->toContain('<button type="button"')
+        ->toContain('data-shape-badge')
+        ->toContain('Overdue');
+});
+
+it('becomes a link on an href without being told to', function () {
+    // The tab, the menu item and the avatar all resolve their element the same
+    // way: middle-click and "open in new tab" work for a link and for nothing
+    // pretending to be one.
+    expect(Blade::render('<x-shape::badge label="Paid" href="/invoices/1042" />'))
+        ->toContain('<a')
+        ->toContain('href="/invoices/1042"')
+        ->not->toContain('<button');
+});
+
+it('lets as beat an href, for a link that is really a control', function () {
+    expect(Blade::render('<x-shape::badge label="Paid" href="/invoices/1042" as="button" />'))
+        ->toContain('<button type="button"')
+        ->toContain('href="/invoices/1042"');
+});
+
+it('takes a div, for a badge inside something already clickable', function () {
+    expect(Blade::render('<x-shape::badge label="Paid" as="div" />'))
+        ->toContain('<div')
+        ->not->toContain('<button');
+});
+
+it('is the control rather than something wrapped in one', function () {
+    // Same element, same classes, same bag. A wrapper would have moved every
+    // attribute a call site passes off the thing being pressed.
+    $html = Blade::render('<x-shape::badge label="Overdue" tone="danger" as="button" class="ring-2" wire:click="clear" />');
+
+    expect($html)
+        ->toContain('wire:click="clear"')
+        ->toContain('ring-2')
+        ->and(substr_count($html, '<button'))->toBe(1)
+        ->and(substr_count($html, 'data-shape-badge='))->toBe(1);
+});
+
+it('keeps its icons, size and paint when it becomes a control', function () {
+    $html = Blade::render('<x-shape::badge label="Overdue" tone="danger" size="lg" icon-trailing="shape-arrow-right" as="button" />');
+
+    expect($html)
+        ->toContain('data-shape-tone="danger"')
+        ->toContain('[:where(&amp;)]:px-3')
+        ->and(substr_count($html, 'data-shape-icon'))->toBe(2);
+});
+
+it('adds the chrome a control owes and nothing a span would wear', function () {
+    $html = Blade::render('<x-shape::badge label="Draft" as="button" />');
+
+    expect($html)
+        ->toContain('focus-visible:outline-[var(--shape-ring)]')
+        ->toContain('transition-colors')
+        ->toContain('disabled:opacity-50')
+        ->toContain('aria-disabled:pointer-events-none');
+});
+
+it('leaves a badge that is not a control with none of it', function () {
+    // A span that lit up under the pointer would be promising a press that
+    // isn't there.
+    expect(Blade::render('<x-shape::badge label="Draft" />'))
+        ->not->toContain('focus-visible:')
+        ->not->toContain('hover:')
+        ->not->toContain('transition-colors')
+        ->not->toContain('disabled:');
+});
+
+it('repaints on hover out of the same variables the button reads', function (string $variant, string $expected) {
+    // The avatar dims, because its paint is what it means. A badge's paint is
+    // the button's chrome, so its hover is the button's too.
+    expect(Blade::render("<x-shape::badge label=\"Paid\" tone=\"success\" variant=\"{$variant}\" as=\"button\" />"))
+        ->toContain($expected);
+})->with([
+    ['solid', 'hover:bg-[var(--shape-tone-hover)]'],
+    ['subtle', 'hover:bg-[var(--shape-tone-tint-hover)]'],
+    ['outline', 'hover:bg-[var(--shape-tone-tint)]'],
+]);
