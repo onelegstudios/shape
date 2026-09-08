@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\View\ViewException;
 
 it('renders its label from a prop rather than a slot', function () {
     // Slotless is what makes the badge memoizable, which matters because it is
@@ -247,3 +248,80 @@ it('repaints on hover out of the same variables the button reads', function (str
     ['subtle', 'hover:bg-[var(--shape-tone-tint-hover)]'],
     ['outline', 'hover:bg-[var(--shape-tone-tint)]'],
 ]);
+
+it('renders no dismiss control until one is asked for', function () {
+    expect(Blade::render('<x-shape::badge label="Paid" />'))
+        ->not->toContain('data-shape-dismiss');
+});
+
+it('adds a dismiss control when it is', function () {
+    $html = Blade::render('<x-shape::badge label="Overdue" dismissible />');
+
+    expect($html)
+        ->toContain('data-shape-dismiss')
+        ->toContain('<button type="button"')
+        ->toContain('data-shape-icon');
+});
+
+it('hangs the dismissal off the same hook the alert and the toast use', function () {
+    // One primitive, one delegated listener. A badge is not a reason for a
+    // second mechanism, so the attribute has to be the one shape.js already
+    // reads rather than a badge-shaped variant of it.
+    $badge = Blade::render('<x-shape::badge label="Overdue" dismissible />');
+    $alert = Blade::render('<x-shape::alert dismissible>Trial ends Friday.</x-shape::alert>');
+
+    expect($badge)->toContain('data-shape-dismiss=""')
+        ->and($alert)->toContain('data-shape-dismiss=""');
+});
+
+it('leaves the badge itself the element the listener removes', function () {
+    // `closest()` walks from the x to `[data-shape-badge]`, so the hook and the
+    // root have to be on the same element the classes are on.
+    $html = Blade::render('<x-shape::badge label="Overdue" dismissible />');
+
+    expect(strpos($html, 'data-shape-badge'))->toBeLessThan(strpos($html, 'data-shape-dismiss'));
+});
+
+it('puts the dismiss control last, behind a trailing icon of the caller’s own', function () {
+    $html = Blade::render('<x-shape::badge label="Overdue" tone="danger" icon-trailing="shape-arrow-right" dismissible />');
+
+    expect(substr_count($html, 'data-shape-icon'))->toBe(3)
+        ->and(strpos($html, 'Overdue'))->toBeLessThan(strpos($html, 'data-shape-dismiss'));
+});
+
+it('names the thing it removes rather than only the button', function () {
+    // Twenty chips on a filter bar all announced "Dismiss" name the control and
+    // not the chip it takes away.
+    expect(Blade::render('<x-shape::badge label="Overdue" dismissible />'))
+        ->toContain('aria-label="Dismiss Overdue"');
+});
+
+it('draws the dismiss control itself rather than composing the button', function () {
+    // The registry ejects a component with everything it composes, and the
+    // button's own box is taller than an `xs` badge besides.
+    expect(Blade::render('<x-shape::badge label="Overdue" dismissible />'))
+        ->not->toContain('data-shape-button');
+});
+
+it('sizes the dismiss control with the icon-size the glyphs take', function () {
+    expect(Blade::render('<x-shape::badge label="Overdue" tone="danger" dismissible icon-size="sm" />'))
+        ->toContain('size-5')
+        ->and(substr_count(Blade::render('<x-shape::badge label="Overdue" tone="danger" dismissible icon-size="sm" />'), 'size-5'))->toBe(2);
+});
+
+it('leaves the badge itself chrome-free when only the x is pressable', function () {
+    // The control is the x, not the badge, so the root keeps the span's paint.
+    $html = Blade::render('<x-shape::badge label="Overdue" dismissible />');
+
+    expect($html)
+        ->not->toContain('focus-visible:outline-[var(--shape-ring)]')
+        ->and(substr_count($html, '<button'))->toBe(1);
+});
+
+it('refuses to be a control and dismissible at once', function (string $attribute) {
+    // A `<button>` inside a `<button>` is markup the parser rewrites rather
+    // than markup a browser tolerates, and both silent resolutions lose
+    // something the call site asked for.
+    Blade::render("<x-shape::badge label=\"Overdue\" dismissible {$attribute} />");
+})->with(['as="button"', 'href="/invoices"', 'as="a" href="/invoices"'])
+    ->throws(ViewException::class, 'A dismissible badge cannot also be a control');

@@ -117,6 +117,68 @@ A badge that is not a control gets none of it: no transition, no hover, no ring,
 no dimming. A `<span>` that lit up under the pointer would be promising a press
 that isn't there.
 
+## Dismissing
+
+`dismissible` adds a close button after the label, which turns the badge into a
+chip — a filter someone can take off, a tag they can remove:
+
+@docs('preview', name: 'badge-dismissible')
+
+The button carries `data-shape-dismiss`, the same hook the
+[alert](alert.md#dismissing) and the [toast](toast.md) carry, and the same
+delegated listener in `shape.js` removes the nearest of the three. There is one
+dismissal mechanism in the library and a badge does not add a second.
+
+Dismissal is not remembered, the same as the [alert](alert.md#dismissing): the
+element is removed from the page and the next render brings it back, so the
+filter a chip stood for has to be cleared where it is kept. The attribute bag is
+on the badge and the × is inside it, so a handler on the badge catches the click
+on its way up:
+
+```blade
+<x-shape::badge :label="$filter->name" dismissible wire:click="remove({{ $filter->id }})" />
+```
+
+That is a `wire:click` on a `<span>` rather than on a control, which is exactly
+what it looks like: the badge is not pressable, the × inside it is, and the
+handler is listening to a click it did not draw the button for. It is also the
+only place to put one, since nothing a call site passes reaches inside.
+
+It draws its own button rather than composing the [button](button.md). The
+registry ejects a component with everything it composes, so a badge that used
+one would pull the button into an application that asked for a badge; and the
+button's box is taller than a 16px `xs` badge, so the control would end up
+setting the height of the thing it sits in. The × takes no colour of its own
+either — it inherits whatever ink the `variant` resolved, so it stays readable
+on a tint, on a fill and on an outline without branching on any of them.
+
+The `label` goes into the button's accessible name — "Dismiss Overdue" rather
+than "Dismiss", because a filter bar of twenty chips all announced the same way
+names the control and not the chip it removes.
+
+### Not also a control
+
+`dismissible` cannot be combined with `as` or an `href`, and a badge given both
+throws:
+
+```blade
+{{-- Throws. --}}
+<x-shape::badge label="Overdue" href="/invoices" dismissible />
+```
+
+The × is a control, and it is inside the badge. A `<button>` inside a `<button>`
+is not invalid-but-tolerated markup — it is markup the parser rewrites, closing
+the outer control at the inner one, so a call site that wrote a nesting gets two
+siblings. An `<a>` does the same to any interactive content inside it.
+
+It raises rather than picking one, because both choices available are silent:
+dropping the control loses the navigation, dropping the × loses the dismissal,
+and neither leaves a trace at the call site. A chip that both navigates and
+dismisses is two controls, and two controls need a box around them — which is
+something a call site can write and not something this component can be, since
+[the control is the badge](#the-control-is-the-badge) and there is only ever one
+element here.
+
 ## Overriding styles
 
 The badge's geometry and type are written at zero specificity, so your own
@@ -163,6 +225,7 @@ it important:
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
 | `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |
+| `dismissible` | `false` | adds a close button; cannot be combined with `as` or `href` |
 | `as` | `span` | `button`, `a`, `div` — an `href` implies `a` |
 
 There is no slot: Blaze memoizes a component only when it has none and is called
@@ -176,8 +239,9 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['label'])`.
 `label` is interpolated and nothing more, so a badge folds even though its text
 differs on every row. `tone` branches to resolve the state icon, so it cannot
 be `safe`, and neither can `as`, which decides the element and the chrome that
-comes with it — a word written at a call site rather than bound, so a badge that
-is a control folds like any other:
+comes with it, or `dismissible`. Both of those are words written at a call site
+rather than bound, so a badge that is a control and a badge that is a chip fold
+like any other:
 
 ```blade
 {{-- Folds. --}}

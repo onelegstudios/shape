@@ -28,6 +28,11 @@
     It branches, so it is not safe, and in practice that costs nothing: `as` is
     a word a call site writes rather than binds, so a badge that is a control
     folds like any other.
+
+    `dismissible` turns the badge into a chip and is the same kind of prop: a
+    word, a branch, not safe, and free in practice. It cannot be combined with
+    `as` or an `href`, which is the one prop pairing in this component that
+    raises rather than resolving — the reason is in the guard below.
 --}}
 
 @props([
@@ -39,6 +44,7 @@
     'iconTrailing' => null,
     'iconSize' => 'xs',
     'inset' => false,
+    'dismissible' => false,
     'as' => null,
 ])
 
@@ -49,6 +55,25 @@
 // a link and none of them work for a button pretending to be one, and `as` wins
 // where a call site wants a control that happens to carry an `href`.
 $control = $as ?? ($attributes->has('href') ? 'a' : null);
+
+// A dismissible badge is a chip, and the x inside it is a control. That rules
+// out the badge being one as well: a `<button>` inside a `<button>` is not
+// invalid-but-tolerated markup, it is markup the parser rewrites — the inner
+// one closes the outer, and a call site that wrote a nesting gets two siblings.
+// An `<a>` does the same to any interactive content inside it.
+//
+// So this raises rather than resolving something. Both resolutions available
+// are silent: dropping the control loses the caller's navigation, dropping the
+// x loses the dismissal, and neither leaves a trace at the call site. A chip
+// that both navigates and dismisses is two controls that need a box around
+// them, which is a thing a call site can write and not a thing this component
+// can be — everything here is one element by design.
+//
+// Checked inside the `dismissible` arm, so the badge that repeats down a table
+// pays a single boolean for a guard it never trips.
+if ($dismissible && $control) {
+    throw new InvalidArgumentException('A dismissible badge cannot also be a control: [as] and [href] would put the dismiss button inside another control. Wrap the badge in a control of your own instead.');
+}
 
 $classes = Shape::classes()
     ->add('inline-flex items-center whitespace-nowrap align-middle')
@@ -154,5 +179,57 @@ $classes = Shape::classes()
     --}}
     @if ($iconTrailing)
         <x-shape::icon :name="$iconTrailing" :size="$iconSize" />
+    @endif
+
+    {{--
+        The x, last, after anything the call site put there.
+
+        `data-shape-dismiss` is the library's one dismissal primitive — the same
+        attribute the alert and the toast carry, read by the same delegated
+        listener in shape.js, which removes the nearest of the three. A badge is
+        not a reason for a second mechanism.
+
+        A bare `<button>` where the alert and the toast reach for
+        `<x-shape::button>`, for the two reasons element.blade.php gives about
+        the avatar's file. The registry ejects a component with everything it
+        composes, and a badge that composed the button would pull the button
+        into an application that asked for a badge. And the button's box does
+        not fit in here anyway: an `xs` badge is sixteen pixels tall, shorter
+        than the smallest button, so the control would end up setting the height
+        of the thing it sits inside.
+
+        It has no padding of its own for that same reason — at `xs` the badge is
+        exactly one `xs` icon tall, so a puck any larger than the glyph would
+        break the height scale at the top of this file. The hover puck is the
+        glyph's own box, and the gap above already sets it off from the label.
+
+        It takes no colour either. Preflight gives a button `color: inherit`, so
+        the x arrives painted in whatever ink the variant resolved — the tone's
+        on a tint, the readable foreground on a fill — and the hover is that
+        same ink at fifteen percent, which is the recipe the dismiss control in
+        shape.css uses against a surface. It reads `currentColor` instead of
+        `--shape-fg` because a badge publishes a tone and no surface. One
+        element, right on all three variants, branching on none of them.
+
+        The ring is `currentColor` too, and that is the same failure shape.css
+        documents for the alert's x on a solid fill: `--shape-ring` is brand-600,
+        so a solid `brand` badge would draw a ring nobody can see. The inherited
+        ink is the one colour already proven readable against this fill. Offset
+        inward, because two pixels of outward offset on a sixteen-pixel box puts
+        the ring outside the badge.
+
+        `label` goes in the accessible name. A filter bar of twenty chips all
+        announced "Dismiss" names the button and not the thing it removes. It is
+        interpolated exactly as it is in the text above — no branch on it, so a
+        dismissible badge folds with a label that differs on every row.
+    --}}
+    @if ($dismissible)
+        <button type="button"
+            class="inline-flex shrink-0 items-center justify-center rounded-full transition-colors duration-100 hover:bg-current/15 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-current"
+            aria-label="Dismiss {{ $label }}"
+            data-shape-dismiss=""
+        >
+            <x-shape::icon.shape-close :size="$iconSize" />
+        </button>
     @endif
 </x-shape::badge.element>

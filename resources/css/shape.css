@@ -818,6 +818,27 @@
             opacity: 0;
             translate: 0 0.75rem;
         }
+
+        /* A dismissed badge, on the same two-hundred-millisecond window the
+           listener in shape.js holds open before it removes any of the three.
+           Without something here the badge sits unchanged for that window and
+           then vanishes, which reads as a lag rather than as a dismissal.
+
+           The transition is declared inside the leaving state rather than on
+           the badge, which is the one difference from the toast above. A
+           transition is read from the style the element is moving *to*, so
+           declaring it here still animates the way out — and it keeps the
+           property off the component that repeats most in the library, where it
+           would otherwise sit on every badge in a table for the sake of the one
+           that is ever dismissed. Nothing needs to transition on the way in: a
+           badge is rendered with the page rather than inserted into it. */
+        [data-shape-badge][data-shape-leaving] {
+            transition:
+                opacity 150ms ease,
+                scale 150ms ease;
+            opacity: 0;
+            scale: 0.95;
+        }
     }
 
     /*
@@ -1072,5 +1093,30 @@
 
     [data-shape-surface='solid'] [data-shape-dismiss]:focus-visible {
         outline-color: var(--shape-fg);
+    }
+
+    /* And the badge is the case that has to be taken back out of it. A badge
+       carries its own ink — the tone's on a tint, the tone's readable
+       foreground on a fill — and its x inherits that ink rather than resolving
+       anything, which is what makes one element right on all three variants.
+       Dropped inside an alert, though, the three selectors above reach it
+       through the alert's surface and paint it the alert's foreground, which is
+       the correct answer for the alert's own x and the wrong one for a badge
+       sitting on a fill of its own.
+
+       Equal specificity to the rules it is undoing, so it wins on order and
+       nothing here needs `!important`. `currentColor` on the background for the
+       reason the badge gives: the ink is inherited, so the puck can be mixed
+       from it without either side naming a colour. */
+    [data-shape-badge] [data-shape-dismiss] {
+        color: inherit;
+    }
+
+    [data-shape-badge] [data-shape-dismiss]:hover {
+        background-color: color-mix(in oklch, currentColor 15%, transparent);
+    }
+
+    [data-shape-badge] [data-shape-dismiss]:focus-visible {
+        outline-color: currentColor;
     }
 }

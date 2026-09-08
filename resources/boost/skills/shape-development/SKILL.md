@@ -85,7 +85,7 @@ which is blue whatever the brand becomes.
 | `text` | fold | `size`, `variant` (base\|muted\|strong), `as` |
 | `card` / `card.header` / `card.footer` | fold | `padding`, `border` |
 | `separator` | fold + memo | `orientation`, `label` |
-| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome) |
+| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `dismissible` (adds a close button carrying `data-shape-dismiss`; cannot be combined with `as` or `href`, and throws if it is), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome) |
 | `empty` | fold | `heading`, `description`, `icon` |
 | `field` | fold | `field-name`, `as` — wraps a control with its label, description and error |
 | `label` / `description` / `error` | fold | `for` / `for` / `name`, `bag` |
@@ -423,6 +423,15 @@ Read before executing:
 - name a `size` on an icon and leave `variant` alone unless the style is the
   point; the small sizes are drawn solid because a stroke does not read at 16px,
   and a call site that names only a size works with any icon set
+- do not combine `dismissible` with `as` or an `href` on a badge; the badge
+  throws, because the close button is a control and nesting it inside another
+  one is markup the parser rewrites — a chip that both navigates and dismisses
+  is two controls, and the box around them is yours to write
+- do not expect a dismissed badge to stay dismissed; the listener removes the
+  element and the next render brings it back, so clear the filter it stood for
+  on the server too — the handler goes on the badge (`wire:click` on the badge
+  itself, which catches the × bubbling up), because nothing a call site passes
+  reaches the close button
 - do not spend a `tone` on decoration to give people different coloured
   avatars; a tone is what an avatar means, so a red circle beside a green one
   reports a status nobody set — pass the fill and ink as `class` instead
