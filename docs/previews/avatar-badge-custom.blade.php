@@ -1,0 +1,3 @@
+<x-shape::avatar initials="AL" alt="Alex Lindqvist, idle" badge class="[&+[data-shape-avatar-badge]]:bg-purple-700 dark:[&+[data-shape-avatar-badge]]:bg-purple-500" />
+<x-shape::avatar initials="GH" alt="Gabriel Haas, 3 held" badge="3" class="[&+[data-shape-avatar-badge]]:bg-purple-700 [&+[data-shape-avatar-badge]]:text-white dark:[&+[data-shape-avatar-badge]]:bg-purple-500 dark:[&+[data-shape-avatar-badge]]:text-shape-950" />
+<x-shape::avatar icon="shape-user" alt="Acme Corp, 12 queued" badge="12" badge-position="top-right" square class="[&+[data-shape-avatar-badge]]:bg-teal-700 [&+[data-shape-avatar-badge]]:text-white dark:[&+[data-shape-avatar-badge]]:bg-teal-500 dark:[&+[data-shape-avatar-badge]]:text-shape-950" />

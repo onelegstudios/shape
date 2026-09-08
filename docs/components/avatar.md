@@ -224,6 +224,66 @@ A ring in the page's colours holds the two apart, the same pair the
 [group](#groups) rings its children with. Without it a green dot on a
 green-shirted photograph has no edge of its own.
 
+#### A colour the framework does not ship
+
+The seven tones are not a closed list. `badge-tone` is interpolated into
+`data-shape-tone` and nothing reads it back, so a
+[tone of your own](../theming.md#a-tone-of-your-own) works on the mark the
+moment its blocks are declared:
+
+```blade
+<x-shape::avatar :initials="$person->initials" badge badge-tone="idle" />
+```
+
+That is the answer to reach for first. A status colour is a meaning — *idle*, *in
+a meeting*, *on leave* — and a meaning wants a name rather than a hex value
+smuggled in as a utility. It also arrives with both modes, both halves of the
+fill-and-text pair, and every other component that might report the same status;
+and it stays on the fold path, because `badgeTone` is `safe`.
+
+Where the colour is genuinely one-off, the mark can be painted from the call
+site without declaring a tone at all. It is the next sibling of the element the
+attribute bag lands on, so the avatar's own `class` reaches it:
+
+```blade
+<x-shape::avatar initials="AL" badge class="[&+[data-shape-avatar-badge]]:bg-purple-700" />
+```
+
+The badge's classes are written flat rather than at `[:where(&)]:` zero
+specificity, because nothing merges into that element and a default with nothing
+to lose to does not need to be beatable. It does not block this: the sibling
+selector compiles to one class plus one attribute, which beats a lone utility
+outright.
+
+What it does not do is the rest of what a tone does. A tone ships a pair and two
+modes; a class is one value in one mode, so all four are yours to write. These
+are the steps the shipped tones take, and matching them is what keeps a hand-painted
+mark from being the one badge on the page that reads differently:
+
+| | Fill | Text |
+| --- | --- | --- |
+| Light | `700` | `white` |
+| Dark | `500` | `shape-950` |
+
+@docs('preview', name: 'avatar-badge-custom')
+
+The fill lightens from the `700` to the `500` on a dark page for the reason every
+filled tone does — *stronger* is lighter there — and the text follows it across:
+white is readable on the darker light-mode step, and not on the brighter dark-mode
+one, which takes dark text instead. That dark text is the neutral `shape-950` and
+not the hue's own `950`, which is the same choice
+[a tone of your own](../theming.md#a-tone-of-your-own) makes and for the same
+reason: it is the page's ink, not the colour's.
+
+`warning` is the one shipped tone that does not follow the table, keeping its
+`500` in both modes because the `700` step of a yellow is an olive that no longer
+reads as a warning. A hand-painted mark in a yellow wants the same exception.
+
+The ring needs nothing. `ring-white dark:ring-shape-900` is the page's colours
+rather than the tone's, so it is already right in both modes whatever the fill
+turns out to be. And a dot has no text in it — a mark written bare needs only the
+two `bg` classes, since the text pair is there for counts.
+
 ### Position
 
 `badge-position` moves the mark to any of the four corners, named the way the
@@ -418,7 +478,7 @@ all, and will announce nothing:
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `square` | `false` | squares the circle to `--radius-shape` |
 | `badge` | `false` | `true` for a dot, or the mark's text |
-| `badge-tone` | `neutral` | the same tones as `tone` |
+| `badge-tone` | `neutral` | the same tones as `tone`, or [one of your own](../theming.md#a-tone-of-your-own) |
 | `badge-position` | `bottom-right` | `bottom-right`, `bottom-left`, `top-right`, `top-left` |
 
 `avatar.group` takes no props.
