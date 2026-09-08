@@ -164,6 +164,28 @@ it('does not ask the initials to fit anything', function () {
     expect(Blade::render('<x-shape::avatar initials="AL" />'))->not->toContain('object-cover');
 });
 
+it('lets a call site ring the circle with a class, in every arrangement', function (string $call) {
+    // The docs promise an outside ring is a class rather than a prop, which only
+    // holds because the bag reaches the circle however the circle is drawn — the
+    // same property that makes `class="object-contain"` reach the picture. A
+    // badged avatar is the one worth naming: its bag stays on the face rather
+    // than moving to the wrapper the mark is positioned against.
+    expect(Blade::render($call))->toContain('ring-2 ring-[#0d1117]');
+})->with([
+    '<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" class="ring-2 ring-[#0d1117]" />',
+    '<x-shape::avatar initials="AL" class="ring-2 ring-[#0d1117]" />',
+    '<x-shape::avatar src="/ada.jpg" alt="Ada Lovelace" as="button" class="ring-2 ring-[#0d1117]" />',
+    '<x-shape::avatar src="/ada.jpg" initials="AL" ground class="ring-2 ring-[#0d1117]" />',
+    '<x-shape::avatar initials="AL" badge class="ring-2 ring-[#0d1117]" />',
+]);
+
+it('rings nothing of its own, so a class is the whole of the colour', function () {
+    // There is no `ring` prop, and the reason is in the docs: a ring is asked for
+    // where the ground is not the page, so its colour is the one colour this
+    // component cannot know. A default would only be thrown away.
+    expect(Blade::render('<x-shape::avatar initials="AL" border />'))->not->toContain('ring');
+});
+
 it('squares the circle when it is asked to', function () {
     // `square` is the corners and nothing else. The size, the paint and the
     // crop are all the same avatar; only the radius moves.

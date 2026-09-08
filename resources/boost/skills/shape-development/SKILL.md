@@ -440,6 +440,22 @@ Read before executing:
   fills the circle while any picture arrives — `border` rings any variant and
   leaves the fill alone (`outline` already has the same edge, so the prop adds
   nothing there)
+- do not reach for `border` to ring an avatar against a background this library
+  does not paint; a border is drawn inside the fixed box and is spent out of the
+  picture, and its colour is the tone's — an outside ring is a class
+  (`class="ring-2 ring-[#0d1117]"`), costs the picture nothing, and there is no
+  `ring` prop because the colour it wants is the ground's, which no default can
+  guess and no prop could carry (Tailwind reads class names out of the file as
+  text)
+- do not ring the children of an `avatar.group` one class each; the group colours
+  them through a descendant selector a class on the child does not outweigh — put
+  it on the group, and make it important
+  (`class="[&_[data-shape-avatar]]:ring-[#0d1117]!"`), because the group's own
+  classes are not written at `[:where(&)]:` and a plain one only ties, then wins
+  or loses on Tailwind's emit order
+- do not name a ring for one mode only; `class="ring-2 ring-white"` is the page's
+  own colour on a dark page, so write the pair the group writes
+  (`ring-white dark:ring-shape-900`) or the ground's colour in both
 - do not reach for `ground` to survive a picture that fails to load; it is for a
   picture that arrives and is see-through (`d=blank`), and a broken image still
   paints over the letters — pair it with `default: 'blank'` and nothing else

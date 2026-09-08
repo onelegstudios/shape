@@ -450,16 +450,72 @@ the ring already there. That is the one place this parts from the
 [alert](alert.md#borders), whose outline arm draws the neutral chrome border and
 whose `border` tones it.
 
-It is not the ring a [group](#groups) draws, which is the other edge on this
-page. The ring is outside the box in the page's own colours, and its job is to
-hold overlapping faces apart; the border is inside the box in the tone's, and
-its job is to say the circle has an edge. A bordered avatar in a group has both.
+It is not the ring a [group](#groups) draws, which is [the other edge on this
+page](#rings). The ring is outside the box in the page's own colours, and its job
+is to hold overlapping faces apart; the border is inside the box in the tone's,
+and its job is to say the circle has an edge. A bordered avatar in a group has
+both.
 
-It costs no layout either way. The box is a fixed width and a height and the
-border is drawn inside it, so a bordered avatar sits in a row exactly as an
-unbordered one does. Weight and colour are a class away — the edge is declared
-at `[:where(&)]:` like the rest of the paint, so `class="border-2"` or
+It costs no layout either way. The box is a fixed width and a height and
+Tailwind's reset puts the border inside it, so a bordered avatar sits in a row
+exactly as an unbordered one does — and pays for the edge out of the picture
+rather than out of the row. Weight and colour are a class away: the edge is
+declared at `[:where(&)]:` like the rest of the paint, so `class="border-2"` or
 `class="border-white"` beats it.
+
+### Rings
+
+The edge on the other side of the box is a ring, and it is a class rather than a
+prop:
+
+```blade
+<x-shape::avatar :src="$user->avatar" class="ring-2 ring-[#0d1117]" />
+```
+
+@docs('preview', name: 'avatar-ring')
+
+A ring is a box-shadow, so it costs no layout either — and where a border spends
+two pixels of the picture, a ring costs the picture nothing: the circle stays the
+whole circle, and what grows is the space the avatar paints into. It is the same
+ring a [group](#groups) draws on each of its children, which is where this
+library spends it: two pixels of page between a face and whatever it was laid on,
+so the face reads as a face rather than as part of the thing behind it.
+
+It stays a class because the colour is the whole of the decision. A ring is worth
+drawing where the ground is *not* the page — a face on a hero photograph, on a
+brand band, on a surface this library did not paint — and what the ring has to be
+is the colour of that ground, which is the one colour a component cannot know. A
+prop would have carried a default that this call site throws away, and could not
+have carried the value in its place: Tailwind reads class names out of these
+files as text, so a prop holding a colour would compose a class name at render
+time and generate no CSS at all. It is [a colour per
+person](#a-colour-per-person) again, from a different direction.
+
+The classes reach the circle in every arrangement — the bare `<img>`, a
+[control](#the-control-is-the-circle), a picture over a [ground](#ground), a
+badged avatar whose bag stays on the face rather than moving to the wrapper —
+which is the same thing that makes `class="object-contain"` reach the picture.
+
+Say the dark mode, because nothing else will:
+`class="ring-2 ring-white dark:ring-shape-900"` is the pair the group draws, and
+a ring named for one mode is the page's own colour in the other.
+
+Inside a group the group wins, and wins twice over. It colours its children
+through a descendant selector, so a class on a child is outweighed; and the
+group's own classes are not written at `[:where(&)]:` the way the rest of this
+library's defaults are, so the same variant class on the group ties on
+specificity and then loses or wins on whichever rule Tailwind happened to emit
+last. `ring-shape-brand-700` loses to the group's `ring-white`; `ring-zinc-900`
+would beat it. That is not a rule worth relying on either way, so say so
+outright:
+
+```blade
+<x-shape::avatar.group class="[&_[data-shape-avatar]]:ring-[#0d1117]!">
+```
+
+A ring and a [`border`](#borders) compose, being a chosen edge outside and the
+tone's own inside. The focus ring on [a control](#buttons-and-links) is untouched
+by both: that one is an `outline` rather than a ring, so nothing here can move it.
 
 ## Sizes
 
