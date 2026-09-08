@@ -283,6 +283,82 @@ it('repaints on hover out of the same variables the button reads', function (str
     ['outline', 'hover:bg-[var(--shape-tone-tint)]'],
 ]);
 
+it('announces a chip that toggles as a toggle, pressed or not', function () {
+    // The state is what `selected` is for. A chip that can be turned on has to
+    // say so, and one that is off has to say that too — a control carrying
+    // nothing is announced as a plain button and the filter it stands for is
+    // invisible to anyone not looking at the colour.
+    expect(Blade::render('<x-shape::badge label="Overdue" as="button" :selected="true" />'))
+        ->toContain('aria-pressed="true"')
+        ->and(Blade::render('<x-shape::badge label="Overdue" as="button" :selected="false" />'))
+        ->toContain('aria-pressed="false"');
+});
+
+it('leaves a badge that is not a toggle out of it', function () {
+    // A chip that clears a filter is an action, not a state, and `aria-pressed`
+    // on it would report a pressed-ness nobody asked about. Absent rather than
+    // false is the difference between the two.
+    expect(Blade::render('<x-shape::badge label="Clear" as="button" />'))
+        ->not->toContain('aria-pressed')
+        ->not->toContain('aria-current');
+});
+
+it('says a selected link is the current one rather than a pressed one', function () {
+    // `aria-pressed` belongs to a button. A filter someone navigates to is the
+    // current page in a set of them, which is the claim the tab makes too.
+    expect(Blade::render('<x-shape::badge label="Paid" href="/invoices?state=paid" :selected="true" />'))
+        ->toContain('aria-current="page"')
+        ->not->toContain('aria-pressed');
+});
+
+it('leaves the current claim off a link that is not the current one', function () {
+    expect(Blade::render('<x-shape::badge label="Paid" href="/invoices?state=paid" :selected="false" />'))
+        ->not->toContain('aria-current');
+});
+
+it('paints a selected chip with the tone it would fill with', function (string $variant, string $expected) {
+    expect(Blade::render(sprintf('<x-shape::badge label="Overdue" as="button" variant="%s" :selected="false" />', $variant)))
+        ->toContain($expected);
+})->with([
+    ['subtle', 'aria-pressed:bg-[var(--shape-tone)]'],
+    ['outline', 'aria-pressed:border-[var(--shape-tone)]'],
+    ['solid', 'aria-pressed:bg-[var(--shape-tone-hover)]'],
+]);
+
+it('paints a selected link off the claim a link can carry', function (string $variant, string $expected) {
+    $html = Blade::render(sprintf('<x-shape::badge label="Paid" href="/invoices" variant="%s" :selected="false" />', $variant));
+
+    // Never the button's spelling: a link cannot carry `aria-pressed`, so a
+    // rule keyed on it is one nothing here can ever match.
+    expect($html)
+        ->toContain($expected)
+        ->not->toContain('aria-pressed');
+})->with([
+    ['subtle', 'aria-[current=page]:bg-[var(--shape-tone)]'],
+    ['outline', 'aria-[current=page]:border-[var(--shape-tone)]'],
+    ['solid', 'aria-[current=page]:bg-[var(--shape-tone-hover)]'],
+]);
+
+it('leaves a badge that is not a toggle unpainted for one', function () {
+    expect(Blade::render('<x-shape::badge label="Paid" as="button" />'))
+        ->not->toContain('aria-pressed:');
+});
+
+it('refuses to be a toggle and a chip that comes off at once', function () {
+    // The same one-element limit the guard on `dismissible` keeps, said before
+    // that guard can send a call site to add the `as` it would then throw on.
+    expect(fn () => Blade::render('<x-shape::badge label="Overdue" dismissible :selected="true" />'))
+        ->toThrow(ViewException::class, 'both selected and dismissible');
+});
+
+it('refuses to be selected without being a control', function () {
+    // Both resolutions are silent: an `aria-pressed` on a span is not a state
+    // any reader is given, and painting one without it is colour saying what
+    // nothing announces.
+    expect(fn () => Blade::render('<x-shape::badge label="Overdue" :selected="true" />'))
+        ->toThrow(ViewException::class, 'cannot be selected');
+});
+
 it('renders no dismiss control until one is asked for', function () {
     expect(Blade::render('<x-shape::badge label="Paid" />'))
         ->not->toContain('data-shape-dismiss');

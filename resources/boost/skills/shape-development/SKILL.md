@@ -85,7 +85,7 @@ which is blue whatever the brand becomes.
 | `text` | fold | `size`, `variant` (base\|muted\|strong), `as` |
 | `card` / `card.header` / `card.footer` | fold | `padding`, `border` |
 | `separator` | fold + memo | `orientation`, `label` |
-| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `dismissible` (adds a close button carrying `data-shape-dismiss`; cannot be combined with `as` or `href`, and throws if it is), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome), `type` (default `button`, reaches the `as="button"` arm, for a chip that submits a filter form) |
+| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `dismissible` (adds a close button carrying `data-shape-dismiss`; cannot be combined with `as` or `href`, and throws if it is), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome), `type` (default `button`, reaches the `as="button"` arm, for a chip that submits a filter form), `selected` (`true`\|`false` makes it a toggle — `aria-pressed` on a button, `aria-current` on a link — and paints the on state with the tone's fill; needs `as` or an `href`, throws without one and throws with `dismissible`) |
 | `empty` | fold | `heading`, `description`, `icon` |
 | `field` | fold | `field-name`, `as` — wraps a control with its label, description and error |
 | `label` / `description` / `error` | fold | `for` / `for` / `name`, `bag` |
@@ -431,6 +431,12 @@ Read before executing:
   `max-w-full` in a cell that has one of its own) rather than a `truncate`; the
   label sits in a span the component draws, so the width alone gives an
   ellipsis, and the icons and the × keep their size while the text gives
+- write `selected` on a badge only when it is a toggle, and leave it off a chip
+  that performs an action; the prop's third state is being absent, and a
+  `:selected="false"` announces a control as a toggle that is currently off
+- do not build a bar of toggles out of `variant="solid"` badges; on is the
+  tone's fill, so a badge that is already filled has only its hover step left to
+  say it with — the default `subtle` and `outline` show the state plainly
 - do not expect a dismissed badge to stay dismissed; the listener removes the
   element and the next render brings it back, so clear the filter it stood for
   on the server too — the handler goes on the badge (`wire:click` on the badge

@@ -157,6 +157,65 @@ A badge that is not a control gets none of it: no transition, no hover, no ring,
 no dimming. A `<span>` that lit up under the pointer would be promising a press
 that isn't there.
 
+## Selecting
+
+`selected` says whether a chip is on. It is the other half of a filter bar:
+[`dismissible`](#dismissing) takes a chip off, and this turns one on.
+
+@docs('preview', name: 'badge-selected')
+
+```blade
+@foreach ($states as $state)
+    <x-shape::badge :label="$state->name" as="button" :selected="$state->is($applied)" wire:click="apply('{{ $state->key }}')" />
+@endforeach
+```
+
+The state goes where the element can carry it. A button gets `aria-pressed`,
+which is a button's claim about itself; a link gets `aria-current="page"`, which
+is its claim about where it points — the same split the [tab](tabs.md) makes,
+and `aria-current` is global, so an `as="div"` chip takes it too.
+
+Passing nothing at all is different from passing `false`. A chip that clears a
+filter is an action rather than a state, and an `aria-pressed="false"` on it
+would report a pressed-ness nobody asked about, so a badge is a toggle only once
+`selected` is written:
+
+```blade
+<x-shape::badge label="Overdue" as="button" :selected="false" />  {{-- a toggle, off --}}
+<x-shape::badge label="Clear" as="button" />                      {{-- not a toggle --}}
+```
+
+### On is the fill
+
+A selected chip takes the fill its tone would have had as a `solid` badge,
+because that is the loudest a badge gets and the one that is on should be the
+one you see first. `solid` has nowhere louder to go, so it takes the step it
+uses for hover instead — which is a real difference and a quiet one, so a bar of
+toggles reads best built out of the default `subtle` or out of `outline`.
+
+The paint is written as `aria-pressed:` and `aria-[current=page]:` variants
+rather than as a branch, so the colour cannot disagree with the announcement:
+the attribute that carries the state to a screen reader is the same one that
+paints it. A badge that is not a toggle carries neither the attributes nor the
+rules.
+
+### It has to be pressable
+
+`selected` needs a control, and a badge given one without the other throws:
+
+```blade
+{{-- Throws. A span has no state anyone can change, and nowhere to announce one. --}}
+<x-shape::badge label="Overdue" :selected="true" />
+```
+
+Both ways out of that are silent: an `aria-pressed` on a `<span>` is not a state
+any reader is given, and painting the chip without one is colour saying what
+nothing says out loud.
+
+It cannot be [dismissible](#dismissing) either, and for the reason a dismissible
+badge cannot be a control — a toggle and a dismiss button are two controls, and
+a badge is one element.
+
 ## Dismissing
 
 `dismissible` adds a close button after the label, which turns the badge into a
@@ -266,6 +325,7 @@ it important:
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
 | `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |
 | `dismissible` | `false` | adds a close button; cannot be combined with `as` or `href` |
+| `selected` | — | `true` or `false` makes the badge a toggle and paints the on state; needs `as` or an `href`, and cannot be combined with `dismissible` |
 | `as` | `span` | `button`, `a`, `div` — an `href` implies `a` |
 | `type` | `button` | any button type; only reaches an `as="button"` badge |
 
@@ -282,7 +342,12 @@ differs on every row. `tone` branches to resolve the state icon, so it cannot
 be `safe`, and neither can `as`, which decides the element and the chrome that
 comes with it, or `dismissible`. Both of those are words written at a call site
 rather than bound, so a badge that is a control and a badge that is a chip fold
-like any other:
+like any other.
+
+`selected` is the exception, because it is a state rather than a word and comes
+bound per chip. A filter bar therefore does not fold — which is the [tab
+strip](tabs.md#folding)'s position, and worth knowing rather than worth
+avoiding: a bar is a handful of chips where a table is two hundred rows.
 
 ```blade
 {{-- Folds. --}}

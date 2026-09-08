@@ -33,6 +33,13 @@
     word, a branch, not safe, and free in practice. It cannot be combined with
     `as` or an `href`, which is the one prop pairing in this component that
     raises rather than resolving — the reason is in the guard below.
+
+    `selected` is the other half of a filter bar: `dismissible` takes a chip off,
+    and this is the chip that can be turned on. It is a state rather than a word,
+    so it is the one prop here usually bound per call — and a bound prop that
+    branches does not fold. That is the tab's position too, and for the same
+    reason it is worth knowing rather than worth avoiding: a filter bar is a
+    handful of chips, where a table is two hundred rows.
 --}}
 
 @props([
@@ -45,6 +52,7 @@
     'iconSize' => 'xs',
     'inset' => false,
     'dismissible' => false,
+    'selected' => null,
     'as' => null,
 ])
 
@@ -74,6 +82,39 @@ $control = $as ?? ($attributes->has('href') ? 'a' : null);
 if ($dismissible && $control) {
     throw new InvalidArgumentException('A dismissible badge cannot also be a control: [as] and [href] would put the dismiss button inside another control. Wrap the badge in a control of your own instead.');
 }
+
+// A chip cannot be on and removable at once, for the same reason it cannot be a
+// control and dismissible: the state has to sit on something pressable and the x
+// is already that something, and a badge is one element. Caught here rather than
+// left to the guard above, which would otherwise send a call site to add `as`
+// and then throw at it for having done so.
+if ($selected !== null && $dismissible) {
+    throw new InvalidArgumentException('A badge cannot be both selected and dismissible: a toggle and a dismiss button are two controls, and a badge is one element. Wrap the two in a box of your own instead.');
+}
+
+// `selected` is a state, and a state nobody can change is not one. It also has
+// nowhere to be announced on a `<span>`: `aria-pressed` needs a button under it,
+// and painting the chip without it would leave the colour saying what nothing
+// says out loud. Both resolutions are silent, so this raises the way the guard
+// above does.
+if ($selected !== null && ! $control) {
+    throw new InvalidArgumentException('A badge cannot be selected without being a control: [selected] is the state of something that can be pressed, so give it [as] or an [href].');
+}
+
+// Which claim the state makes depends on what the badge turned out to be.
+// `aria-pressed` is a button's claim about itself; `aria-current` is a link's
+// claim about where it points, and it is a global attribute, so the `div` arm
+// takes it too. The tab splits the same way, for the same reason.
+//
+// Null rather than false is what makes a badge a toggle at all. A chip that
+// clears a filter is an action, and an `aria-pressed="false"` on it would report
+// a pressed-ness nobody asked about — so the prop has three states and only the
+// two written ones say anything.
+$state = match (true) {
+    $selected === null => [],
+    $control === 'button' => ['aria-pressed' => $selected ? 'true' : 'false'],
+    default => ['aria-current' => $selected ? 'page' : null],
+};
 
 $classes = Shape::classes()
     ->add('inline-flex items-center whitespace-nowrap align-middle')
@@ -132,12 +173,42 @@ $classes = Shape::classes()
         'solid' => 'hover:bg-[var(--shape-tone-hover)]',
         'outline' => 'hover:bg-[var(--shape-tone-tint)]',
         default => 'hover:bg-[var(--shape-tone-tint-hover)]',
-    } : null);
+    } : null)
+
+    // On is the fill the tone would have taken as a `solid` badge, because that
+    // is the loudest a badge gets and a chip that is on should be the one you
+    // see first. `solid` has nowhere louder to go, so it takes the step it uses
+    // for hover instead — which is why a bar of toggles reads best built out of
+    // the default `subtle` or out of `outline`.
+    //
+    // Written as `aria-*` variants rather than as a branch on `$selected`, so
+    // the paint cannot disagree with what the badge announces: the attribute
+    // that carries the state to a screen reader is the same one that colours it.
+    // Once per spelling, and only the spelling this element can carry — a link
+    // that wore the button's variants would be carrying rules nothing on it can
+    // ever match.
+    //
+    // They sit at the same specificity as the plain hover above, which costs
+    // nothing: a chip that is not hovered matches only these, and one that is
+    // matches the three-part rule below it and wins there.
+    ->add($selected !== null && $control === 'button' ? match ($variant) {
+        'solid' => 'aria-pressed:bg-[var(--shape-tone-hover)]',
+        'outline' => 'aria-pressed:border-[var(--shape-tone)] aria-pressed:bg-[var(--shape-tone)] aria-pressed:text-[var(--shape-tone-fg)]',
+        default => 'aria-pressed:bg-[var(--shape-tone)] aria-pressed:text-[var(--shape-tone-fg)]',
+    } : null)
+    ->add($selected !== null && $control === 'button' ? 'aria-pressed:hover:bg-[var(--shape-tone-hover)]' : null)
+
+    ->add($selected !== null && $control !== 'button' ? match ($variant) {
+        'solid' => 'aria-[current=page]:bg-[var(--shape-tone-hover)]',
+        'outline' => 'aria-[current=page]:border-[var(--shape-tone)] aria-[current=page]:bg-[var(--shape-tone)] aria-[current=page]:text-[var(--shape-tone-fg)]',
+        default => 'aria-[current=page]:bg-[var(--shape-tone)] aria-[current=page]:text-[var(--shape-tone-fg)]',
+    } : null)
+    ->add($selected !== null && $control !== 'button' ? 'aria-[current=page]:hover:bg-[var(--shape-tone-hover)]' : null);
 @endphp
 
 <x-shape::badge.element
     :as="$control"
-    {{ $attributes->class($classes) }}
+    {{ $attributes->merge($state)->class($classes) }}
     data-shape-badge
     data-shape-variant="{{ $variant }}"
     data-shape-tone="{{ $tone ?? 'neutral' }}"
