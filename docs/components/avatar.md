@@ -12,11 +12,20 @@ around a different element:
 
 @docs('preview', name: 'avatar-pictures')
 
-Passing both is not a fallback. `src` decides which element renders, and there
-is no `onerror` swapping a broken URL for the letters: the initials are what a
-call site holding no picture shows, not what a picture that fails to arrive
-leaves behind. [`ground`](#ground) is the prop for a picture that arrives and
-does not cover the circle, which is a different thing.
+Passing both is not a fallback. `src` decides which element renders, so the
+letters are not in the document at all to be fallen back to: the initials are
+what a call site holding no picture shows. [`ground`](#ground) is the prop that
+draws them *under* the picture instead, and that is the arrangement a failed
+load survives — `shape.js` hides a picture that errors, and what was already
+underneath is what is left.
+
+Both of these ask for a URL that does not resolve. Only the second one has
+anything under the picture to be left holding:
+
+@docs('preview', name: 'avatar-broken')
+
+The first is the whole avatar, so the browser's broken icon stays where it is —
+[`ground`](#ground) says why hiding it would be worse.
 
 The image is cropped to the circle, not squashed into it. `size` sets a width
 and a height, and a photograph of a person is usually taller than it is wide, so
@@ -82,11 +91,22 @@ transparent GIF over a tint is an empty circle where two letters would have
 done. The ground takes the same ladder the circle takes — `icon` above
 `initials` — so there is no second order to learn.
 
-It is still not a runtime fallback, which is the thing it will be mistaken for.
-A picture that fails to load leaves a broken image sitting on the letters rather
-than the letters, because a broken image is something the browser draws rather
-than something it does not. What `ground` answers is a picture that arrives and
-is see-through, and the moment before any picture arrives at all.
+It is a runtime fallback as well. A picture that failed used to leave a broken
+image sitting on the letters rather than the letters, because a broken image is
+something the browser draws rather than something it does not — `shape.js` hides
+one that errors, so the letters underneath are what is left.
+
+The letters are the markup's, and only the hiding is the script's. An avatar
+draws its ground whether or not anything fails, so a page with no `shape.js` on
+it loses the icon-hiding and keeps everything else.
+
+So `ground` answers three things: a picture that arrives and is see-through, the
+moment before any picture arrives, and a picture that never arrives at all.
+
+A picture with nothing under it is the arrangement the script leaves alone — a
+bare `<img>` is the whole avatar, and hiding it takes a face out of the row and
+leaves a hole where the broken icon at least held the place. Which is the reason
+to pass `ground` to any avatar whose `src` a stranger controls.
 
 It is asked for rather than assumed, and the bare `<img>` is why. A picture with
 nothing around it is the one arrangement that carries the attribute bag on the
@@ -195,7 +215,7 @@ this component already has. Only one of them can win:
 | --- | --- |
 | `mp`, `identicon`, `retro`, … | Gravatar's drawing. `icon` and `initials` never render for anyone with an email address. |
 | `blank` | A transparent GIF, so the circle shows whatever is under it — its own [variant](#variants) paint, or the letters when [`ground`](#ground) drew them. |
-| `404` | A broken image. |
+| `404` | A failed request, hidden by `shape.js` the way any failed picture is. |
 
 `mp` is the default here, because it is the arm that always answers with a
 picture and never with a broken one. `blank` with [`ground`](#ground) is the
@@ -206,8 +226,9 @@ letters show through when it does not:
 <x-shape::avatar :src="Shape::gravatar($user->email, default: 'blank')" :initials="$user->initials" ground />
 ```
 
-Do not pass `404` — a picture that fails to arrive leaves a broken image, never
-a glyph, which is the same thing [Pictures](#pictures) says about `src`.
+Prefer `blank` to `404`. Both survive now — `shape.js` hides a picture that
+errors — but `404` spends a failed request on every address with no avatar to
+reach the same circle `blank` reaches with a successful one.
 
 `rating` sends Gravatar's `r=` and is omitted unless you pass it.
 
@@ -264,9 +285,10 @@ present would make `initials` a prop this component branches on, and it is
 call site names deliberately.
 
 None of it is a runtime fallback, for the same reason [`src` is not](#pictures):
-a picture that fails to load leaves a broken image, never a glyph.
+the glyph a picture outranks is not in the document to be fallen back to.
 [`ground`](#ground) is the one prop that changes the order into a layering
-rather than a choice, and it changes only what the picture sits on.
+rather than a choice — it puts the glyph under the picture, where a failed load
+leaves it showing.
 
 ### Size and style
 

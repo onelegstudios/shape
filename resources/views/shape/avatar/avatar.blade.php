@@ -78,12 +78,25 @@
     becomes `class="[&>img]:object-contain"`. Made the default, that would have
     moved under every call site that never asked for it.
 
-    It is still not a runtime fallback, which is the thing it will be mistaken
-    for. A picture that fails to load leaves a broken image sitting on the
-    letters rather than the letters, because a broken image is something the
-    browser draws rather than something it does not. What `ground` answers is a
-    picture that arrives and is see-through, and the moment before any picture
-    arrives at all.
+    It is a runtime fallback as well, which it did not use to be. A picture that
+    failed used to leave a broken image sitting on the letters rather than the
+    letters, because a broken image is something the browser draws rather than
+    something it does not — so `shape.js` hides a picture that errors, and what
+    was already underneath is what is left.
+
+    In the markup rather than in the script, which is the division worth stating.
+    The letters are drawn by this component whether or not anything fails; all
+    the script does is take away the icon a browser draws over them. A page with
+    no `shape.js` on it loses the hiding and keeps everything else.
+
+    So `ground` answers three things now: a picture that arrives and is
+    see-through, the moment before any picture arrives at all, and a picture that
+    never arrives. Only the first two are the markup's own.
+
+    A picture with nothing under it is the arm the script leaves alone. A bare
+    `<img>` is the whole avatar, and hiding it takes a face out of a row and
+    leaves a hole; the broken icon at least holds the place. Which is the reason
+    to pass `ground` — or `as` — to any avatar whose `src` a stranger controls.
 
     The picture is positioned and the ground is not, so it paints over without a
     z-index — positioned elements paint after in-flow ones, which is the rule

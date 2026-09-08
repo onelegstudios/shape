@@ -399,6 +399,30 @@ it('keeps the rest of the bag where it was', function () {
         ->toMatch('/<img[^>]*referrerpolicy="no-referrer"/');
 });
 
+it('hides a picture that fails, and only where something is under it', function () {
+    // The behaviour itself is a browser's, and is verified by hand in the
+    // workbench. What is asserted here is the shape of it: `error` does not
+    // bubble, so the listener is registered for the capture phase, and the test
+    // for which pictures it applies to is the descendant selector — a bare
+    // `<img>` carries `data-shape-avatar` itself and is the whole avatar, so
+    // hiding it would leave a hole in a row rather than a face.
+    $js = (string) file_get_contents(__DIR__.'/../../resources/js/shape.js');
+
+    expect($js)
+        ->toContain('function brokenPictures()')
+        ->toContain("matches('[data-shape-avatar] img')")
+        ->toContain("document.addEventListener('error', (event) => {")
+        ->toContain('img.complete && img.naturalWidth === 0');
+});
+
+it('registers the picture behaviour with the rest of them', function () {
+    // The collective failure a per-job test does not catch: a function written
+    // and never called.
+    $js = (string) file_get_contents(__DIR__.'/../../resources/js/shape.js');
+
+    expect($js)->toContain('    brokenPictures()');
+});
+
 it('gives its own defaults zero specificity so caller classes win', function () {
     expect(Blade::render('<x-shape::avatar initials="AL" class="rounded-shape" />'))
         ->toContain('[:where(&amp;)]:rounded-full')

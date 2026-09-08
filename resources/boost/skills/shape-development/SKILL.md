@@ -433,8 +433,8 @@ Read before executing:
   `src` like any other, takes the avatar's own size word (`size: 'lg'`) rather
   than pixels, and returns null for a missing address so `icon` and `initials`
   still run — its `default:` is a second ladder beside that one, where `mp`
-  always wins, `blank` leaves the circle's own paint showing, and `404` is a
-  broken image
+  always wins, `blank` leaves the circle's own paint showing, and `404` spends a
+  failed request to reach the same place `blank` reaches with a successful one
 - do not reach for `variant="outline"` to put an edge on a photograph; that arm
   drops the fill, which is the ground a transparent picture sits on and what
   fills the circle while any picture arrives — `border` rings any variant and
@@ -468,9 +468,11 @@ Read before executing:
   picture in every arrangement, including `ground` and `as`, where the rest of
   the bag stays one element out — and they fold bound, which a prop holding an
   array of them could not
-- do not reach for `ground` to survive a picture that fails to load; it is for a
-  picture that arrives and is see-through (`d=blank`), and a broken image still
-  paints over the letters — pair it with `default: 'blank'` and nothing else
+- do not leave `ground` off an avatar whose `src` a stranger controls; it is the
+  arrangement a failed load survives, because the letters are already under the
+  picture and `shape.js` hides one that errors — a bare `<img>` has nothing
+  underneath and is left showing the browser's broken icon on purpose, since
+  hiding it would leave a hole in the row
 - do not pass `ground` to letterbox with `class="object-contain"`; a ground moves
   the bag one element out the way `as` does, so it is `class="[&>img]:object-contain"`
 - do not call `Shape::gravatar()` in the template; resolve it in the Livewire
