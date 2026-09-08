@@ -85,7 +85,7 @@ which is blue whatever the brand becomes.
 | `text` | fold | `size`, `variant` (base\|muted\|strong), `as` |
 | `card` / `card.header` / `card.footer` | fold | `padding`, `border` |
 | `separator` | fold + memo | `orientation`, `label` |
-| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `dismissible` (adds a close button carrying `data-shape-dismiss`; cannot be combined with `as` or `href`, and throws if it is), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome) |
+| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `dismissible` (adds a close button carrying `data-shape-dismiss`; cannot be combined with `as` or `href`, and throws if it is), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome), `type` (default `button`, reaches the `as="button"` arm, for a chip that submits a filter form) |
 | `empty` | fold | `heading`, `description`, `icon` |
 | `field` | fold | `field-name`, `as` — wraps a control with its label, description and error |
 | `label` / `description` / `error` | fold | `for` / `for` / `name`, `bag` |

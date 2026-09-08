@@ -191,6 +191,22 @@ it('lets as beat an href, for a link that is really a control', function () {
         ->toContain('href="/invoices/1042"');
 });
 
+it('submits the form it is in when a call site asks it to', function () {
+    // The badge claims what it needs and passes the rest through, and `type` is
+    // part of the rest: a chip in a filter form is a submit, and a duplicated
+    // attribute would have left the browser reading the first one.
+    $html = Blade::render('<x-shape::badge label="Apply" as="button" type="submit" />');
+
+    expect($html)
+        ->toContain('type="submit"')
+        ->and(substr_count($html, 'type='))->toBe(1);
+});
+
+it('is a plain button until then, so a badge in a form submits nothing by accident', function () {
+    expect(Blade::render('<x-shape::badge label="Overdue" as="button" />'))
+        ->toContain('<button type="button"');
+});
+
 it('takes a div, for a badge inside something already clickable', function () {
     expect(Blade::render('<x-shape::badge label="Paid" as="div" />'))
         ->toContain('<div')

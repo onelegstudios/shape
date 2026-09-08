@@ -94,6 +94,17 @@ lands on the thing being pressed:
 <x-shape::badge :label="$filter->name" tone="brand" icon-trailing="shape-arrow-right" as="button" wire:click="clear" />
 ```
 
+`type` is part of that bag, and passing it is how a chip inside a form submits
+it rather than doing nothing:
+
+```blade
+<x-shape::badge label="Apply" tone="brand" as="button" type="submit" />
+```
+
+A badge that asks for no type is a `type="button"`, the same default the
+[button](button.md) takes, so a chip that sits in a form and answers a
+`wire:click` never submits it by accident.
+
 The label is the accessible name, exactly as it is the text — there is nothing
 else in a badge to name it with. A control whose `label` is a glyph and an
 `:icon="false"` is a control announced as "button" and nothing else, so give it
@@ -227,6 +238,7 @@ it important:
 | `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |
 | `dismissible` | `false` | adds a close button; cannot be combined with `as` or `href` |
 | `as` | `span` | `button`, `a`, `div` — an `href` implies `a` |
+| `type` | `button` | any button type; only reaches an `as="button"` badge |
 
 There is no slot: Blaze memoizes a component only when it has none and is called
 self-closing, and a badge — one per row, every row, every page — is the best
