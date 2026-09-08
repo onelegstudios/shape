@@ -194,9 +194,10 @@
     `badge` bare and its tone from the row.
 
     The wrapper is scaffolding rather than a box. It exists to be the thing the
-    mark is positioned against, it renders only when there is a mark to position,
-    and it carries no attribute of its own: naming it would promise a box that
-    is not there on the avatars that have no badge.
+    mark is positioned against and, on a control, the thing the pair dims as, it
+    renders only when there is a mark to position, and it carries no attribute of
+    its own: naming it would promise a box that is not there on the avatars that
+    have no badge.
 
     The attributes stay on the avatar, which is the answer that keeps
     `class="object-contain"` landing on the picture it was written for. A wrapper
@@ -240,14 +241,27 @@
     not there. `disabled` and `aria-disabled` both dim and both stop the pointer,
     for the reason the button carries both: an anchor cannot be disabled.
 
-    A badge dims with the control it is on, under the pointer and at both
-    spellings of disabled. The mark is a sibling of the circle rather than a
-    child, so neither dim reaches it on its own, and a presence dot held at full
-    strength beside a face that has dimmed is the half of the component still
-    reporting that it is live. It follows through `peer-`, which is available
-    because the mark is written after the circle it belongs to, and it carries
-    the circle's transition so the two move together rather than one snapping
-    while the other fades.
+    A badged control dims from its shell rather than from the circle, and that is
+    the whole of what makes the mark dim with it. The mark is a sibling of the
+    circle, so a dim on the circle stops there and leaves a presence dot at full
+    strength on a face that has faded — the half of the component still reporting
+    that it is live.
+
+    Dimming the mark to match is the answer that looks right and is not.
+    `opacity` on the mark makes the mark itself translucent, so the circle's own
+    edge reads through the dot that is meant to be covering it, and the white
+    ring holding the two apart stops holding anything apart. It is worst at
+    `disabled`, which fades furthest.
+
+    On the shell the pair is rendered together first and the result is faded, so
+    the mark goes on covering what it sits on and only the pair fades against the
+    page. One dim instead of two, and nothing to keep in step.
+
+    Hover is asked for with `has-` rather than taken from the shell's own
+    `:hover`, because the shell is not the thing that stops taking a pointer when
+    the control is disabled. `:has(:hover)` finds the circle, and a circle with
+    `pointer-events-none` is never hovered — so a disabled avatar dims once,
+    which is the only place these two states could have collided.
 
     A control has to be named. An avatar beside a name already on the page
     passes no `alt` and announces nothing, which is right for a picture and wrong
@@ -325,6 +339,18 @@
 // saying so — the tab and the menu item resolve their own element the same way.
 $control = $as ?? ($attributes->has('href') ? 'a' : null);
 
+// The shell a badged avatar is wrapped in, which is also where a badged control
+// does its dimming. `opacity` on the mark itself would have made the mark
+// translucent and shown the circle's own edge through it; on the pair it renders
+// them together first and fades the result, so the mark still covers what it is
+// sitting on. Hover is asked for through `has-` rather than taken from the
+// shell's own `:hover`, because the shell is not the thing that stops taking a
+// pointer when the control is disabled.
+$shellClasses = Shape::classes()
+    ->add('relative inline-flex shrink-0')
+    ->add($control ? 'transition-opacity duration-100 has-hover:opacity-80' : null)
+    ->add($control ? 'has-disabled:opacity-50 has-aria-disabled:opacity-50' : null);
+
 $iconSize = match ($size) {
     'xs', 'sm' => 'xs',
     'lg' => 'base',
@@ -356,15 +382,14 @@ $classes = Shape::classes()
     // the keyboard, and a way to say it is taking neither. It does not repaint —
     // the paint above is what the avatar means, and no `--shape-tone-hover`
     // reaches a photograph — so it dims, the way `disabled` already does here.
-    ->add($control ? 'transition-opacity duration-100 hover:opacity-80' : null)
     ->add($control ? 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--shape-ring)]' : null)
-    ->add($control ? 'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50' : null)
+    ->add($control ? 'disabled:pointer-events-none aria-disabled:pointer-events-none' : null)
 
-    // Both dims above stop at the circle, because the mark is a sibling of it
-    // rather than a child. `peer` is what lets the mark follow them, and it is
-    // worth writing only where there is both a control that dims and a mark to
-    // do the following.
-    ->add($control && $badge ? 'peer' : null);
+    // A badged control dims from its shell instead, so these are the arm where
+    // the circle is the whole of the drawing and there is nothing beside it to
+    // keep in step.
+    ->add($control && ! $badge ? 'transition-opacity duration-100 hover:opacity-80' : null)
+    ->add($control && ! $badge ? 'disabled:opacity-50 aria-disabled:opacity-50' : null);
 
 // The badge's classes are not merged with anything, because the attribute bag
 // stays on the avatar, so they are written flat rather than through `:where()`.
@@ -381,15 +406,6 @@ $badgeClasses = Shape::classes()
     // Two pixels of page between the mark and whatever it landed on, in the same
     // colours the group rings its children with.
     ->add('ring-2 ring-white dark:ring-shape-900')
-
-    // A control dims and its mark dims with it, at both the depths the circle
-    // uses and over the same 100ms. The two are one thing, and a presence dot
-    // held at full strength on a face that has dimmed is the half of that thing
-    // still claiming to be live. `peer-` reaches back to the circle because the
-    // mark is written after it, and the two states cannot collide: a disabled
-    // control takes no pointer, so it is never the hovered one.
-    ->add($control ? 'transition-opacity duration-100 peer-hover:opacity-80' : null)
-    ->add($control ? 'peer-disabled:opacity-50 peer-aria-disabled:opacity-50' : null)
 
     // Half the mark, on each axis, pulled back over the corner it is anchored
     // to. Which is what puts its centre on the edge rather than its corner in
@@ -448,7 +464,7 @@ $badgeClasses = Shape::classes()
      takes no children. Every other arrangement — letters, a glyph, or a
      photograph inside a control that can be pressed — is one element with
      something in it. --}}
-@if ($badge)<span class="relative inline-flex shrink-0">@endif
+@if ($badge)<span class="{{ $shellClasses }}">@endif
 @if ($src && ! $control)
     <img src="{{ $src }}" alt="{{ $alt }}" {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">
 @else

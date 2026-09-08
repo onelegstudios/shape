@@ -523,13 +523,17 @@ be reporting a difference that is not there.
 `disabled` and `aria-disabled` both dim the circle and remove pointer events,
 for the reason the button carries both — an anchor cannot be disabled.
 
-A [badge](#badges) dims with the control it is on, under the pointer and at both
-spellings of disabled. The mark is a sibling of the circle rather than a child,
-so neither dim reaches it on its own, and a presence dot held at full strength
-beside a face that has dimmed is the half of the component still reporting that
-it is live. It follows through `peer-`, which is available because the mark is
-written after the circle it belongs to, and it carries the circle's transition so
-the two move together.
+A badged control dims from the shell its [badge](#badges) is positioned in,
+rather than from the circle. The mark is a sibling of the circle, so a dim on the
+circle leaves a presence dot at full strength on a face that has faded — and
+dimming the mark to match is the answer that looks right and is not, because
+`opacity` on the mark makes the mark translucent and shows the circle's own edge
+through the dot meant to be covering it. On the shell the pair is rendered
+together and the result is faded, so the mark still covers what it sits on.
+
+Hover is found with `has-` rather than taken from the shell's own `:hover`, since
+the shell is not the thing that stops taking a pointer when the control is
+disabled. A disabled circle is never hovered, so a disabled avatar dims once.
 
 ### A control has to be named
 

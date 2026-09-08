@@ -601,34 +601,43 @@ it('dims and stops the pointer on both spellings of disabled', function () {
         ->toContain('aria-disabled:opacity-50');
 });
 
-it('dims a badge with the control it sits on', function () {
-    // The mark is a sibling of the circle rather than a child, so neither of the
-    // control's dims stops anywhere but the circle. A presence dot held at full
-    // strength on a face that has dimmed is the half of the component still
-    // reporting that it is live.
+it('dims a badged control from its shell, so the mark dims with it', function () {
+    // The mark is a sibling of the circle, so a dim on the circle would leave a
+    // presence dot at full strength on a face that had faded.
     $html = Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" badge badge-tone="success" />');
 
     expect($html)
-        ->toMatch('/<button[^>]*\bpeer\b/')
-        ->toContain('peer-hover:opacity-80')
-        ->toContain('peer-disabled:opacity-50')
-        ->toContain('peer-aria-disabled:opacity-50');
+        ->toContain('<span class="relative inline-flex shrink-0 transition-opacity duration-100 has-hover:opacity-80 has-disabled:opacity-50 has-aria-disabled:opacity-50">')
+        ->toContain('aria-disabled:pointer-events-none');
 });
 
-it('moves the mark and the circle together rather than one of them snapping', function () {
-    // The mark takes the circle's own transition, so a badged control fades as
-    // one thing under the pointer.
-    expect(substr_count(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" badge />'), 'transition-opacity duration-100'))
-        ->toBe(2);
-});
+it('dims a badged control once rather than twice', function () {
+    // `opacity` on the mark as well as the shell would fade the pair and then
+    // fade the mark again inside it — and `opacity` on the mark at all is what
+    // shows the circle's own edge through the dot that is covering it.
+    $html = Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" badge badge-tone="success" />');
 
-it('writes no peer where there is nothing to follow it', function () {
-    // A badge on a plain avatar has no disabled state to follow, and a control
-    // with no badge has nothing written after it to do the following.
-    expect(Blade::render('<x-shape::avatar initials="AL" badge badge-tone="success" />'))
+    expect($html)
         ->not->toContain('peer')
-        ->and(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" />'))
-        ->not->toContain('peer');
+        ->and(substr_count($html, 'transition-opacity duration-100'))->toBe(1)
+        ->and(substr_count($html, 'opacity-80'))->toBe(1)
+        ->and(substr_count($html, 'opacity-50'))->toBe(2);
+});
+
+it('leaves an unbadged control dimming itself', function () {
+    // There is no shell on an avatar with no mark to position, and nothing
+    // beside the circle to keep in step with.
+    expect(Blade::render('<x-shape::avatar initials="AL" alt="Ada" as="button" />'))
+        ->toContain('hover:opacity-80')
+        ->toContain('disabled:opacity-50')
+        ->toContain('aria-disabled:opacity-50')
+        ->not->toContain('has-hover:opacity-80');
+});
+
+it('leaves a badged avatar that is not a control with a bare shell', function () {
+    expect(Blade::render('<x-shape::avatar initials="AL" badge badge-tone="success" />'))
+        ->toContain('<span class="relative inline-flex shrink-0">')
+        ->not->toContain('has-hover:opacity-80');
 });
 
 it('squares and badges a control the way it squares and badges a span', function () {
@@ -636,7 +645,7 @@ it('squares and badges a control the way it squares and badges a span', function
     $html = Blade::render('<x-shape::avatar initials="OL" alt="One Leg Studios" as="button" square badge="12" badge-tone="brand" />');
 
     expect($html)
-        ->toContain('<span class="relative inline-flex shrink-0">')
+        ->toContain('<span class="relative inline-flex shrink-0 transition-opacity')
         ->toContain('<button type="button"')
         ->toContain('[:where(&amp;)]:rounded-shape')
         ->toContain('data-shape-avatar-badge')
