@@ -124,6 +124,118 @@ carries:
 
 @docs('preview', name: 'avatar-tones')
 
+### A colour per person
+
+Some libraries hash a name into a palette, so that every row without a
+photograph gets a circle of its own. Shape ships no such prop, and what stops it
+is `tone` rather than the hash. A tone is what an avatar *means*, so spending one
+on decoration puts a red circle beside a green one in a list of colleagues, and
+asks a reader who has learned those colours everywhere else on the page to
+un-learn them here. The seven are a vocabulary, not a palette.
+
+The colour is still worth having — six tinted circles are easier to scan than
+six identical ones — and the way to it is the one the mark already uses, turned
+on the circle instead. The attribute bag lands on the avatar itself, so there is
+no sibling selector to write: the circle's paint is declared at `[:where(&)]:`
+zero specificity, and a pair of utilities beats it outright.
+
+@docs('preview', name: 'avatar-custom')
+
+Nothing in those classes carries meaning, which is the reason to reach for them
+here rather than for [a tone of your own](../theming.md#a-tone-of-your-own). A
+hand-painted indigo is a colour; a tone is a sentence, and a decorative one would
+sit in `data-shape-tone` as a peer of `danger` and `success` while meaning
+nothing at all.
+
+Derive it where the data is. The hash cannot live in the component for the same
+reason [initials cannot](#initials-are-stated-never-derived): a derivation inside
+a folded component runs once, at compile time, and bakes one person's colour into
+every avatar the template renders. An accessor is the place, and the id is the
+key — a rename should not recolour the person:
+
+```php
+private const array AVATAR_PAINTS = [
+    'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200',
+    'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-200',
+    'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-200',
+    'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200',
+    'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200',
+    'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200',
+];
+
+protected function avatarPaint(): Attribute
+{
+    return Attribute::get(fn () => self::AVATAR_PAINTS[
+        crc32((string) $this->id) % count(self::AVATAR_PAINTS)
+    ]);
+}
+```
+
+```blade
+<x-shape::avatar :initials="$user->initials" :alt="$user->name" :class="$user->avatar_paint" />
+```
+
+That call site still folds. `class` is merged rather than branched on, so binding
+it per person costs nothing [Folding](#folding) charges for.
+
+Write the classes out in full, though. Assembling them — `"bg-{$hue}-100"` —
+produces a string that is nowhere in the project for Tailwind to find, so the
+utility is never emitted and the circle comes out unstyled. The symptom is
+confusing rather than obvious, because it is not all-or-nothing: an entry whose
+colour some other file happens to use survives, and the one beside it does not.
+
+Literal strings are only half of it, because the file still has to be scanned.
+Tailwind v4 crawls the whole project by default, so a constant in a model is as
+visible to it as a Blade template, and the `@source` lines a Laravel stylesheet
+ships are additions to that crawl rather than a replacement for it. The
+arrangement that breaks is opting out of it:
+
+```css
+@import 'tailwindcss' source(none);
+```
+
+A stylesheet written that way gets only what it names, and a palette in `app/`
+is not among the things a Laravel one usually names. Name it:
+
+```css
+@source '../../app/**/*.php';
+```
+
+The steps are the tone blocks', read per variant. Each arm of `variant` paints
+two properties, so a hand-painted avatar is a pair in each mode:
+
+| | Light fill or edge | Light text | Dark fill or edge | Dark text |
+| --- | --- | --- | --- | --- |
+| `subtle` | `bg-100` | `800` | `bg-950` | `200` |
+| `outline` | `border-300` | `800` | `border-800` | `200` |
+| `solid` | `bg-700` | `white` | `bg-500` | `shape-950` |
+
+The `solid` row is the table under [a colour the framework does not
+ship](#a-colour-the-framework-does-not-ship), because a badge is solid at every
+variant — and it arrives with that table's two exceptions. The dark text is the
+neutral `shape-950` rather than the hue's own `950`, because it is the page's ink
+and not the colour's; and a yellow keeps its `500` in both modes, because the
+`700` step of one is an olive.
+
+Pass the variant as well as the paint. `subtle` and `solid` differ in nothing but
+fill and ink, so painting both over the default draws a solid avatar that still
+carries `data-shape-variant="subtle"` — the element reporting something other
+than what it draws. `outline` cannot be reached that way at all: the border
+*width* comes from the variant, and no colour utility supplies it.
+
+`outline` is in the table rather than in the example on purpose. With no fill
+under it [the ring is the whole of the paint](#variants), which makes it the
+weakest of the three at the job this is for: six people told apart by ring hue at
+24px scan worse than six tinted circles, and a coloured ring on an otherwise
+empty avatar reads as a state rather than as a person. `solid` is a fair second
+choice, just a loud one — which is why `subtle` is the default.
+
+What none of it changes is what the avatar says it is. `data-shape-tone` still
+reads `neutral`, so a circle painted indigo describes itself as neutral, and any
+descendant reading `--shape-tone-*` gets the neutral set. Nothing in Shape reads
+it back, which is why this stays a call site's business rather than something the
+component learns.
+
 ## Variants
 
 `variant` is how loud the circle is. `subtle` is the default, because an avatar
@@ -243,7 +355,9 @@ and it stays on the fold path, because `badgeTone` is `safe`.
 
 Where the colour is genuinely one-off, the mark can be painted from the call
 site without declaring a tone at all. It is the next sibling of the element the
-attribute bag lands on, so the avatar's own `class` reaches it:
+attribute bag lands on, so the avatar's own `class` reaches it — the selector
+being the only thing that separates this from painting
+[the circle itself](#a-colour-per-person), where the bag already lands:
 
 ```blade
 <x-shape::avatar initials="AL" badge class="[&+[data-shape-avatar-badge]]:bg-purple-700" />
@@ -493,12 +607,15 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'ba
 | `icon` named statically | folds | — |
 | `as` written statically | folds | — |
 | `badge` static, `badge-tone` bound per person | folds | — |
+| `class` bound per person | folds | — |
 | `badge` bound per row | no | one entry per value |
 | `src` bound per row | no | one entry per URL, no hits |
 
 `tone` is interpolated into an attribute and nothing more, the way the
 [button](button.md) carries it, so a per-person tone still folds, and
-`badge-tone` rides with it for the same reason. `variant` branches to resolve
+`badge-tone` rides with it for the same reason. `class` is merged rather than
+branched on, so [a colour per person](#a-colour-per-person) folds as well —
+which is what makes a hand-painted palette cheaper than it looks. `variant` branches to resolve
 the paint and `square` to resolve the radius, so neither can be `safe` — the
 badge's arrangement exactly. `as` joins them: it chooses an element, so it
 branches — but it is a word a call site writes rather than binds, so an avatar

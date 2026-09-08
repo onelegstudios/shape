@@ -271,6 +271,21 @@ it('gives its own defaults zero specificity so caller classes win', function () 
         ->toContain('rounded-shape');
 });
 
+it('lets a call site paint the circle without declaring a tone', function () {
+    // The docs answer auto-colour this way: a palette resolved per person and
+    // passed as `class`. Both halves of `subtle` have to be beatable for it to
+    // work, and the element goes on reporting the tone it actually carries —
+    // which is the caveat the docs state rather than the reader discovering it.
+    $html = Blade::render('<x-shape::avatar initials="AL" class="bg-indigo-100 text-indigo-800" />');
+
+    expect($html)
+        ->toContain('[:where(&amp;)]:bg-[var(--shape-tone-tint)]')
+        ->toContain('[:where(&amp;)]:text-[var(--shape-tone-ink)]')
+        ->toContain('bg-indigo-100')
+        ->toContain('text-indigo-800')
+        ->toContain('data-shape-tone="neutral"');
+});
+
 it('passes attributes straight through', function () {
     expect(Blade::render('<x-shape::avatar initials="AL" wire:key="ada" title="Ada" />'))
         ->toContain('wire:key="ada"')

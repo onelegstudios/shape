@@ -423,6 +423,11 @@ Read before executing:
 - name a `size` on an icon and leave `variant` alone unless the style is the
   point; the small sizes are drawn solid because a stroke does not read at 16px,
   and a call site that names only a size works with any icon set
+- do not spend a `tone` on decoration to give people different coloured
+  avatars; a tone is what an avatar means, so a red circle beside a green one
+  reports a status nobody set — pass the fill and ink as `class` instead
+  (`bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200`),
+  resolved per person in an accessor rather than inside the folded component
 - do not bind `badge` per row on an avatar when a bare `badge` will do; it
   branches, while `badge-tone` is safe, so a presence dot whose colour comes
   from the row still folds
