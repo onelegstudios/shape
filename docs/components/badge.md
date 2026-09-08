@@ -63,6 +63,35 @@ the line it's on:
 
 @docs('preview', name: 'badge-inset', layout: 'stack')
 
+## Long labels
+
+A badge never wraps, so a long label makes a wide badge — and a wide badge in a
+table sets the width of the column it sits in. Give it a maximum width and the
+label truncates instead:
+
+@docs('preview', name: 'badge-truncate')
+
+```blade
+<x-shape::badge :label="$contract->state" tone="warning" class="max-w-40" />
+```
+
+The width is yours to choose, because only the call site knows what it has room
+for: a fixed one in a filter bar, or `max-w-full` in a cell that already has a
+width of its own — the third badge above.
+
+Only the label gives. The state glyph, a trailing icon and the dismiss × are all
+`shrink-0`, so they keep their size and the ellipsis lands in the text.
+
+The label is wrapped in a span of its own to make that possible. Text sitting
+straight inside a flex container is an anonymous flex item, and `text-overflow`
+does not reach into one — a width and a `truncate` on the badge itself clip the
+label mid-word with no ellipsis at all, and eat the right padding while they do
+it. The ellipsis has to sit on an element, and since nothing you pass reaches
+inside a badge, that element has to be one the component draws.
+
+It costs a badge that isn't capped nothing: a badge sized by its own content
+measures the same with the span as without.
+
 ## Buttons and links
 
 `as="button"` makes the badge a control, and an `href` makes it a link without

@@ -16,6 +16,24 @@ it('renders its label from a prop rather than a slot', function () {
         ->toContain('data-shape-badge');
 });
 
+it('wraps the label so a badge narrower than its text has something to truncate', function () {
+    // Text sitting straight in a flex container is an anonymous flex item, and
+    // `text-overflow` does not reach into one — a width on the badge alone
+    // clips mid-word with no ellipsis. The span is the only element a call site
+    // could ever hang one on, since nothing it passes reaches inside.
+    expect(Blade::render('<x-shape::badge label="Awaiting counter-signature" />'))
+        ->toContain('<span class="min-w-0 truncate empty:hidden">Awaiting counter-signature</span>');
+});
+
+it('leaves the wrapper truly empty, so a badge with no label takes no gap for it', function () {
+    // An empty flex item still takes a gap on either side of it, so the span
+    // has to leave the layout rather than measure zero. `:empty` is the whole
+    // mechanism, and a newline inside the tag would be a text node that breaks
+    // it — the assertion is on the exact string for that reason.
+    expect(Blade::render('<x-shape::badge icon="shape-plus" />'))
+        ->toContain('<span class="min-w-0 truncate empty:hidden"></span>');
+});
+
 it('falls back to the neutral tone', function () {
     expect(Blade::render('<x-shape::badge label="Draft" />'))
         ->toContain('data-shape-tone="neutral"');

@@ -427,6 +427,10 @@ Read before executing:
   throws, because the close button is a control and nesting it inside another
   one is markup the parser rewrites — a chip that both navigates and dismisses
   is two controls, and the box around them is yours to write
+- cap a long badge label with a max width on the badge (`max-w-40`, or
+  `max-w-full` in a cell that has one of its own) rather than a `truncate`; the
+  label sits in a span the component draws, so the width alone gives an
+  ellipsis, and the icons and the × keep their size while the text gives
 - do not expect a dismissed badge to stay dismissed; the listener removes the
   element and the next render brings it back, so clear the filter it stood for
   on the server too — the handler goes on the badge (`wire:click` on the badge

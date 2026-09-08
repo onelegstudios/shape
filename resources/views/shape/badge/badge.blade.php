@@ -169,7 +169,36 @@ $classes = Shape::classes()
         @endif
     @endif
 
-    {{ $label }}
+    {{--
+        The label is wrapped rather than left as a text node, so that a badge
+        given a width narrower than its text has something to truncate. Text
+        sitting straight in a flex container is an anonymous flex item and
+        `text-overflow` does not reach into one — a `max-w-*` and a `truncate`
+        on the badge itself clip mid-word with no ellipsis at all, and eat the
+        right padding while they do it. The ellipsis has to sit on an element,
+        and this is the only place one can be put: nothing a call site passes
+        reaches inside a badge.
+
+        It costs nothing until something is capped. `min-w-0` only matters once
+        a flex item is asked to be narrower than its text, and a badge sized by
+        its own content measures the same with the span as without — so a call
+        site passes a `max-w-*` of its own and gets an ellipsis for it, and one
+        that passes none is the badge it always was. The icons and the x are all
+        `shrink-0`, so the label is the only part that gives.
+
+        `empty:hidden` is for the badge with no label at all — an icon on its
+        own, a count that resolved to nothing. An empty flex item still takes a
+        gap on either side of it, so the span has to leave the layout rather
+        than measure zero. It is written on one line for the same reason: a
+        newline inside the tag is a text node, and a span with a text node in
+        it is not `:empty`.
+
+        `max-w-*` above rather than a width that exists, which is a rule for
+        every comment in these files: an application points Tailwind at this
+        directory, so a class named in prose is a class compiled into that
+        application's stylesheet whether or not anything renders it.
+    --}}
+    <span class="min-w-0 truncate empty:hidden">{{ $label }}</span>
 
     {{--
         Nothing resolves one of these from the tone: the state glyph belongs in
