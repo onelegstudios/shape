@@ -461,6 +461,13 @@ Read before executing:
 - do not name a ring for one mode only; `class="ring-2 ring-white"` is the page's
   own colour on a dark page, so write the pair the group writes
   (`ring-white dark:ring-shape-900`) or the ground's colour in both
+- do not try to reach an avatar's `<img>` with a selector for anything but a
+  class; `loading`, `srcset`, `sizes`, `decoding`, `fetchpriority`, `crossorigin`
+  and `referrerpolicy` are written as plain attributes on the component
+  (`<x-shape::avatar :src="$p->avatar" loading="lazy" />`) and land on the
+  picture in every arrangement, including `ground` and `as`, where the rest of
+  the bag stays one element out — and they fold bound, which a prop holding an
+  array of them could not
 - do not reach for `ground` to survive a picture that fails to load; it is for a
   picture that arrives and is see-through (`d=blank`), and a broken image still
   paints over the letters — pair it with `default: 'blank'` and nothing else

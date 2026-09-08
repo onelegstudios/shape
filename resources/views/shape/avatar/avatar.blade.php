@@ -283,6 +283,25 @@
     the bag is one element further out, so letterboxing is
     `class="[&>img]:object-contain"` rather than `class="object-contain"`.
 
+    Which works for a class and for nothing else. `loading`, `srcset`, `sizes`,
+    `decoding`, `fetchpriority`, `crossorigin` and `referrerpolicy` are not
+    classes and no selector reaches them, so with the bag one element out they
+    landed on the `<span>` a ground renders, where they do nothing, or on the
+    `<button>` a control renders, which is not an element that has them. The one
+    arrangement that could say `loading="lazy"` was the bare photograph, and a
+    row of fifty faces — the call site that wants it — is usually a link.
+
+    So those seven are lifted off the bag and put back on the picture, and the
+    three arrangements agree about where a picture's attribute goes. Everything
+    else lands where it always has, `class` first among them: it paints the
+    circle, which is the element the picture sits in.
+
+    Attributes rather than a prop holding them, and that is folding rather than
+    taste. Blaze hands a `safe` prop a string placeholder while it folds, so an
+    array of attributes cannot be safe — a call site that wrote
+    `:picture="['loading' => 'lazy']"` would have left the fold path to say it.
+    Lifted off the bag they fold bound, exactly as a per-person `class` does.
+
     A control does not repaint on hover, which is the one thing it does not
     borrow from the button. The button's paint is chrome and its hover is a
     louder version of the same chrome. An avatar's paint is what the avatar
@@ -475,6 +494,13 @@ $pictureClasses = Shape::classes()
     ->add('size-full')
     ->add('[:where(&)]:object-cover');
 
+// The names only a picture understands, lifted off the bag so they reach the
+// `<img>` in the two arrangements where the bag is one element out. On the bare
+// arm the whole bag is already on the picture and this takes nothing away.
+$picturesOwn = ['loading', 'decoding', 'fetchpriority', 'srcset', 'sizes', 'crossorigin', 'referrerpolicy'];
+
+$pictureAttributes = $attributes->only($picturesOwn)->class((string) $pictureClasses);
+
 // The badge's classes are not merged with anything, because the attribute bag
 // stays on the avatar, so they are written flat rather than through `:where()`.
 // Nothing here is a default a call site could beat with a class of its own.
@@ -552,9 +578,9 @@ $badgeClasses = Shape::classes()
 @if ($src && ! $control && ! $ground)
     <img src="{{ $src }}" alt="{{ $alt }}" {{ $attributes->class($classes) }} data-shape-avatar data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">
 @else
-    <x-shape::avatar.element :as="$control" {{ $attributes->class($classes) }} data-shape-avatar="" data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">@if (! $src || $ground)
+    <x-shape::avatar.element :as="$control" {{ $attributes->except($picturesOwn)->class($classes) }} data-shape-avatar="" data-shape-size="{{ $size }}" data-shape-variant="{{ $variant }}" data-shape-tone="{{ $tone ?? 'neutral' }}">@if (! $src || $ground)
 @if ($icon)<x-shape::icon :name="$icon" :variant="$iconVariant" :size="$iconSize" />@else<span aria-hidden="true">{{ $initials }}</span>@endif
 @endif
-@if ($src)<img src="{{ $src }}" alt="" class="{{ $pictureClasses }}">@endif<span class="sr-only">{{ $alt }}</span></x-shape::avatar.element>
+@if ($src)<img src="{{ $src }}" alt="" {{ $pictureAttributes }}>@endif<span class="sr-only">{{ $alt }}</span></x-shape::avatar.element>
 @endif
 @if ($badge)<span class="{{ $badgeClasses }}" aria-hidden="true" data-shape-avatar-badge data-shape-position="{{ $badgePosition }}" data-shape-tone="{{ $badgeTone ?? 'neutral' }}">@if ($badge !== true){{ $badge }}@endif</span></span>@endif

@@ -35,6 +35,38 @@ pass nothing.
 Choosing the element rather than describing it is also the one thing about `src`
 that costs something at compile time, which [Folding](#folding) sets out.
 
+### The picture's own attributes
+
+`loading`, `srcset`, `sizes`, `decoding`, `fetchpriority`, `crossorigin` and
+`referrerpolicy` land on the `<img>`, wherever the `<img>` happens to be:
+
+```blade
+<x-shape::avatar :src="$person->avatar" :alt="$person->name" loading="lazy" />
+```
+
+They are named because the rest of the bag does not follow them. A bare
+photograph carries the whole bag on the picture itself; [`ground`](#ground) and
+[a control](#buttons-and-links) move it one element out, onto the thing the
+picture sits in. That is right for `class`, which paints the circle, and wrong
+for these — a `loading` on a ground's `<span>` does nothing, and one on a
+control's `<button>` is not an attribute that element has.
+
+So those seven are lifted off the bag and put back on the picture, and the three
+arrangements agree about where a picture's attribute goes. Everything else lands
+where it always has.
+
+A row of fifty faces is what this is for. [Folding](#folding) says an avatar list
+built from per-row URLs neither folds nor usefully memoizes, and `loading="lazy"`
+is the mitigation — unreachable, until now, in exactly the arrangements such a
+list uses. `referrerpolicy` is the one a [Gravatar](#gravatar) wants, for the
+reason [it is a third party](#it-is-a-third-party) gives.
+
+Attributes rather than a prop holding them, and that is folding rather than
+tidiness: Blaze hands a `safe` prop a string placeholder while it folds, so an
+array of attributes cannot be safe and `:picture="['loading' => 'lazy']"` would
+have cost the fold. Lifted off the bag they fold bound, as a per-person `class`
+does.
+
 ### Ground
 
 `ground` draws the glyph or the letters *under* the picture instead of in place
@@ -893,6 +925,10 @@ all, and will announce nothing:
 
 `avatar.group` takes no props.
 
+`loading`, `srcset`, `sizes`, `decoding`, `fetchpriority`, `crossorigin` and
+`referrerpolicy` are not props. They are attributes, and they land on [the
+picture](#the-pictures-own-attributes) in every arrangement.
+
 ## Folding
 
 Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'badgeTone'])`.
@@ -904,6 +940,7 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'ba
 | `as` written statically | folds | — |
 | `badge` static, `badge-tone` bound per person | folds | — |
 | `class` bound per person | folds | — |
+| `loading` or `srcset`, static or bound | folds | — |
 | `badge` bound per row | no | one entry per value |
 | `src` bound per row | no | one entry per URL, no hits |
 
@@ -911,7 +948,11 @@ Tier B — `@blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'ba
 [button](button.md) carries it, so a per-person tone still folds, and
 `badge-tone` rides with it for the same reason. `class` is merged rather than
 branched on, so [a colour per person](#a-colour-per-person) folds as well —
-which is what makes a hand-painted palette cheaper than it looks. `variant` branches to resolve
+which is what makes a hand-painted palette cheaper than it looks. The
+[picture's own attributes](#the-pictures-own-attributes) ride the bag for that
+same reason, which is why they are attributes and not a prop holding an array:
+Blaze hands a `safe` prop a string placeholder while it folds, so an array could
+not be one, and `:picture="['loading' => 'lazy']"` would have cost the fold. `variant` branches to resolve
 the paint, `border` to resolve the edge and `square` to resolve the radius, so
 none of the three can be `safe` — the badge's arrangement exactly. `as` joins them: it chooses an element, so it
 branches — but it is a word a call site writes rather than binds, so an avatar

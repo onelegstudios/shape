@@ -366,6 +366,39 @@ it('leaves the remainder of a group to the call site as an ordinary avatar', fun
         ->toContain('data-shape-avatar');
 });
 
+it('puts the picture\'s own attributes on the picture in every arrangement', function (string $blade) {
+    // The bag reaches the `<img>` on its own in exactly one of the three. A
+    // `loading` is not a class, so no selector stands in for it, and an avatar
+    // list of photographs is the call site that most wants one.
+    expect(Blade::render($blade))->toMatch('/<img[^>]*loading="lazy"/');
+})->with([
+    '<x-shape::avatar src="/ada.webp" alt="Ada" loading="lazy" />',
+    '<x-shape::avatar src="/ada.webp" alt="Ada" initials="AL" ground loading="lazy" />',
+    '<x-shape::avatar src="/ada.webp" alt="Ada" as="button" loading="lazy" />',
+]);
+
+it('does not leave them on the element the picture sits in', function () {
+    // The other half. A `loading` on the `<button>` a control renders is not an
+    // attribute that element has, and one on a ground's `<span>` does nothing —
+    // so they are lifted off the bag rather than copied from it.
+    $html = Blade::render('<x-shape::avatar src="/ada.webp" alt="Ada" as="button" srcset="/ada@2x.webp 2x" />');
+
+    expect($html)
+        ->toMatch('/<img[^>]*srcset=/')
+        ->not->toMatch('/<button[^>]*srcset=/');
+});
+
+it('keeps the rest of the bag where it was', function () {
+    // Only the picture's own names move. `class` is the one that most has to
+    // stay: it paints the circle, which is the element the picture sits in.
+    $html = Blade::render('<x-shape::avatar src="/ada.webp" alt="Ada" as="button" class="ring-2" data-testid="face" referrerpolicy="no-referrer" />');
+
+    expect($html)
+        ->toMatch('/<button[^>]*class="[^"]*ring-2/')
+        ->toMatch('/<button[^>]*data-testid="face"/')
+        ->toMatch('/<img[^>]*referrerpolicy="no-referrer"/');
+});
+
 it('gives its own defaults zero specificity so caller classes win', function () {
     expect(Blade::render('<x-shape::avatar initials="AL" class="rounded-shape" />'))
         ->toContain('[:where(&amp;)]:rounded-full')

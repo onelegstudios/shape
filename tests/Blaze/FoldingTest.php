@@ -802,6 +802,16 @@ it('folds an avatar whose colour is painted per person', function () {
     ]))->toContain('shape::avatar');
 });
 
+it('folds an avatar whose picture attributes are bound', function () {
+    // `loading`, `srcset` and the rest are lifted off the attribute bag rather
+    // than taken as a prop, and this is the reason: the bag is merged, not
+    // branched on, so they fold bound exactly as `class` does. A prop holding an
+    // array could not — Blaze hands a `safe` prop a string placeholder while it
+    // folds, so `:picture="[...]"` would have cost the fold to say `lazy`.
+    expect(foldedComponentsWhileRendering('dynamic-avatar-loading', ['loading' => 'lazy']))
+        ->toContain('shape::avatar');
+});
+
 it('abandons folding an avatar whose picture is bound dynamically', function () {
     // `src` decides which element renders, so it cannot be safe. This is the
     // avatar list built from per-row URLs, and it is the badge's expensive row
