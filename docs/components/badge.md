@@ -23,6 +23,11 @@ a button given the same tone agree without either knowing about the other.
 
 ## Sizes
 
+Four heights — 16px, 20px, 24px and 28px — moved apart by the vertical padding
+rather than by the type size. `text-2xs` and `text-xs` share a 1rem line box, so
+a scale that changed only the type and the side padding would draw two badges
+the same height:
+
 @docs('preview', name: 'badge-sizes')
 
 ## Icons
@@ -49,7 +54,7 @@ it is:
 | `label` | — | the text |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
-| `size` | `base` | `sm`, `base` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg` |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` to omit |
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
 

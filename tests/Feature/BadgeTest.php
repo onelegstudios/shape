@@ -86,8 +86,10 @@ it('keeps every variant reading the same variables rather than a colour matrix',
 it('applies the requested size', function (string $size, string $expected) {
     expect(Blade::render("<x-shape::badge label=\"Paid\" size=\"{$size}\" />"))->toContain($expected);
 })->with([
-    ['sm', '[:where(&amp;)]:text-2xs'],
-    ['base', '[:where(&amp;)]:text-xs'],
+    ['xs', '[:where(&amp;)]:px-1.5 [:where(&amp;)]:py-0 [:where(&amp;)]:text-2xs'],
+    ['sm', '[:where(&amp;)]:px-2 [:where(&amp;)]:py-0.5 [:where(&amp;)]:text-2xs'],
+    ['base', '[:where(&amp;)]:px-2.5 [:where(&amp;)]:py-1 [:where(&amp;)]:text-xs'],
+    ['lg', '[:where(&amp;)]:px-3 [:where(&amp;)]:py-1 [:where(&amp;)]:text-sm'],
 ]);
 
 it('gives its own defaults zero specificity so caller classes win', function () {

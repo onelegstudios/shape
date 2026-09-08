@@ -33,9 +33,15 @@ $classes = Shape::classes()
     ->add('inline-flex items-center whitespace-nowrap align-middle')
     ->add('[:where(&)]:rounded-shape [:where(&)]:font-medium')
 
+    // Four heights: 16px, 20px, 24px, 28px. The vertical padding is what moves
+    // them apart — `text-2xs` and `text-xs` share a 1rem line box, so a scale
+    // that only changed the type size and the side padding would render two
+    // badges the same height and differ by two pixels of gutter.
     ->add(match ($size) {
-        'sm' => '[:where(&)]:gap-1 [:where(&)]:px-1.5 [:where(&)]:py-0.5 [:where(&)]:text-2xs',
-        default => '[:where(&)]:gap-1.5 [:where(&)]:px-2 [:where(&)]:py-0.5 [:where(&)]:text-xs',
+        'xs' => '[:where(&)]:gap-1 [:where(&)]:px-1.5 [:where(&)]:py-0 [:where(&)]:text-2xs',
+        'sm' => '[:where(&)]:gap-1 [:where(&)]:px-2 [:where(&)]:py-0.5 [:where(&)]:text-2xs',
+        'lg' => '[:where(&)]:gap-1.5 [:where(&)]:px-3 [:where(&)]:py-1 [:where(&)]:text-sm',
+        default => '[:where(&)]:gap-1.5 [:where(&)]:px-2.5 [:where(&)]:py-1 [:where(&)]:text-xs',
     })
 
     // The same tone variables the button reads, so a badge and a button given
