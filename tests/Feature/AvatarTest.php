@@ -346,6 +346,26 @@ it('overlaps a group with two utilities and no stylesheet rule', function () {
         ->not->toContain('z-');
 });
 
+it('leaves the remainder of a group to the call site as an ordinary avatar', function () {
+    // The group has no `max`: a slot is already rendered by the time it arrives,
+    // so the slice happens where the collection is. What the docs promise is
+    // that the remainder needs nothing new — `+3` is initials, hidden the way
+    // initials are, with the sentence in `alt`, and the group's ring finds it
+    // because it is an avatar like the ones beside it.
+    $html = Blade::render(<<<'BLADE'
+    <x-shape::avatar.group>
+        <x-shape::avatar initials="AL" />
+        <x-shape::avatar initials="+3" alt="3 more" />
+    </x-shape::avatar.group>
+    BLADE);
+
+    expect($html)
+        ->toContain('<span aria-hidden="true">+3</span>')
+        ->toContain('<span class="sr-only">3 more</span>')
+        ->toContain('[&amp;_[data-shape-avatar]]:ring-2')
+        ->toContain('data-shape-avatar');
+});
+
 it('gives its own defaults zero specificity so caller classes win', function () {
     expect(Blade::render('<x-shape::avatar initials="AL" class="rounded-shape" />'))
         ->toContain('[:where(&amp;)]:rounded-full')

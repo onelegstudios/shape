@@ -819,6 +819,30 @@ The last avatar paints on top, and that isn't configurable — choosing the othe
 order is a z-index, and this library doesn't have one. Reverse the collection at
 the call site if the first face should be the front one.
 
+### More than fit
+
+There is no `max`, because the group has nothing to count. It renders a slot,
+and a slot has already been rendered by the time it arrives — there are no
+avatars left to leave out, only elements to hide, which is the same work done
+later and worse.
+
+The slice belongs where the collection is, and so does the remainder:
+
+@docs('preview', name: 'avatar-group-overflow')
+
+The remainder is an ordinary avatar. `+3` is initials the same way `AL` is, so
+it takes the same size, the same ring from the group and the same place in the
+paint order — last, on top, which is where a summary wants to be anyway.
+
+It is also a picture of a number, so it is hidden exactly as initials are and
+the sentence goes in `alt`. Without one the group announces three people and
+says nothing about the rest, which is the one thing the remainder was added to
+say.
+
+Keep it short. The circle is a fixed box that clips what it cannot fit, so
+`+128` is wider than a 24px avatar — a group that large wants `99+`, a bigger
+size, or a count in text beside it rather than in a circle of its own.
+
 ## Initials are stated, never derived
 
 Shape will not turn a name into initials for you. A derivation inside a folded

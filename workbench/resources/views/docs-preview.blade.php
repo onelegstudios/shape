@@ -54,7 +54,25 @@
     $rendered = (string) preg_replace('/<h([1-6])\b/i', '<div role="heading" aria-level="$1"', $rendered);
     $rendered = (string) preg_replace('/<\/h[1-6]>/i', '</div>', $rendered);
 
-    $printed = str_replace("\n", '&#10;', e($source));
+    // Dollars are written as `&#36;`, which is not a stylistic choice either.
+    //
+    // laradocs renders `$…$` as KaTeX, and the pass that does it protects
+    // markdown code — fenced blocks and backtick spans — rather than code. This
+    // is a raw HTML block, expanded by the macro extension one step before
+    // KaTeX runs, so nothing here is protected: the first `$` in a preview opens
+    // an expression that closes at the next one, and what comes back is the
+    // source re-escaped into an attribute with a maths span around it.
+    //
+    // The single line above makes it worse rather than causing it. KaTeX's
+    // inline pattern stops at a newline, so in an ordinary file the damage ends
+    // at the end of a line; with the newlines already written as `&#10;` there
+    // is no line to end at, and one expression swallows the rest of the preview.
+    //
+    // Escaping the delimiter is the whole fix. The pattern never matches, the
+    // browser decodes `&#36;` back to `$` inside the `<pre>`, and a preview that
+    // uses two variables on one line — `@foreach ($people as $person)` — prints
+    // as what it is.
+    $printed = str_replace(["\n", '$'], ['&#10;', '&#36;'], e($source));
 
     // The stage is styled here; the source block underneath is left bare, so
     // that laradocs renders it as it renders every other code block on the page.

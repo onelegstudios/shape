@@ -15,6 +15,14 @@
     the last child or at `bottom-left`. Nothing here can fix that from the
     outside without the z-index the paragraph above declines to have.
 
+    There is no `max` here, because there is nothing to count. A group renders a
+    slot, and a slot has already been rendered by the time it arrives — the
+    avatars past the limit are elements to hide rather than avatars to leave
+    out, which is the same work done later and worse. The slice belongs where
+    the collection is, and the remainder is an ordinary avatar: `+3` is initials
+    the same way `AL` is, hidden the same way, with the sentence in `alt`. Last
+    in the slot, so it paints on top, which is where a summary wants to be.
+
     The ring finds the avatar rather than the child. A badged avatar arrives
     wrapped in the shell its mark is positioned against, so `[&>*]` would ring
     that shell — a square ring around a circle, at the one call site that most

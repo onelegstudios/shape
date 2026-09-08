@@ -447,6 +447,11 @@ Read before executing:
   `ring` prop because the colour it wants is the ground's, which no default can
   guess and no prop could carry (Tailwind reads class names out of the file as
   text)
+- do not look for a `max` on `avatar.group`; it renders a slot, which is already
+  rendered by the time it arrives, so slice where the collection is and render
+  the remainder as an ordinary avatar last in the group
+  (`<x-shape::avatar :initials="'+'.$more" :alt="$more.' more'" />`) — `+3` is
+  initials, hidden the way initials are, so the sentence has to be in `alt`
 - do not ring the children of an `avatar.group` one class each; the group colours
   them through a descendant selector a class on the child does not outweigh — put
   it on the group, and make it important
