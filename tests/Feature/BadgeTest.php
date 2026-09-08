@@ -65,6 +65,42 @@ it('lets a caller name an icon of its own', function () {
         ->toContain('data-shape-icon');
 });
 
+it('renders a trailing icon after the label when one is named', function () {
+    $html = Blade::render('<x-shape::badge label="Overdue" icon-trailing="shape-arrow-right" />');
+
+    expect($html)->toContain('data-shape-icon')
+        ->and(strpos($html, 'Overdue'))->toBeLessThan(strpos($html, 'data-shape-icon'));
+});
+
+it('resolves nothing into the trailing slot from the tone', function () {
+    // The state glyph leads; a second copy behind the label would say the same
+    // thing twice.
+    expect(Blade::render('<x-shape::badge label="Paid" tone="success" />'))
+        ->toContain('data-shape-icon')
+        ->and(substr_count(Blade::render('<x-shape::badge label="Paid" tone="success" />'), 'data-shape-icon'))->toBe(1);
+});
+
+it('draws a leading and a trailing icon together, in that order', function () {
+    $html = Blade::render('<x-shape::badge label="Paid" tone="success" icon-trailing="shape-arrow-right" />');
+
+    expect(substr_count($html, 'data-shape-icon'))->toBe(2)
+        ->and(strpos($html, 'data-shape-icon'))->toBeLessThan(strpos($html, 'Paid'))
+        ->and(strrpos($html, 'data-shape-icon'))->toBeGreaterThan(strpos($html, 'Paid'));
+});
+
+it('keeps the trailing icon when the resolved one is opted out of', function () {
+    $html = Blade::render('<x-shape::badge label="Paid" tone="success" :icon="false" icon-trailing="shape-arrow-right" />');
+
+    expect(substr_count($html, 'data-shape-icon'))->toBe(1)
+        ->and(strpos($html, 'Paid'))->toBeLessThan(strpos($html, 'data-shape-icon'));
+});
+
+it('sizes both icons with the same icon-size', function () {
+    $html = Blade::render('<x-shape::badge label="Paid" tone="success" icon-trailing="shape-arrow-right" icon-size="sm" />');
+
+    expect(substr_count($html, 'size-5'))->toBe(2);
+});
+
 it('reads its colours through the same tone variables the button does', function () {
     $badge = Blade::render('<x-shape::badge label="Paid" tone="success" variant="solid" />');
 

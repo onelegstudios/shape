@@ -34,8 +34,8 @@ the same height:
 
 Every state colour resolves a glyph of its own, so a badge stays
 readable in greyscale and to anyone who can't separate the hues. `icon` picks a
-different one, `:icon="false"` removes it, and `icon-size` changes how big
-it is:
+different one, `:icon="false"` removes it, `icon-trailing` adds one after the
+label, and `icon-size` changes how big both of them are:
 
 @docs('preview', name: 'badge-icons')
 
@@ -47,6 +47,10 @@ it is:
 | `info` | `shape-info` |
 | `neutral`, `brand`, `accent` | none — none of the three is a state to signal |
 
+Nothing is ever resolved into `icon-trailing`: the state glyph belongs in front
+of the label, and a second copy behind it would say the same thing twice. It is
+for a drawing of your own — a chevron on a badge that opens something.
+
 ## Reference
 
 | Prop | Default | Values |
@@ -56,6 +60,7 @@ it is:
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `size` | `base` | `xs`, `sm`, `base`, `lg` |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` to omit |
+| `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
 
 There is no slot: Blaze memoizes a component only when it has none and is called

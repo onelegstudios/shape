@@ -25,6 +25,7 @@
     'variant' => 'subtle',
     'size' => 'base',
     'icon' => null,
+    'iconTrailing' => null,
     'iconSize' => 'xs',
 ])
 
@@ -87,4 +88,14 @@ $classes = Shape::classes()
     @endif
 
     {{ $label }}
+
+    {{--
+        Nothing resolves one of these from the tone: the state glyph belongs in
+        front of the label, and a second copy of it behind would say the same
+        thing twice. `icon-trailing` is a caller's own drawing — a chevron on a
+        badge that opens something — so it is always the dynamic path.
+    --}}
+    @if ($iconTrailing)
+        <x-shape::icon :name="$iconTrailing" :size="$iconSize" />
+    @endif
 </span>
