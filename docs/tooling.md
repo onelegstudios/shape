@@ -687,11 +687,12 @@ resolve to, the stat's three trends and the spinner — and nothing else. On a
 fresh application `components_path` is empty, so there is nothing to `--force`
 and nothing to eject first.
 
-This package also ships `shape-arrow-right`, `shape-plus` and `shape-trash`, and
-`shape:icon:replace` leaves them alone. They are not part of the library's
-vocabulary: nothing resolves them, and they exist so the README and the previews
-render for somebody who has configured nothing. They carry the prefix so that
-`arrow-right`, `plus` and `trash` stay free for whatever you generate — reaching
+This package also ships `shape-arrow-right`, `shape-plus`, `shape-trash` and
+`shape-user`, and `shape:icon:replace` leaves them alone. They are not part of
+the library's vocabulary: nothing resolves them, and they exist so the README and
+the previews render for somebody who has configured nothing. They carry the
+prefix so that `arrow-right`, `plus`, `trash` and `user` stay free for whatever
+you generate — reaching
 for a bare `trash` you never generated is a "component not found" rather than a
 Heroicon drawn beside thirteen Lucide slots.
 

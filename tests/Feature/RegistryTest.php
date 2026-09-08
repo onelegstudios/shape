@@ -176,11 +176,17 @@ it('ships a component for every slot it declares', function () {
     }
 });
 
-it('ships three icons that are not slots, and nothing else', function () {
-    // Two tiers. The slots are the library's vocabulary; these three exist so
+it('ships four icons that are not slots, and nothing else', function () {
+    // Two tiers. The slots are the library's vocabulary; these four exist so
     // the README and the previews render, are resolved by nothing, and are left
     // alone by `shape:icon:replace`. They are prefixed regardless, so `trash`
-    // and `plus` stay free for whatever an application generates for itself.
+    // and `user` stay free for whatever an application generates for itself.
+    //
+    // `shape-user` is the one that has to keep being argued for, because the
+    // avatar's `icon` prop is documented with it and that reads like vocabulary.
+    // It is not: no component resolves it, so there is nothing for a set to be
+    // kept level with, and declaring it would report a coverage gap to every
+    // application that has already replaced its icons.
     $examples = array_values(array_diff(
         registry()->vocabulary(),
         IconSlots::fromConfig()->names(),
@@ -188,5 +194,5 @@ it('ships three icons that are not slots, and nothing else', function () {
 
     sort($examples);
 
-    expect($examples)->toBe(['shape-arrow-right', 'shape-plus', 'shape-trash']);
+    expect($examples)->toBe(['shape-arrow-right', 'shape-plus', 'shape-trash', 'shape-user']);
 });

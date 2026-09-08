@@ -108,7 +108,8 @@ which is blue whatever the brand becomes.
 | `list` / `list.item` | fold | `as`, `empty*` |
 | `pagination` | compile | `paginator`, `simple` |
 | `stat` | fold + memo | `value`, `label`, `description`, `delta`, `trend` |
-| `avatar` / `avatar.group` | fold + memo | `src`, `initials`, `alt`, `size` |
+| `avatar` / `avatar.group` | fold + memo | `src`, `icon`, `icon-variant` (default `solid`), `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `border` (rings the circle in the tone's edge on any variant, so a picture can have one; `outline` has one already), `square`, `ground` (draws `icon` or `initials` under the picture rather than instead of it, for a picture that may be transparent), `as` (button\|a\|div — an `href` implies `a`), `badge` (bare for a dot, otherwise its text), `badge-tone`, `badge-position` (bottom-right\|bottom-left\|top-right\|top-left) |
+| `avatar.element` | fold | `as` — the element an avatar renders; defaults to a `<span>`, not a `<button>` |
 | `tabs` / `tabs.tab` / `tabs.panel` | fold | `as`, `orientation` / `for`, `selected`, `icon` / `name` |
 
 ### 4. Keep the call site foldable
@@ -417,8 +418,77 @@ Read before executing:
   `<x-shape::icon.bell />` form is the one that folds and memoizes
 - do not put a `shape-*` name in an application's own markup; those fourteen are
   Shape's slots, and an icon of your own is one you generated
-  (`php artisan shape:icon bell`), under the name its set uses
+  (`php artisan shape:icon bell`), under the name its set uses — `shape-user` on
+  an avatar is a documentation example, not an exception to this
 - name a `size` on an icon and leave `variant` alone unless the style is the
   point; the small sizes are drawn solid because a stroke does not read at 16px,
   and a call site that names only a size works with any icon set
+- do not spend a `tone` on decoration to give people different coloured
+  avatars; a tone is what an avatar means, so a red circle beside a green one
+  reports a status nobody set — pass the fill and ink as `class` instead
+  (`bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200`),
+  resolved per person in an accessor rather than inside the folded component
+- do not build a Gravatar URL by hand, and do not reach for a
+  `<x-shape::gravatar>` that does not exist; `Shape::gravatar($user->email)` is a
+  `src` like any other, takes the avatar's own size word (`size: 'lg'`) rather
+  than pixels, and returns null for a missing address so `icon` and `initials`
+  still run — its `default:` is a second ladder beside that one, where `mp`
+  always wins, `blank` leaves the circle's own paint showing, and `404` spends a
+  failed request to reach the same place `blank` reaches with a successful one
+- do not reach for `variant="outline"` to put an edge on a photograph; that arm
+  drops the fill, which is the ground a transparent picture sits on and what
+  fills the circle while any picture arrives — `border` rings any variant and
+  leaves the fill alone (`outline` already has the same edge, so the prop adds
+  nothing there)
+- do not reach for `border` to ring an avatar against a background this library
+  does not paint; a border is drawn inside the fixed box and is spent out of the
+  picture, and its colour is the tone's — an outside ring is a class
+  (`class="ring-2 ring-[#0d1117]"`), costs the picture nothing, and there is no
+  `ring` prop because the colour it wants is the ground's, which no default can
+  guess and no prop could carry (Tailwind reads class names out of the file as
+  text)
+- do not look for a `max` on `avatar.group`; it renders a slot, which is already
+  rendered by the time it arrives, so slice where the collection is and render
+  the remainder as an ordinary avatar last in the group
+  (`<x-shape::avatar :initials="'+'.$more" :alt="$more.' more'" />`) — `+3` is
+  initials, hidden the way initials are, so the sentence has to be in `alt`
+- do not ring the children of an `avatar.group` one class each; the group colours
+  them through a descendant selector a class on the child does not outweigh — put
+  it on the group, and make it important
+  (`class="[&_[data-shape-avatar]]:ring-[#0d1117]!"`), because the group's own
+  classes are not written at `[:where(&)]:` and a plain one only ties, then wins
+  or loses on Tailwind's emit order
+- do not name a ring for one mode only; `class="ring-2 ring-white"` is the page's
+  own colour on a dark page, so write the pair the group writes
+  (`ring-white dark:ring-shape-900`) or the ground's colour in both
+- do not try to reach an avatar's `<img>` with a selector for anything but a
+  class; `loading`, `srcset`, `sizes`, `decoding`, `fetchpriority`, `crossorigin`
+  and `referrerpolicy` are written as plain attributes on the component
+  (`<x-shape::avatar :src="$p->avatar" loading="lazy" />`) and land on the
+  picture in every arrangement, including `ground` and `as`, where the rest of
+  the bag stays one element out — and they fold bound, which a prop holding an
+  array of them could not
+- do not leave `ground` off an avatar whose `src` a stranger controls; it is the
+  arrangement a failed load survives, because the letters are already under the
+  picture and `shape.js` hides one that errors — a bare `<img>` has nothing
+  underneath and is left showing the browser's broken icon on purpose, since
+  hiding it would leave a hole in the row
+- do not pass `ground` to letterbox with `class="object-contain"`; a ground moves
+  the bag one element out the way `as` does, so it is `class="[&>img]:object-contain"`
+- do not call `Shape::gravatar()` in the template; resolve it in the Livewire
+  component and pass the result down, the way initials and a per-person colour
+  are — a `#[Computed]` property memoizes for the request, and for a list it goes
+  in the same pass that builds the list (a model accessor when more than one
+  component draws the same face)
+- do not bind `badge` per row on an avatar when a bare `badge` will do; it
+  branches, while `badge-tone` is safe, so a presence dot whose colour comes
+  from the row still folds
+- do not rely on an avatar's badge to say anything to a screen reader; it is
+  `aria-hidden`, and the status belongs in `alt` ("Ada Lovelace, online")
+- do not render an avatar as a control without an `alt`; a decorative avatar
+  beside a name is right to announce nothing, but `as="button"` or an `href`
+  without one is announced as "button" and nothing else
+- do not wrap an avatar in a `<x-shape::button>` to make it clickable; that
+  paints a second control around the circle — `as="button"` turns the circle
+  itself into one, keeping its classes, its box and the attribute bag
 - do not publish the stylesheet to change colours; redeclare the tokens instead

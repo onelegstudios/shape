@@ -792,6 +792,26 @@ it('keeps folding a stat whose value and delta are bound dynamically', function 
         ->toContain('shape::stat');
 });
 
+it('folds an avatar whose colour is painted per person', function () {
+    // The avatar docs answer auto-colour with a palette resolved at the call
+    // site and passed as `class`. That answer is only worth giving because the
+    // bag is merged rather than branched on, so a paint bound per row folds
+    // where a per-row `src` does not.
+    expect(foldedComponentsWhileRendering('dynamic-avatar-class', [
+        'paint' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200',
+    ]))->toContain('shape::avatar');
+});
+
+it('folds an avatar whose picture attributes are bound', function () {
+    // `loading`, `srcset` and the rest are lifted off the attribute bag rather
+    // than taken as a prop, and this is the reason: the bag is merged, not
+    // branched on, so they fold bound exactly as `class` does. A prop holding an
+    // array could not — Blaze hands a `safe` prop a string placeholder while it
+    // folds, so `:picture="[...]"` would have cost the fold to say `lazy`.
+    expect(foldedComponentsWhileRendering('dynamic-avatar-loading', ['loading' => 'lazy']))
+        ->toContain('shape::avatar');
+});
+
 it('abandons folding an avatar whose picture is bound dynamically', function () {
     // `src` decides which element renders, so it cannot be safe. This is the
     // avatar list built from per-row URLs, and it is the badge's expensive row

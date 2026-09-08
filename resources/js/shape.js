@@ -6,8 +6,8 @@
 | light dismiss and Escape; `::backdrop` and `:has()` give the scrim and the
 | scroll lock. None of that is below.
 |
-| What is left is twelve small jobs, wired as delegated listeners on the document
-| rather than as per-element state:
+| What is left is thirteen small jobs, wired as delegated listeners on the
+| document rather than as per-element state:
 |
 |   1. a fallback for `command` / `commandfor`, for browsers that predate them
 |   2. a fallback for `closedby`, so a click outside a dialog closes it
@@ -15,7 +15,7 @@
 |   4. keeping `aria-expanded` on a popover's trigger honest
 |   5. arrow-key movement between menu items
 |   6. arrow-key movement between tabs, and the panel swap that goes with it —
-|      the one job in here that is not an overlay, and the only reason a page
+|      one of the two jobs in here that are not overlays, and a reason a page
 |      with no overlays on it might still want this file
 |   7. showing and hiding tooltips, which are the one overlay a pointer opens
 |   8. placing every anchored overlay, which CSS anchor positioning was going to
@@ -26,6 +26,9 @@
 |  11. filling in the shared confirm dialog and dispatching what it was told to
 |  12. replaying whatever the server flashed into the session, as the same events
 |      it would have dispatched live
+|  13. hiding an avatar's photograph when it fails to arrive, so the letters
+|      underneath show rather than a broken-image icon over them — the other job
+|      that is not an overlay
 |
 | plus a pair of window events so a Livewire component can open an overlay by
 | name.
@@ -63,6 +66,7 @@ export default function shape() {
     dismissals()
     toasts()
     confirms()
+    brokenPictures()
     livewireBridge()
 
     // Last, because it dispatches the events the two above have just started
@@ -832,6 +836,53 @@ function feedback() {
     }
 
     document.addEventListener('livewire:navigated', replay)
+}
+
+/* ----------------------------------------------------- 13. broken pictures */
+
+/*
+| An avatar whose photograph does not arrive.
+|
+| `error` does not bubble, so this is the one listener in here registered for the
+| capture phase. It is still one listener on the document rather than a handler
+| per image, which is the same arrangement as everything above and the reason a
+| picture rendered after this ran is covered without anybody re-running it.
+|
+| It hides the picture rather than removing it, and only where the picture is
+| inside the circle rather than being it. A bare `<img>` carries
+| `data-shape-avatar` itself and is the whole avatar: hiding that leaves a hole
+| in the row where a face was, which is worse than the icon a browser draws.
+| Inside a circle there is always something underneath — the letters or the glyph
+| a `ground` drew, and the circle's own paint where it drew neither — so the
+| descendant selector is the whole of the test.
+|
+| `load` is the same listener from the other side. A picture is hidden while it
+| is broken and not for ever: a `src` swapped by Livewire, or a retry, arrives as
+| a load on an element still carrying the attribute, and the avatar has to come
+| back.
+|
+| The sweep is for the pictures that failed before this file ran, which no
+| listener added afterwards can hear. `complete` with a zero `naturalWidth` is a
+| load that finished with nothing to show.
+*/
+function brokenPictures() {
+    const picture = (el) => (el instanceof HTMLImageElement && el.matches('[data-shape-avatar] img') ? el : null)
+
+    document.addEventListener('error', (event) => {
+        const img = picture(event.target)
+
+        if (img) img.hidden = true
+    }, true)
+
+    document.addEventListener('load', (event) => {
+        const img = picture(event.target)
+
+        if (img) img.hidden = false
+    }, true)
+
+    for (const img of document.querySelectorAll('[data-shape-avatar] img')) {
+        if (img.complete && img.naturalWidth === 0) img.hidden = true
+    }
 }
 
 /* ------------------------------------------------------------ the bridge */

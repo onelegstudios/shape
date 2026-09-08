@@ -16,9 +16,12 @@
     "avatar": {
         "files": [
             "avatar/avatar.blade.php",
+            "avatar/element.blade.php",
             "avatar/group.blade.php"
         ],
-        "requires": [],
+        "requires": [
+            "icon"
+        ],
         "docs": "components/avatar.md",
         "tier": "fold + memo"
     },
@@ -165,6 +168,7 @@
             "icon/shape-trend-down.blade.php",
             "icon/shape-trend-flat.blade.php",
             "icon/shape-trend-up.blade.php",
+            "icon/shape-user.blade.php",
             "icon/shape-warning.blade.php"
         ],
         "requires": [],

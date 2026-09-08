@@ -612,7 +612,7 @@
                     </div>
                     <div class="border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
                         <div class="max-w-md space-y-5">
-                            <x-shape::input label="Full name" placeholder="Ada Lovelace" wire:model="full_name" />
+                            <x-shape::input label="Full name" placeholder="Alex Lindqvist" wire:model="full_name" />
                             <x-shape::input
                                 type="email"
                                 label="Billing email"
@@ -1121,15 +1121,19 @@
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-6 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
-                        <x-shape::avatar initials="AL" alt="Ada Lovelace" size="xs" />
-                        <x-shape::avatar initials="AL" alt="Ada Lovelace" size="sm" />
-                        <x-shape::avatar initials="AL" alt="Ada Lovelace" />
-                        <x-shape::avatar initials="AL" alt="Ada Lovelace" size="lg" />
+                        <x-shape::avatar initials="AL" alt="Alex Lindqvist" size="xs" />
+                        <x-shape::avatar initials="AL" alt="Alex Lindqvist" size="sm" />
+                        <x-shape::avatar initials="AL" alt="Alex Lindqvist" />
+                        <x-shape::avatar initials="AL" alt="Alex Lindqvist" size="lg" />
+
+                        <x-shape::avatar initials="AL" alt="Alex Lindqvist, online" badge badge-tone="success" />
+                        <x-shape::avatar initials="GH" alt="Gabriel Haas, 3 unread" badge="3" badge-tone="danger" badge-position="top-right" />
+                        <x-shape::avatar icon="shape-user" alt="Acme Corp, 12 open issues" badge="12" badge-tone="brand" badge-position="top-right" square />
 
                         <x-shape::avatar.group>
                             <x-shape::avatar initials="AL" size="sm" />
                             <x-shape::avatar initials="GH" size="sm" />
-                            <x-shape::avatar initials="KJ" size="sm" />
+                            <x-shape::avatar initials="KJ" size="sm" badge badge-tone="success" />
                         </x-shape::avatar.group>
                     </div>
                 </article>
