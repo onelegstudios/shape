@@ -51,6 +51,7 @@
     'iconTrailing' => null,
     'iconSize' => 'xs',
     'inset' => false,
+    'square' => false,
     'dismissible' => false,
     'selected' => null,
     'as' => null,
@@ -124,12 +125,34 @@ $classes = Shape::classes()
     // them apart — `text-2xs` and `text-xs` share a 1rem line box, so a scale
     // that only changed the type size and the side padding would render two
     // badges the same height and differ by two pixels of gutter.
-    ->add(match ($size) {
+    ->add($square ? null : match ($size) {
         'xs' => '[:where(&)]:gap-1 [:where(&)]:px-1.5 [:where(&)]:py-0 [:where(&)]:text-2xs',
         'sm' => '[:where(&)]:gap-1 [:where(&)]:px-2 [:where(&)]:py-0.5 [:where(&)]:text-2xs',
         'lg' => '[:where(&)]:gap-1.5 [:where(&)]:px-3 [:where(&)]:py-1 [:where(&)]:text-sm',
         default => '[:where(&)]:gap-1.5 [:where(&)]:px-2.5 [:where(&)]:py-1 [:where(&)]:text-xs',
     })
+
+    // A badge with nothing in it but a glyph, or a count — the side padding is
+    // for holding a word off the ends, and neither of those is a word. The same
+    // four heights, asked for as a height because there is no longer a padding
+    // to arrive at them through, which is `square` on the button too.
+    //
+    // A minimum width rather than a size, which is where it parts from the
+    // button: a button's square arm holds one glyph and a badge's holds a
+    // number, so one digit has to draw a square and three have to draw a pill.
+    // That is the avatar mark's arrangement, and for the reason it gives — a
+    // count that clipped at two digits would be a count that lies. The padding
+    // left is what keeps three digits off the ends once it does grow.
+    //
+    // `tabular-nums` for the same reason the mark takes it: a number that is
+    // being counted down should not shuffle its own box on the way.
+    ->add($square ? 'justify-center [:where(&)]:tabular-nums' : null)
+    ->add($square ? match ($size) {
+        'xs' => '[:where(&)]:gap-1 [:where(&)]:h-4 [:where(&)]:min-w-4 [:where(&)]:px-0.5 [:where(&)]:text-2xs',
+        'sm' => '[:where(&)]:gap-1 [:where(&)]:h-5 [:where(&)]:min-w-5 [:where(&)]:px-0.5 [:where(&)]:text-2xs',
+        'lg' => '[:where(&)]:gap-1.5 [:where(&)]:h-7 [:where(&)]:min-w-7 [:where(&)]:px-1.5 [:where(&)]:text-sm',
+        default => '[:where(&)]:gap-1.5 [:where(&)]:h-6 [:where(&)]:min-w-6 [:where(&)]:px-1 [:where(&)]:text-xs',
+    } : null)
 
     // `inline-flex` makes a badge an atomic box on its line, so a caller
     // dropping one into running text gets that line's height grown to fit the
@@ -137,6 +160,10 @@ $classes = Shape::classes()
     // exactly the padding added above with an equal negative margin, so the
     // badge keeps its size but stops pushing its own line apart from the
     // ones around it. `xs` has no vertical padding to cancel.
+    //
+    // The same margins hold for a square badge, which has no vertical padding
+    // either: what they cancel is the badge standing taller than the line box,
+    // and that difference is the same however the height was arrived at.
     ->add($inset ? match ($size) {
         'xs' => null,
         'sm' => '[:where(&)]:-my-0.5',

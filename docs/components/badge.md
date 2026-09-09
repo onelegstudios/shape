@@ -51,6 +51,60 @@ Nothing is ever resolved into `icon-trailing`: the state glyph belongs in front
 of the label, and a second copy behind it would say the same thing twice. It is
 for a drawing of your own — a chevron on a badge that opens something.
 
+## Counts and lone icons
+
+`square` drops the side padding and makes the badge as tall as it is wide — the
+same four heights, asked for as a height because there is no padding left to
+arrive at them through. It is the [button](button.md#icon-only-buttons)'s
+`square` and not the [avatar](avatar.md#squares)'s: a badge is square-cornered
+already, so the only thing left for the word to mean here is the proportions.
+
+@docs('preview', name: 'badge-square')
+
+It sets a minimum width rather than a size, which is where it parts from the
+button. A button's square arm holds one glyph; a badge's holds a number, so one
+digit draws a square and three draw a pill — the same arrangement the avatar's
+[count mark](avatar.md#badges) makes, for the reason it gives there: a count
+that clipped at two digits would be a count that lies. Digits are `tabular-nums`,
+so a number does not shuffle its own box as it counts down.
+
+`rounded-full` makes it a circle, the same way it makes an ordinary badge a
+[pill](#overriding-styles).
+
+### A state tone still resolves its glyph
+
+Which is what stops a count being square:
+
+```blade
+{{-- A warning glyph, then the number, in a box wide enough for both. --}}
+<x-shape::badge label="3" square tone="danger" />
+
+{{-- A count. --}}
+<x-shape::badge label="3" square tone="danger" :icon="false" />
+```
+
+Nothing here treats `square` as a reason to drop the glyph. The rule that every
+state resolves one is the whole of ["never rely on colour
+alone"](#icons), and a component that quietly suspended it for one prop would be
+deciding that on a call site's behalf. A count is a number in a coloured box
+rather than a state, so it says so.
+
+### What a lone icon announces
+
+Nothing, unless you name it. The glyph is `aria-hidden` — it is a drawing of
+what the badge already says — and a badge is a `<span>`, which takes no
+accessible name of its own: `aria-label` on it is ignored, because naming is not
+something a generic element supports. Give it a role that does:
+
+```blade
+<x-shape::badge icon="shape-checked" square role="img" aria-label="Verified" />
+```
+
+Or leave it decorative, and let the row it sits in carry the meaning — which is
+the honest answer whenever the glyph is repeating something already written
+beside it. A count has the same shape of problem in a smaller way: `3` announces
+"3" and no noun, so the sentence around it has to supply one.
+
 ## Inline text
 
 A badge is `inline-flex`, so it sits on its line as one atomic box. When its
@@ -324,6 +378,7 @@ it important:
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
 | `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |
+| `square` | `false` | drops the side padding and makes the badge as tall as it is wide, for a count or a lone icon; grows into a pill when the content is wider |
 | `dismissible` | `false` | adds a close button; cannot be combined with `as` or `href` |
 | `selected` | — | `true` or `false` makes the badge a toggle and paints the on state; needs `as` or an `href`, and cannot be combined with `dismissible` |
 | `as` | `span` | `button`, `a`, `div` — an `href` implies `a` |

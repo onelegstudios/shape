@@ -159,6 +159,64 @@ it('passes attributes straight through', function () {
         ->toContain('title="Paid in full"');
 });
 
+it('makes a square badge as tall as it is wide, at every size', function (string $size, string $expected) {
+    // The same heights the scale already draws — 16px, 20px, 24px, 28px — asked
+    // for as a height rather than arrived at through the padding, since there is
+    // no padding left to arrive through.
+    expect(Blade::render(sprintf('<x-shape::badge icon="shape-plus" size="%s" square />', $size)))
+        ->toContain($expected);
+})->with([
+    ['xs', '[:where(&amp;)]:h-4 [:where(&amp;)]:min-w-4'],
+    ['sm', '[:where(&amp;)]:h-5 [:where(&amp;)]:min-w-5'],
+    ['base', '[:where(&amp;)]:h-6 [:where(&amp;)]:min-w-6'],
+    ['lg', '[:where(&amp;)]:h-7 [:where(&amp;)]:min-w-7'],
+]);
+
+it('drops the side padding a label needed and centres what is left', function () {
+    $html = Blade::render('<x-shape::badge icon="shape-plus" square />');
+
+    expect($html)
+        ->toContain('justify-center')
+        ->not->toContain('[:where(&amp;)]:px-2.5')
+        ->not->toContain('[:where(&amp;)]:py-1 ');
+});
+
+it('is a minimum rather than a size, so a count that outgrows it becomes a pill', function () {
+    // `min-w-*` and not `size-*`: one digit is a square and three are a pill,
+    // which is the avatar mark's arrangement and for the same reason — a count
+    // that clipped at two digits would be a count that lies.
+    expect(Blade::render('<x-shape::badge label="99+" square />'))
+        ->toContain('[:where(&amp;)]:min-w-6')
+        ->not->toContain('[:where(&amp;)]:size-6');
+});
+
+it('keeps a count from changing width as it counts', function () {
+    expect(Blade::render('<x-shape::badge label="8" square />'))
+        ->toContain('tabular-nums');
+});
+
+it('leaves an ordinary badge its padding', function () {
+    // `min-w-0` on the label's own span is not the badge's minimum width; the
+    // one the square arm writes is the prefixed one.
+    expect(Blade::render('<x-shape::badge label="Paid" />'))
+        ->toContain('[:where(&amp;)]:px-2.5')
+        ->not->toContain('[:where(&amp;)]:min-w-')
+        ->not->toContain('justify-center');
+});
+
+it('writes a square badge at zero specificity too, so a size of your own wins', function () {
+    expect(Blade::render('<x-shape::badge icon="shape-plus" square class="h-8" />'))
+        ->toContain('[:where(&amp;)]:h-6')
+        ->toContain('h-8');
+});
+
+it('still cancels its line when a square badge is inset', function () {
+    // The negative margin is the difference between the badge and the line box
+    // it sits in, which the height does not change.
+    expect(Blade::render('<x-shape::badge label="3" square inset />'))
+        ->toContain('[:where(&amp;)]:-my-1');
+});
+
 it('adds no vertical margin by default', function () {
     expect(Blade::render('<x-shape::badge label="Paid" size="base" />'))
         ->not->toContain('-my-1');
