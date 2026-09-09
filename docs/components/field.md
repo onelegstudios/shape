@@ -60,6 +60,36 @@ the other four in its group. The alternative is a `disabled` prop plumbed into
 three components, all of which then stop folding the moment it is bound
 dynamically.
 
+## Theming
+
+The four pieces paint from three variables and nothing else. The label is
+`--shape-fg`, the description `--shape-fg-muted`, and the error message
+`--shape-tone-ink` under a `data-shape-tone="danger"` of its own — so the red a
+validation message is written in is the danger tone's ink, and follows a
+[retint](../theming.md) rather than being a colour this component keeps. The red
+border beside it comes from the same ramp's `500`, on the control.
+
+The type and the gap are written at zero specificity, so a class at the call
+site wins:
+
+@docs('preview', name: 'field-override', layout: 'stack')
+
+### Every field at once
+
+Each piece carries an attribute of its own, which is what makes a house style
+for forms a handful of rules rather than a prop threaded through four
+components:
+
+```css
+[data-shape-label] { text-transform: uppercase; letter-spacing: 0.04em; }
+[data-shape-description] { font-size: 0.8125rem; }
+[data-shape-error] { font-weight: 600; }
+```
+
+The disabled treatment is already a rule rather than a prop, for the reason
+[above](#spacing-and-disabled-state) — direct children only, so one disabled
+radio never dims its group.
+
 ## Reference
 
 ### Field

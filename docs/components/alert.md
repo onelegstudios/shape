@@ -89,7 +89,7 @@ that is drawn with one:
 @docs('preview', name: 'alert-border', layout: 'stack')
 
 `subtle` and `outline` draw the same edge, from
-[`--shape-tone-border-strong`](../theming.md#the-tone-variables) — the tone's
+[`--shape-tone-border-strong`](../theming.md#tones) — the tone's
 answer to the neutral `--shape-tone-border` that an outlined thing takes by
 default. It sits a step further along the ramp than the tint pair does, which is
 what makes it read as an edge someone chose rather than a definition line. Both
@@ -128,9 +128,7 @@ its own, so this is Tailwind's `--shadow-sm` and a
 else. It is applied at zero specificity, so a call site that wants another step
 of the scale asks for it directly:
 
-```blade
-<x-shape::alert tone="info" shadow class="shadow-lg">Deploy finished.</x-shape::alert>
-```
+@docs('preview', name: 'alert-shadow-step', layout: 'stack')
 
 Reach for it where the alert has to read as laid *on* the page rather than set
 into it — floating over a dense table, or sitting beside a [card](card.md) that
@@ -201,9 +199,7 @@ unrounding a block that has no rule to straighten is a decision about the shape 
 the library rather than the end of one edge, and a call site that wants it says so
 directly:
 
-```blade
-<x-shape::alert tone="info" class="rounded-none">Deploy finished.</x-shape::alert>
-```
+@docs('preview', name: 'alert-square', layout: 'stack')
 
 The name carries the prop it modifies, the way [`icon-size`](#icons) does, because
 it does nothing on its own. Bare `square` is the
@@ -432,15 +428,6 @@ brand-600 on brand-700 and there would be no ring to see; on `solid` the ring
 takes the surface's foreground too. On the tints it stays the brand ring, which
 is off-hue but never invisible.
 
-## Muted text inside an alert
-
-An alert that carries a tone publishes its own foreground, so a nested muted
-paragraph reads a dialled-back version of the tone rather than grey on pink:
-
-@docs('preview', name: 'alert-surface', layout: 'stack')
-
-Nothing was passed down — see [Theming](../theming.md#the-surface-contract).
-
 ## Alert or toast
 
 If a message is still true after someone has read it, it is an alert. A
@@ -450,6 +437,84 @@ An alert carries no `role="alert"` and no `aria-live`, because this markup was o
 the page when it loaded and announcing it repeats what a screen reader is about
 to read anyway. Announcements belong to the toaster, where content arrives after
 the fact.
+
+## Theming
+
+Every colour on an alert is a tone variable, and there are six of them here:
+`--shape-tone` for the `solid` fill and the [bar](#bars), `--shape-tone-hover`
+for the edge that fill takes, `--shape-tone-tint` for the `subtle` wash and the
+one `ghost` paints under the pointer, `--shape-tone-ink` for
+[toned](#toning-the-text) text, `--shape-tone-border` for the neutral chrome
+edge `outline` draws, and `--shape-tone-border-strong` for the toned one
+[`border`](#borders) asks for. None of them is a colour this component keeps, so
+a [retint](../theming.md) moves every alert on the page with everything else
+that carries the tone. A toned alert also publishes `data-shape-surface`, which
+is where everything nested inside it takes its foreground from — see
+[Toning the text](#toning-the-text).
+
+Unlike the [button](button.md#theming) and the [badge](badge.md#theming), the
+resting paint is written at zero specificity along with the geometry, so a class
+at the call site wins outright — over the fill as well as the padding:
+
+@docs('preview', name: 'alert-override', layout: 'stack')
+
+What a `ghost` alert paints under the pointer is the exception: those are plain
+classes, so a hover colour of your own ties with them and has to be made
+important.
+
+### The body copy
+
+The slot is rendered inside a muted [`<x-shape::text>`](text.md) at `sm`, which
+is the hierarchy the component means: the [heading](#heading-and-body) carries
+the message and the body recesses under it. An alert with no heading is the case
+where that is wrong — the one line *is* the message, and recessing it says the
+opposite. The same line, muted and then at full strength:
+
+@docs('preview', name: 'alert-body', layout: 'stack')
+
+`as="span"` rather than the default `p`, because the slot is already inside a
+paragraph — see [Actions](#actions), which is the same fact from the other
+direction. `variant` is left at `base`, so the line paints `--shape-fg`: the
+full-strength foreground of whatever surface the alert published, which is the
+tone's ink on a toned alert and the page's on an untoned one.
+
+To say it for every alert rather than at one call site, the wrapper is reachable
+by attribute:
+
+```css
+[data-shape-alert] [data-shape-text][data-shape-variant='muted'] {
+    color: var(--shape-fg);
+}
+```
+
+`--shape-fg` rather than a colour, and that is the whole discipline here: a
+literal would be right on one variant and wrong on the three others, because
+`subtle`, `solid` and a hovered `ghost` each publish a different foreground for
+the same tone.
+
+### Every alert at once
+
+`data-shape-variant` and `data-shape-tone` are both on the element, so a rule
+can be as narrow as one arm of one tone:
+
+```css
+[data-shape-alert] { border-radius: 0; }
+[data-shape-alert][data-shape-variant='subtle'] { padding: 1.25rem; }
+[data-shape-alert][data-shape-tone='danger'] {
+    --shape-tone-tint: var(--color-shape-danger-50);
+}
+```
+
+The last of those is the general move: an alert reads the tone variables, so
+restating one on the alert restyles it without touching the buttons and badges
+that read the same variable elsewhere on the page.
+
+The [dismiss control](#dismissing) is the one thing here a class cannot reach
+inside a toned alert. The rule that corrects it lives in `@layer shape-surface`,
+which is declared after Tailwind's layers and therefore beats a utility — that
+section says why. It is the same arrangement the overlays use for their
+[placement](modal.md#theming), and the two are the only places in the library
+where a package rule outranks a class you passed.
 
 ## Reference
 

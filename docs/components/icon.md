@@ -53,16 +53,6 @@ Sizes and styles are whatever the icon set declares — see
 still takes `size`, and ignores `variant` rather than rendering it onto the
 `<svg>`.
 
-## Colour
-
-Icons paint in `currentColor`, so they take the colour of whatever they sit in —
-or a utility class of your own:
-
-@docs('preview', name: 'icon-color')
-
-Inside a [button](button.md), [badge](badge.md) or [alert](alert.md) that
-happens on its own, and the icon picks up the tone.
-
 ## Resolving by name
 
 When the name is not known until runtime, `<x-shape::icon>` takes it as a prop:
@@ -238,6 +228,44 @@ the fourteen and the fourteenth quietly keeps its Heroicon, which is why
 Both steps are what [`shape:install`](../tooling.md#which-set-the-library-is-drawn-in)
 asks its one question to do for you, in that order, on the day you install. It is
 the same pair of commands; doing it later is doing it by hand.
+
+## Theming
+
+### Colour
+
+Icons paint in `currentColor`, so they take the colour of whatever they sit in —
+or a utility class of your own:
+
+@docs('preview', name: 'icon-color')
+
+Inside a [button](button.md), [badge](badge.md) or [alert](alert.md) that
+happens on its own, and the icon picks up the tone.
+
+### Every icon at once
+
+`data-shape-icon` is on the `<svg>` of every drawing this package generates, in
+every set and at every size, which is what makes a house treatment one rule:
+
+```css
+[data-shape-icon] { stroke-width: 1.75; }
+```
+
+Stroke width is drawn onto the SVG as a presentation attribute, and a
+presentation attribute loses to any CSS declaration at all — so that rule
+reaches the outline drawings without `!important` and without regenerating
+anything. The solid ones have no stroke and ignore it.
+
+The sizes are written at zero specificity, so a class wins there too; prefer the
+size the drawing was made at, for [the reason above](#size-and-style).
+
+### Or change the drawing
+
+The three routes past a colour are all in the generator rather than in CSS:
+point a slot at another glyph and regenerate ([Overriding
+one](#overriding-one)), draw one yourself into `components_path` ([the same
+section](#overriding-one)), or move the whole library onto another set ([Using a
+different set](#using-a-different-set)). An icon is a component, so a drawing
+you are unhappy with is a file to replace rather than a rule to write.
 
 ## Reference
 

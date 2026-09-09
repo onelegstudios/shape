@@ -80,6 +80,38 @@ on the server:
 Shape::confirm(__('This cannot be undone.'))->accept(__('Delete'))->send();
 ```
 
+## Theming
+
+Confirm is [the modal](#it-is-the-modal), so the panel, the scrim and the
+placement layer are the modal's — see
+[Theming there](modal.md#theming). What is confirm's own is which button carries
+the tone.
+
+`tone()` on the builder is applied to the accept button when the dialog opens:
+`shape.js` writes `data-shape-tone` onto `[data-shape-confirm-accept]`, and the
+button repaints from the tone variables like any other. So a destructive
+confirmation is red because the tone says so, and follows a
+[retint](../theming.md) with every other danger control:
+
+```php
+Shape::confirm('This cannot be undone.')->accept('Delete')->tone('danger')->send();
+```
+
+The two buttons are otherwise ordinary [buttons](button.md#theming) — accept is
+`primary`, cancel is an `overlay.close` — and a rule can reach either through
+the attributes they carry:
+
+```css
+[data-shape-confirm] [data-shape-confirm-accept] { min-width: 8rem; }
+[data-shape-confirm] [data-shape-overlay-footer] {
+    justify-content: space-between;
+}
+```
+
+Because there is one of these in the layout answering every confirmation in the
+application, a rule here is the whole of the treatment rather than a class
+repeated at call sites — there are no call sites to repeat it at.
+
 ## Reference
 
 | Prop | Default |

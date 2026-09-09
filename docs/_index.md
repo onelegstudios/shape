@@ -74,7 +74,10 @@ Folding is not free of obligations at the call site. See
 | [`tabs`](components/tabs.md)             | fold        | Links when they're links, tabs when they're not                                |
 
 Every component page opens with a rendered example of each prop that changes
-what you see, and closes with a prop reference and the component's Blaze tier.
+what you see, and closes with a Theming section, a prop reference and the
+component's Blaze tier. The Theming section is what that component paints from
+and how to move it — the classes it yields to, the ones it only ties with, and
+the rule that reaches every instance at once.
 
 The guides cover what several components share:
 

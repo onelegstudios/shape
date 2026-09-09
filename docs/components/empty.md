@@ -32,6 +32,36 @@ The [select](select.md) does not, and cannot: a `<select>` may contain only
 inside one is discarded by the HTML parser. Its `placeholder` option is the
 equivalent.
 
+## Theming
+
+Everything here is neutral and comes from the token layer: the icon sits in a
+`shape-100` puck — `shape-800` in dark mode — painted `--shape-fg-muted`, the
+headline is a [heading](heading.md) and the copy a muted [text](text.md), and
+the generous padding is written at zero specificity. So a class at the call site
+reaches the box:
+
+@docs('preview', name: 'empty-override', layout: 'stack')
+
+The two components inside it are not the bag's to reach, and neither is the
+puck. A rule of your own is:
+
+```css
+[data-shape-empty] > span { background-color: transparent; }
+```
+
+### The ones you did not write
+
+[Table](table.md) and [list](list.md) render an empty state for you, and their
+`empty-*` props carry the copy and nothing else. A rule is the only way to reach
+those instances — which is also the only way to reach *all* of them at once:
+
+```css
+[data-shape-table] [data-shape-empty],
+[data-shape-list] [data-shape-empty] {
+    padding-block: 2rem;
+}
+```
+
 ## Reference
 
 | Prop | Default | Values |

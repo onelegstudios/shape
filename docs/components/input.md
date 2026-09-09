@@ -57,12 +57,54 @@ the error message looks up:
 <x-shape::input wire:model="email" />
 ```
 
-## Overriding styles
+## Theming
+
+The resting chrome is neutral and comes from the token layer: a `shape-300`
+border — `shape-700` in dark mode — over `white` or `shape-900`, at
+`--radius-shape`, with `shadow-sm`. The text is `--shape-fg` and the placeholder
+`--shape-fg-muted`, so an input inside a tinted surface keeps its prompt legible
+rather than turning to mud. The focus ring and the border it draws under it are
+both `--shape-ring`; the invalid state is the danger ramp's `500`. None of it is
+a palette of the input's own, so retinting moves it — see
+[Theming](../theming.md).
+
+### A class at the call site
 
 Every default carries zero specificity:
 
+@docs('preview', name: 'input-override', layout: 'stack')
+
+The two state treatments are the exception. `focus-visible:` and `aria-invalid:`
+are emitted as plain classes, so a class of your own ties with them rather than
+winning, and needs to be made important to be sure of it:
+
 ```blade
-<x-shape::input class="rounded-full font-mono" wire:model="email" />
+<x-shape::input class="focus-visible:outline-violet-600!" wire:model="email" />
+```
+
+Moving `--shape-ring` is the better answer where every ring on the page should
+follow, and retinting `--color-shape-danger-*` is the answer for the invalid
+border — both are one declaration for the whole library.
+
+### Every control at once
+
+A rule in your own stylesheet, outside any layer, beats the utilities:
+
+```css
+[data-shape-input] { border-radius: 9999px; }
+```
+
+`data-shape-control` is on the input, the [textarea](textarea.md) and the
+[select](select.md) — and on the checkbox, radio and switch boxes too, which are
+`appearance: none` and take none of this chrome. Name the element when you mean
+the text controls:
+
+```css
+input[data-shape-control],
+textarea[data-shape-control],
+select[data-shape-control] {
+    border-radius: 9999px;
+}
 ```
 
 ## Reference

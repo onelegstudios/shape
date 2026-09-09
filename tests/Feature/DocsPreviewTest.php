@@ -3,8 +3,13 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Blade;
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
+use League\CommonMark\MarkdownConverter;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Symfony\Component\Finder\Finder;
+use Workbench\App\Providers\WorkbenchServiceProvider;
 
 /**
  * The previews are the examples, rendered.
@@ -106,4 +111,47 @@ it('escapes them as the entity a browser reads back as a dollar', function () {
 it('has a page for every preview file', function () {
     // The other direction: a preview nothing renders is a file that will rot.
     expect(array_values(array_diff(array_keys(previewFiles()), previewCalls())))->toBe([]);
+});
+
+it('lets a rendered textarea through the markdown pipeline', function () {
+    // GitHub-flavoured markdown bundles CommonMark's `DisallowedRawHtml`, which
+    // escapes the opening `<` of nine tag names wherever they appear in raw
+    // HTML. The preview macro hands its rendered component to the markdown as
+    // raw HTML, so `textarea` being on that list meant every preview on that
+    // page arrived as visible source and the page held no control at all.
+    //
+    // Nothing else in this file catches it, because the macro was never the
+    // part that broke: it emits a perfectly good `<textarea>` and the markdown
+    // escapes it afterwards. So this asserts the decision — the tag list the
+    // workbench hands the parser — and what that list does to a document.
+    //
+    // The list rather than a rendered page, because laradocs boots no provider
+    // and registers no routes under Testbench: there is no docs site to fetch
+    // here, only the choice that shapes one.
+    $environment = new Environment([
+        'html_input' => 'allow',
+        'disallowed_raw_html' => ['disallowed_tags' => WorkbenchServiceProvider::DISALLOWED_RAW_HTML_TAGS],
+    ]);
+
+    $environment->addExtension(new CommonMarkCoreExtension);
+    $environment->addExtension(new GithubFlavoredMarkdownExtension);
+
+    $converter = new MarkdownConverter($environment);
+
+    expect((string) $converter->convert("x\n\n<div><textarea></textarea></div>\n"))
+        ->toContain('<textarea')
+        ->not->toContain('&lt;textarea');
+});
+
+it('keeps escaping the tags that rule exists for', function () {
+    // Narrowed rather than emptied. `script` and `iframe` are what the rule is
+    // actually for, and a preview has no business rendering either — so if one
+    // ever reaches a page as live markup that is a hole rather than a feature.
+    // `style` stays on it too, which is what keeps a preview from carrying a
+    // stylesheet, as `docs/components/drawer.md` describes.
+    expect(WorkbenchServiceProvider::DISALLOWED_RAW_HTML_TAGS)
+        ->toContain('script')
+        ->toContain('iframe')
+        ->toContain('style')
+        ->not->toContain('textarea');
 });

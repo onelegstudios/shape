@@ -83,6 +83,57 @@ Rows have no hover highlight by default. A row that lights up under the pointer
 is saying it does something, and most rows don't. The ones that do say so:
 `class="hover:bg-shape-50"`.
 
+## Theming
+
+A table is content rather than a surface, so it paints almost nothing: the text
+is `--shape-fg` and headings are `--shape-fg-muted`, the row rules are
+`divide-shape-200` — `shape-800` in dark mode — and the head's rule is an inset
+shadow in the same two steps, for [the reason sticky headers
+give](#sticky-headers-need-a-height-bound). Everything a table looks like beyond
+that belongs to the [card](card.md) you put it in.
+
+Cell padding and alignment are written at zero specificity, so density is a
+class where it is one column's business:
+
+@docs('preview', name: 'table-cell-density')
+
+### Every table at once
+
+Which is where density usually belongs, because a table is the one component
+whose parts repeat two hundred times — and a rule says it once. The wrapper
+carries `data-shape-table`, and every part inside it is named:
+
+```css
+[data-shape-table] :is([data-shape-table-cell], [data-shape-table-heading]) {
+    padding-block: 0.375rem;
+}
+```
+
+Zebra striping, if you want it, is a rule on the row rather than a prop — and it
+is worth reaching for the rules first, which is what this library ships:
+
+```css
+[data-shape-table-row]:nth-child(even) {
+    background-color: var(--color-shape-50);
+}
+```
+
+The head's rule is drawn with a shadow rather than a border, so it is
+`box-shadow` that moves it:
+
+```css
+[data-shape-table-head] > tr > th {
+    box-shadow: inset 0 -2px 0 var(--color-shape-300);
+}
+```
+
+The bag lands on the box, not on the `<table>` — see [The component is the box,
+not the table](#the-component-is-the-box-not-the-table) — so the table's own
+type size is a rule too: `[data-shape-table] table { font-size: 0.9375rem; }`.
+
+Row hover is deliberately absent and stays a call site's decision; [Rows](#rows)
+has the reasoning and the class.
+
 ## Reference
 
 ### Table

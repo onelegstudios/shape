@@ -51,6 +51,32 @@ of the library is. Both are equally correct.
 reserving the room for it. Everything else is the browser's: keyboard
 behaviour, the mobile picker, type-ahead.
 
+## Theming
+
+The control's chrome is the [input](input.md#theming)'s, and a class at the call
+site reaches it the same way — the attribute bag lands on the `<select>`, not on
+the wrapper:
+
+@docs('preview', name: 'select-override', layout: 'stack')
+
+The arrow is the one piece a class cannot reach, because it is a sibling inside
+the wrapper rather than part of the control the bag lands on. It paints in
+`--shape-fg-muted` and dims with the control, and a rule of your own can find it
+through the wrapper:
+
+```css
+[data-shape-select] [data-shape-icon] { color: var(--color-shape-400); }
+```
+
+The room it sits in is the control's right padding, which `size` picks, so an
+arrow of a different size wants that padding moved with it.
+
+What the option list looks like when it is open is the platform's and not this
+package's. It is drawn by the operating system, and a `<select>` that is
+restyled far enough to look otherwise has stopped being the thing that gives you
+the mobile picker and the type-ahead for free — see
+[It stays a native select](#it-stays-a-native-select).
+
 ## Reference
 
 | Prop | Default | Values |

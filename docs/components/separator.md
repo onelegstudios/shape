@@ -22,6 +22,40 @@ A bare rule is decorative and hidden from assistive technology — the spacing a
 the headings around it already convey the break. A labelled one is exposed as a
 real `separator` with its label as the accessible name.
 
+## Theming
+
+The rule is `shape-200` — `shape-800` in dark mode — and the label beside it is
+`text-xs font-medium` in `--shape-fg-muted`, so both follow the neutrals with
+everything else the page draws in grey.
+
+On a bare separator the colour is written at zero specificity and the attribute
+bag lands on the rule itself, so a class is enough:
+
+@docs('preview', name: 'separator-override', layout: 'stack')
+
+A labelled one is a flex row, and the two rules inside it are spans a class on
+the wrapper cannot reach. They carry `aria-hidden`, which is what a rule of your
+own can name:
+
+```css
+[data-shape-separator] span[aria-hidden] {
+    background-color: var(--color-shape-300);
+}
+```
+
+The rule is drawn as a background on a one-pixel box rather than as a border, so
+`border-dashed` has nothing to dash. A dashed separator is a border, and the
+bare form is the one to say it on — it is the variant that carries `aria-hidden`
+on the root:
+
+```css
+[data-shape-separator][aria-hidden='true'][data-shape-orientation='horizontal'] {
+    height: 0;
+    background: transparent;
+    border-top: 1px dashed var(--color-shape-300);
+}
+```
+
 ## Reference
 
 | Prop | Default | Values |

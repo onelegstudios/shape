@@ -5,12 +5,35 @@ namespace Workbench\App\Providers;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Laradocs\Contracts\DocumentParser;
+use Laradocs\Parsers\MarkdownParser;
+use Laradocs\Parsers\MarkdownPipelineFactory;
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\Extension\Attributes\AttributesExtension;
+use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\Footnote\FootnoteExtension;
+use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
+use League\CommonMark\MarkdownConverter;
 use Onelegstudios\Shape\Facades\Shape;
 
 use function Orchestra\Testbench\package_path;
 
 class WorkbenchServiceProvider extends ServiceProvider
 {
+    /**
+     * The tag names the markdown pipeline still escapes in raw HTML.
+     *
+     * CommonMark's default list carries `textarea` as well. See
+     * `allowTextareaThroughMarkdown()` for why this one does not, and
+     * `tests/Feature/DocsPreviewTest.php` for what holds it to that.
+     *
+     * @var list<string>
+     */
+    public const DISALLOWED_RAW_HTML_TAGS = [
+        'title', 'style', 'xmp', 'iframe',
+        'noembed', 'noframes', 'script', 'plaintext',
+    ];
+
     /**
      * Register services.
      */
@@ -60,7 +83,58 @@ class WorkbenchServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->allowTextareaThroughMarkdown();
         $this->styleTheDocs();
+    }
+
+    /**
+     * Let a rendered `<textarea>` survive the markdown pipeline.
+     *
+     * GitHub-flavoured markdown bundles CommonMark's `DisallowedRawHtml`
+     * extension, which escapes the opening `<` of nine tag names wherever they
+     * appear in raw HTML — `title`, `textarea`, `style`, `xmp`, `iframe`,
+     * `noembed`, `noframes`, `script` and `plaintext`. The preview macro hands
+     * its rendered component to the markdown as raw HTML, so every preview on
+     * the textarea page arrived as visible source instead of a control: three
+     * stages of escaped markup, and no `<textarea>` in the document at all.
+     *
+     * The rule is a sensible default for markdown written by strangers and the
+     * wrong one here, where every document in `docs/` is committed beside the
+     * components and the HTML being escaped is this package's own rendering of
+     * its own component.
+     *
+     * So the list is narrowed rather than emptied: `textarea` comes off it and
+     * the other eight stay on, which leaves `script` and `iframe` — the two the
+     * rule exists for — escaped exactly as before. `style` stays on the list
+     * too, so a preview still cannot carry a stylesheet; that is the limit
+     * `docs/components/drawer.md` describes, and lifting it is a separate
+     * decision from rendering a form control.
+     *
+     * Rebound rather than configured, because laradocs builds the environment
+     * itself and takes no options for it. In `boot()` so that it lands after
+     * laradocs' own `register()`, and on the same singleton, with the two
+     * extension lists left exactly as the package assembled them.
+     */
+    protected function allowTextareaThroughMarkdown(): void
+    {
+        $this->app->singleton(DocumentParser::class, function ($app): MarkdownParser {
+            $environment = new Environment([
+                'html_input' => 'allow',
+                'allow_unsafe_links' => false,
+                'disallowed_raw_html' => ['disallowed_tags' => self::DISALLOWED_RAW_HTML_TAGS],
+            ]);
+
+            $environment->addExtension(new CommonMarkCoreExtension);
+            $environment->addExtension(new GithubFlavoredMarkdownExtension);
+            $environment->addExtension(new AttributesExtension);
+            $environment->addExtension(new FootnoteExtension);
+
+            return new MarkdownParser(
+                new MarkdownConverter($environment),
+                MarkdownPipelineFactory::markdownExtensions($app),
+                MarkdownPipelineFactory::htmlExtensions(),
+            );
+        });
     }
 
     /**

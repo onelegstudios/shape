@@ -40,8 +40,44 @@ path.
 Nothing inside a card sets its own outer margin; the gap belongs to the card.
 Change it with a utility on the card itself:
 
-```blade
-<x-shape::card class="gap-8">…</x-shape::card>
+@docs('preview', name: 'card-spacing')
+
+## Theming
+
+A card is white — `shape-900` in dark mode — at `--radius-shape-lg`, with
+`shadow-sm` under it and, if you asked for one, a `shape-200` hairline. Its text
+is `--shape-fg`. Every one of those is written at zero specificity, so the card
+is the component that yields most completely to a class:
+
+@docs('preview', name: 'card-override')
+
+The shadow is Tailwind's `--shadow-sm` rather than a scale of Shape's own, so
+retheming the scale carries the card with everything else that sits on the page
+— see [Elevation](../elevation.md).
+
+### It is where a surface is published
+
+A card with a fill of its own is the usual place to declare
+`data-shape-surface`, which is what lets the [text](text.md) and
+[headings](heading.md) inside it find a foreground that belongs on that fill
+rather than the page's grey:
+
+@docs('preview', name: 'text-surface')
+
+The six filled surfaces, the two that read the tone, and how to declare one of
+your own are in [the surface contract](../theming.md#the-surface-contract).
+
+### Every card at once
+
+```css
+[data-shape-card] { border-radius: 0; box-shadow: none; }
+```
+
+`data-shape-padding` carries the arm the card was called with, so a rule can
+reach one of them:
+
+```css
+[data-shape-card][data-shape-padding='lg'] { padding: 2.5rem; }
 ```
 
 ## Reference

@@ -65,6 +65,52 @@ class: the script toggles it, so a panel carrying its own `display` utility
 would outrank it and never hide. That is the one thing to know before styling a
 panel.
 
+## Theming
+
+A tab is muted at rest and paints `--shape-tone-tint` under `--shape-tone-ink`
+when it is the selected one, through a `data-shape-tone="brand"` written into
+the component — so the active tab is the brand's, alongside the focus ring and
+the current page in the [pager](pagination.md). Its radius is `--radius-shape`
+and its focus ring is `--shape-ring`.
+
+The type, the padding and the radius are written at zero specificity, so a class
+at the call site wins:
+
+@docs('preview', name: 'tabs-tab-override', layout: 'stack')
+
+The selected paint is not — `aria-selected:` and `aria-[current=page]:` are
+emitted as plain classes — so a colour of your own there ties with them and has
+to be made important.
+
+### The active look lives on the tab
+
+There is no `active` prop threaded from the strip to its children, and no
+`:has()` rule reaching down. ARIA already requires the state to live on the tab,
+so the styling is `aria-selected:` and `aria-[current=page]:` variants there —
+and the siblings recede because muted is their resting state, not because
+anything dims them.
+
+### An underline instead of a pill
+
+Which is what makes the commonest restyling of this component a rule rather than
+a fork of it. The rule reads the same attribute the component's own classes
+read, and unlayered CSS beats them:
+
+```css
+[data-shape-tab] { border-radius: 0; }
+
+[data-shape-tab][aria-selected='true'],
+[data-shape-tab][aria-current='page'] {
+    background: transparent;
+    box-shadow: inset 0 -2px 0 var(--shape-tone);
+}
+```
+
+`--shape-tone` rather than a colour, so the underline follows the brand wherever
+a [retint](../theming.md) takes it. `data-shape-tablist` is on the strip when it
+is a real tab list and absent when it is a strip of links, which is the seam to
+use when the two should not look alike.
+
 ## Reference
 
 | Component | Prop | Default | Values |
@@ -80,14 +126,6 @@ panel.
 | | `as` | resolved from `href` | `button`, `a`, `div` |
 | `tabs.panel` | `name` | — | matched by a tab's `for` |
 | | `selected` | `false` | |
-
-## The active look lives on the tab
-
-There is no `active` prop threaded from the strip to its children, and no
-`:has()` rule reaching down. ARIA already requires the state to live on the tab,
-so the styling is `aria-selected:` and `aria-[current=page]:` variants there —
-and the siblings recede because muted is their resting state, not because
-anything dims them.
 
 ## What the suite does not cover
 
