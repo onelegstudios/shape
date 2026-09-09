@@ -11,6 +11,7 @@ use Laradocs\Parsers\MarkdownPipelineFactory;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\Attributes\AttributesExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\DisallowedRawHtml\DisallowedRawHtmlExtension;
 use League\CommonMark\Extension\Footnote\FootnoteExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\MarkdownConverter;
@@ -112,29 +113,52 @@ class WorkbenchServiceProvider extends ServiceProvider
      *
      * Rebound rather than configured, because laradocs builds the environment
      * itself and takes no options for it. In `boot()` so that it lands after
-     * laradocs' own `register()`, and on the same singleton, with the two
-     * extension lists left exactly as the package assembled them.
+     * laradocs' own `register()`, and on the same singleton, with the pipeline
+     * left exactly as the package assembled it.
      */
     protected function allowTextareaThroughMarkdown(): void
     {
-        $this->app->singleton(DocumentParser::class, function ($app): MarkdownParser {
-            $environment = new Environment([
-                'html_input' => 'allow',
-                'allow_unsafe_links' => false,
-                'disallowed_raw_html' => ['disallowed_tags' => self::DISALLOWED_RAW_HTML_TAGS],
-            ]);
+        $this->app->singleton(DocumentParser::class, fn ($app): MarkdownParser => new MarkdownParser(
+            new MarkdownConverter(self::markdownEnvironment()),
+            MarkdownPipelineFactory::markdownExtensions($app),
+            MarkdownPipelineFactory::htmlExtensions(),
+        ));
+    }
 
-            $environment->addExtension(new CommonMarkCoreExtension);
-            $environment->addExtension(new GithubFlavoredMarkdownExtension);
-            $environment->addExtension(new AttributesExtension);
-            $environment->addExtension(new FootnoteExtension);
+    /**
+     * The CommonMark environment the documentation site parses with.
+     *
+     * `DisallowedRawHtmlExtension` is named here even though
+     * `GithubFlavoredMarkdownExtension` bundles it, and naming it is what makes
+     * the `disallowed_raw_html` key legal. A bundle registers its members from
+     * `register()`, which the environment defers until it initializes, while a
+     * schema is registered the moment the extension carrying it is added. Under
+     * `league/config` v1.2 the configuration is validated late enough for the
+     * deferred registration to land first; under v1.1 — which is what
+     * `--prefer-lowest` resolves — it is not, and the key is rejected as an
+     * unexpected item. Adding the extension by name registers its schema
+     * eagerly, and the copy the bundle adds afterwards is the same two
+     * renderers at the same priority.
+     *
+     * Public and static so that `tests/Feature/DocsPreviewTest.php` asserts
+     * this environment rather than a second copy of it — a copy is what let the
+     * ordering above be wrong on one lane and right on the others.
+     */
+    public static function markdownEnvironment(): Environment
+    {
+        $environment = new Environment([
+            'html_input' => 'allow',
+            'allow_unsafe_links' => false,
+            'disallowed_raw_html' => ['disallowed_tags' => self::DISALLOWED_RAW_HTML_TAGS],
+        ]);
 
-            return new MarkdownParser(
-                new MarkdownConverter($environment),
-                MarkdownPipelineFactory::markdownExtensions($app),
-                MarkdownPipelineFactory::htmlExtensions(),
-            );
-        });
+        $environment->addExtension(new CommonMarkCoreExtension);
+        $environment->addExtension(new DisallowedRawHtmlExtension);
+        $environment->addExtension(new GithubFlavoredMarkdownExtension);
+        $environment->addExtension(new AttributesExtension);
+        $environment->addExtension(new FootnoteExtension);
+
+        return $environment;
     }
 
     /**

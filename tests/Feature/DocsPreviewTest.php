@@ -3,9 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Blade;
-use League\CommonMark\Environment\Environment;
-use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
-use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\MarkdownConverter;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Symfony\Component\Finder\Finder;
@@ -125,18 +122,13 @@ it('lets a rendered textarea through the markdown pipeline', function () {
     // escapes it afterwards. So this asserts the decision — the tag list the
     // workbench hands the parser — and what that list does to a document.
     //
-    // The list rather than a rendered page, because laradocs boots no provider
-    // and registers no routes under Testbench: there is no docs site to fetch
-    // here, only the choice that shapes one.
-    $environment = new Environment([
-        'html_input' => 'allow',
-        'disallowed_raw_html' => ['disallowed_tags' => WorkbenchServiceProvider::DISALLOWED_RAW_HTML_TAGS],
-    ]);
-
-    $environment->addExtension(new CommonMarkCoreExtension);
-    $environment->addExtension(new GithubFlavoredMarkdownExtension);
-
-    $converter = new MarkdownConverter($environment);
+    // The workbench's own environment rather than one assembled here, because
+    // laradocs boots no provider and registers no routes under Testbench:
+    // there is no docs site to fetch, only the choice that shapes one. A second
+    // copy of that choice is what let the extension order be right on every
+    // lane but `--prefer-lowest`, where `league/config` v1.1 validates the
+    // configuration before a bundled extension has registered its schema.
+    $converter = new MarkdownConverter(WorkbenchServiceProvider::markdownEnvironment());
 
     expect((string) $converter->convert("x\n\n<div><textarea></textarea></div>\n"))
         ->toContain('<textarea')
