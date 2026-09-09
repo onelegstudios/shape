@@ -110,6 +110,71 @@ button while removing pointer events. An anchor cannot be disabled, so use
 
 @docs('preview', name: 'button-disabled')
 
+## Groups
+
+`button.group` joins related actions into one control. The children are laid out
+in a row, the corners that face a neighbour are squared off, and every button
+past the first is pulled back a pixel, so that two 1px borders meet as one seam
+rather than stacking into a 2px rule:
+
+@docs('preview', name: 'button-group')
+
+The group paints nothing. A button inside one is the same button it is outside
+one — which also means a group of `primary` buttons has no seam to show, because
+a fill has no edge. Ask for [`border`](#borders) there, or leave the set
+`outline`, and the seam is the tone's own edge.
+
+The inner corners flatten on the cascade rather than on `!important`: the button
+writes its radius at zero specificity, and the group's selector carries a class
+and a pseudo-class. The group also never names a corner that faces outward, only
+the ones that face a neighbour — so a `rounded-full` passed to the first and
+last button still shapes the ends, and a pill-shaped group stays a class at a
+call site instead of becoming a prop here.
+
+### Split buttons
+
+A [dropdown](dropdown.md) trigger is a button, so it groups like one:
+
+@docs('preview', name: 'button-group-split')
+
+Keep the menu outside the group, as it is above. A closed popover is
+`display: none`, which is not the same as being absent — `:last-child` still
+counts it, and the button that is actually last would lose the corner it needs.
+
+### Vertical
+
+`orientation="vertical"` stacks the buttons and squares the corners on the other
+axis instead:
+
+@docs('preview', name: 'button-group-vertical')
+
+### The focus ring turns inward
+
+A button draws its ring 2px outside itself, the neighbour begins a pixel away,
+and later siblings paint over earlier ones. So inside a group, every button but
+the last would have the ring along its trailing edge painted out by the button
+beside it. The usual answer is a `z-index`, and this library has promised there
+[isn't one anywhere](../theming.md) — so the ring moves inside the button
+instead, where nothing can cover it and no stack has to be invented.
+
+A group of one keeps the outward ring it wears everywhere else. There is no
+neighbour to hide it, and the selector says so.
+
+### Naming a group
+
+The group is a `role="group"`, and `label` is its accessible name. Pass one when
+the set means something its buttons don't say on their own — `View` over `Day`,
+`Week` and `Month`. Without a `label` no name is emitted at all, because an empty
+one is worse than none.
+
+`role` is a default rather than a fixture, so a set you have wired arrow keys to
+yourself can pass `role="toolbar"`. Shape doesn't bind those keys, which is why
+it is not the default.
+
+A row of buttons that are merely near each other is not a group. Two buttons at
+the foot of a form are one `<div class="flex gap-2">`, and this component would
+join them into a control they aren't.
+
 ## Livewire and Alpine
 
 Anything Shape doesn't claim as a prop lands on the rendered element:
@@ -225,6 +290,16 @@ Past that, [`shape:eject`](../tooling.md#shapeeject) hands you the file.
 The default slot is the label. Every other attribute — `href`, `disabled`,
 `wire:*`, `class` — passes through to the rendered element.
 
+`button.group` takes two:
+
+| Prop | Default | Values |
+| --- | --- | --- |
+| `orientation` | `horizontal` | `horizontal`, `vertical` |
+| `label` | — | the group's accessible name; omitted entirely when not given |
+
+Its default slot is the buttons. `role` defaults to `group` and can be
+overridden, and every other attribute lands on the wrapping `<div>`.
+
 ## Folding
 
 Tier A — `@blaze(fold: true, safe: ['tone'])`.
@@ -235,3 +310,10 @@ still folds. Everything else is a static choice at the call site — including
 compile time like every other prop here. Written literally,
 `<x-shape::button border>` costs nothing; `:border="$isDense"` is what would
 drop the button to the compiled path. See [Folding](../folding.md).
+
+`button.group` is the same tier — `@blaze(fold: true, safe: ['label'])`.
+`orientation` picks the class set and so is read at compile time; `label` is
+only ever interpolated, so a group named from a variable still folds. The
+buttons in its slot fold on their own, the way an [avatar
+group](avatar.md#groups)'s faces do — a slot is rendered by its call site, so
+nothing in one is baked into the group's fold.

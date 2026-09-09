@@ -78,6 +78,7 @@ which is blue whatever the brand becomes.
 | Component | Tier | Key props |
 | --- | --- | --- |
 | `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `tone`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `border` (draws the edge in the tone rather than the neutral grey; off by default, on `outline` it recolours the border it already has and on `ghost` it shows on hover only), `as` |
+| `button.group` | fold | `orientation` (horizontal\|vertical), `label` (the group's accessible name; omitted when not given) — joins the buttons in its slot into one control: inner corners squared off, borders overlapped into one seam, focus ring turned inward. `role` defaults to `group` and can be overridden |
 | `button.element` | fold | `as`, `type` — the element a button renders |
 | `icon.<name>` | fold + memo | `size` (xs\|sm\|base), `variant` (outline\|solid — chosen by `size` if unset). Shape's own are the `shape-*` slots |
 | `icon` | — | `name` — resolves at runtime, so it cannot fold |
@@ -423,6 +424,16 @@ Read before executing:
 - name a `size` on an icon and leave `variant` alone unless the style is the
   point; the small sizes are drawn solid because a stroke does not read at 16px,
   and a call site that names only a size works with any icon set
+- do not put the menu inside a `button.group` on a split button; a closed popover
+  is `display: none` rather than absent, so `:last-child` still counts it and the
+  button that is actually last loses its trailing corner — the trigger goes in
+  the group and the `<x-shape::dropdown>` right after it
+- do not reach for `button.group` to space two buttons at the foot of a form;
+  a group joins them into one control, and buttons that are merely near each
+  other are a `<div class="flex gap-2">`
+- do not expect a seam between `primary` buttons in a group; the group paints
+  nothing and a fill has no edge, so ask for `border` on them or leave the set
+  `outline`
 - do not combine `dismissible` with `as` or an `href` on a badge; the badge
   throws, because the close button is a control and nesting it inside another
   one is markup the parser rewrites — a chip that both navigates and dismisses

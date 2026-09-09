@@ -169,3 +169,98 @@ it('keeps the other variants still on hover once they have a border', function (
     expect(Blade::render("<x-shape::button variant=\"{$variant}\" tone=\"danger\" border>Delete</x-shape::button>"))
         ->not->toContain('hover:border-');
 })->with(['primary', 'subtle', 'outline']);
+
+it('joins a group into one control with a seam and no doubled border', function () {
+    $html = Blade::render(<<<'BLADE'
+    <x-shape::button.group>
+        <x-shape::button>Day</x-shape::button>
+        <x-shape::button>Week</x-shape::button>
+    </x-shape::button.group>
+    BLADE);
+
+    expect($html)
+        ->toContain('data-shape-button-group')
+        ->toContain('role="group"')
+        // A pixel back, so two 1px borders overlap into one rule rather than
+        // stacking into a 2px seam.
+        ->toContain('[&amp;&gt;*:not(:first-child)]:-ml-px');
+});
+
+it('squares off only the corners that face a neighbour', function () {
+    $html = Blade::render('<x-shape::button.group><x-shape::button>Day</x-shape::button></x-shape::button.group>');
+
+    expect($html)
+        ->toContain('[&amp;&gt;*:not(:first-child)]:rounded-l-none')
+        ->toContain('[&amp;&gt;*:not(:last-child)]:rounded-r-none')
+        // The ends are never named, which is what leaves a caller's own
+        // `rounded-full` on the first and last button intact.
+        ->not->toContain('rounded-l-shape')
+        ->not->toContain('rounded-r-shape');
+});
+
+it('outranks the button\'s own corner without an important flag', function () {
+    // The button writes its radius at zero specificity, and the group's
+    // selector carries a class and a pseudo-class. So the inner corners flatten
+    // on the cascade rather than on `!important` — the same bargain the button
+    // offers a caller who passes `rounded-full`.
+    $html = Blade::render(<<<'BLADE'
+    <x-shape::button.group>
+        <x-shape::button>Day</x-shape::button>
+        <x-shape::button>Week</x-shape::button>
+    </x-shape::button.group>
+    BLADE);
+
+    expect($html)
+        ->toContain('[:where(&amp;)]:rounded-shape')
+        ->not->toContain('!');
+});
+
+it('turns the focus ring inward, and only where there is a neighbour', function () {
+    // A ring drawn outside the button is painted over by the button beside it,
+    // because later siblings paint last and this library has no z-index to lift
+    // it with. `:not(:only-child)` is what leaves a group of one alone.
+    expect(Blade::render('<x-shape::button.group><x-shape::button>Day</x-shape::button></x-shape::button.group>'))
+        ->toContain('[&amp;&gt;*:not(:only-child):focus-visible]:-outline-offset-2');
+});
+
+it('stacks a vertical group and squares the corners on the other axis', function () {
+    $html = Blade::render('<x-shape::button.group orientation="vertical"><x-shape::button>Day</x-shape::button></x-shape::button.group>');
+
+    expect($html)
+        ->toContain('flex-col items-stretch')
+        ->toContain('data-shape-orientation="vertical"')
+        ->toContain('[&amp;&gt;*:not(:first-child)]:-mt-px')
+        ->toContain('[&amp;&gt;*:not(:first-child)]:rounded-t-none')
+        ->toContain('[&amp;&gt;*:not(:last-child)]:rounded-b-none')
+        ->not->toContain('-ml-px');
+});
+
+it('names a group only when it is given a name', function () {
+    // Through the bag rather than an `@if`, so a null is dropped without
+    // anything having to ask — an empty `aria-label` is worse than none.
+    expect(Blade::render('<x-shape::button.group label="View"><x-shape::button>Day</x-shape::button></x-shape::button.group>'))
+        ->toContain('aria-label="View"');
+
+    expect(Blade::render('<x-shape::button.group><x-shape::button>Day</x-shape::button></x-shape::button.group>'))
+        ->not->toContain('aria-label');
+});
+
+it('paints nothing of its own, so a button in a group is the button', function () {
+    // The group is a container. Every colour in there is still the button's,
+    // which is what keeps a toned or ghosted button in a group unremarkable.
+    $alone = Blade::render('<x-shape::button variant="subtle" tone="danger">Delete</x-shape::button>');
+    $grouped = Blade::render('<x-shape::button.group><x-shape::button variant="subtle" tone="danger">Delete</x-shape::button></x-shape::button.group>');
+
+    expect($grouped)->toContain('bg-[var(--shape-tone-tint)]')
+        ->and($alone)->toContain('bg-[var(--shape-tone-tint)]');
+});
+
+it('lets a caller override the group role and add classes to it', function () {
+    $html = Blade::render('<x-shape::button.group role="toolbar" class="w-full"><x-shape::button>Day</x-shape::button></x-shape::button.group>');
+
+    expect($html)
+        ->toContain('role="toolbar"')
+        ->not->toContain('role="group"')
+        ->toContain('w-full')
+        ->toContain('inline-flex');
+});

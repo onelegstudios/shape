@@ -447,6 +447,46 @@
 
                 <article class="overflow-hidden rounded-shape-lg border border-shape-200 bg-white lg:col-span-2 dark:border-shape-800 dark:bg-shape-900">
                     <div class="space-y-1.5 px-6 py-5">
+                        <h3 class="font-medium tracking-tight">Groups</h3>
+                        <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
+                            Related actions joined into one control. The inner corners square off, the
+                            borders meet as one seam, and a dropdown trigger groups like the button it is.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-6 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
+                        <x-shape::button.group label="View">
+                            <x-shape::button>Day</x-shape::button>
+                            <x-shape::button>Week</x-shape::button>
+                            <x-shape::button>Month</x-shape::button>
+                        </x-shape::button.group>
+
+                        <x-shape::button.group label="Save">
+                            <x-shape::button variant="primary" tone="brand" border>Save</x-shape::button>
+                            <x-shape::dropdown.trigger
+                                for="gallery-save-options"
+                                variant="primary"
+                                tone="brand"
+                                border
+                                square
+                                icon="shape-expand"
+                                aria-label="Save options"
+                            />
+                        </x-shape::button.group>
+
+                        <x-shape::dropdown name="gallery-save-options">
+                            <x-shape::dropdown.item icon="shape-checked">Save and publish</x-shape::dropdown.item>
+                            <x-shape::dropdown.item>Save as draft</x-shape::dropdown.item>
+                        </x-shape::dropdown>
+
+                        <x-shape::button.group orientation="vertical" label="Sort">
+                            <x-shape::button size="sm" icon="shape-trend-up">Newest</x-shape::button>
+                            <x-shape::button size="sm" icon="shape-trend-down">Oldest</x-shape::button>
+                        </x-shape::button.group>
+                    </div>
+                </article>
+
+                <article class="overflow-hidden rounded-shape-lg border border-shape-200 bg-white lg:col-span-2 dark:border-shape-800 dark:bg-shape-900">
+                    <div class="space-y-1.5 px-6 py-5">
                         <h3 class="font-medium tracking-tight">Overriding</h3>
                         <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
                             Shape's own defaults carry zero specificity, so a class passed at the call site wins

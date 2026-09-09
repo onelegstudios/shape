@@ -39,7 +39,8 @@
     "button": {
         "files": [
             "button/button.blade.php",
-            "button/element.blade.php"
+            "button/element.blade.php",
+            "button/group.blade.php"
         ],
         "requires": [
             "icon"

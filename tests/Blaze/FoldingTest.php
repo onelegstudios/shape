@@ -93,6 +93,32 @@ it('folds a button when every prop that drives logic is static', function () {
         ->toContain('shape::button');
 });
 
+it('folds a group and each button in its slot', function () {
+    // Both names, the way the avatar group and its faces both appear: a slot is
+    // rendered by the call site, so its children fold on their own rather than
+    // being baked into the parent the way an alert's buttons are.
+    //
+    // `orientation` picks the class set at compile time, and `label` is
+    // interpolated and nothing else, so a named group still folds.
+    $folded = array_count_values(foldedComponentsWhileRendering('static-button-group'));
+
+    expect($folded)->toBe([
+        'shape::button' => 2,
+        'shape::button.group' => 1,
+    ]);
+});
+
+it('leaves nothing of a group\'s corners to resolve at runtime', function () {
+    $fixture = __DIR__.'/../fixtures/views/static-button-group.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('data-shape-button-group')
+        ->toContain('rounded-l-none');
+});
+
 it('folds icons', function () {
     expect(foldedComponentsWhileRendering('static-icon'))
         ->toContain('shape::icon.shape-checked');
