@@ -2,4 +2,4 @@
 <x-shape::heading level="1" size="sm">Billing</x-shape::heading>
 
 {{-- The number you actually look at, which is not a heading at all. --}}
-<x-shape::heading level="6" size="2xl">£12,480</x-shape::heading>
+<x-shape::heading level="6" size="xl">£12,480</x-shape::heading>

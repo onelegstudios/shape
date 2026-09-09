@@ -62,7 +62,7 @@ your application has already chosen.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `size` | `base` | `xs`, `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `variant` | `base` | `base`, `muted`, `strong` |
 | `as` | `p` | any tag name |
 

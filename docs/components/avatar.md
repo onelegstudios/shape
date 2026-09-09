@@ -169,7 +169,7 @@ more than one component draws the same face. It is the same move one level
 further out.
 
 It is a facade method rather than a component of its own because a Gravatar is a
-URL and nothing else. The avatar already draws a person at four sizes, in a
+URL and nothing else. The avatar already draws a person at five sizes, in a
 group, under a badge, as a control — a `<x-shape::gravatar>` would have restated
 every one of those decisions in order to change where the bytes come from.
 
@@ -300,14 +300,15 @@ The glyph's size follows the circle's, so there is nothing to pass:
 | `sm` | 32px | 16px |
 | `base` | 40px | 20px |
 | `lg` | 48px | 24px |
+| `xl` | 56px | 32px |
 
 About half the circle, except at `xs` — 16px is the smallest drawing an icon set
 has, and squeezing it into 12px would throw away the work that made it a
 separate drawing. See [Size and style](icon.md#size-and-style).
 
-Every size draws the glyph `solid` by default, including `lg`, where an icon left
-to itself would take the stroked drawing. Four avatars in a row should wear the
-same weight, and the filled drawing is the one that matches the initials it
+Every size draws the glyph `solid` by default, including `lg` and `xl`, where an
+icon left to itself would take the stroked drawing. Five avatars in a row should
+wear the same weight, and the filled drawing is the one that matches the initials it
 stands in for.
 
 `icon-variant` is the way out of that, named for what it modifies the way the
@@ -517,6 +518,7 @@ box, which is what being centred on an edge means.
 | `sm` | 32px | 8px | 16px |
 | `base` | 40px | 10px | 18px |
 | `lg` | 48px | 12px | 20px |
+| `xl` | 56px | 14px | 22px |
 
 The dot is about a quarter of the circle, and a count is that dot with room for
 a number in it: eight pixels more at every size, never narrower than it is tall,
@@ -621,7 +623,7 @@ it. The corner of the box is not the corner of the shape: the arc crosses the
 diagonal `1 - 1/√2` of the corner radius inside the box on both axes — 14.6% of
 the width on a circle, whose radius is half of it, and `--radius-shape` on a
 [squared](#squares) avatar, which is a length and so the same two pixels at all
-four sizes.
+five sizes.
 
 That is also why a count grows both ways from the corner instead of only
 inwards. Anchored by its own corner, a pill wide enough for three digits would
@@ -982,7 +984,7 @@ avatar that has to be substantially something else.
 | `icon-variant` | `solid` | `outline`, `solid` |
 | `initials` | — | shown when there is no image and no icon |
 | `alt` | — | the person's name |
-| `size` | `base` | `xs`, `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `border` | `false` | rings the circle in the tone's own edge; `outline` has one already |

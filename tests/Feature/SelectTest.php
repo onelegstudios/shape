@@ -60,3 +60,24 @@ it('offers a styled option that renders as a plain one', function () {
         ->toContain('Monthly')
         ->toContain('data-shape-option');
 });
+
+it('takes the input\'s heights and keeps room for its own arrow at each of them', function (string $size, string $box, string $arrow) {
+    $html = Blade::render("<x-shape::select name=\"plan\" size=\"{$size}\"><option>One</option></x-shape::select>");
+
+    expect($html)->toContain($box)->toContain($arrow);
+})->with([
+    ['xs', '[:where(&amp;)]:h-6', 'right-1.5'],
+    ['sm', '[:where(&amp;)]:h-8', 'right-2.5'],
+    ['base', '[:where(&amp;)]:h-10', 'right-3'],
+    ['lg', '[:where(&amp;)]:h-12', 'right-4'],
+    ['xl', '[:where(&amp;)]:h-14', 'right-5'],
+]);
+
+it('grows the arrow with the control rather than drawing one size of it', function () {
+    // A 20px chevron in a 24px box is a control that reads as an arrow with a
+    // label attached; the same chevron in a 56px one disappears into it.
+    expect(Blade::render('<x-shape::select name="plan" size="xs"><option>One</option></x-shape::select>'))
+        ->toContain('size-4')
+        ->and(Blade::render('<x-shape::select name="plan" size="xl"><option>One</option></x-shape::select>'))
+        ->toContain('size-6');
+});

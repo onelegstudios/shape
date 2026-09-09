@@ -23,10 +23,11 @@ a button given the same tone agree without either knowing about the other.
 
 ## Sizes
 
-Four heights — 16px, 20px, 24px and 28px — moved apart by the vertical padding
-rather than by the type size. `text-2xs` and `text-xs` share a 1rem line box, so
-a scale that changed only the type and the side padding would draw two badges
-the same height:
+Five heights — 16px, 20px, 24px, 28px and 32px. The first three are moved apart
+by the vertical padding rather than by the type size: `text-2xs` and `text-xs`
+share a 1rem line box, so a scale that changed only the type and the side
+padding would draw two badges the same height. The last two are carried by the
+type, where 8px of padding on a 20px and a 24px line box arrives at 28 and 32:
 
 @docs('preview', name: 'badge-sizes')
 
@@ -110,7 +111,7 @@ replaces is a mark that survives greyscale with one that does not:
 ## Counts and lone icons
 
 `square` drops the side padding and makes the badge as tall as it is wide — the
-same four heights, asked for as a height because there is no padding left to
+same five heights, asked for as a height because there is no padding left to
 arrive at them through. It is the [button](button.md#icon-only-buttons)'s
 `square` and not the [avatar](avatar.md#squares)'s: a badge is square-cornered
 already, so the only thing left for the word to mean here is the proportions.
@@ -451,11 +452,11 @@ colour is not one the system has, make it important:
 | `label` | — | the text |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
-| `size` | `base` | `xs`, `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` to empty the slot in front of the label |
 | `dot` | `false` | a small circle in that slot, in the variant's own ink, for a status the state tones do not cover |
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
-| `icon-size` | `xs` | `xs`, `sm`, `base` |
+| `icon-size` | `xs` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |
 | `square` | `false` | drops the side padding and makes the badge as tall as it is wide, for a count or a lone icon; grows into a pill when the content is wider |
 | `dismissible` | `false` | adds a close button; cannot be combined with `as` or `href` |

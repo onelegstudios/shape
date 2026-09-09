@@ -1,1 +1,1 @@
-<x-shape::heading level="1" size="2xl">Invoices</x-shape::heading>
+<x-shape::heading level="1" size="xl">Invoices</x-shape::heading>

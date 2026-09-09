@@ -84,9 +84,11 @@ it('sizes itself from a key rather than from a value', function (string $size, s
         ->toContain($class)
         ->toContain("data-shape-size=\"{$size}\"");
 })->with([
+    ['xs', '[:where(&amp;)]:max-w-xs'],
     ['sm', '[:where(&amp;)]:max-w-sm'],
     ['base', '[:where(&amp;)]:max-w-lg'],
     ['lg', '[:where(&amp;)]:max-w-2xl'],
+    ['xl', '[:where(&amp;)]:max-w-4xl'],
 ]);
 
 it('yields to a class passed at the call site', function () {

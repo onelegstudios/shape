@@ -112,7 +112,7 @@ select[data-shape-control] {
 | Prop | Default | Values |
 | --- | --- | --- |
 | `type` | `text` | any input type |
-| `size` | `base` | `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `label` | — | assembles the whole field when given |
 | `description` | — | supporting copy, wired to `aria-describedby` |
 | `id` | the resolved name | the element id |

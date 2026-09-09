@@ -55,7 +55,7 @@ textarea and not this one.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `size` | `base` | `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `rows` | `3` | the height floor |
 | `label` | — | assembles the whole field when given |
 | `description` | — | supporting copy, wired to `aria-describedby` |

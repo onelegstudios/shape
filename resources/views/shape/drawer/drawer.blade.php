@@ -39,13 +39,17 @@ $classes = Shape::classes()
     // A side drawer is sized across the viewport; a bottom one is sized down it.
     ->add(match ($side) {
         'bottom' => match ($size) {
+            'xs' => '[:where(&)]:max-h-[25dvh]',
             'sm' => '[:where(&)]:max-h-[40dvh]',
             'lg' => '[:where(&)]:max-h-[85dvh]',
+            'xl' => '[:where(&)]:max-h-[95dvh]',
             default => '[:where(&)]:max-h-[65dvh]',
         },
         default => match ($size) {
+            'xs' => 'w-[calc(100vw-3rem)] [:where(&)]:max-w-2xs',
             'sm' => 'w-[calc(100vw-3rem)] [:where(&)]:max-w-xs',
             'lg' => 'w-[calc(100vw-3rem)] [:where(&)]:max-w-xl',
+            'xl' => 'w-[calc(100vw-3rem)] [:where(&)]:max-w-3xl',
             default => 'w-[calc(100vw-3rem)] [:where(&)]:max-w-md',
         },
     })

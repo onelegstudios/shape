@@ -59,7 +59,7 @@
 
 @php
 $classes = Shape::classes()
-    ->add('inline-flex items-center justify-center gap-2 whitespace-nowrap select-none')
+    ->add('inline-flex items-center justify-center whitespace-nowrap select-none')
     ->add('transition-colors duration-100')
     ->add('focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--shape-ring)]')
     ->add('disabled:pointer-events-none disabled:opacity-50')
@@ -69,13 +69,32 @@ $classes = Shape::classes()
     // simply wins, with no !important and no class-merging utility.
     ->add('[:where(&)]:rounded-shape [:where(&)]:font-medium')
 
+    // Five heights, eight pixels apart: 24, 32, 40, 48, 56. Padding and the gap
+    // between a label and its icons ride along, because a button that grew in
+    // height and kept its side padding would read as squashed rather than as
+    // larger.
+    //
+    // The gap is set here rather than once on the root above. Two gap utilities
+    // on one element are decided by Tailwind's own ordering of them, not by the
+    // order they were added in — `gap-2` on the root would quietly win over the
+    // `gap-1.5` a small button asks for — so `size` owns the property outright.
+    // A square button holds one glyph and nothing to space it from, which is
+    // why those arms state a size and stop there.
     ->add(match ($size) {
+        'xs' => $square ? 'size-6' : 'h-6 gap-1 px-2',
         'sm' => $square ? 'size-8' : 'h-8 gap-1.5 px-3',
-        'lg' => $square ? 'size-12' : 'h-12 px-5',
-        default => $square ? 'size-10' : 'h-10 px-4',
+        'lg' => $square ? 'size-12' : 'h-12 gap-2 px-5',
+        'xl' => $square ? 'size-14' : 'h-14 gap-2.5 px-6',
+        default => $square ? 'size-10' : 'h-10 gap-2 px-4',
     })
+
+    // Type moves in four steps across five heights: `sm` and `base` share a
+    // size and differ in the room around it, which is what keeps the two most
+    // common buttons on a page from setting their labels differently.
     ->add(match ($size) {
+        'xs' => '[:where(&)]:text-xs',
         'lg' => '[:where(&)]:text-base',
+        'xl' => '[:where(&)]:text-lg',
         default => '[:where(&)]:text-sm',
     })
 

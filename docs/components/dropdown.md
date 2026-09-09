@@ -91,7 +91,7 @@ rule can reach the menus without touching the popovers that are not menus:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `icon` | — | any [icon](icon.md) name |
-| `icon-size` | `sm` | `xs`, `sm`, `base` |
+| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `as` | resolved from `href` | `button`, `a`, `div` |
 

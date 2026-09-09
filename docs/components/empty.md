@@ -67,7 +67,7 @@ those instances — which is also the only way to reach *all* of them at once:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `icon` | — | any [icon](icon.md) name |
-| `icon-size` | `base` | `xs`, `sm`, `base` |
+| `icon-size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `heading` | — | the headline |
 | `description` | — | one line of supporting copy |
 

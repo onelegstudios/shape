@@ -17,6 +17,8 @@ $classes = Shape::classes('shrink-0')
     ->add(match ($size) {
         'xs' => '[:where(&)]:size-4',
         'sm' => '[:where(&)]:size-5',
+        'lg' => '[:where(&)]:size-8',
+        'xl' => '[:where(&)]:size-10',
         default => '[:where(&)]:size-6',
     });
 @endphp
@@ -29,7 +31,7 @@ $classes = Shape::classes('shrink-0')
 <svg {{ $attributes->merge(['aria-hidden' => 'true'])->class($classes) }} data-shape-icon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
     <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
 </svg>
-<?php break; case ('solid:base'): ?>
+<?php break; case ('solid:base'): case ('solid:lg'): case ('solid:xl'): ?>
 <svg {{ $attributes->merge(['aria-hidden' => 'true'])->class($classes) }} data-shape-icon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
     <path fill-rule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clip-rule="evenodd"/>
 </svg>

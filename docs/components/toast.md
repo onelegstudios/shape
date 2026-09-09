@@ -158,7 +158,7 @@ it wants both.
 | `heading` | — | the line in bold |
 | `description` | — | a second line under it |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
-| `icon-size` | `sm` | `xs`, `sm`, `base` |
+| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `dismissible` | `true` | `false` removes the close button |
 
 ## Folding

@@ -128,9 +128,10 @@ $state = match (true) {
 
 // The dot is drawn here rather than named in the icon set, because the set is
 // generated from Heroicons and a circle is not one of them — and because a
-// status mark is a shape at 4 to 8 pixels, which is a size no glyph is drawn
+// status mark is a shape at 4 to 10 pixels, which is a size no glyph is drawn
 // for. Roughly a quarter of the badge's height, which is the proportion the
-// avatar's mark keeps.
+// avatar's mark keeps — `sm` and `base` share a dot because 6px is the nearest
+// the spacing scale comes to a quarter of both 20px and 24px.
 //
 // `bg-current` for the reason the dismiss control takes no colour of its own:
 // preflight leaves it inheriting whatever ink the variant resolved — the tone's
@@ -140,6 +141,7 @@ $state = match (true) {
 $dotClasses = ! $dot ? null : match ($size) {
     'xs' => 'size-1 shrink-0 rounded-full bg-current',
     'lg' => 'size-2 shrink-0 rounded-full bg-current',
+    'xl' => 'size-2.5 shrink-0 rounded-full bg-current',
     default => 'size-1.5 shrink-0 rounded-full bg-current',
 };
 
@@ -147,20 +149,23 @@ $classes = Shape::classes()
     ->add('inline-flex items-center whitespace-nowrap align-middle')
     ->add('[:where(&)]:rounded-shape [:where(&)]:font-medium')
 
-    // Four heights: 16px, 20px, 24px, 28px. The vertical padding is what moves
-    // them apart — `text-2xs` and `text-xs` share a 1rem line box, so a scale
-    // that only changed the type size and the side padding would render two
-    // badges the same height and differ by two pixels of gutter.
+    // Five heights: 16px, 20px, 24px, 28px, 32px. The vertical padding is what
+    // moves the first three apart — `text-2xs` and `text-xs` share a 1rem line
+    // box, so a scale that only changed the type size and the side padding
+    // would render two badges the same height and differ by two pixels of
+    // gutter — and the type carries the last two, where 8px of padding on a
+    // 20px and a 24px line box is what arrives at 28 and 32.
     ->add($square ? null : match ($size) {
         'xs' => '[:where(&)]:gap-1 [:where(&)]:px-1.5 [:where(&)]:py-0 [:where(&)]:text-2xs',
         'sm' => '[:where(&)]:gap-1 [:where(&)]:px-2 [:where(&)]:py-0.5 [:where(&)]:text-2xs',
         'lg' => '[:where(&)]:gap-1.5 [:where(&)]:px-3 [:where(&)]:py-1 [:where(&)]:text-sm',
+        'xl' => '[:where(&)]:gap-2 [:where(&)]:px-3.5 [:where(&)]:py-1 [:where(&)]:text-base',
         default => '[:where(&)]:gap-1.5 [:where(&)]:px-2.5 [:where(&)]:py-1 [:where(&)]:text-xs',
     })
 
     // A badge with nothing in it but a glyph, or a count — the side padding is
     // for holding a word off the ends, and neither of those is a word. The same
-    // four heights, asked for as a height because there is no longer a padding
+    // five heights, asked for as a height because there is no longer a padding
     // to arrive at them through, which is `square` on the button too.
     //
     // A minimum width rather than a size, which is where it parts from the
@@ -177,6 +182,7 @@ $classes = Shape::classes()
         'xs' => '[:where(&)]:gap-1 [:where(&)]:h-4 [:where(&)]:min-w-4 [:where(&)]:px-0.5 [:where(&)]:text-2xs',
         'sm' => '[:where(&)]:gap-1 [:where(&)]:h-5 [:where(&)]:min-w-5 [:where(&)]:px-0.5 [:where(&)]:text-2xs',
         'lg' => '[:where(&)]:gap-1.5 [:where(&)]:h-7 [:where(&)]:min-w-7 [:where(&)]:px-1.5 [:where(&)]:text-sm',
+        'xl' => '[:where(&)]:gap-2 [:where(&)]:h-8 [:where(&)]:min-w-8 [:where(&)]:px-2 [:where(&)]:text-base',
         default => '[:where(&)]:gap-1.5 [:where(&)]:h-6 [:where(&)]:min-w-6 [:where(&)]:px-1 [:where(&)]:text-xs',
     } : null)
 

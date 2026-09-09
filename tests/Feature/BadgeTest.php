@@ -112,6 +112,7 @@ it('sizes the dot with the badge', function (string $size, string $expected) {
     ['sm', 'size-1.5 '],
     ['base', 'size-1.5 '],
     ['lg', 'size-2 '],
+    ['xl', 'size-2.5 '],
 ]);
 
 it('says nothing with the dot, because a colour is not a word', function () {
@@ -207,6 +208,7 @@ it('applies the requested size', function (string $size, string $expected) {
     ['sm', '[:where(&amp;)]:px-2 [:where(&amp;)]:py-0.5 [:where(&amp;)]:text-2xs'],
     ['base', '[:where(&amp;)]:px-2.5 [:where(&amp;)]:py-1 [:where(&amp;)]:text-xs'],
     ['lg', '[:where(&amp;)]:px-3 [:where(&amp;)]:py-1 [:where(&amp;)]:text-sm'],
+    ['xl', '[:where(&amp;)]:px-3.5 [:where(&amp;)]:py-1 [:where(&amp;)]:text-base'],
 ]);
 
 it('gives its own defaults zero specificity so caller classes win', function () {
@@ -232,6 +234,7 @@ it('makes a square badge as tall as it is wide, at every size', function (string
     ['sm', '[:where(&amp;)]:h-5 [:where(&amp;)]:min-w-5'],
     ['base', '[:where(&amp;)]:h-6 [:where(&amp;)]:min-w-6'],
     ['lg', '[:where(&amp;)]:h-7 [:where(&amp;)]:min-w-7'],
+    ['xl', '[:where(&amp;)]:h-8 [:where(&amp;)]:min-w-8'],
 ]);
 
 it('drops the side padding a label needed and centres what is left', function () {
@@ -291,6 +294,7 @@ it('cancels its vertical padding with an equal negative margin when inset', func
     ['sm', '[:where(&amp;)]:-my-0.5'],
     ['base', '[:where(&amp;)]:-my-1'],
     ['lg', '[:where(&amp;)]:-my-1'],
+    ['xl', '[:where(&amp;)]:-my-1'],
 ]);
 
 it('has no vertical padding to cancel at xs, inset or not', function () {

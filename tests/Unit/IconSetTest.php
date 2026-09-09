@@ -9,14 +9,20 @@ use Onelegstudios\Shape\IconSlots;
  * The library's scale, which is the same one for every set below — that being
  * the whole point of it living outside them.
  *
- * @return array<string, array{class: string, prefer?: string}>
+ * `xs` to `xl`, with `base` marked as the default rather than inferred from
+ * being last: the scale runs past its own default now, and `lg` and `xl` are
+ * the 24px drawings in a larger box because no set draws above 24.
+ *
+ * @return array<string, array{class: string, prefer?: string, default?: true}>
  */
 function scale(): array
 {
     return [
         'xs' => ['class' => 'size-4', 'prefer' => 'solid'],
         'sm' => ['class' => 'size-5', 'prefer' => 'solid'],
-        'base' => ['class' => 'size-6', 'prefer' => 'outline'],
+        'base' => ['class' => 'size-6', 'prefer' => 'outline', 'default' => true],
+        'lg' => ['class' => 'size-8', 'prefer' => 'outline'],
+        'xl' => ['class' => 'size-10', 'prefer' => 'outline'],
     ];
 }
 
@@ -96,9 +102,39 @@ function split(): IconSet
 }
 
 it('reads the styles off a set and the sizes off the library', function () {
-    expect(heroicons()->sizes())->toBe(['xs', 'sm', 'base'])
+    expect(heroicons()->sizes())->toBe(['xs', 'sm', 'base', 'lg', 'xl'])
         ->and(heroicons()->styles())->toBe(['solid', 'outline'])
         ->and(heroicons()->defaultSize())->toBe('base');
+});
+
+it('takes the default size the scale marks rather than the last one declared', function () {
+    // The rule that had to change when the scale grew past its default. Under
+    // the old one — the last declared — every `<x-shape::icon.bell />` on every
+    // page would have started rendering at 40px the moment `xl` was added.
+    expect(heroicons()->defaultSize())->toBe('base');
+
+    $unmarked = IconSet::fromArray('unmarked', [
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+    ], [
+        'sm' => ['class' => 'size-5'],
+        'base' => ['class' => 'size-6'],
+    ]);
+
+    // And a scale that marks none keeps it, so a config published before the
+    // key existed goes on meaning what it meant.
+    expect($unmarked->defaultSize())->toBe('base');
+});
+
+it('refuses a scale that marks two defaults', function () {
+    // Two answers to "what does a call site that names no size get" is a scale
+    // that cannot be generated from, and picking one would bake the wrong
+    // answer into every component the run writes.
+    expect(fn () => IconSet::fromArray('hero', [
+        'styles' => ['outline' => ['base' => '{name}.svg']],
+    ], [
+        'sm' => ['class' => 'size-5', 'default' => true],
+        'base' => ['class' => 'size-6', 'default' => true],
+    ]))->toThrow(InvalidArgumentException::class, 'mark more than one default');
 });
 
 it('lets a size choose the style it is drawn in', function () {

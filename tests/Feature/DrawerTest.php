@@ -33,6 +33,23 @@ it('sizes a side drawer across the viewport and a bottom one down it', function 
         ->toContain('[:where(&amp;)]:max-h-[85dvh]');
 });
 
+it('carries the whole scale on both axes', function (string $size, string $side, string $bottom) {
+    // Both arms of the branch above answer all five words. A scale that ran to
+    // `xl` across the viewport and stopped at `lg` down it would make `size`
+    // mean something different depending on which edge the drawer came from.
+    expect(Blade::render("<x-shape::drawer name=\"c\" side=\"right\" size=\"{$size}\">Items</x-shape::drawer>"))
+        ->toContain($side);
+
+    expect(Blade::render("<x-shape::drawer name=\"c\" side=\"bottom\" size=\"{$size}\">Items</x-shape::drawer>"))
+        ->toContain($bottom);
+})->with([
+    ['xs', '[:where(&amp;)]:max-w-2xs', '[:where(&amp;)]:max-h-[25dvh]'],
+    ['sm', '[:where(&amp;)]:max-w-xs', '[:where(&amp;)]:max-h-[40dvh]'],
+    ['base', '[:where(&amp;)]:max-w-md', '[:where(&amp;)]:max-h-[65dvh]'],
+    ['lg', '[:where(&amp;)]:max-w-xl', '[:where(&amp;)]:max-h-[85dvh]'],
+    ['xl', '[:where(&amp;)]:max-w-3xl', '[:where(&amp;)]:max-h-[95dvh]'],
+]);
+
 it('scrolls its body rather than the whole panel, so the heading stays put', function () {
     expect(Blade::render('<x-shape::drawer name="c" heading="Cart">Items</x-shape::drawer>'))
         ->toContain('data-shape-drawer-body')

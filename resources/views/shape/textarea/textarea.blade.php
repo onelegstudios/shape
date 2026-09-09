@@ -47,9 +47,15 @@ $classes = Shape::classes()
     ->add('[:where(&)]:text-[color:var(--shape-fg)]')
     ->add('placeholder:text-[color:var(--shape-fg-muted)]')
 
+    // The input's five steps, as padding rather than as a height: a textarea is
+    // sized by its `rows`, so what `size` sets here is the room around the text
+    // and the text itself. The side padding is the input's at every step, which
+    // is what lines a textarea up with the control above it in a form.
     ->add(match ($size) {
+        'xs' => '[:where(&)]:px-2 [:where(&)]:py-1 [:where(&)]:text-xs',
         'sm' => '[:where(&)]:px-2.5 [:where(&)]:py-1.5 [:where(&)]:text-sm',
         'lg' => '[:where(&)]:px-4 [:where(&)]:py-3 [:where(&)]:text-base',
+        'xl' => '[:where(&)]:px-5 [:where(&)]:py-4 [:where(&)]:text-lg',
         default => '[:where(&)]:px-3 [:where(&)]:py-2 [:where(&)]:text-sm',
     })
 

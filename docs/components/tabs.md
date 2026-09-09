@@ -122,7 +122,7 @@ use when the two should not look alike.
 | | `href` | — | makes it a link instead |
 | | `selected` | `false` | |
 | | `icon` | — | any [icon](icon.md) name |
-| | `icon-size` | `sm` | `xs`, `sm`, `base` |
+| | `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
 | | `as` | resolved from `href` | `button`, `a`, `div` |
 | `tabs.panel` | `name` | — | matched by a tab's `for` |
 | | `selected` | `false` | |

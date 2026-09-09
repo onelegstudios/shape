@@ -21,6 +21,15 @@ use: `size` is how big it is, `variant` is which style it is drawn in.
 | `xs` | 16px |
 | `sm` | 20px |
 | `base` | 24px — the default |
+| `lg` | 32px |
+| `xl` | 40px |
+
+`base` is the default and the middle of the scale, not the top of it. `lg` and
+`xl` are the 24px drawing in a larger box: no icon set draws above 24px, so the
+alternative would be a library whose scale runs to `xl` everywhere except the
+component most likely to need it — an [empty state](empty.md)'s glyph, the mark
+on a feature card. They stay stroked for the same reason, since a stroke is what
+survives being drawn larger.
 
 @docs('preview', name: 'icon-styles')
 
@@ -31,7 +40,8 @@ use: `size` is how big it is, `variant` is which style it is drawn in.
 
 Most call sites name only a size. The style follows from it: `xs` and `sm` are
 drawn solid, because a 1.5px stroke does not read at 16px — which is also why
-Heroicons draws no outline below 24px. Name a style to override that.
+Heroicons draws no outline below 24px. `base` and up are stroked. Name a style
+to override that.
 
 ```blade
 <x-shape::icon.shape-checked size="sm" />                     {{-- 20px, solid --}}
@@ -271,7 +281,7 @@ you are unhappy with is a file to replace rather than a rule to write.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `size` | `base` | `xs`, `sm`, `base` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `variant` | chosen by `size` | `outline`, `solid` |
 
 `<x-shape::icon>` — the by-name form — takes `name` as well.

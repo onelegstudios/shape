@@ -66,9 +66,14 @@ $classes = Shape::classes()
     ->add('[:where(&)]:text-[color:var(--shape-fg)]')
     ->add('placeholder:text-[color:var(--shape-fg-muted)]')
 
+    // The button's five heights, to the pixel: 24, 32, 40, 48, 56. A control
+    // and the button beside it are the pair most often set on one line, and a
+    // scale they only nearly share is the one that shows.
     ->add(match ($size) {
+        'xs' => '[:where(&)]:h-6 [:where(&)]:px-2 [:where(&)]:text-xs',
         'sm' => '[:where(&)]:h-8 [:where(&)]:px-2.5 [:where(&)]:text-sm',
         'lg' => '[:where(&)]:h-12 [:where(&)]:px-4 [:where(&)]:text-base',
+        'xl' => '[:where(&)]:h-14 [:where(&)]:px-5 [:where(&)]:text-lg',
         default => '[:where(&)]:h-10 [:where(&)]:px-3 [:where(&)]:text-sm',
     })
 

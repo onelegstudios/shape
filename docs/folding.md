@@ -138,7 +138,7 @@ end up as literal SVG in the compiled template.
 
 Both of an icon's props drive which drawing is chosen, so neither can be
 declared safe — an icon whose `size` is computed drops to the memo path. There
-are three sizes and two styles, so unlike an avatar keyed on a per-row URL, that
+are five sizes and two styles, so unlike an avatar keyed on a per-row URL, that
 cache actually hits.
 
 ## Inherited props are unsafe

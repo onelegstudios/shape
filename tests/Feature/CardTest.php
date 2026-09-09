@@ -42,9 +42,11 @@ it('moves padding and gap together', function (string $padding, string $gap, str
     expect($html)->toContain($gap)->toContain($pad)
         ->and($html)->toContain("data-shape-padding=\"{$padding}\"");
 })->with([
+    ['xs', '[:where(&amp;)]:gap-2', '[:where(&amp;)]:p-3'],
     ['sm', '[:where(&amp;)]:gap-3', '[:where(&amp;)]:p-4'],
     ['base', '[:where(&amp;)]:gap-4', '[:where(&amp;)]:p-6'],
     ['lg', '[:where(&amp;)]:gap-6', '[:where(&amp;)]:p-8'],
+    ['xl', '[:where(&amp;)]:gap-8', '[:where(&amp;)]:p-10'],
 ]);
 
 it('drops its padding without losing its gap', function () {

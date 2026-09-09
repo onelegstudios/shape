@@ -78,9 +78,11 @@ it('renders no empty name or id when it can infer nothing', function () {
 it('applies the requested size', function (string $size, string $expected) {
     expect(Blade::render("<x-shape::input size=\"{$size}\" />"))->toContain($expected);
 })->with([
+    ['xs', '[:where(&amp;)]:h-6'],
     ['sm', '[:where(&amp;)]:h-8'],
     ['base', '[:where(&amp;)]:h-10'],
     ['lg', '[:where(&amp;)]:h-12'],
+    ['xl', '[:where(&amp;)]:h-14'],
 ]);
 
 it('drives its invalid styling from the aria state rather than a second prop', function () {

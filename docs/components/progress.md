@@ -149,7 +149,7 @@ keep.
 | `value` | `0` | any number up to `max` |
 | `max` | `100` | |
 | `indeterminate` | `false` | `true` for work with no known end |
-| `size` | `base` | `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `tone` | `brand` | `brand`, `accent`, `info`, `success`, `warning`, `danger` |
 | `label` | — | becomes `aria-label` |
 

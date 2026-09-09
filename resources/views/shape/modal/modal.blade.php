@@ -46,9 +46,13 @@ $classes = Shape::classes()
     ->add('[:where(&)]:text-[color:var(--shape-fg)]')
     ->add('[:where(&)]:border-0')
 
+    // A width, not a height — a dialog is as tall as what it holds. `xs` is a
+    // confirmation and nothing else; `xl` is the one that carries a table.
     ->add(match ($size) {
+        'xs' => '[:where(&)]:max-w-xs',
         'sm' => '[:where(&)]:max-w-sm',
         'lg' => '[:where(&)]:max-w-2xl',
+        'xl' => '[:where(&)]:max-w-4xl',
         default => '[:where(&)]:max-w-lg',
     });
 @endphp

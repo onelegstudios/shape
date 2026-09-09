@@ -19,10 +19,15 @@
 
 @php
 $classes = Shape::classes()
+    // The library's five steps, at the type sizes the heading uses under the
+    // same five words. A heading and a paragraph asked for `lg` are set at one
+    // size and differ in weight and tracking, which is the only difference
+    // worth having between them.
     ->add(match ($size) {
         'xs' => '[:where(&)]:text-xs [:where(&)]:leading-5',
         'sm' => '[:where(&)]:text-sm [:where(&)]:leading-6',
         'lg' => '[:where(&)]:text-lg [:where(&)]:leading-7',
+        'xl' => '[:where(&)]:text-xl [:where(&)]:leading-8',
         default => '[:where(&)]:text-base [:where(&)]:leading-7',
     })
 

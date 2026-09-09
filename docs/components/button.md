@@ -62,8 +62,17 @@ toned edge in the library heavier or lighter at once, move
 
 @docs('preview', name: 'button-sizes')
 
-`sm` and `base` share a type size and differ in height and padding. `lg` steps
-the text up too.
+Five heights, eight pixels apart: 24, 32, 40, 48, 56. Padding and the gap
+between a label and its icons move with them, so a larger button is roomier
+rather than merely taller.
+
+`sm` and `base` share a type size and differ in height and padding — the two
+most common buttons on a page set their labels the same way. `xs`, `lg` and `xl`
+each step the text as well.
+
+The heights are the [input](input.md)'s and the [select](select.md)'s to the
+pixel, and the [avatar](avatar.md)'s circles, so a control, a face and a button
+sit on one toolbar line without any of them knowing about the others.
 
 ## Icons
 
@@ -78,8 +87,10 @@ application they would be names of your own: `php artisan shape:icon plus
 arrow-right`, then `icon="plus"`. See [Icon](icon.md).
 
 `icon-size` picks how big the drawing is: `xs` is 16px, `sm` — the default — is
-20px, and `base` is 24px. The style is left to the icon, which draws the small
-sizes solid because a stroke does not read at 16px.
+20px, `base` is 24px, `lg` is 32px and `xl` is 40px. The style is left to the
+icon, which draws the small sizes solid because a stroke does not read at 16px.
+It does not follow `size`: a large button usually wants the same 20px glyph a
+base one does, and the call sites that want otherwise say so.
 
 @docs('preview', name: 'button-icon-sizes')
 
@@ -290,10 +301,10 @@ Past that, [`shape:eject`](../tooling.md#shapeeject) hands you the file.
 | --- | --- | --- |
 | `variant` | `outline` | `primary`, `outline`, `subtle`, `ghost` |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
-| `size` | `base` | `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `icon` | — | any [icon](icon.md) name, rendered before the label |
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
-| `icon-size` | `sm` | `xs`, `sm`, `base` |
+| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `square` | `false` | drops the horizontal padding, for icon-only buttons |
 | `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
 | `as` | resolved from `href` | `button`, `a`, `div` — an `href` implies `a`, and `button` otherwise |

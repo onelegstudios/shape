@@ -108,9 +108,11 @@ it('applies the requested size', function (string $size, string $expected) {
     expect(Blade::render("<x-shape::button size=\"{$size}\">Save</x-shape::button>"))
         ->toContain($expected);
 })->with([
+    ['xs', 'h-6'],
     ['sm', 'h-8'],
     ['base', 'h-10'],
     ['lg', 'h-12'],
+    ['xl', 'h-14'],
 ]);
 
 it('lets a caller change or remove its elevation', function () {

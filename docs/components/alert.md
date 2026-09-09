@@ -529,7 +529,7 @@ where a package rule outranks a class you passed.
 | `bar-square` | `false` | squares the two corners the `bar` runs between; nothing without a bar |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
-| `icon-size` | `sm` | `xs`, `sm`, `base` |
+| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `icon-variant` | chosen by `icon-size` | `outline`, `solid` |
 | `icon-placement` | `gutter` | `inline` sets the glyph at the head of the first line and wraps the message under it |
 | `dismissible` | `false` | adds a close button |

@@ -65,6 +65,13 @@ own Tailwind build scans the package's Blade.
 Every component is `<x-shape::name>`. Props take scale keys, never raw values:
 `size="lg"`, not `size="18px"`; `tone="danger"`, not `tone="#b91c1c"`.
 
+`size` is one scale across the whole library: `xs`, `sm`, `base`, `lg`, `xl`,
+with `base` the default and the middle of it. `padding` is the same five words
+where a component takes room rather than a size — the card adds `none` to them,
+for a card whose contents own the inset. What a word means is the component's:
+a `lg` button is 48px tall and a `lg` badge is 28px, and neither is a length you
+pass in.
+
 `tone` is one of `neutral`, `brand`, `accent`, `info`, `success`, `warning`,
 `danger`. The last four are the states, and the alert, the badge and the toast
 each resolve a glyph from them so colour is never the only signal. `brand` and
@@ -80,13 +87,13 @@ which is blue whatever the brand becomes.
 | `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `tone`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `border` (draws the edge in the tone rather than the neutral grey; off by default, on `outline` it recolours the border it already has and on `ghost` it shows on hover only), `as` (a\|div\|button — an `href` implies `a`, so a link needs no `as`; `div` is for a button inside something already clickable) |
 | `button.group` | fold | `orientation` (horizontal\|vertical), `label` (the group's accessible name; omitted when not given) — joins the buttons in its slot into one control: inner corners squared off, borders overlapped into one seam, focus ring turned inward. `role` defaults to `group` and can be overridden |
 | `button.element` | fold | `as`, `type` — the element a button renders |
-| `icon.<name>` | fold + memo | `size` (xs\|sm\|base), `variant` (outline\|solid — chosen by `size` if unset). Shape's own are the `shape-*` slots |
+| `icon.<name>` | fold + memo | `size` (xs 16px\|sm 20px\|base 24px\|lg 32px\|xl 40px — `lg` and `xl` are the 24px drawing in a larger box, since no set draws above 24), `variant` (outline\|solid — chosen by `size` if unset, solid at `xs` and `sm`). Shape's own are the `shape-*` slots |
 | `icon` | — | `name` — resolves at runtime, so it cannot fold |
 | `heading` | fold | `level` (document hierarchy), `size` (visual hierarchy) |
 | `text` | fold | `size`, `variant` (base\|muted\|strong), `as` |
-| `card` / `card.header` / `card.footer` | fold | `padding`, `border` |
+| `card` / `card.header` / `card.footer` | fold | `padding` (the library's five, plus `none` for a card whose contents own the inset), `border` |
 | `separator` | fold + memo | `orientation`, `label` |
-| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `dot` (a small circle in front of the label, in the variant's own ink, for a status outside the four states; `icon` beats it and `:icon="false"` removes it), `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `square` (drops the side padding for a count or a lone icon, keeping the four heights; a minimum width, so one digit is a square and three are a pill), `dismissible` (adds a close button carrying `data-shape-dismiss`; cannot be combined with `as` or `href`, and throws if it is), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome), `type` (default `button`, reaches the `as="button"` arm, for a chip that submits a filter form), `selected` (`true`\|`false` makes it a toggle — `aria-pressed` on a button, `aria-current` on a link — and paints the on state with the tone's fill; needs `as` or an `href`, throws without one and throws with `dismissible`) |
+| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `dot` (a small circle in front of the label, in the variant's own ink, for a status outside the four states; `icon` beats it and `:icon="false"` removes it), `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `square` (drops the side padding for a count or a lone icon, keeping the five heights; a minimum width, so one digit is a square and three are a pill), `dismissible` (adds a close button carrying `data-shape-dismiss`; cannot be combined with `as` or `href`, and throws if it is), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome), `type` (default `button`, reaches the `as="button"` arm, for a chip that submits a filter form), `selected` (`true`\|`false` makes it a toggle — `aria-pressed` on a button, `aria-current` on a link — and paints the on state with the tone's fill; needs `as` or an `href`, throws without one and throws with `dismissible`) |
 | `empty` | fold | `heading`, `description`, `icon` |
 | `field` | fold | `field-name`, `as` — wraps a control with its label, description and error |
 | `label` / `description` / `error` | fold | `for` / `for` / `name`, `bag` |
@@ -97,7 +104,7 @@ which is blue whatever the brand becomes.
 | `modal` | fold | `name` (required), `heading`, `description`, `size`, `dismissible` |
 | `drawer` | fold | `name` (required), `side`, `heading`, `description`, `size` |
 | `dropdown` / `dropdown.trigger` / `dropdown.item` | fold | `name`, `placement` / `for` / `icon`, `tone`, `as` |
-| `popover` / `popover.trigger` | fold | `name`, `placement`, `padding` / `for` |
+| `popover` / `popover.trigger` | fold | `name`, `placement`, `padding` (the library's five; the dropdown is this with `sm`) / `for` |
 | `tooltip` | fold | `name`, `text`, `placement` |
 | `overlay.trigger` / `overlay.close` / `overlay.footer` | fold | `for` |
 | `alert` | fold | `tone`, `variant` (subtle\|outline\|solid\|ghost), `toned`, `border`, `shadow`, `bar` (left\|right\|top\|bottom), `bar-square`, `heading`, `icon`, `icon-size`, `icon-variant`, `icon-placement` (gutter\|inline), `dismissible`, `actions-placement` (sm\|md\|lg\|xl\|2xl\|below\|side — Tailwind container sizes, not viewport breakpoints; default `lg`); `actions` slot |

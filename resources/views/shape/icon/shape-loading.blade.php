@@ -14,6 +14,11 @@
 
     A single drawing, so it declares `variant` only so that a style named by a
     shared call site is ignored rather than rendered onto the `<svg>`.
+
+    Hand-written, so the size scale is kept in step by hand: these are the five
+    classes `shape.icon_sizes` declares, and a scale edited there wants this arm
+    edited with it. There is no drawing to redraw — a circle and an arc are the
+    same at 40px as at 16 — so only the box changes.
 --}}
 
 @props([
@@ -26,6 +31,8 @@ $classes = Shape::classes('shrink-0 animate-spin')
     ->add(match ($size) {
         'xs' => '[:where(&)]:size-4',
         'sm' => '[:where(&)]:size-5',
+        'lg' => '[:where(&)]:size-8',
+        'xl' => '[:where(&)]:size-10',
         default => '[:where(&)]:size-6',
     });
 @endphp

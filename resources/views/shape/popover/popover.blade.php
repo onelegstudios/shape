@@ -38,8 +38,15 @@ $classes = Shape::classes()
     // ordering of the utilities rather than by which component is more specific
     // about its own layout. A `match` emits one class and the question never
     // arises.
+    // The library's five steps rather than a pair of moods. `tight` was the
+    // menu's padding under a name only the menu could have asked for, and a
+    // panel wanting something between it and the default had nothing to say;
+    // `sm` is the same three numbers, reachable by anything.
     ->add(match ($padding) {
-        'tight' => '[:where(&)]:min-w-48 [:where(&)]:gap-0.5 [:where(&)]:p-1.5',
+        'xs' => '[:where(&)]:min-w-44 [:where(&)]:gap-0.5 [:where(&)]:p-1',
+        'sm' => '[:where(&)]:min-w-48 [:where(&)]:gap-0.5 [:where(&)]:p-1.5',
+        'lg' => '[:where(&)]:min-w-56 [:where(&)]:gap-3 [:where(&)]:p-4',
+        'xl' => '[:where(&)]:min-w-64 [:where(&)]:gap-4 [:where(&)]:p-5',
         default => '[:where(&)]:min-w-52 [:where(&)]:gap-2 [:where(&)]:p-3',
     })
 

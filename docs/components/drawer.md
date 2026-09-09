@@ -100,7 +100,7 @@ behind that query — see [Motion](#motion).
 | `heading` | — | title row, and the dialog's accessible name |
 | `description` | — | a line under the heading |
 | `side` | `right` | `right`, `left`, `bottom` |
-| `size` | `base` | `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `dismissible` | `true` | `false` removes the close button and holds Escape off |
 
 The default slot is the body.

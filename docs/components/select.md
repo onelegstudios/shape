@@ -82,7 +82,7 @@ the mobile picker and the type-ahead for free — see
 | Prop | Default | Values |
 | --- | --- | --- |
 | `placeholder` | — | prompt text, as an unchoosable first option |
-| `size` | `base` | `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `label` | — | assembles the whole field when given |
 | `description` | — | supporting copy, wired to `aria-describedby` |
 | `id` | the resolved name | the element id |

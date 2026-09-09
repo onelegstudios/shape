@@ -434,15 +434,28 @@ The scale lives in `shape.icon_sizes`, once, for every set:
 'icon_sizes' => [
     'xs' => ['class' => 'size-4', 'prefer' => 'solid'],
     'sm' => ['class' => 'size-5', 'prefer' => 'solid'],
-    'base' => ['class' => 'size-6', 'prefer' => 'outline'],
+    'base' => ['class' => 'size-6', 'prefer' => 'outline', 'default' => true],
+    'lg' => ['class' => 'size-8', 'prefer' => 'outline'],
+    'xl' => ['class' => 'size-10', 'prefer' => 'outline'],
 ],
 ```
 
-Smallest first; the last is the default. It is declared outside the sets so that
-a call site reads the same whichever set is behind it — `size="sm"` is 20px for
-an icon from your supplementary set as much as for one of Shape's, which is not
-something a per-set scale could promise. Every generated icon emits the same
-size `match`, so mixing sets cannot mix scales.
+Smallest first, and `default` marks the size a call site gets when it names
+none. It is marked rather than inferred because the scale runs past its own
+default: `xs` to `xl` like every other scale in the library, so the middle of it
+is the answer and the end of it is not. A scale that marks none falls back to
+the last declared, which is what a config published before this key existed
+means.
+
+Above `base` the drawings stop and only the box grows — no set draws above 24px,
+so `lg` and `xl` render the 24px artwork larger, and `prefer` stays with the
+stroked drawing up there because a stroke is what survives being scaled.
+
+The scale is declared outside the sets so that a call site reads the same
+whichever set is behind it — `size="sm"` is 20px for an icon from your
+supplementary set as much as for one of Shape's, which is not something a
+per-set scale could promise. Every generated icon emits the same size `match`,
+so mixing sets cannot mix scales.
 
 `prefer` is what a size reaches for when the call site names no style. It is the
 reason eleven of the twelve places this library draws an icon can ask for a size
