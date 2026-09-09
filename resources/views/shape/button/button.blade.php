@@ -3,6 +3,45 @@
 {{--
     `icon-trailing` and `icon-size` arrive as the camelCased props below —
     Blade does that conversion itself, so there is no attribute-plucking here.
+
+    `border` is the alert's prop, and it means the same thing here. It is off by
+    default, because three of the four variants already have a boundary — a
+    fill, or in `outline`'s case the neutral edge it is drawn with — and on, it
+    draws the tone's own edge instead of a grey one. It earns its place where a
+    button has to hold its own against a busy page, or sit next to something
+    already drawn with an edge of its own.
+
+    Which step of the tone follows what the edge sits against, exactly as it
+    does on the alert. `subtle` and `outline` take
+    `--shape-tone-border-strong` — the tone's answer to the neutral
+    `--shape-tone-border` an outlined thing takes by default, far enough along
+    the ramp to read as an edge someone chose. `primary` cannot use it: a pale
+    edge on a saturated fill reads as a highlight, so it takes
+    `--shape-tone-hover`, the step past the fill, which is darker in light mode
+    and brighter in dark rather than a fixed darkening that would invert
+    between them.
+
+    `ghost` draws the edge under the pointer only, arriving with the tint it
+    already paints there, so the button stays unpainted at rest. The border is
+    reserved as a transparent one, which is what keeps the label from moving a
+    pixel when it lands; `transition-colors` on the root already carries
+    `border-color`, so it fades in with the fill.
+
+    `outline` is the one variant the prop adds no border to — it has one
+    already — so there it only decides whether that border carries the tone or
+    the grey. Which is why that arm's border moved out of the fill match and
+    into the one under it.
+
+    `as` is how a button stops being a `<button>`, and an `href` asks for the
+    anchor without naming it — the same resolution the badge, the avatar, the tab
+    and the menu item all make, because middle-click, "open in new tab" and the
+    status bar work for a link and for nothing pretending to be one. Writing
+    `as="a"` alongside an `href` is still fine and still folds; it is simply no
+    longer the thing standing between a call site and a working link.
+
+    Which leaves `as` two jobs of its own: `div`, for a button inside something
+    already clickable, and beating an inferred anchor on the rare call site that
+    carries an `href` and means something else by it.
 --}}
 
 @props([
@@ -14,6 +53,7 @@
     'iconTrailing' => null,
     'iconSize' => 'sm',
     'square' => false,
+    'border' => false,
     'as' => null,
 ])
 
@@ -46,12 +86,28 @@ $classes = Shape::classes()
         'primary' => 'bg-[var(--shape-tone)] text-[var(--shape-tone-fg)] [:where(&)]:shadow-sm hover:bg-[var(--shape-tone-hover)]',
         'subtle' => 'bg-[var(--shape-tone-tint)] text-[var(--shape-tone-ink)] hover:bg-[var(--shape-tone-tint-hover)]',
         'ghost' => 'text-[var(--shape-tone-ink)] hover:bg-[var(--shape-tone-tint)]',
-        default => 'border border-[var(--shape-tone-border)] bg-[var(--shape-tone-surface)] text-[var(--shape-tone-ink)] [:where(&)]:shadow-sm hover:bg-[var(--shape-tone-surface-hover)]',
+        default => 'bg-[var(--shape-tone-surface)] text-[var(--shape-tone-ink)] [:where(&)]:shadow-sm hover:bg-[var(--shape-tone-surface-hover)]',
+    })
+
+    // The edge, arm for arm with the fill above, so the two are read together.
+    // Three of the four draw nothing until `border` asks; `outline` is the
+    // default here as it is above, which keeps the neutral edge on anything
+    // unrecognised rather than dropping it.
+    //
+    // Every colour is a step of `--shape-tone`, not a border palette of its
+    // own, so an edge follows a retheme with the fill it bounds.
+    ->add(match ($variant) {
+        'primary' => $border ? 'border border-[var(--shape-tone-hover)]' : null,
+        'subtle' => $border ? 'border border-[var(--shape-tone-border-strong)]' : null,
+        'ghost' => $border ? 'border border-transparent hover:border-[var(--shape-tone-border-strong)]' : null,
+        default => $border
+            ? 'border border-[var(--shape-tone-border-strong)]'
+            : 'border border-[var(--shape-tone-border)]',
     });
 @endphp
 
 <x-shape::button.element
-    :as="$as"
+    :as="$as ?? ($attributes->has('href') ? 'a' : null)"
     :type="$type"
     {{ $attributes->class($classes) }}
     data-shape-button=""

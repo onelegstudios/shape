@@ -93,6 +93,32 @@ it('folds a button when every prop that drives logic is static', function () {
         ->toContain('shape::button');
 });
 
+it('folds a group and each button in its slot', function () {
+    // Both names, the way the avatar group and its faces both appear: a slot is
+    // rendered by the call site, so its children fold on their own rather than
+    // being baked into the parent the way an alert's buttons are.
+    //
+    // `orientation` picks the class set at compile time, and `label` is
+    // interpolated and nothing else, so a named group still folds.
+    $folded = array_count_values(foldedComponentsWhileRendering('static-button-group'));
+
+    expect($folded)->toBe([
+        'shape::button' => 2,
+        'shape::button.group' => 1,
+    ]);
+});
+
+it('leaves nothing of a group\'s corners to resolve at runtime', function () {
+    $fixture = __DIR__.'/../fixtures/views/static-button-group.blade.php';
+
+    $compiled = Blaze::compile((string) file_get_contents($fixture), $fixture);
+
+    expect($compiled)
+        ->not->toContain('$__blaze->compile(')
+        ->toContain('data-shape-button-group')
+        ->toContain('rounded-l-none');
+});
+
 it('folds icons', function () {
     expect(foldedComponentsWhileRendering('static-icon'))
         ->toContain('shape::icon.shape-checked');
@@ -199,6 +225,29 @@ it('abandons folding when a prop that drives logic is bound dynamically', functi
     // through the compiled path rather than the folded one.
     expect(foldedComponentsWhileRendering('dynamic-variant-button', ['variant' => 'primary']))
         ->not->toContain('shape::button');
+});
+
+it('folds a button that resolves its element from an href', function () {
+    // The tag comes out of the attribute bag rather than out of `as`, and the
+    // bag's keys are known at compile time, so the anchor is baked in the way
+    // an `as="a"` one always was.
+    expect(foldedComponentsWhileRendering('static-button-link'))
+        ->toContain('shape::button');
+
+    expect(view('static-button-link')->render())
+        ->toContain('<a ')
+        ->not->toContain('<button');
+});
+
+it('folds a button whose href is bound, because only the key drives the element', function () {
+    // `$attributes->has('href')` asks whether the attribute is there, not what
+    // it says — so a bound href folds where a bound `variant` could not.
+    expect(foldedComponentsWhileRendering('dynamic-href-button', ['url' => '/settings']))
+        ->toContain('shape::button');
+
+    expect(view('dynamic-href-button', ['url' => '/settings'])->render())
+        ->toContain('href="/settings"')
+        ->toContain('<a ');
 });
 
 it('keeps folding when a pass-through prop is bound dynamically', function () {

@@ -24,6 +24,40 @@ have to shout:
 
 @docs('preview', name: 'button-quiet-danger')
 
+## Borders
+
+`border` draws the button's edge in its own tone. It is off by default, because
+three of the four variants already have a boundary — a fill, or in `outline`'s
+case the neutral edge it is drawn with. Turn it on where a button has to hold
+its own against a busy page, or sit beside something drawn with an edge of its
+own:
+
+@docs('preview', name: 'button-border')
+
+It is the [alert](alert.md#borders)'s prop and it means the same thing, down to
+which step of the tone each variant takes. `subtle` and `outline` draw the same
+edge, from [`--shape-tone-border-strong`](../theming.md#tones) — the tone's
+answer to the neutral `--shape-tone-border` that an outlined thing takes by
+default. It sits a step further along the ramp than the tint pair does, which is
+what makes it read as an edge someone chose rather than a definition line.
+`outline` is the one variant the prop adds no border to — it has one already —
+so there it only decides whether that border carries the tone or the grey.
+
+`primary` cannot use that step: a pale edge on a saturated fill reads as a
+highlight, so it takes the step *past* the fill instead — darker in light mode,
+brighter in dark, which is the same move the tone's own hover makes and the
+reason it is not a fixed darkening.
+
+`ghost` shows its edge only under the pointer, arriving with the tint it already
+paints there, so the button stays unpainted at rest and the hover draws the
+whole control at once. The border is reserved as a transparent one, so the label
+does not shift by a pixel when it lands.
+
+Both colours are steps of `--shape-tone`, not a palette of their own, so a
+border follows a [retheme](../theming.md) with everything else. To make every
+toned edge in the library heavier or lighter at once, move
+`--shape-tone-border-strong`.
+
 ## Sizes
 
 @docs('preview', name: 'button-sizes')
@@ -60,13 +94,25 @@ Pair one with a [tooltip](tooltip.md) when the glyph alone is not obvious.
 
 ## Links
 
-`as="a"` renders an anchor with the same styling. `href` goes through the
-attribute bag, so `:href="$url"` costs nothing.
+An `href` renders an anchor with the same styling, without being asked:
 
 @docs('preview', name: 'button-link')
 
-`as` also takes `div`, for a button that sits inside something already
-clickable.
+This is the same resolution the [badge](badge.md), the [avatar](avatar.md), the
+[tab](tabs.md) and the [menu item](dropdown.md) make. Middle-click, "open in new
+tab" and the status bar all work for a link and none of them work for a button
+pretending to be one — and an `href` on a `<button>` is that mistake with
+nothing to show for it, since the attribute is simply ignored.
+
+`href` goes through the attribute bag rather than a prop, so `:href="$url"`
+costs nothing and still folds: the element is decided by the attribute being
+there, not by what it says.
+
+`as="a"` is still accepted and still folds — it is just no longer what stands
+between a call site and a working link. `as` earns its keep elsewhere: `div`,
+for a button that sits inside something already clickable, and beating an
+inferred anchor on the rare call site that carries an `href` and means something
+else by it.
 
 ## Disabled
 
@@ -75,6 +121,71 @@ button while removing pointer events. An anchor cannot be disabled, so use
 `aria-disabled` there and Shape styles it the same way:
 
 @docs('preview', name: 'button-disabled')
+
+## Groups
+
+`button.group` joins related actions into one control. The children are laid out
+in a row, the corners that face a neighbour are squared off, and every button
+past the first is pulled back a pixel, so that two 1px borders meet as one seam
+rather than stacking into a 2px rule:
+
+@docs('preview', name: 'button-group')
+
+The group paints nothing. A button inside one is the same button it is outside
+one — which also means a group of `primary` buttons has no seam to show, because
+a fill has no edge. Ask for [`border`](#borders) there, or leave the set
+`outline`, and the seam is the tone's own edge.
+
+The inner corners flatten on the cascade rather than on `!important`: the button
+writes its radius at zero specificity, and the group's selector carries a class
+and a pseudo-class. The group also never names a corner that faces outward, only
+the ones that face a neighbour — so a `rounded-full` passed to the first and
+last button still shapes the ends, and a pill-shaped group stays a class at a
+call site instead of becoming a prop here.
+
+### Split buttons
+
+A [dropdown](dropdown.md) trigger is a button, so it groups like one:
+
+@docs('preview', name: 'button-group-split')
+
+Keep the menu outside the group, as it is above. A closed popover is
+`display: none`, which is not the same as being absent — `:last-child` still
+counts it, and the button that is actually last would lose the corner it needs.
+
+### Vertical
+
+`orientation="vertical"` stacks the buttons and squares the corners on the other
+axis instead:
+
+@docs('preview', name: 'button-group-vertical')
+
+### The focus ring turns inward
+
+A button draws its ring 2px outside itself, the neighbour begins a pixel away,
+and later siblings paint over earlier ones. So inside a group, every button but
+the last would have the ring along its trailing edge painted out by the button
+beside it. The usual answer is a `z-index`, and this library has promised there
+[isn't one anywhere](../theming.md) — so the ring moves inside the button
+instead, where nothing can cover it and no stack has to be invented.
+
+A group of one keeps the outward ring it wears everywhere else. There is no
+neighbour to hide it, and the selector says so.
+
+### Naming a group
+
+The group is a `role="group"`, and `label` is its accessible name. Pass one when
+the set means something its buttons don't say on their own — `View` over `Day`,
+`Week` and `Month`. Without a `label` no name is emitted at all, because an empty
+one is worse than none.
+
+`role` is a default rather than a fixture, so a set you have wired arrow keys to
+yourself can pass `role="toolbar"`. Shape doesn't bind those keys, which is why
+it is not the default.
+
+A row of buttons that are merely near each other is not a group. Two buttons at
+the foot of a form are one `<div class="flex gap-2">`, and this component would
+join them into a control they aren't.
 
 ## Livewire and Alpine
 
@@ -95,10 +206,11 @@ Anything Shape doesn't claim as a prop lands on the rendered element:
 A button paints out of the tone variables and nothing else. `primary` fills with
 `--shape-tone` and hovers to `--shape-tone-hover`, `subtle` and `ghost` take
 `--shape-tone-tint` and `--shape-tone-ink`, `outline` takes
-`--shape-tone-border` over `--shape-tone-surface`, and every variant draws its
-focus ring in `--shape-ring`. So a retint moves every button in the application
-at once, and the token layer is where a colour change should start — see
-[Theming](../theming.md).
+`--shape-tone-border` over `--shape-tone-surface`, [`border`](#borders) asks for
+`--shape-tone-border-strong` — or `--shape-tone-hover` on `primary`, the step
+past the fill — and every variant draws its focus ring in `--shape-ring`. So a
+retint moves every button in the application at once, and the token layer is
+where a colour change should start — see [Theming](../theming.md).
 
 The button is also the one component that reads a *tone* rather than a surface,
 which is what lets a ghost `danger` button stay red inside a block that is not.
@@ -183,16 +295,37 @@ Past that, [`shape:eject`](../tooling.md#shapeeject) hands you the file.
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `square` | `false` | drops the horizontal padding, for icon-only buttons |
-| `as` | `button` | `button`, `a`, `div` |
+| `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
+| `as` | resolved from `href` | `button`, `a`, `div` — an `href` implies `a`, and `button` otherwise |
 | `type` | `button` | any button type |
 
 The default slot is the label. Every other attribute — `href`, `disabled`,
 `wire:*`, `class` — passes through to the rendered element.
+
+`button.group` takes two:
+
+| Prop | Default | Values |
+| --- | --- | --- |
+| `orientation` | `horizontal` | `horizontal`, `vertical` |
+| `label` | — | the group's accessible name; omitted entirely when not given |
+
+Its default slot is the buttons. `role` defaults to `group` and can be
+overridden, and every other attribute lands on the wrapping `<div>`.
 
 ## Folding
 
 Tier A — `@blaze(fold: true, safe: ['tone'])`.
 
 `tone` is interpolated into an attribute and nothing more, so `:tone="$tone"`
-still folds. Everything else is a static choice at the call site. See
-[Folding](../folding.md).
+still folds. Everything else is a static choice at the call site — including
+[`border`](#borders), which branches to resolve the edge and so is read at
+compile time like every other prop here. Written literally,
+`<x-shape::button border>` costs nothing; `:border="$isDense"` is what would
+drop the button to the compiled path. See [Folding](../folding.md).
+
+`button.group` is the same tier — `@blaze(fold: true, safe: ['label'])`.
+`orientation` picks the class set and so is read at compile time; `label` is
+only ever interpolated, so a group named from a variable still folds. The
+buttons in its slot fold on their own, the way an [avatar
+group](avatar.md#groups)'s faces do — a slot is rendered by its call site, so
+nothing in one is baked into the group's fold.

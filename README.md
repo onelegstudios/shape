@@ -105,7 +105,7 @@ package's components without further configuration. Shape ships no compiled CSS.
 
 <x-shape::button variant="subtle" tone="danger" icon="shape-trash">Delete</x-shape::button>
 
-<x-shape::button as="a" href="/settings" icon-trailing="shape-arrow-right">Settings</x-shape::button>
+<x-shape::button href="/settings" icon-trailing="shape-arrow-right">Settings</x-shape::button>
 
 <x-shape::icon.shape-plus size="sm" />
 ```
