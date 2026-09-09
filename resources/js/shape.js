@@ -565,11 +565,16 @@ function trackAnchor() {
 /* ----------------------------------------------------------- 9. dismissal */
 
 /*
-| Removing a toast or an alert.
+| Removing a toast, an alert or a badge.
 |
 | The one job in this file with no platform primitive behind it. A dialog closes
 | itself and a popover hides itself; an element someone asked to go away has to
 | be taken out by something.
+|
+| Three components, one listener, because the three ask the same thing of it.
+| `closest()` walks up from the x to the first of them, so a dismissible badge
+| inside a dismissible alert removes the badge, which is the one it was pressed
+| in — nesting resolves itself and needs no rule of its own.
 |
 | `data-shape-leaving` is what the exit transition hangs off, and the element is
 | removed a beat later. When the last toast leaves, the toaster stops being an
@@ -582,7 +587,7 @@ function dismissals() {
 
         if (!button) return
 
-        const el = button.closest('[data-shape-toast], [data-shape-alert]')
+        const el = button.closest('[data-shape-toast], [data-shape-alert], [data-shape-badge]')
 
         if (el) dismiss(el)
     })

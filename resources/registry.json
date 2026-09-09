@@ -27,7 +27,8 @@
     },
     "badge": {
         "files": [
-            "badge/badge.blade.php"
+            "badge/badge.blade.php",
+            "badge/element.blade.php"
         ],
         "requires": [
             "icon"

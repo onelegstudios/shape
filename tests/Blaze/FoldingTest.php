@@ -279,6 +279,15 @@ it('abandons folding a badge whose colour is bound dynamically', function () {
         ->not->toContain('shape::badge');
 });
 
+it('abandons folding a chip whose selection is bound dynamically', function () {
+    // `selected` decides both what the badge announces and how it paints, so it
+    // branches and cannot be declared safe either. The cost lands on a filter
+    // bar, which is a handful of chips rather than a table of rows — worth
+    // naming rather than worth designing around.
+    expect(foldedComponentsWhileRendering('dynamic-badge-selected', ['selected' => true]))
+        ->not->toContain('shape::badge');
+});
+
 it('memoizes the slotless components when they cannot fold', function () {
     // Fold and memo are alternatives, not a stack: a folded component is
     // already inlined and has nothing left to cache. Memo is what catches the

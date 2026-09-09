@@ -501,6 +501,14 @@
                             <x-shape::badge label="Paid" tone="success" :icon="false" />
                             <x-shape::badge label="Paid" tone="success" size="sm" />
                         </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <x-shape::badge label="Overdue" tone="danger" dismissible />
+                            <x-shape::badge label="Region: EMEA" dismissible />
+                            <x-shape::badge label="Plan: Pro" tone="brand" variant="solid" dismissible />
+                            <x-shape::badge label="Unpaid" tone="warning" variant="outline" size="sm" dismissible />
+                            <x-shape::badge label="Tag" size="xs" dismissible />
+                            <x-shape::badge label="Enterprise" tone="accent" size="lg" dismissible />
+                        </div>
                     </div>
                 </article>
 
