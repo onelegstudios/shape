@@ -23,6 +23,34 @@ it('renders an anchor when asked to', function () {
         ->not->toContain('<button');
 });
 
+it('becomes a link on an href without being told to', function () {
+    // The badge, the avatar, the tab and the menu item all resolve their element
+    // the same way: middle-click and "open in new tab" work for a link and for
+    // nothing pretending to be one. An href on a `<button>` is the silent
+    // version of that mistake, so the href settles the tag.
+    $html = Blade::render('<x-shape::button href="/settings">Settings</x-shape::button>');
+
+    expect($html)
+        ->toContain('<a ')
+        ->toContain('href="/settings"')
+        ->not->toContain('<button');
+});
+
+it('lets as beat an href, for a link that is really a control', function () {
+    $html = Blade::render('<x-shape::button as="div" href="/settings">Settings</x-shape::button>');
+
+    expect($html)
+        ->toContain('<div ')
+        ->toContain('href="/settings"')
+        ->not->toContain('<a ');
+});
+
+it('keeps the button element when there is no href to read', function () {
+    expect(Blade::render('<x-shape::button wire:click="save">Save</x-shape::button>'))
+        ->toContain('<button')
+        ->toContain('type="button"');
+});
+
 it('carries hierarchy on the variant attribute and semantics on the tone attribute', function () {
     $html = Blade::render('<x-shape::button variant="subtle" tone="danger">Delete</x-shape::button>');
 

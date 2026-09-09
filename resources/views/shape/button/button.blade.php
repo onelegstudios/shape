@@ -31,6 +31,17 @@
     already — so there it only decides whether that border carries the tone or
     the grey. Which is why that arm's border moved out of the fill match and
     into the one under it.
+
+    `as` is how a button stops being a `<button>`, and an `href` asks for the
+    anchor without naming it — the same resolution the badge, the avatar, the tab
+    and the menu item all make, because middle-click, "open in new tab" and the
+    status bar work for a link and for nothing pretending to be one. Writing
+    `as="a"` alongside an `href` is still fine and still folds; it is simply no
+    longer the thing standing between a call site and a working link.
+
+    Which leaves `as` two jobs of its own: `div`, for a button inside something
+    already clickable, and beating an inferred anchor on the rare call site that
+    carries an `href` and means something else by it.
 --}}
 
 @props([
@@ -96,7 +107,7 @@ $classes = Shape::classes()
 @endphp
 
 <x-shape::button.element
-    :as="$as"
+    :as="$as ?? ($attributes->has('href') ? 'a' : null)"
     :type="$type"
     {{ $attributes->class($classes) }}
     data-shape-button=""

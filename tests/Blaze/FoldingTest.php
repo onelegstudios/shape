@@ -227,6 +227,29 @@ it('abandons folding when a prop that drives logic is bound dynamically', functi
         ->not->toContain('shape::button');
 });
 
+it('folds a button that resolves its element from an href', function () {
+    // The tag comes out of the attribute bag rather than out of `as`, and the
+    // bag's keys are known at compile time, so the anchor is baked in the way
+    // an `as="a"` one always was.
+    expect(foldedComponentsWhileRendering('static-button-link'))
+        ->toContain('shape::button');
+
+    expect(view('static-button-link')->render())
+        ->toContain('<a ')
+        ->not->toContain('<button');
+});
+
+it('folds a button whose href is bound, because only the key drives the element', function () {
+    // `$attributes->has('href')` asks whether the attribute is there, not what
+    // it says — so a bound href folds where a bound `variant` could not.
+    expect(foldedComponentsWhileRendering('dynamic-href-button', ['url' => '/settings']))
+        ->toContain('shape::button');
+
+    expect(view('dynamic-href-button', ['url' => '/settings'])->render())
+        ->toContain('href="/settings"')
+        ->toContain('<a ');
+});
+
 it('keeps folding when a pass-through prop is bound dynamically', function () {
     // `tone` is only ever interpolated into `data-shape-tone`, never branched
     // on, which is what `safe: ['tone']` in the component declares.

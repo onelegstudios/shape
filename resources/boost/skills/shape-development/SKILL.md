@@ -77,7 +77,7 @@ which is blue whatever the brand becomes.
 
 | Component | Tier | Key props |
 | --- | --- | --- |
-| `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `tone`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `border` (draws the edge in the tone rather than the neutral grey; off by default, on `outline` it recolours the border it already has and on `ghost` it shows on hover only), `as` |
+| `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `tone`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `border` (draws the edge in the tone rather than the neutral grey; off by default, on `outline` it recolours the border it already has and on `ghost` it shows on hover only), `as` (a\|div\|button — an `href` implies `a`, so a link needs no `as`; `div` is for a button inside something already clickable) |
 | `button.group` | fold | `orientation` (horizontal\|vertical), `label` (the group's accessible name; omitted when not given) — joins the buttons in its slot into one control: inner corners squared off, borders overlapped into one seam, focus ring turned inward. `role` defaults to `group` and can be overridden |
 | `button.element` | fold | `as`, `type` — the element a button renders |
 | `icon.<name>` | fold + memo | `size` (xs\|sm\|base), `variant` (outline\|solid — chosen by `size` if unset). Shape's own are the `shape-*` slots |

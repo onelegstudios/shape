@@ -94,13 +94,25 @@ Pair one with a [tooltip](tooltip.md) when the glyph alone is not obvious.
 
 ## Links
 
-`as="a"` renders an anchor with the same styling. `href` goes through the
-attribute bag, so `:href="$url"` costs nothing.
+An `href` renders an anchor with the same styling, without being asked:
 
 @docs('preview', name: 'button-link')
 
-`as` also takes `div`, for a button that sits inside something already
-clickable.
+This is the same resolution the [badge](badge.md), the [avatar](avatar.md), the
+[tab](tabs.md) and the [menu item](dropdown.md) make. Middle-click, "open in new
+tab" and the status bar all work for a link and none of them work for a button
+pretending to be one — and an `href` on a `<button>` is that mistake with
+nothing to show for it, since the attribute is simply ignored.
+
+`href` goes through the attribute bag rather than a prop, so `:href="$url"`
+costs nothing and still folds: the element is decided by the attribute being
+there, not by what it says.
+
+`as="a"` is still accepted and still folds — it is just no longer what stands
+between a call site and a working link. `as` earns its keep elsewhere: `div`,
+for a button that sits inside something already clickable, and beating an
+inferred anchor on the rare call site that carries an `href` and means something
+else by it.
 
 ## Disabled
 
@@ -284,7 +296,7 @@ Past that, [`shape:eject`](../tooling.md#shapeeject) hands you the file.
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `square` | `false` | drops the horizontal padding, for icon-only buttons |
 | `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
-| `as` | `button` | `button`, `a`, `div` |
+| `as` | resolved from `href` | `button`, `a`, `div` — an `href` implies `a`, and `button` otherwise |
 | `type` | `button` | any button type |
 
 The default slot is the label. Every other attribute — `href`, `disabled`,
