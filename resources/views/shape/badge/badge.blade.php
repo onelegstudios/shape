@@ -34,6 +34,14 @@
     `as` or an `href`, which is the one prop pairing in this component that
     raises rather than resolving — the reason is in the guard below.
 
+    `dot` is the mark for the statuses this library has no opinion about. Four
+    tones resolve a glyph because four tones are states; the other three are
+    emphasis, and an application's own vocabulary — draft, archived, in review —
+    lands on those with nothing in front of the word. The dot is something to
+    point at in a column of them. It is not a second signal, since a colour and a
+    circle say the same thing to anyone who cannot separate the hues, which is
+    why the label is still the whole of what a badge means.
+
     `selected` is the other half of a filter bar: `dismissible` takes a chip off,
     and this is the chip that can be turned on. It is a state rather than a word,
     so it is the one prop here usually bound per call — and a bound prop that
@@ -48,6 +56,7 @@
     'variant' => 'subtle',
     'size' => 'base',
     'icon' => null,
+    'dot' => false,
     'iconTrailing' => null,
     'iconSize' => 'xs',
     'inset' => false,
@@ -115,6 +124,23 @@ $state = match (true) {
     $selected === null => [],
     $control === 'button' => ['aria-pressed' => $selected ? 'true' : 'false'],
     default => ['aria-current' => $selected ? 'page' : null],
+};
+
+// The dot is drawn here rather than named in the icon set, because the set is
+// generated from Heroicons and a circle is not one of them — and because a
+// status mark is a shape at 4 to 8 pixels, which is a size no glyph is drawn
+// for. Roughly a quarter of the badge's height, which is the proportion the
+// avatar's mark keeps.
+//
+// `bg-current` for the reason the dismiss control takes no colour of its own:
+// preflight leaves it inheriting whatever ink the variant resolved — the tone's
+// on a tint, the readable foreground on a fill — so one element is right on all
+// three variants and branches on none of them. A dot painted `--shape-tone`
+// would have vanished into a `solid` badge of the same tone.
+$dotClasses = ! $dot ? null : match ($size) {
+    'xs' => 'size-1 shrink-0 rounded-full bg-current',
+    'lg' => 'size-2 shrink-0 rounded-full bg-current',
+    default => 'size-1.5 shrink-0 rounded-full bg-current',
 };
 
 $classes = Shape::classes()
@@ -256,6 +282,15 @@ $classes = Shape::classes()
     @if ($icon !== false)
         @if ($icon)
             <x-shape::icon :name="$icon" :size="$iconSize" />
+        @elseif ($dot)
+            {{-- One slot, and this is the ladder that fills it: the drawing a
+                 call site named, then the dot it asked for, then the glyph the
+                 tone resolves, then nothing. `icon` beats `dot` because naming
+                 a drawing is the more specific of the two instructions, and
+                 `:icon="false"` empties the slot rather than only the glyph —
+                 it is the one prop that says what the badge wears in front of
+                 its label. --}}
+            <span class="{{ $dotClasses }}" aria-hidden="true"></span>
         @elseif ($tone === 'success')
             <x-shape::icon.shape-success :size="$iconSize" />
         @elseif ($tone === 'danger')

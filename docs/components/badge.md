@@ -51,6 +51,62 @@ Nothing is ever resolved into `icon-trailing`: the state glyph belongs in front
 of the label, and a second copy behind it would say the same thing twice. It is
 for a drawing of your own — a chevron on a badge that opens something.
 
+### A dot for the statuses you invent
+
+Four tones resolve a glyph because four tones are states. The other three are
+emphasis, so an application's own vocabulary — draft, archived, in review —
+lands on them with nothing in front of the word. `dot` is a mark to point at in
+a column of them:
+
+@docs('preview', name: 'badge-dots')
+
+It takes no colour of its own. Preflight leaves it inheriting whatever ink the
+`variant` resolved — the tone's on a tint, the readable foreground on a fill —
+so one element is right on all three variants, where a dot painted
+`--shape-tone` would have vanished into a `solid` badge of the same tone. It is
+4px, 6px, 6px and 8px up the size scale, about a quarter of the badge's height,
+which is the proportion the [avatar's mark](avatar.md#badges) keeps.
+
+It is drawn here rather than named in the [icon set](icon.md), because that set
+is generated from Heroicons and a circle is not one of them — and because a
+status mark is a shape at 4 to 8 pixels, which is a size no glyph is drawn for.
+
+### One slot in front of the label
+
+`icon`, `dot` and the tone's own glyph all want the same place, and they fill it
+in that order:
+
+| Written | In front of the label |
+| --- | --- |
+| `icon="shape-user"` | that drawing — the most specific instruction wins |
+| `dot` | the dot |
+| neither, on a state tone | the [resolved glyph](#icons) |
+| `:icon="false"` | nothing, the dot included |
+
+`:icon="false"` is the empty slot rather than only the missing glyph, so a badge
+given both it and `dot` wears neither. It is the one prop that says what a badge
+carries in front of its label.
+
+### A dot is not a second signal
+
+It is a colour and a circle, and those say the same thing to anyone who cannot
+separate the hues — which is the failure the [state glyphs](#icons) exist to
+prevent. So the dot is decoration, and it announces nothing: the label is the
+whole of what a badge means, which is why the statuses it suits are the ones
+already carrying their own word.
+
+Reaching for it on a state tone therefore trades down. `dot` will take the slot
+if you ask, because the call site said which mark it wanted — but what it
+replaces is a mark that survives greyscale with one that does not:
+
+```blade
+{{-- Readable with the colour taken away. --}}
+<x-shape::badge label="Paid" tone="success" />
+
+{{-- A green circle, and nothing else to go on. --}}
+<x-shape::badge label="Paid" tone="success" dot />
+```
+
 ## Counts and lone icons
 
 `square` drops the side padding and makes the badge as tall as it is wide — the
@@ -374,7 +430,8 @@ it important:
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `size` | `base` | `xs`, `sm`, `base`, `lg` |
-| `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` to omit |
+| `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` to empty the slot in front of the label |
+| `dot` | `false` | a small circle in that slot, in the variant's own ink, for a status the state tones do not cover |
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 | `icon-size` | `xs` | `xs`, `sm`, `base` |
 | `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |

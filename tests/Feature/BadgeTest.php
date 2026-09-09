@@ -84,6 +84,68 @@ it('lets a caller name an icon of its own', function () {
         ->toContain('data-shape-icon');
 });
 
+it('draws a dot for the statuses the state tones do not cover', function () {
+    // `neutral`, `brand` and `accent` resolve no glyph, which is right — none of
+    // the three is a state — and leaves an application's own vocabulary with
+    // nothing in front of the word. The dot is a mark to point at rather than a
+    // signal: what it means is still the label.
+    $html = Blade::render('<x-shape::badge label="Draft" dot />');
+
+    expect($html)
+        ->toContain('rounded-full')
+        ->toContain('Draft')
+        ->not->toContain('<svg');
+});
+
+it('paints the dot in whatever ink the variant resolved', function (string $variant) {
+    // One element, right on all three variants and branching on none of them,
+    // which is the dismiss control's arrangement in this same file.
+    expect(Blade::render(sprintf('<x-shape::badge label="Draft" dot variant="%s" />', $variant)))
+        ->toContain('bg-current');
+})->with(['subtle', 'solid', 'outline']);
+
+it('sizes the dot with the badge', function (string $size, string $expected) {
+    expect(Blade::render(sprintf('<x-shape::badge label="Draft" dot size="%s" />', $size)))
+        ->toContain($expected);
+})->with([
+    ['xs', 'size-1 '],
+    ['sm', 'size-1.5 '],
+    ['base', 'size-1.5 '],
+    ['lg', 'size-2 '],
+]);
+
+it('says nothing with the dot, because a colour is not a word', function () {
+    expect(Blade::render('<x-shape::badge label="Draft" dot />'))
+        ->toContain('aria-hidden="true"');
+});
+
+it('takes the dot in place of the glyph a state tone would have resolved', function () {
+    // One mark in front of the label, and the call site said which it wanted.
+    $html = Blade::render('<x-shape::badge label="Paid" tone="success" dot />');
+
+    expect($html)
+        ->toContain('bg-current')
+        ->not->toContain('<svg');
+});
+
+it('lets a named icon beat a dot, which is the more specific of the two', function () {
+    expect(Blade::render('<x-shape::badge label="Draft" dot icon="shape-user" />'))
+        ->toContain('<svg')
+        ->not->toContain('bg-current');
+});
+
+it('takes the dot away with the icon it stands in for', function () {
+    // `:icon="false"` is the empty slot, and the dot is in that slot.
+    expect(Blade::render('<x-shape::badge label="Draft" dot :icon="false" />'))
+        ->not->toContain('bg-current')
+        ->not->toContain('<svg');
+});
+
+it('draws no dot until one is asked for', function () {
+    expect(Blade::render('<x-shape::badge label="Draft" />'))
+        ->not->toContain('bg-current');
+});
+
 it('renders a trailing icon after the label when one is named', function () {
     $html = Blade::render('<x-shape::badge label="Overdue" icon-trailing="shape-arrow-right" />');
 
