@@ -43,6 +43,57 @@ the moment anything sets the property:
 <x-shape::checkbox name="all" x-init="$el.indeterminate = @js($partial)" />
 ```
 
+## Theming
+
+The box is neutral until it is checked: a `shape-300` border — `shape-600` in
+dark mode — over `white` or `shape-900`, at a radius of its own rather than
+`--radius-shape`, because a 16px box takes the library's 8px corner as a circle.
+Checked, it fills with `--shape-tone` and draws the tick in `--shape-tone-fg`.
+The ring is `--shape-ring` and the invalid border is the danger ramp's `500`, so
+a checkbox follows a [retint](../theming.md) with every other control.
+
+### A class at the call site
+
+The attribute bag lands on the `<input>`, so a class reaches the box and nothing
+else:
+
+@docs('preview', name: 'checkbox-override', layout: 'stack')
+
+The border, the background and the radius are written at zero specificity and
+yield to that. The checked fill is not — `checked:bg-*` is emitted as a plain
+class — so a colour of your own there has to be made important, and a
+[tone](#tones) is the better answer wherever the colour means something.
+
+The size is a third case, in between. `size-4` is a plain class like the fill,
+so `size-5` does not beat it on specificity — the two tie, and the box grows
+only because Tailwind emits its size utilities in ascending order and `size-5`
+lands after `size-4`. That holds for every value above the default and for none
+below it: `size-3` ties the same way and loses, and needs the flag.
+
+The tick does not follow. It is drawn at `size-3.5` in a grid cell of its own, so
+a bigger box centres the same glyph in more space rather than scaling it — a
+20px box keeps the 14px tick above. Size the drawing yourself when the gap shows:
+
+```css
+[data-shape-checkbox] [data-shape-control] { width: 1.25rem; height: 1.25rem; }
+[data-shape-checkbox] svg { width: 1rem; height: 1rem; }
+```
+
+### Every checkbox at once
+
+The label and its description are spans inside the `<label>` that carries
+`data-shape-checkbox`, so they are a rule's business rather than a call site's:
+
+```css
+[data-shape-checkbox] { align-items: center; }
+[data-shape-checkbox] [data-shape-control] { border-width: 2px; }
+```
+
+The tick and the dash are the `shape-checked` and `shape-indeterminate`
+[icon](icon.md) slots, drawn from whichever set you generated. To change the
+drawing rather than its colour, point the slot at another glyph and regenerate —
+see [Overriding one](icon.md#overriding-one).
+
 ## Reference
 
 | Prop | Default | Values |

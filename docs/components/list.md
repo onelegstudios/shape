@@ -37,6 +37,52 @@ empty state would be an item like any other and would hide itself. Pass
 nothing to reset on the last item — which is the whole of "use fewer borders",
 in one class.
 
+## Theming
+
+The rule between items is `divide-shape-200` — `shape-800` in dark mode — and
+the list's text is `--shape-fg` at `text-sm`. The attribute bag lands on the
+`<ul>`, so a class reaches both:
+
+@docs('preview', name: 'list-override', layout: 'stack')
+
+The type yields the way everything else in the library does: `text-sm` is
+written at zero specificity and `text-base` beats it.
+
+The divider does not, and it is the one place in these pages where the flag is
+not optional. Tailwind wraps every `divide-*` utility in `:where()` of its own
+accord, so `divide-shape-100` at a call site has zero specificity too — the two
+do not merely tie on equal footing, they are both unweighted, and the winner is
+whichever Tailwind emitted last. That is the *higher* step, always: `100` is
+written before `200`, so the package's default wins and a lighter rule silently
+does nothing. `divide-shape-400` would have won for the same reason and taught
+the wrong lesson, so the example above asks with `!` — which beats a normal
+declaration whatever its specificity, in either direction.
+
+An item's padding and gap are the ordinary arrangement, on the item — zero
+specificity, so `py-2` above simply wins:
+
+```blade
+<x-shape::list.item class="py-2">…</x-shape::list.item>
+```
+
+### Every list at once
+
+```css
+[data-shape-list-item] { padding-block: 0.5rem; }
+```
+
+Rows have no hover treatment, for the [table](table.md#rows)'s reason: a row
+that lights up under the pointer is saying it does something. Where they do, say
+so — on the item that does, or on every item in a list that is a list of links:
+
+```css
+[data-shape-list-item]:has(a):hover { background-color: var(--color-shape-50); }
+```
+
+The empty state is an [`empty`](empty.md#the-ones-you-did-not-write) component
+rendered inside the wrapper, so `[data-shape-list] [data-shape-empty]` is what
+reaches it.
+
 ## Reference
 
 | Prop | Default | Values |

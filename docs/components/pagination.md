@@ -77,6 +77,61 @@ safe to render from anywhere, and what keeps the "no Shape component touches
 request state" rule intact for a component whose entire subject is request
 state.
 
+## Theming
+
+The pager is neutral until a step is current or pointed at. A link is
+`--shape-fg-muted`, hovering paints `--shape-tone-tint` under
+`--shape-tone-ink`, and the current page is that same pair at rest — read
+through a `data-shape-tone="brand"` on the `<nav>`, so the page someone is on is
+the brand's, and follows a [retint](../theming.md) with the primary button and
+the focus ring.
+
+The attribute bag lands on the `<nav>`, so a class reaches the strip:
+
+```blade
+<x-shape::pagination :paginator="$invoices" class="justify-end gap-2" />
+```
+
+The steps inside it are plain elements rather than nested components — for
+[the reason folding gives](#folding) — so their treatment is a rule of your own.
+The three that a page usually wants to name carry attributes:
+
+```css
+[data-shape-pagination-current] { border-radius: 9999px; font-weight: 600; }
+[data-shape-pagination-previous],
+[data-shape-pagination-next] { text-transform: uppercase; }
+```
+
+The numbered links between them carry none, because there is nothing to say
+about one of them that is not true of all. Reach for the children when you mean
+every step:
+
+```css
+[data-shape-pagination] > :is(a, span) { border-radius: 0; min-width: 2.5rem; }
+```
+
+The tone is written into the component rather than taken as a prop, so moving
+the pager off the brand means restating the two variables its steps actually
+read — in both modes, because the light and dark tone blocks read opposite ends
+of the ramp:
+
+```css
+[data-shape-pagination] {
+    --shape-tone-tint: var(--color-shape-accent-100);
+    --shape-tone-ink: var(--color-shape-accent-800);
+}
+
+@media (prefers-color-scheme: dark) {
+    [data-shape-pagination] {
+        --shape-tone-tint: var(--color-shape-accent-950);
+        --shape-tone-ink: var(--color-shape-accent-200);
+    }
+}
+```
+
+Which is [a tone of your own](../theming.md#a-tone-of-your-own) with the ramp
+already written — two variables instead of seven, because a pager uses two.
+
 ## Reference
 
 | Prop | Default | Values |

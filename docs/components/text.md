@@ -22,9 +22,9 @@ the same hue with its saturation and lightness dialled down:
 
 @docs('preview', name: 'text-surface')
 
-Nothing was passed down to make that work — the card sets
-`data-shape-surface`, and the text reads it. [Theming](../theming.md#the-surface-contract)
-covers the contract and how to declare a surface of your own.
+Nothing was passed down to make that work — the card sets `data-shape-surface`,
+and the text reads it. [Theming](../theming.md#the-surface-contract) covers the
+contract and how to declare a surface of your own.
 
 ## Other tags
 
@@ -34,6 +34,29 @@ sentence or a `div` around something else:
 ```blade
 <x-shape::text as="span" size="sm" variant="muted">Draft</x-shape::text>
 ```
+
+## Theming
+
+`size` and `variant` are written at zero specificity, so a class at the call
+site wins without `!important`:
+
+@docs('preview', name: 'text-override', layout: 'stack')
+
+Neither variant names a colour of its own. `base` and `strong` paint
+`--shape-fg` and `muted` paints `--shape-fg-muted`, both published by the
+[surface the text is standing on](#muted-follows-the-surface), which is why a
+retint never has to visit this component.
+
+### Every paragraph at once
+
+`data-shape-variant` is on the element, so a rule can reach one of the three:
+
+```css
+[data-shape-text][data-shape-variant='muted'] { font-size: 0.9375rem; }
+```
+
+Shape sets no `font-family`, here or anywhere, so body copy inherits whatever
+your application has already chosen.
 
 ## Reference
 

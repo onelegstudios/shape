@@ -35,6 +35,37 @@ An auto popover light-dismisses on any click anywhere — including on the contr
 it belongs to. Manual means `shape.js` decides, which is where the open delay,
 the show-immediately-on-keyboard-focus rule and Escape live.
 
+## Theming
+
+A tooltip is the one thing in the library painted against the page: `shape-900`
+with `shape-50` on it, inverted in dark mode, at `--radius-shape` with
+`shadow-md`. That is what makes it read as a layer over the interface rather
+than a part of it, and it is written at zero specificity like everything else,
+so a class at the call site wins:
+
+```blade
+<x-shape::tooltip name="archive-tip" text="Archive" class="bg-shape-800 text-sm">
+    <x-shape::button square icon="shape-trash" aria-label="Archive" />
+</x-shape::tooltip>
+```
+
+It is a [popover](popover.md#theming) underneath, so the position is written
+inline by `shape.js` and nudging it is the same `translate` rule. Every tooltip
+at once is its own attribute:
+
+```css
+[data-shape-tooltip] { border-radius: 0.25rem; font-weight: 400; }
+```
+
+There is no arrow, and no prop to add one. A tooltip is placed by measurement
+rather than by anchor positioning, so an arrow would be a second thing to keep
+pointing at the trigger through every flip and clamp. `data-shape-placement`
+holds the placement that was *asked for* and is not rewritten when the script
+flips a tooltip that would not fit, so a `::after` drawn from that attribute
+points the right way most of the time and the wrong way at the bottom of the
+viewport. Which is the trade, stated rather than hidden: draw one if the layout
+makes the flip unlikely.
+
 ## Reference
 
 | Prop | Default | Values |

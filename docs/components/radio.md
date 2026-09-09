@@ -18,6 +18,30 @@ A group only has an accessible name if it is a real `<fieldset>` with a
 
 @docs('preview', name: 'radio-tones')
 
+## Theming
+
+Structurally the [checkbox](checkbox.md#theming)'s paint, with two differences:
+the box is a circle at every size, and the checked state is a `--shape-tone`
+fill with a dot of `--shape-tone-fg` over it rather than a glyph. Everything
+else — the neutral border, the ring, the invalid red — is the same set of
+tokens, and moves with them.
+
+The bag lands on the `<input>`, so a class reaches the box:
+
+@docs('preview', name: 'radio-override', layout: 'stack')
+
+The dot is sized against the box in the component rather than derived from it,
+so a box resized this way wants the dot moved with it, in a rule:
+
+```css
+[data-shape-radio] [data-shape-control] { width: 1.25rem; height: 1.25rem; }
+[data-shape-radio] [data-shape-control] + span { width: 0.5rem; height: 0.5rem; }
+```
+
+Which is the point at which [`shape:eject`](../tooling.md#shapeeject) is the
+cheaper answer: the radio is one small file, and a different control is a
+different file rather than a stack of corrections to this one.
+
 ## Reference
 
 | Prop | Default | Values |

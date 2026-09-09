@@ -84,6 +84,43 @@ every visitor afterwards. Translate at the call site:
 
 See [Folding](../folding.md#translations-bake-too).
 
+## Theming
+
+The panel is a [card](card.md) by another name: white or `shape-900`, at
+`--radius-shape-lg`, with `shadow-xl` under it and `--shape-fg` in it. All of
+that is written at zero specificity, and `size` only sets a `max-width`, so a
+class at the call site wins:
+
+@docs('preview', name: 'modal-override')
+
+Two things a class cannot reach, and both are deliberate.
+
+**The scrim is a pseudo-element.** There is no backdrop component to compose and
+nothing for a call site to forget, which means recolouring it is a rule:
+
+```css
+[data-shape-modal]::backdrop {
+    background: color-mix(in oklch, var(--color-shape-950) 70%, transparent);
+    backdrop-filter: none;
+}
+```
+
+**Placement is in a layer after Tailwind's.** A dialog centres itself with the
+UA's auto margins, and `space-y-*` on a parent is enough to push it off centre,
+so `[data-shape-modal] { margin: auto }` is declared in `@layer shape-overlay` —
+which sorts after `utilities` and therefore beats a margin class. Only the
+placement mechanics live there; the colour, padding, radius and max-width above
+stay in the class string where your utility still wins. Move the placement in a
+rule of your own, declared after the import:
+
+```css
+[data-shape-modal] { margin-block: 4rem auto; }
+```
+
+The open and close transitions are in `@layer components`, behind
+`prefers-reduced-motion: no-preference`. A motion treatment of your own belongs
+behind the same query.
+
 ## Reference
 
 | Prop | Default | Values |

@@ -763,3 +763,10 @@ class-merging utility involved:
 
 Past that, [`shape:eject`](tooling.md#shapeeject) hands you the file and
 everything it composes.
+
+Which of a component's own defaults yields to a class, which of them only ties
+with one, and which attribute a rule of your own should name is the **Theming**
+section on each component's page — [button](components/button.md#theming),
+[badge](components/badge.md#theming), [table](components/table.md#theming) and
+the rest. This page is the layer under all of them: move a token here and every
+one of those components follows without a rule being written anywhere.

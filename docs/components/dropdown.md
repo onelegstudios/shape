@@ -43,6 +43,42 @@ the script still leaves every item reachable.
 Choosing an item closes the menu — an action that leaves its own menu standing
 looks like it didn't fire. Opt out per item with `data-shape-keep-open`.
 
+## Theming
+
+The menu is a [popover](popover.md#theming) and paints exactly as one does — the
+same white panel, hairline, radius and `shadow-lg` — so everything said there
+applies here, including that the panel's padding is a prop rather than a class.
+
+The items are the dropdown's own. An item paints `--shape-tone-ink` and hovers
+to `--shape-tone-tint`, which is what makes `tone="danger"` a red item that
+still belongs to the menu rather than a red rectangle in it. Its radius is
+`--radius-shape` less a step, so a rounded item sits inside a rounded menu
+without the corners fighting.
+
+The hover and the ink are emitted as plain classes, so a colour of your own ties
+with them and has to be made important. A [tone](../theming.md#tones) is the
+better answer wherever the colour means something:
+
+```blade
+<x-shape::dropdown.item tone="danger" wire:click="delete">
+    Delete
+</x-shape::dropdown.item>
+```
+
+### Every menu at once
+
+```css
+[data-shape-menu-item] { border-radius: 0; padding-inline: 0.75rem; }
+[data-shape-menu-item][data-shape-tone='danger']:hover { font-weight: 500; }
+```
+
+`data-shape-menu` is on the panel and `data-shape-menu-item` on each item, so a
+rule can reach the menus without touching the popovers that are not menus:
+
+```css
+[data-shape-menu] { min-width: 14rem; }
+```
+
 ## Reference
 
 | Prop | Default | Values |

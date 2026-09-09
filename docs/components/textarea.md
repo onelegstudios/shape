@@ -29,6 +29,28 @@ the call site still wins.
 <x-shape::textarea name="notes">{{ old('notes') }}</x-shape::textarea>
 ```
 
+## Theming
+
+The chrome is the [input](input.md#theming)'s, token for token — the same
+border, background, radius, shadow, ring and invalid treatment — so anything
+said there applies here, and a rule written for both is one rule:
+
+```css
+input[data-shape-control],
+textarea[data-shape-control] {
+    border-radius: 9999px;
+}
+```
+
+What is the textarea's own is the vertical rhythm: `size` sets the padding
+rather than a height, `rows` sets the floor, and `resize-y` is applied at zero
+specificity. All three yield to a class:
+
+@docs('preview', name: 'textarea-override', layout: 'stack')
+
+`[data-shape-textarea]` is on the element for the times it should be every
+textarea and not this one.
+
 ## Reference
 
 | Prop | Default | Values |

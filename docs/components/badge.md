@@ -125,7 +125,7 @@ that clipped at two digits would be a count that lies. Digits are `tabular-nums`
 so a number does not shuffle its own box as it counts down.
 
 `rounded-full` makes it a circle, the same way it makes an ordinary badge a
-[pill](#overriding-styles).
+[pill](#a-class-at-the-call-site).
 
 ### A state tone still resolves its glyph
 
@@ -388,7 +388,18 @@ something a call site can write and not something this component can be, since
 [the control is the badge](#the-control-is-the-badge) and there is only ever one
 element here.
 
-## Overriding styles
+## Theming
+
+A badge is painted entirely by its tone. `solid` fills with `--shape-tone` and
+takes `--shape-tone-fg` on top, `subtle` washes `--shape-tone-tint` under
+`--shape-tone-ink`, and `outline` draws the neutral `--shape-tone-border` around
+that same ink. Nothing here names a palette step, so retinting a ramp moves
+every badge on the page with everything else that carries the tone — the button,
+the checkbox, the alert. [Theming](../theming.md) is where that is done, and [a
+tone of your own](../theming.md#a-tone-of-your-own) is how a colour the seven do
+not cover becomes one a badge can be given.
+
+### A class at the call site
 
 The badge's geometry and type are written at zero specificity, so your own
 classes win without `!important`. A badge takes `rounded-shape` like the rest
@@ -402,9 +413,11 @@ ends looser:
 
 @docs('preview', name: 'badge-pill')
 
-To round every badge at once, say so in your own stylesheet rather than in the
-radius token. `--radius-shape` is one decision for the whole library, so moving
-it there would round the cards and the inputs with it:
+### Every badge at once
+
+To round every badge in the application, say so in your own stylesheet rather
+than in the radius token. `--radius-shape` is one decision for the whole
+library, so moving it there would round the cards and the inputs with it:
 
 ```css
 [data-shape-badge] { border-radius: 9999px; }
@@ -414,11 +427,20 @@ Unlayered CSS beats anything in a layer, so that wins without a specificity
 fight. It also beats a `rounded-shape` passed at a call site, which is the
 trade for setting the corners in one place.
 
-The tone colours are the exception. `variant` emits its `bg-*` and `text-*`
-as plain classes rather than at `[:where(&)]:`, so a colour of your own only
-ties with them, and wins or loses on Tailwind's emit order. Reach for a
-[tone](../theming.md) first; when the colour is not one the system has, make
-it important:
+`data-shape-variant` and `data-shape-tone` ride on the same element, so a rule
+can be narrower than every badge — a heavier outline on the outlined ones only,
+say:
+
+```css
+[data-shape-badge][data-shape-variant='outline'] { border-width: 2px; }
+```
+
+### The tone colours are the exception
+
+`variant` emits its `bg-*` and `text-*` as plain classes rather than at
+`[:where(&)]:`, so a colour of your own only ties with them, and wins or loses
+on Tailwind's emit order. Reach for a [tone](../theming.md) first; when the
+colour is not one the system has, make it important:
 
 @docs('preview', name: 'badge-tone-override')
 

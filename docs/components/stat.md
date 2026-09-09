@@ -46,6 +46,38 @@ read aloud is "Invoices sent, 1,204, up 12%" rather than a number with no
 subject. The value is set in tabular figures, because a row of stats is a row of
 numbers and they should line up.
 
+## Theming
+
+The value and the label paint `--shape-fg` and `--shape-fg-muted`, so a stat
+inside a filled [card](card.md) takes that card's foregrounds rather than the
+page's greys. The delta is the only coloured part, and it reads
+`--shape-tone-ink` under the tone `trend` resolved — which is why a retint of
+`success` and `danger` moves every trend in the application at once.
+
+The four parts are paragraphs inside the wrapper, and the attribute bag lands on
+the wrapper, so a class reaches the box and the parts are a rule's business:
+
+@docs('preview', name: 'stat-override')
+
+```css
+[data-shape-stat-value] { font-size: 1.875rem; letter-spacing: -0.02em; }
+[data-shape-stat-label] { text-transform: uppercase; letter-spacing: 0.04em; }
+[data-shape-stat-delta] { font-weight: 500; }
+```
+
+`data-shape-emphasis` carries which of the two got the large treatment, so a
+rule can be written for one arrangement without disturbing the other:
+
+```css
+[data-shape-stat][data-shape-emphasis='label'] [data-shape-stat-value] {
+    font-size: 1rem;
+}
+```
+
+The value is set in `tabular-nums` so a row of stats lines up. Keep that in
+anything you write over it — figures that do not line up are the reason the
+column was set in them.
+
 ## Reference
 
 | Prop | Default | Values |

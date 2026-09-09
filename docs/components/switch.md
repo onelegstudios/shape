@@ -35,6 +35,35 @@ The knob moves on `:checked`, which the browser handles — so this component
 works before the script exists and keeps working if it never loads. It also
 holds still for anyone who asked for reduced motion.
 
+## Theming
+
+The track is `shape-300` — `shape-700` in dark mode — until it is checked, and
+then it is `--shape-tone`, which is why the default tone here is `brand` rather
+than neutral. The knob is white in both modes, with `shadow-sm` under it, and
+the ring is `--shape-ring`. A [retint](../theming.md) moves the on state and
+leaves the off state where it is, which is the right split: off is chrome.
+
+The bag lands on the `<input>` that draws the track, so a class reaches it:
+
+@docs('preview', name: 'switch-override', layout: 'stack')
+
+The knob is a sibling span sized and travelled in the component, so resizing the
+track from a call site leaves it behind. A switch of another size is three
+declarations in a rule of your own, and the travel is the track's width less the
+knob and its two insets:
+
+```css
+[data-shape-switch] [data-shape-control] { height: 1.5rem; width: 2.75rem; }
+[data-shape-switch] [data-shape-control] + span {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+[data-shape-switch] [data-shape-control]:checked + span { translate: 1.25rem 0; }
+```
+
+The knob transition sits behind `motion-reduce:`, so anything written here
+should hold still for the same readers.
+
 ## Reference
 
 | Prop | Default | Values |

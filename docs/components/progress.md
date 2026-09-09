@@ -62,6 +62,86 @@ it measures. Pass `label`, or point at the text beside it:
 dropped without anything having to ask whether it is null — and so a caller's
 own `aria-label` still wins.
 
+## Theming
+
+A `<progress>` is three boxes, and only one of them is the element you can put a
+class on:
+
+| Part | Drawn by | Painted |
+| --- | --- | --- |
+| The track | the element's own background | `shape-200` — `shape-800` in dark |
+| The track again, in Chrome | `::-webkit-progress-bar`, over that background | the same |
+| The bar | `::-webkit-progress-value`, `::-moz-progress-bar` | `--shape-tone` |
+
+A class selects an element and never its pseudo-elements. So a `bg-*` here
+reaches the track and stops — and in Chrome it does not even do that, because
+`::-webkit-progress-bar` paints over the background it just set. That is what
+makes this the one component in the library where a utility does not reach the
+paint, and why both halves are painted in `shape.css` rather than in the class
+string.
+
+What does cross into a pseudo-element is inheritance. Custom properties are
+inherited, so a variable set on the `<progress>` is readable by the pseudo-element
+that draws the bar. That is the whole design: the bar is painted
+`var(--shape-tone)` precisely so that the one thing a call site *can* reach —
+the element — is enough to colour the one thing it cannot. Every route below
+sets that variable rather than a colour.
+
+`tone` is the way in, and covers every colour the system has a meaning
+for:
+
+```blade
+<x-shape::progress :value="$percent" tone="success" label="Storage used" />
+```
+
+For a colour the system does not have, set that variable yourself. The utility is
+an arbitrary property rather than a colour — `bg-violet-600` would paint the
+track and leave the bar exactly where it was — so it hands the CSS a value and
+paints nothing itself. It lands in `@layer utilities` while the tone blocks are
+written in `components`, so it wins on layer order with no `!important` and no
+selector:
+
+@docs('preview', name: 'progress-tone-var', layout: 'stack')
+
+Which is the mechanism a tone uses, aimed at one bar — and being a class rather
+than an inline style, it takes variants. The second bar above is `violet-600` in
+light and `violet-400` in dark, which is the lightening the tones themselves do
+on a dark page.
+
+An inline style does the same job and is the right one when the colour is not
+known at build time — a per-team accent out of the database is a value Tailwind
+never sees, so there is no class for it to compile:
+
+```blade
+<x-shape::progress :value="$percent" style="--shape-tone: {{ $team->colour }}" />
+```
+
+That one cannot carry a dark mode, which is the trade for taking a colour at
+runtime. Where the colour means something rather than decorating one instance,
+[a tone of your own](../theming.md#a-tone-of-your-own) is still the better
+answer: one place, every component, both themes.
+
+### The track
+
+Recolouring the track means naming both of its boxes from the table above. A
+rule that names only the element leaves Chrome painting the pseudo-element over
+it, which is the same reason a `bg-*` appears to do nothing there:
+
+```css
+[data-shape-progress],
+[data-shape-progress]::-webkit-progress-bar {
+    background: var(--color-shape-100);
+}
+```
+
+The radius is the exception: it is a class, written at zero specificity, and the
+bar inherits it — so `class="rounded-none"` squares both ends of both halves.
+
+The indeterminate bar reads `--shape-tone` through a gradient, so it follows the
+tone and the variable above with the determinate one. Its animation sits behind
+`prefers-reduced-motion: no-preference`, which anything written over it should
+keep.
+
 ## Reference
 
 | Prop | Default | Values |

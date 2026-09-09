@@ -90,14 +90,87 @@ Anything Shape doesn't claim as a prop lands on the rendered element:
 <x-shape::button icon="shape-trash" tone="danger" x-on:click="open = true">Delete</x-shape::button>
 ```
 
-## Overriding styles
+## Theming
 
-Every default Shape sets carries zero specificity, so your own classes win
-without `!important`:
+A button paints out of the tone variables and nothing else. `primary` fills with
+`--shape-tone` and hovers to `--shape-tone-hover`, `subtle` and `ghost` take
+`--shape-tone-tint` and `--shape-tone-ink`, `outline` takes
+`--shape-tone-border` over `--shape-tone-surface`, and every variant draws its
+focus ring in `--shape-ring`. So a retint moves every button in the application
+at once, and the token layer is where a colour change should start — see
+[Theming](../theming.md).
 
-```blade
-<x-shape::button variant="primary" class="w-full rounded-full">Continue</x-shape::button>
+The button is also the one component that reads a *tone* rather than a surface,
+which is what lets a ghost `danger` button stay red inside a block that is not.
+[The surface contract](../theming.md#the-surface-contract) covers the one
+correction that arrangement needs.
+
+### A class at the call site
+
+The radius, the font weight and the type size are written at zero specificity,
+so your own classes win without `!important`:
+
+@docs('preview', name: 'button-override')
+
+`w-full` is the one of those that is not an override at all — a button sets no
+width of its own, so a class naming one has nothing to beat. It is in the
+picture because it is the pairing this comes up in: a pill that runs the full
+width of a form.
+
+The paint and the height are the exception. Both the variant's `bg-*` and
+`text-*` and the height and padding that `size` picks are emitted as plain
+classes, so a class of your own only ties with them and wins or loses on
+Tailwind's emit order rather than on what you meant. So reach for a
+[tone](../theming.md#tones) first — and when the colour is not one the system
+has, the durable answer is to [add a tone](../theming.md#a-tone-of-your-own)
+rather than to fight the paint at a call site. Below, `accent` beside the same
+button made violet by hand:
+
+@docs('preview', name: 'button-tone-override')
+
+Everything the tone was doing, the call site now owes. The flag has to reach
+every state the variant paints: `primary` paints a hover, so an important `bg-*`
+on its own is a button that changes colour under the pointer to the one it was
+overridden away from.
+
+The ink is the harder half, because it flips and the fill does not. Light
+`neutral` is a dark fill carrying near-white ink; dark `neutral` is a light fill
+carrying dark ink. Override the background alone and dark mode puts that dark
+ink on `violet-700` — 2.38:1, where the button you started from was 15.6:1.
+
+Which is why the classes above are the shipped tones' own recipe, written out by
+hand: the `700` fill and `800` hover under white in light, and in dark a lighter
+fill that *brightens* on hover, carrying the neutral `950` as ink. One step
+differs. The tones fill at `500` in dark, and `violet-500` under that ink is
+4.48:1 — `accent`'s fuchsia clears the same step at 5.58:1, so it is this ramp
+and not the recipe that misses, and the fill goes to `400` for 6.91:1. Reading a
+ramp for the step that carries its own text is exactly the work
+[a tone](../theming.md#a-tone-of-your-own) does once, in one place, for every
+component that reads it.
+
+### Every button at once
+
+Say it in your own stylesheet rather than at three hundred call sites. Unlayered
+CSS beats anything in a layer, so this needs no specificity fight and no
+`!important`:
+
+```css
+[data-shape-button] { border-radius: 9999px; }
 ```
+
+`data-shape-variant` and `data-shape-tone` are on the same element, so a rule
+can be as narrow as one arm of one tone:
+
+```css
+[data-shape-button][data-shape-variant='primary'] { font-weight: 600; }
+```
+
+The trade is that it also beats a `rounded-shape` passed at a call site, which
+is what setting the corners in one place means. Use `--radius-shape` instead
+when the whole library should follow — it is one decision for the cards and the
+inputs too.
+
+Past that, [`shape:eject`](../tooling.md#shapeeject) hands you the file.
 
 ## Reference
 

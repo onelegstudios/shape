@@ -99,6 +99,55 @@ window.dispatchEvent(new CustomEvent('shape:toast', {
 If a message is still true after someone has read it, it is an
 [alert](alert.md). A toast is an event.
 
+## Theming
+
+A toast keeps a white fill — `shape-900` in dark mode — with a `shape-200`
+hairline and a four-pixel left border in `--shape-tone`. The fill stays neutral
+on purpose: a toast floats over whatever happens to be under it, and the tone
+carries in the rule and the glyph rather than in a wash that would have to be
+readable against anything. The heading and the body are an ordinary
+[heading](heading.md) and [text](text.md), so they read the page's foregrounds,
+and the × resolves the *neutral* ink rather than a surface's — the toast is the
+one toned block in the library that publishes no `data-shape-surface`, for
+exactly this reason.
+
+You do not write `<x-shape::toast>`, so there is no call site to pass a class
+at. The toaster renders one per tone into a `<template>` and `shape.js` clones
+the one the payload asked for, which makes a rule the lever:
+
+```css
+[data-shape-toast] { border-radius: 0.75rem; border-left-width: 6px; }
+[data-shape-toast][data-shape-tone='danger'] {
+    background: var(--color-shape-danger-50);
+}
+```
+
+### The toaster
+
+Its width is written at zero specificity, so a class on the one in your layout
+wins:
+
+```blade
+<x-shape::toaster class="w-[28rem]" position="top-center" />
+```
+
+Where it sits is not. `position` writes `data-shape-position`, and the insets
+that read it are declared in `@layer shape-overlay` — after Tailwind's
+utilities, so a `bottom-*` or `right-*` class loses to them, which is what stops
+a parent's `space-y-*` from sliding the stack off its corner. An inset of your
+own is a rule:
+
+```css
+[data-shape-toaster][data-shape-position='bottom-right'] {
+    inset: auto 2rem 2rem auto;
+}
+```
+
+The enter and leave transitions sit behind
+`prefers-reduced-motion: no-preference`, and a toast is inserted rather than
+revealed, so its way in is drawn with `@starting-style`. Anything written over
+it wants both.
+
 ## Reference
 
 `toast` — for anyone rendering one directly:
