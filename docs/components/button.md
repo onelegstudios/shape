@@ -24,6 +24,40 @@ have to shout:
 
 @docs('preview', name: 'button-quiet-danger')
 
+## Borders
+
+`border` draws the button's edge in its own tone. It is off by default, because
+three of the four variants already have a boundary — a fill, or in `outline`'s
+case the neutral edge it is drawn with. Turn it on where a button has to hold
+its own against a busy page, or sit beside something drawn with an edge of its
+own:
+
+@docs('preview', name: 'button-border')
+
+It is the [alert](alert.md#borders)'s prop and it means the same thing, down to
+which step of the tone each variant takes. `subtle` and `outline` draw the same
+edge, from [`--shape-tone-border-strong`](../theming.md#tones) — the tone's
+answer to the neutral `--shape-tone-border` that an outlined thing takes by
+default. It sits a step further along the ramp than the tint pair does, which is
+what makes it read as an edge someone chose rather than a definition line.
+`outline` is the one variant the prop adds no border to — it has one already —
+so there it only decides whether that border carries the tone or the grey.
+
+`primary` cannot use that step: a pale edge on a saturated fill reads as a
+highlight, so it takes the step *past* the fill instead — darker in light mode,
+brighter in dark, which is the same move the tone's own hover makes and the
+reason it is not a fixed darkening.
+
+`ghost` shows its edge only under the pointer, arriving with the tint it already
+paints there, so the button stays unpainted at rest and the hover draws the
+whole control at once. The border is reserved as a transparent one, so the label
+does not shift by a pixel when it lands.
+
+Both colours are steps of `--shape-tone`, not a palette of their own, so a
+border follows a [retheme](../theming.md) with everything else. To make every
+toned edge in the library heavier or lighter at once, move
+`--shape-tone-border-strong`.
+
 ## Sizes
 
 @docs('preview', name: 'button-sizes')
@@ -95,10 +129,11 @@ Anything Shape doesn't claim as a prop lands on the rendered element:
 A button paints out of the tone variables and nothing else. `primary` fills with
 `--shape-tone` and hovers to `--shape-tone-hover`, `subtle` and `ghost` take
 `--shape-tone-tint` and `--shape-tone-ink`, `outline` takes
-`--shape-tone-border` over `--shape-tone-surface`, and every variant draws its
-focus ring in `--shape-ring`. So a retint moves every button in the application
-at once, and the token layer is where a colour change should start — see
-[Theming](../theming.md).
+`--shape-tone-border` over `--shape-tone-surface`, [`border`](#borders) asks for
+`--shape-tone-border-strong` — or `--shape-tone-hover` on `primary`, the step
+past the fill — and every variant draws its focus ring in `--shape-ring`. So a
+retint moves every button in the application at once, and the token layer is
+where a colour change should start — see [Theming](../theming.md).
 
 The button is also the one component that reads a *tone* rather than a surface,
 which is what lets a ghost `danger` button stay red inside a block that is not.
@@ -183,6 +218,7 @@ Past that, [`shape:eject`](../tooling.md#shapeeject) hands you the file.
 | `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 | `icon-size` | `sm` | `xs`, `sm`, `base` |
 | `square` | `false` | drops the horizontal padding, for icon-only buttons |
+| `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
 | `as` | `button` | `button`, `a`, `div` |
 | `type` | `button` | any button type |
 
@@ -194,5 +230,8 @@ The default slot is the label. Every other attribute — `href`, `disabled`,
 Tier A — `@blaze(fold: true, safe: ['tone'])`.
 
 `tone` is interpolated into an attribute and nothing more, so `:tone="$tone"`
-still folds. Everything else is a static choice at the call site. See
-[Folding](../folding.md).
+still folds. Everything else is a static choice at the call site — including
+[`border`](#borders), which branches to resolve the edge and so is read at
+compile time like every other prop here. Written literally,
+`<x-shape::button border>` costs nothing; `:border="$isDense"` is what would
+drop the button to the compiled path. See [Folding](../folding.md).
