@@ -35,10 +35,10 @@ final class IconSet
 {
     /**
      * Both are non-empty: `fromArray` refuses a set that draws nothing and a
-     * scale that measures nothing, so the largest size and the first style are
+     * scale that measures nothing, so the default size and the first style are
      * always there to be reached for.
      *
-     * @param  non-empty-array<string, array{class: string, prefer?: string}>  $sizes  The library's scale, in ascending order; the last is the default.
+     * @param  non-empty-array<string, array{class: string, prefer?: string, default?: true}>  $sizes  The library's scale, in ascending order; one of them marked as the default.
      * @param  non-empty-array<string, array<string, non-empty-list<string>>>  $styles  Style, then the sizes it draws its own glyph at, each a list of candidate patterns.
      * @param  array<string, string|null>  $slots  Shape's slots, against this set's own spelling of the drawing that fills each; null where the set has none.
      * @param  string  $ref  Only meaningful with a repo; ignored otherwise.
@@ -367,7 +367,7 @@ final class IconSet
     /**
      * The library's size scale, read out of whatever the config file holds.
      *
-     * @return non-empty-array<string, array{class: string, prefer?: string}>
+     * @return non-empty-array<string, array{class: string, prefer?: string, default?: true}>
      */
     private static function scale(mixed $sizes): array
     {
@@ -382,9 +382,20 @@ final class IconSet
                 throw new InvalidArgumentException('The icon sizes hold a size without a class.');
             }
 
-            $scale[$size] = isset($spec['prefer']) && is_string($spec['prefer'])
-                ? ['class' => $spec['class'], 'prefer' => $spec['prefer']]
-                : ['class' => $spec['class']];
+            $scale[$size] = array_filter([
+                'class' => $spec['class'],
+                'prefer' => isset($spec['prefer']) && is_string($spec['prefer']) ? $spec['prefer'] : null,
+                'default' => ($spec['default'] ?? false) === true,
+            ], fn (mixed $value): bool => $value !== null && $value !== false);
+        }
+
+        // One default, or none. Two of them is a scale that cannot say what
+        // `<x-shape::icon.bell />` renders at, and picking one would bake the
+        // wrong answer into every generated component.
+        $marked = array_keys(array_filter($scale, fn (array $size): bool => ($size['default'] ?? false) === true));
+
+        if (count($marked) > 1) {
+            throw new InvalidArgumentException('The icon sizes mark more than one default: ['.implode('], [', $marked).']. One size is the answer a call site gets when it names none.');
         }
 
         return $scale;
@@ -414,11 +425,24 @@ final class IconSet
     /**
      * The size a call site gets when it names none.
      *
-     * The largest, which is the last declared — `base` everywhere else in this
-     * library, and the same word here.
+     * The one the scale marks, which is `base` — the middle of `xs` to `xl`,
+     * and the same word every other scale in this library defaults to. It is
+     * marked rather than inferred because the scale grew past its default: the
+     * rule used to be "the last declared", and adding `lg` and `xl` under that
+     * rule would have made every unadorned `<x-shape::icon.bell />` on every
+     * page render at 40px.
+     *
+     * A scale that marks none keeps the old rule, so a config published before
+     * this key existed goes on meaning what it meant.
      */
     public function defaultSize(): string
     {
+        foreach ($this->sizes as $size => $spec) {
+            if (($spec['default'] ?? false) === true) {
+                return $size;
+            }
+        }
+
         $sizes = $this->sizes();
 
         return $sizes[array_key_last($sizes)];
@@ -529,10 +553,11 @@ final class IconSet
      * How one cell of the matrix is spelled.
      *
      * A style that has no drawing of its own at this size borrows its largest,
-     * which is then scaled down by the size class. Never scaled up: the fallback
-     * is the largest declared rather than the nearest, because a 16px glyph
-     * stretched to 24px looks like a mistake and a 24px one shrunk to 16px looks
-     * like a smaller icon.
+     * which the size class then scales. The largest declared rather than the
+     * nearest, in both directions: a 16px glyph stretched to 24px looks like a
+     * mistake, a 24px one shrunk to 16px looks like a smaller icon, and a 24px
+     * one drawn at 32 or 40 — which is what `lg` and `xl` are, since no set
+     * draws that big — looks like the same icon, larger.
      *
      * @return list<string>
      */

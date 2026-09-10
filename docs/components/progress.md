@@ -12,12 +12,6 @@ A native `<progress>`, restyled.
 
 @docs('preview', name: 'progress-tones', layout: 'stack')
 
-## Max
-
-`value` is read against `max`, so a step counter needs no percentages:
-
-@docs('preview', name: 'progress-max', layout: 'stack')
-
 ## Indeterminate
 
 For work with no known end:
@@ -33,6 +27,12 @@ The indeterminate bar is drawn by Shape rather than by the browser — once
 `appearance` is gone there is nothing left for the UA to animate, and an empty
 track reads as zero percent rather than as unknown. It holds still under
 `prefers-reduced-motion`.
+
+## Max
+
+`value` is read against `max`, so a step counter needs no percentages:
+
+@docs('preview', name: 'progress-max', layout: 'stack')
 
 ## It prints no number
 
@@ -146,12 +146,12 @@ keep.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `label` | — | becomes `aria-label` |
+| `tone` | `brand` | `brand`, `accent`, `info`, `success`, `warning`, `danger` |
 | `value` | `0` | any number up to `max` |
 | `max` | `100` | |
 | `indeterminate` | `false` | `true` for work with no known end |
-| `size` | `base` | `sm`, `base`, `lg` |
-| `tone` | `brand` | `brand`, `accent`, `info`, `success`, `warning`, `danger` |
-| `label` | — | becomes `aria-label` |
 
 ## Folding
 

@@ -117,3 +117,25 @@ it('names the navigation landmark it creates', function () {
         ->toContain('role="navigation"')
         ->toContain('aria-label="Invoice pages"');
 });
+
+it('moves every step in the row together', function (string $size, string $box, string $gap) {
+    // A pager is one control repeated, so a step out of proportion is repeated
+    // fifteen times across the page.
+    $html = Blade::render('<x-shape::pagination :paginator="$p" :size="$size" />', ['p' => pages(3), 'size' => $size]);
+
+    expect($html)
+        ->toContain($box)
+        ->toContain("[:where(&amp;)]:{$gap}")
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', 'h-7 min-w-7 gap-0.5 px-1.5 text-xs', 'gap-0.5'],
+    ['sm', 'h-8 min-w-8 gap-1 px-2 text-sm', 'gap-1'],
+    ['base', 'h-9 min-w-9 gap-1 px-2.5 text-sm', 'gap-1'],
+    ['lg', 'h-11 min-w-11 gap-1.5 px-3.5 text-base', 'gap-1.5'],
+    ['xl', 'h-12 min-w-12 gap-2 px-4 text-lg', 'gap-2'],
+]);
+
+it('takes the chevrons down with the steps they sit in', function () {
+    expect(Blade::render('<x-shape::pagination :paginator="$p" size="xs" />', ['p' => pages(3)]))
+        ->toContain('[:where(&amp;)]:size-4');
+});

@@ -25,11 +25,17 @@ $classes = Shape::classes()
     // Size, leading and tracking are set together and never separately. Type
     // set large needs its line-height and letter-spacing pulled in; the same
     // treatment applied at 14px would close the text up until it was unreadable.
+    //
+    // The library's five steps, and the same five the text component sets body
+    // copy at, so a heading and a paragraph given the same word are the same
+    // type size. Above `xl` there is no step, because a page title larger than
+    // the scale is a decision about that page rather than about headings:
+    // `class="text-3xl"` is one class, and it wins on its own.
     ->add(match ($size) {
+        'xs' => '[:where(&)]:text-xs [:where(&)]:leading-5 [:where(&)]:tracking-normal',
         'sm' => '[:where(&)]:text-sm [:where(&)]:leading-6 [:where(&)]:tracking-normal',
         'lg' => '[:where(&)]:text-lg [:where(&)]:leading-7 [:where(&)]:tracking-tight',
         'xl' => '[:where(&)]:text-xl [:where(&)]:leading-7 [:where(&)]:tracking-tight',
-        '2xl' => '[:where(&)]:text-2xl [:where(&)]:leading-8 [:where(&)]:tracking-tighter',
         default => '[:where(&)]:text-base [:where(&)]:leading-6 [:where(&)]:tracking-normal',
     });
 @endphp

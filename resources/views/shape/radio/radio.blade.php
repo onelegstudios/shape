@@ -11,7 +11,13 @@
 
     The dot is a plain span rather than an icon: it is a filled circle, and
     asking an icon component for a filled circle would be more machinery than
-    drawing it.
+    drawing it. Which also means the dot follows the box on the size scale by
+    arithmetic rather than by picking a drawing — the checkbox's tick has to do
+    both.
+
+    `size` is the checkbox's, step for step, because a group of radios and a
+    group of checkboxes in the same form are the same control to everyone
+    looking at them.
 --}}
 
 @props([
@@ -19,6 +25,7 @@
     'description' => null,
     'value' => null,
     'tone' => null,
+    'size' => 'base',
     'id' => null,
 ])
 
@@ -38,9 +45,19 @@ $defaults = array_filter([
     'aria-describedby' => $describedBy,
 ]);
 
+// The checkbox's five boxes, and the dot at roughly a third of each — the
+// proportion the 16px box was drawn at, held across the scale.
+[$boxSize, $dotSize, $gap, $type] = match ($size) {
+    'xs' => ['size-3', 'size-1', 'gap-1.5', 'text-xs'],
+    'sm' => ['size-3.5', 'size-1.5', 'gap-2', 'text-sm'],
+    'lg' => ['size-5', 'size-2', 'gap-3', 'text-base'],
+    'xl' => ['size-6', 'size-2.5', 'gap-3.5', 'text-lg'],
+    default => ['size-4', 'size-1.5', 'gap-2.5', 'text-sm'],
+};
+
 $box = Shape::classes()
     ->add('peer col-start-1 row-start-1 appearance-none')
-    ->add('size-4 shrink-0 transition-colors duration-100')
+    ->add($boxSize.' shrink-0 transition-colors duration-100')
     ->add('[:where(&)]:rounded-full')
     ->add('[:where(&)]:border [:where(&)]:border-shape-300 dark:[:where(&)]:border-shape-600')
     ->add('[:where(&)]:bg-white dark:[:where(&)]:bg-shape-900')
@@ -51,23 +68,24 @@ $box = Shape::classes()
 @endphp
 
 <label
-    class="group inline-flex items-start gap-2.5 has-disabled:cursor-not-allowed"
+    class="group inline-flex items-start {{ $gap }} has-disabled:cursor-not-allowed"
     data-shape-radio
+    data-shape-size="{{ $size }}"
     data-shape-tone="{{ $tone ?? 'neutral' }}"
 >
     <span class="grid place-items-center pt-0.5">
         <input type="radio" {{ $attributes->merge($defaults)->class($box) }} data-shape-control />
-        <span class="col-start-1 row-start-1 pointer-events-none size-1.5 rounded-full bg-[var(--shape-tone-fg)] opacity-0 peer-checked:opacity-100"></span>
+        <span class="col-start-1 row-start-1 pointer-events-none {{ $dotSize }} rounded-full bg-[var(--shape-tone-fg)] opacity-0 peer-checked:opacity-100"></span>
     </span>
 
     @if (filled($label))
         <span class="flex flex-col gap-0.5 group-has-disabled:opacity-50">
-            <span class="text-sm font-medium text-[color:var(--shape-fg)]">{{ $label }}</span>
+            <span class="{{ $type }} font-medium text-[color:var(--shape-fg)]">{{ $label }}</span>
 
             @if (filled($description))
                 <span
                     @if ($describedBy) id="{{ $describedBy }}" @endif
-                    class="text-sm text-[color:var(--shape-fg-muted)]"
+                    class="{{ $type }} text-[color:var(--shape-fg-muted)]"
                 >{{ $description }}</span>
             @endif
         </span>

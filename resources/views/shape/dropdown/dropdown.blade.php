@@ -24,7 +24,7 @@
     :name="$name"
     :placement="$placement"
     role="menu"
-    padding="tight"
+    padding="sm"
     {{ $attributes }}
     data-shape-menu=""
     data-shape-dropdown=""

@@ -33,12 +33,26 @@ return [
     | rather than a 24px outline squeezed into 20px. A set that has no such
     | style ignores it and answers with the one it does have.
     |
+    | `default` is the size a call site gets when it names none, and it is
+    | stated rather than inferred: the scale runs `xs` to `xl` like every other
+    | scale in the library, so the middle of it is the answer and the end of it
+    | is not. A scale that marks none keeps the older rule and defaults to the
+    | last — which is what a config published before this key existed means.
+    |
+    | Above `base` the drawings stop and only the box grows: an icon set draws
+    | at 16, 20 and 24, so `lg` and `xl` render the 24px artwork larger. That is
+    | the right trade at these sizes — the alternative is no large icon at all —
+    | and it is why `prefer` stays with the stroked drawing up there, which is
+    | the one that survives being scaled.
+    |
     */
 
     'icon_sizes' => [
         'xs' => ['class' => 'size-4', 'prefer' => 'solid'],
         'sm' => ['class' => 'size-5', 'prefer' => 'solid'],
-        'base' => ['class' => 'size-6', 'prefer' => 'outline'],
+        'base' => ['class' => 'size-6', 'prefer' => 'outline', 'default' => true],
+        'lg' => ['class' => 'size-8', 'prefer' => 'outline'],
+        'xl' => ['class' => 'size-10', 'prefer' => 'outline'],
     ],
 
     /*

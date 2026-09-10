@@ -2,3 +2,4 @@
 <x-shape::badge label="Paid" tone="success" size="sm" />
 <x-shape::badge label="Paid" tone="success" size="base" />
 <x-shape::badge label="Paid" tone="success" size="lg" />
+<x-shape::badge label="Paid" tone="success" size="xl" />

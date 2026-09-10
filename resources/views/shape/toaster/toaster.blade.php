@@ -56,6 +56,13 @@ $classes = Shape::classes()
     <div class="flex flex-col gap-3" data-shape-toast-region="polite" aria-live="polite"></div>
     <div class="flex flex-col gap-3" data-shape-toast-region="assertive" aria-live="assertive"></div>
 
+    {{-- Every template is stamped at the toast's default size, and there is no
+         `size` on the toaster to move them. A prop here would be a value this
+         component resolved per request, and a nested component whose props are
+         resolved per request cannot fold — which is the one thing these
+         templates have to keep doing. A page that wants another size ejects this
+         file and writes the word into the seven call sites, where it is a
+         literal and folds like anything else. --}}
     <template data-shape-toast-template="neutral"><x-shape::toast /></template>
     <template data-shape-toast-template="brand"><x-shape::toast tone="brand" /></template>
     <template data-shape-toast-template="accent"><x-shape::toast tone="accent" /></template>

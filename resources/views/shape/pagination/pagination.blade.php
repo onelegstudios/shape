@@ -32,6 +32,15 @@
     One honest limit for the docs: this is URL-driven pagination. A Livewire
     component paginating in place with `WithPagination` is better served by
     Livewire's own view than by putting `wire:navigate` on these.
+
+    `size` moves every step in the row together — the height, the width one digit
+    keeps, the type and the chevrons — because they are one control repeated, and
+    a pager is the one place in a library where a step out of proportion is
+    repeated fifteen times across the page.
+
+    The heights are the pager's own and not the button's. A page number is a
+    smaller target than an action by design: a row of `h-10` steps reads as a
+    toolbar under a table rather than as its pagination.
 --}}
 
 @props([
@@ -40,6 +49,7 @@
     'previousLabel' => 'Previous',
     'nextLabel' => 'Next',
     'label' => 'Pagination',
+    'size' => 'base',
 ])
 
 @php
@@ -51,8 +61,20 @@ $links = $windowed ? $paginator->linkCollection()->slice(1, -1) : [];
 // everything else describes the nav element itself.
 $wire = $attributes->whereStartsWith('wire:');
 
+// The step's box and the type in it, the gap between steps, and the chevrons on
+// the two ends. `min-w-*` matches the height at every step, so one digit is a
+// square and three are a pill — the badge's arrangement, for the same reason.
+[$box, $gap, $chevron] = match ($size) {
+    'xs' => ['h-7 min-w-7 gap-0.5 px-1.5 text-xs', '[:where(&)]:gap-0.5', 'xs'],
+    'sm' => ['h-8 min-w-8 gap-1 px-2 text-sm', '[:where(&)]:gap-1', 'xs'],
+    'lg' => ['h-11 min-w-11 gap-1.5 px-3.5 text-base', '[:where(&)]:gap-1.5', 'sm'],
+    'xl' => ['h-12 min-w-12 gap-2 px-4 text-lg', '[:where(&)]:gap-2', 'base'],
+    default => ['h-9 min-w-9 gap-1 px-2.5 text-sm', '[:where(&)]:gap-1', 'sm'],
+};
+
 $step = (string) Shape::classes()
-    ->add('inline-flex h-9 min-w-9 items-center justify-center gap-1 px-2.5 text-sm font-medium')
+    ->add('inline-flex items-center justify-center font-medium')
+    ->add($box)
     ->add('[:where(&)]:rounded-shape')
     ->add('focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--shape-ring)]');
 
@@ -69,19 +91,20 @@ $current = (string) Shape::classes($step)
 
 @if ($paginator->hasPages())
     <nav
-        {{ $attributes->whereDoesntStartWith('wire:')->class('flex flex-wrap items-center [:where(&)]:gap-1') }}
+        {{ $attributes->whereDoesntStartWith('wire:')->class(Shape::classes('flex flex-wrap items-center')->add($gap)) }}
         role="navigation"
         aria-label="{{ $label }}"
         data-shape-pagination
+        data-shape-size="{{ $size }}"
         data-shape-tone="brand"
     >
         @if ($paginator->previousPageUrl())
             <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="{{ $enabled }}" {{ $wire }} data-shape-pagination-previous>
-                <x-shape::icon.shape-prev size="sm" />{{ $previousLabel }}
+                <x-shape::icon.shape-prev :size="$chevron" />{{ $previousLabel }}
             </a>
         @else
             <span class="{{ $inert }}" aria-disabled="true" data-shape-pagination-previous>
-                <x-shape::icon.shape-prev size="sm" />{{ $previousLabel }}
+                <x-shape::icon.shape-prev :size="$chevron" />{{ $previousLabel }}
             </span>
         @endif
 
@@ -98,11 +121,11 @@ $current = (string) Shape::classes($step)
 
         @if ($paginator->nextPageUrl())
             <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="{{ $enabled }}" {{ $wire }} data-shape-pagination-next>
-                {{ $nextLabel }}<x-shape::icon.shape-next size="sm" />
+                {{ $nextLabel }}<x-shape::icon.shape-next :size="$chevron" />
             </a>
         @else
             <span class="{{ $inert }}" aria-disabled="true" data-shape-pagination-next>
-                {{ $nextLabel }}<x-shape::icon.shape-next size="sm" />
+                {{ $nextLabel }}<x-shape::icon.shape-next :size="$chevron" />
             </span>
         @endif
     </nav>

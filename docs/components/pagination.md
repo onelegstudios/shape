@@ -6,6 +6,18 @@ Hand it the paginator you already have.
 
 It renders nothing at all when there is only one page.
 
+## Sizes
+
+Every step in the row moves together — the height, the width one digit keeps, the
+type and the chevrons — because a pager is one control repeated, and a step out
+of proportion is repeated fifteen times across the page:
+
+@docs('preview', name: 'pagination-sizes', layout: 'stack')
+
+The heights are the pager's own and not the [button](button.md#sizes)'s. A page
+number is a smaller target than an action by design: a row of 40px steps reads as
+a toolbar under a table rather than as its pagination.
+
 ## Simple
 
 Previous and next only, no numbers:
@@ -136,11 +148,12 @@ already written — two variables instead of seven, because a pager uses two.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `label` | `Pagination` | the navigation landmark's accessible name |
 | `paginator` | *required* | a paginator instance |
-| `simple` | `false` | previous and next only, no numbers |
 | `previous-label` | `Previous` | |
 | `next-label` | `Next` | |
-| `label` | `Pagination` | the navigation landmark's accessible name |
+| `simple` | `false` | previous and next only, no numbers |
 
 ## Folding
 

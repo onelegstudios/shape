@@ -15,7 +15,8 @@ It flips and clamps the same way the dropdown does, and for the same reason:
 
 ## Padding
 
-`tight` is what the dropdown uses:
+Five steps, `xs` to `xl`, under the same words the rest of the library takes.
+`sm` is what the dropdown uses:
 
 @docs('preview', name: 'popover-padding')
 
@@ -79,7 +80,7 @@ narrower attribute when you mean one of them:
 | --- | --- | --- |
 | `name` | *required* | the popover's id |
 | `placement` | `bottom-start` | `bottom-start`, `bottom-end`, `bottom`, `top-start`, `top-end`, `top` |
-| `padding` | `base` | `base`, `tight` |
+| `padding` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `role` | — | set it if the content warrants one |
 
 `popover.trigger` takes `for` and `haspopup` (`dialog` by default) and passes

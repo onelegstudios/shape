@@ -9,9 +9,17 @@ derived from the other.
 
 @docs('preview', name: 'heading-sizes', layout: 'stack')
 
+Five steps, `xs` to `xl`, at the same type sizes [text](text.md) sets body copy
+at — so a heading and a paragraph given the same word are the same size, and
+differ in weight and tracking alone.
+
 Each size ships its own line height and letter spacing. Large sizes tighten
 both; small sizes leave them alone. You can still override either, because the
 defaults carry zero specificity — you just have to mean it.
+
+There is no step above `xl`. A page title larger than the scale is a decision
+about that page rather than about headings, and `class="text-3xl"` is one class
+that wins on its own.
 
 ## Levels
 
@@ -38,11 +46,11 @@ is a rule of your own:
 ```
 
 `data-shape-size` is on the element, so a rule can be narrower than every
-heading — the three large sizes tighten their tracking and the two small ones
+heading — the two large sizes tighten their tracking and the three small ones
 leave it alone, and that is the seam most type changes want:
 
 ```css
-[data-shape-heading][data-shape-size='2xl'] { letter-spacing: -0.04em; }
+[data-shape-heading][data-shape-size='xl'] { letter-spacing: -0.04em; }
 ```
 
 `level` reaches only the tag, so `h1, h2, h3` is the other way in, and the one
@@ -52,8 +60,8 @@ to prefer for a rule that should also catch headings this library did not draw.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `level` | `2` | `1`–`6` |
-| `size` | `base` | `sm`, `base`, `lg`, `xl`, `2xl` |
 
 The default slot is the heading text.
 

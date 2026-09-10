@@ -4,9 +4,12 @@ A checkbox inside its own label.
 
 @docs('preview', name: 'checkbox', layout: 'stack')
 
-## Description
+## Sizes
 
-@docs('preview', name: 'checkbox-description', layout: 'stack')
+The box, the tick inside it and the text beside it move together, so a checkbox
+at any step is one control rather than a box that outgrew its label:
+
+@docs('preview', name: 'checkbox-sizes', layout: 'stack')
 
 ## Tones
 
@@ -16,6 +19,17 @@ The fill reads the same tone variables the [button](button.md) and
 [badge](badge.md) read, so a checkbox given a tone agrees with everything else
 given the same one.
 
+## Disabled
+
+@docs('preview', name: 'checkbox-disabled', layout: 'stack')
+
+The wrapper dims its own label with `group-has-disabled:`, and the field matches
+direct children only — so one disabled checkbox never dims its siblings.
+
+## Description
+
+@docs('preview', name: 'checkbox-description', layout: 'stack')
+
 ## Groups
 
 One name, many values. Put them in a fieldset so the group has an accessible
@@ -24,13 +38,6 @@ name, and state the shared name once on the [field](field.md):
 @docs('preview', name: 'checkbox-group', layout: 'stack')
 
 Each checkbox gets `name="days"` and an id of `days-{value}`.
-
-## Disabled
-
-@docs('preview', name: 'checkbox-disabled', layout: 'stack')
-
-The wrapper dims its own label with `group-has-disabled:`, and the field matches
-direct children only — so one disabled checkbox never dims its siblings.
 
 ## Indeterminate
 
@@ -98,10 +105,11 @@ see [Overriding one](icon.md#overriding-one).
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `label` | — | the text beside the box |
 | `description` | — | a second line under the label |
-| `value` | — | the submitted value; separates a group sharing one name |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
+| `value` | — | the submitted value; separates a group sharing one name |
 | `id` | `{name}-{value}` | the element id |
 
 `checked`, `disabled`, `required` and `wire:model` pass through to the

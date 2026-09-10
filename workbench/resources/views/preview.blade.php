@@ -295,6 +295,8 @@
                             <x-shape::icon.shape-success size="xs" />
                             <x-shape::icon.shape-success size="sm" />
                             <x-shape::icon.shape-success size="base" />
+                            <x-shape::icon.shape-success size="lg" />
+                            <x-shape::icon.shape-success size="xl" />
                             <x-shape::icon.shape-success variant="solid" />
                         </div>
                     </div>
@@ -304,16 +306,17 @@
                     <div class="space-y-1.5 px-6 py-5">
                         <h3 class="font-medium tracking-tight">Type scale</h3>
                         <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
-                            Each size ships its own leading and tracking. Large sizes tighten both; small
-                            sizes leave them alone.
+                            Five steps, <code>xs</code> to <code>xl</code>, the same five the text
+                            component sets body copy at. Each ships its own leading and tracking: large
+                            sizes tighten both, small sizes leave them alone.
                         </p>
                     </div>
                     <div class="space-y-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
-                        <x-shape::heading size="2xl">Invoices outstanding</x-shape::heading>
                         <x-shape::heading size="xl">Invoices outstanding</x-shape::heading>
                         <x-shape::heading size="lg">Invoices outstanding</x-shape::heading>
                         <x-shape::heading size="base">Invoices outstanding</x-shape::heading>
                         <x-shape::heading size="sm">Invoices outstanding</x-shape::heading>
+                        <x-shape::heading size="xs">Invoices outstanding</x-shape::heading>
                     </div>
                 </article>
 
@@ -327,7 +330,7 @@
                     </div>
                     <div class="space-y-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
                         <x-shape::heading level="1" size="sm">Billing</x-shape::heading>
-                        <x-shape::heading level="6" size="2xl">&pound;12,480</x-shape::heading>
+                        <x-shape::heading level="6" size="xl">&pound;12,480</x-shape::heading>
                     </div>
                 </article>
 
@@ -418,14 +421,16 @@
                     <div class="space-y-1.5 px-6 py-5">
                         <h3 class="font-medium tracking-tight">Sizes</h3>
                         <p class="max-w-prose text-sm text-shape-600 dark:text-shape-400">
-                            Three sizes and a square, which is the shape a button takes when its icon is
-                            the whole of its label.
+                            Five sizes &mdash; 24, 32, 40, 48 and 56 pixels tall &mdash; and a square,
+                            which is the shape a button takes when its icon is the whole of its label.
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3 border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
+                        <x-shape::button size="xs" icon="shape-plus">Extra small</x-shape::button>
                         <x-shape::button size="sm" icon="shape-plus">Small</x-shape::button>
                         <x-shape::button icon="shape-plus">Base</x-shape::button>
                         <x-shape::button size="lg" icon="shape-plus">Large</x-shape::button>
+                        <x-shape::button size="xl" icon="shape-plus">Extra large</x-shape::button>
                         <x-shape::button square icon="shape-trash" aria-label="Delete" />
                         <x-shape::button square variant="subtle" icon="shape-expand" aria-label="More" />
                     </div>
@@ -548,6 +553,7 @@
                             <x-shape::badge label="Unpaid" tone="warning" variant="outline" size="sm" dismissible />
                             <x-shape::badge label="Tag" size="xs" dismissible />
                             <x-shape::badge label="Enterprise" tone="accent" size="lg" dismissible />
+                            <x-shape::badge label="Reserved" tone="accent" size="xl" dismissible />
                         </div>
                     </div>
                 </article>
@@ -729,9 +735,11 @@
                     </div>
                     <div class="border-t border-shape-200 bg-shape-50 p-6 dark:border-shape-800 dark:bg-shape-950">
                         <div class="max-w-md space-y-3">
+                            <x-shape::input size="xs" placeholder="Extra small" />
                             <x-shape::input size="sm" placeholder="Small" />
                             <x-shape::input placeholder="Base" />
                             <x-shape::input size="lg" placeholder="Large" />
+                            <x-shape::input size="xl" placeholder="Extra large" />
                             <x-shape::field field-name="locked">
                                 <x-shape::label>Disabled</x-shape::label>
                                 <x-shape::description>The label and this copy dim with the control.</x-shape::description>
@@ -1173,6 +1181,7 @@
                         <x-shape::avatar initials="AL" alt="Alex Lindqvist" size="sm" />
                         <x-shape::avatar initials="AL" alt="Alex Lindqvist" />
                         <x-shape::avatar initials="AL" alt="Alex Lindqvist" size="lg" />
+                        <x-shape::avatar initials="AL" alt="Alex Lindqvist" size="xl" />
 
                         <x-shape::avatar initials="AL" alt="Alex Lindqvist, online" badge badge-tone="success" />
                         <x-shape::avatar initials="GH" alt="Gabriel Haas, 3 unread" badge="3" badge-tone="danger" badge-position="top-right" />

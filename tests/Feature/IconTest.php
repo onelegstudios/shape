@@ -50,6 +50,31 @@ it('lets the call site override the style the size would have chosen', function 
         ->toContain('stroke="currentColor"');
 });
 
+it('grows the box above the largest drawing rather than stopping the scale there', function () {
+    // No icon set draws above 24px, so `lg` and `xl` are the 24px artwork in a
+    // 32px and a 40px box. The alternative is a library whose scale runs to
+    // `xl` everywhere except the one component most likely to need it — an
+    // empty state's glyph, a feature card's mark.
+    $lg = Blade::render('<x-shape::icon.shape-checked size="lg" />');
+    $xl = Blade::render('<x-shape::icon.shape-checked size="xl" />');
+
+    expect($lg)->toContain('viewBox="0 0 24 24"')->toContain('size-8')
+        ->and($xl)->toContain('viewBox="0 0 24 24"')->toContain('size-10');
+
+    // And the stroked drawing up there, not the filled one, because a stroke is
+    // what survives being drawn larger.
+    expect($lg)->toContain('stroke="currentColor"')
+        ->and($xl)->toContain('stroke="currentColor"');
+});
+
+it('keeps the middle of the scale as the size a call site gets when it names none', function () {
+    // The scale runs past its default now. Under the rule it used to follow —
+    // the last size declared — adding `lg` and `xl` would have made every
+    // unadorned icon on every page render at 40px.
+    expect(Blade::render('<x-shape::icon.shape-checked />'))
+        ->toBe(Blade::render('<x-shape::icon.shape-checked size="base" />'));
+});
+
 it('scales the one drawing a sparse cell has rather than leaving it empty', function () {
     // Heroicons draws no 16px outline. Asking for one is not an error and does
     // not fall back to a solid glyph: it is the 24px outline drawing, sized down

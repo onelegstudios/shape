@@ -8,6 +8,14 @@ That is the opposite arrangement to every other component here, and it has to
 be: the tooltip lives in the top layer as a sibling, and the thing it describes
 is what you already have in hand.
 
+## Sizes
+
+Type, inset and the measure the text wraps at, together — the last being the one
+easy to forget, since a tooltip set larger inside the same 16rem box is a
+paragraph, and a tooltip is read in one glance or not at all:
+
+@docs('preview', name: 'tooltip-sizes', layout: 'stack')
+
 ## Placement
 
 @docs('preview', name: 'tooltip-placement')
@@ -70,9 +78,10 @@ makes the flip unlikely.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `name` | *required* | the tooltip's id |
-| `text` | *required* | what it says |
 | `placement` | `top` | any placement the [popover](popover.md) takes |
+| `text` | *required* | what it says |
 
 The default slot is the control the tooltip describes.
 

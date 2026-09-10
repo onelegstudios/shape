@@ -143,3 +143,42 @@ it('passes attributes straight through', function () {
     expect(Blade::render('<x-shape::tabs.tab for="plan" wire:click="show(\'plan\')">Plan</x-shape::tabs.tab>'))
         ->toContain('wire:click="show(\'plan\')"');
 });
+
+it('sizes its tabs from the strip rather than from each tab', function (string $size, string $gap, string $tab) {
+    // Tabs in one strip are one control, so the word is said once where the
+    // strip is. It reaches them as descendant utilities, which outrank the zero
+    // specificity every measurement on a tab is written at.
+    $html = Blade::render("<x-shape::tabs size=\"{$size}\" label=\"Sections\"><x-shape::tabs.tab for=\"plan\">Plan</x-shape::tabs.tab></x-shape::tabs>");
+
+    expect($html)
+        ->toContain("[:where(&amp;)]:gap-{$gap}")
+        ->toContain($tab)
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', '0.5', '[&amp;&gt;*]:px-2 [&amp;&gt;*]:py-1 [&amp;&gt;*]:text-xs'],
+    ['sm', '0.5', '[&amp;&gt;*]:px-2.5 [&amp;&gt;*]:py-1 [&amp;&gt;*]:text-sm'],
+    ['lg', '1.5', '[&amp;&gt;*]:px-4 [&amp;&gt;*]:py-2 [&amp;&gt;*]:text-base'],
+    ['xl', '2', '[&amp;&gt;*]:px-5 [&amp;&gt;*]:py-2.5 [&amp;&gt;*]:text-lg'],
+]);
+
+it('emits nothing at all at the default step', function () {
+    // Every strip that never names a size renders the markup it did before the
+    // prop existed, and the tab's own defaults stand.
+    expect(Blade::render('<x-shape::tabs label="Sections"><x-shape::tabs.tab for="plan">Plan</x-shape::tabs.tab></x-shape::tabs>'))
+        ->toContain('[:where(&amp;)]:gap-1')
+        ->not->toContain('[&amp;&gt;*]:');
+});
+
+it('reaches past the icon size a tab resolved for itself', function () {
+    // An icon's size class is zero specificity like everything else here, which
+    // is what stops a 20px mark sitting in a 24px tab.
+    expect(Blade::render('<x-shape::tabs size="xs"><x-shape::tabs.tab for="plan" icon="shape-plus">Plan</x-shape::tabs.tab></x-shape::tabs>'))
+        ->toContain('[&amp;&gt;*&gt;svg]:size-4');
+});
+
+it('writes the tab\'s own gap at zero specificity so the strip can move it', function () {
+    // The one utility a strip could not otherwise reach: two gap classes at the
+    // same weight are decided by Tailwind's ordering rather than by the strip.
+    expect(Blade::render('<x-shape::tabs.tab for="plan">Plan</x-shape::tabs.tab>'))
+        ->toContain('[:where(&amp;)]:gap-2');
+});

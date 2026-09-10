@@ -5,6 +5,29 @@ de-emphasized beside it.
 
 @docs('preview', name: 'stat')
 
+## Sizes
+
+The number moves further across the scale than the word under it does — four
+type steps against two — because that is the relationship a stat is made of. A
+label that grew as fast as its number would flatten the block into two lines of
+large text:
+
+@docs('preview', name: 'stat-sizes', layout: 'stack')
+
+It composes with `emphasis` rather than fighting it: `size` picks the pair of
+steps, `emphasis` decides which of the two the number gets.
+
+## Tones
+
+`tone` overrides the one [`trend`](#trend) picked, for the metrics where up is the bad
+news:
+
+@docs('preview', name: 'stat-tone')
+
+## Description
+
+@docs('preview', name: 'stat-description')
+
 ## Trend
 
 `trend` draws a direction and tints it. State `delta` alongside it — a trend
@@ -21,23 +44,12 @@ with no delta leaves a bare glyph with nothing beside it:
 Three separate drawings rather than one arrow at three angles — never relying on
 colour alone only works if the two directions are distinguishable.
 
-## Tones
-
-`tone` overrides the one `trend` picked, for the metrics where up is the bad
-news:
-
-@docs('preview', name: 'stat-tone')
-
 ## Emphasis
 
 `emphasis="label"` swaps which of the two gets the large treatment, for the
 rarer case where the label is the information and the value qualifies it:
 
 @docs('preview', name: 'stat-emphasis')
-
-## Description
-
-@docs('preview', name: 'stat-description')
 
 ## Reading order
 
@@ -82,13 +94,14 @@ column was set in them.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `value` | — | the number |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `label` | — | what it is a number of |
-| `delta` | — | the change, as text |
-| `trend` | — | `up`, `down`, `flat` |
-| `tone` | from `trend` | `neutral`, `brand`, `accent`, `info`, `success`, `warning`, `danger` |
 | `description` | — | a line under the value |
+| `tone` | from `trend` | `neutral`, `brand`, `accent`, `info`, `success`, `warning`, `danger` |
+| `value` | — | the number |
+| `delta` | — | the change, as text |
 | `emphasis` | `value` | `value`, `label` |
+| `trend` | — | `up`, `down`, `flat` |
 
 There is no slot.
 

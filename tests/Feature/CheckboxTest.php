@@ -80,3 +80,41 @@ it('passes attributes straight through', function () {
         ->toContain('wire:model="terms"')
         ->toContain('checked');
 });
+
+it('moves the box, the tick, the gap and the text with one word', function (string $size, string $box, string $tick, string $gap, string $type) {
+    // The whole point of the prop: a box that grew and left its label at 14px
+    // would read as one control set next to another rather than as a larger one.
+    $html = Blade::render("<x-shape::checkbox name=\"terms\" label=\"I agree\" size=\"{$size}\" />");
+
+    expect($html)
+        ->toContain("appearance-none {$box} shrink-0")
+        ->toContain("pointer-events-none {$tick}")
+        ->toContain("inline-flex items-start {$gap}")
+        ->toContain("{$type} font-medium")
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', 'size-3', 'size-2.5', 'gap-1.5', 'text-xs'],
+    ['sm', 'size-3.5', 'size-3', 'gap-2', 'text-sm'],
+    ['base', 'size-4', 'size-3.5', 'gap-2.5', 'text-sm'],
+    ['lg', 'size-5', 'size-4', 'gap-3', 'text-base'],
+    ['xl', 'size-6', 'size-5', 'gap-3.5', 'text-lg'],
+]);
+
+it('draws the tick at the box it is given rather than at the icon step it fetched', function () {
+    // `size` picks which drawing is fetched — the 16px solid is a different path
+    // from the 20px one — and the class picks the box it is drawn in. It works
+    // because an icon's own size class carries zero specificity.
+    expect(Blade::render('<x-shape::checkbox name="terms" size="xl" />'))
+        ->toContain('viewBox="0 0 20 20"')
+        ->toContain('[:where(&amp;)]:size-5')
+        ->toContain('pointer-events-none size-5');
+});
+
+it('keeps the box on the first line at every step', function () {
+    // Half the difference between the line and the box is two pixels all the way
+    // up the scale, so the offset is not in the match.
+    foreach (['xs', 'base', 'xl'] as $size) {
+        expect(Blade::render("<x-shape::checkbox name=\"terms\" size=\"{$size}\" />"))
+            ->toContain('grid place-items-center pt-0.5');
+    }
+});

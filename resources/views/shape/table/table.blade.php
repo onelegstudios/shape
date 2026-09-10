@@ -24,21 +24,54 @@
 
     A table is content, not a surface: no border, no background, no elevation of
     its own. Compose it inside a card when it needs to sit on one.
+
+    `size` is density, and it lives here rather than on the cell for the reason
+    the tab strip's does: a table is one thing, and a table whose rows were set
+    at four densities is not a table anyone asked for. Stating it once is also
+    what keeps it off `table.cell`, which is the component in this library that
+    renders most often and the one whose prop list is worth defending.
+
+    It reaches the cells as descendant utilities. Every measurement a cell and a
+    heading draw themselves with carries the library's zero specificity, so a
+    rule from the wrapper outranks it — no `!important`, no prop handed through
+    three components, and nothing extra rendered per row. `base` emits none of
+    them and leaves those defaults standing.
 --}}
 
 @props([
+    'size' => 'base',
     'empty' => true,
     'emptyIcon' => null,
     'emptyHeading' => 'Nothing here yet',
     'emptyDescription' => null,
 ])
 
-<div {{ $attributes->class('[:where(&)]:overflow-x-auto') }} data-shape-table>
+@php
+// The inset on both kinds of cell, the type the table is set in, and — at the
+// two large steps — the column headings, which are `text-2xs` and have nowhere
+// smaller to go. They are selected as elements rather than by their data
+// attributes so the rule stays one class name long; a `<td>` inside a table
+// inside a cell is the one arrangement that would catch the wrong one, and a
+// table nested in a table has larger problems.
+$classes = Shape::classes()
+    ->add('[:where(&)]:overflow-x-auto')
+
+    ->add(match ($size) {
+        'xs' => '[&>table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1.5',
+        'sm' => '[&>table]:text-sm [&_th]:px-2.5 [&_th]:py-1.5 [&_td]:px-2.5 [&_td]:py-2',
+        'lg' => '[&>table]:text-base [&_th]:px-4 [&_th]:py-3 [&_th]:text-xs [&_td]:px-4 [&_td]:py-4',
+        'xl' => '[&>table]:text-lg [&_th]:px-5 [&_th]:py-4 [&_th]:text-sm [&_td]:px-5 [&_td]:py-5',
+        default => null,
+    });
+@endphp
+
+<div {{ $attributes->class($classes) }} data-shape-table data-shape-size="{{ $size }}">
     <table class="w-full [:where(&)]:text-sm [:where(&)]:text-[color:var(--shape-fg)]">{{ $slot }}</table>
 
     @if ($empty)
         <div data-shape-table-empty>
             <x-shape::empty
+                :size="$size"
                 :icon="$emptyIcon"
                 :heading="$emptyHeading"
                 :description="$emptyDescription"

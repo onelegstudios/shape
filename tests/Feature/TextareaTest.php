@@ -46,3 +46,14 @@ it('gives its own defaults zero specificity so caller classes win', function () 
         ->toContain('[:where(&amp;)]:resize-y')
         ->toContain('resize-none');
 });
+
+it('sizes itself by the room around the text, since its height is its rows', function (string $size, string $expected) {
+    expect(Blade::render("<x-shape::textarea name=\"notes\" size=\"{$size}\" />"))
+        ->toContain($expected);
+})->with([
+    ['xs', '[:where(&amp;)]:px-2 [:where(&amp;)]:py-1 [:where(&amp;)]:text-xs'],
+    ['sm', '[:where(&amp;)]:px-2.5 [:where(&amp;)]:py-1.5 [:where(&amp;)]:text-sm'],
+    ['base', '[:where(&amp;)]:px-3 [:where(&amp;)]:py-2 [:where(&amp;)]:text-sm'],
+    ['lg', '[:where(&amp;)]:px-4 [:where(&amp;)]:py-3 [:where(&amp;)]:text-base'],
+    ['xl', '[:where(&amp;)]:px-5 [:where(&amp;)]:py-4 [:where(&amp;)]:text-lg'],
+]);

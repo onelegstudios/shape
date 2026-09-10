@@ -45,6 +45,7 @@ it('takes one of four sizes', function (string $size, string $class) {
     ['sm', '[:where(&amp;)]:size-8'],
     ['base', '[:where(&amp;)]:size-10'],
     ['lg', '[:where(&amp;)]:size-12'],
+    ['xl', '[:where(&amp;)]:size-14'],
 ]);
 
 it('paints one of three variants from the tone variables', function (string $variant, string $class) {
@@ -284,6 +285,7 @@ it('sizes the glyph from the circle rather than from a prop of its own', functio
     ['sm', '[:where(&amp;)]:size-4'],
     ['base', '[:where(&amp;)]:size-5'],
     ['lg', '[:where(&amp;)]:size-6'],
+    ['xl', '[:where(&amp;)]:size-8'],
 ]);
 
 it('draws the glyph solid at every size', function (string $size) {
@@ -292,7 +294,7 @@ it('draws the glyph solid at every size', function (string $size) {
     expect(Blade::render("<x-shape::avatar icon=\"shape-user\" size=\"{$size}\" />"))
         ->toContain('fill="currentColor"')
         ->not->toContain('stroke-width');
-})->with(['xs', 'sm', 'base', 'lg']);
+})->with(['xs', 'sm', 'base', 'lg', 'xl']);
 
 it('lets a call site name the glyph style, which no class could reach', function () {
     // `solid` is a default and not a constant. Every other decision here is a
@@ -483,6 +485,7 @@ it('makes a count the dot with room for a number in it', function (string $size,
     ['sm', 'size-2"', 'h-4 min-w-4 px-0.5'],
     ['base', 'size-2.5', 'h-4.5 min-w-4.5 px-1 '],
     ['lg', 'size-3"', 'h-5 min-w-5 px-1.5'],
+    ['xl', 'size-3.5', 'h-5.5 min-w-5.5 px-1.5'],
 ]);
 
 it('paints nothing at all when there is no badge to paint', function () {
@@ -576,6 +579,7 @@ it('sizes the mark from the circle rather than from a prop of its own', function
     ['sm', 'size-2"'],
     ['base', 'size-2.5'],
     ['lg', 'size-3"'],
+    ['xl', 'size-3.5'],
 ]);
 
 it('takes the mark no room, so a row of faces does not move when one lights up', function () {

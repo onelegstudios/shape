@@ -4,9 +4,12 @@ A setting that applies the moment it moves.
 
 @docs('preview', name: 'switch', layout: 'stack')
 
-## Description
+## Sizes
 
-@docs('preview', name: 'switch-description', layout: 'stack')
+The track, the knob and the distance the knob travels are one number at each
+step — the track is two knobs plus the four pixels of inset it keeps throughout:
+
+@docs('preview', name: 'switch-sizes', layout: 'stack')
 
 ## Tones
 
@@ -19,6 +22,10 @@ the whole point:
 ## Disabled
 
 @docs('preview', name: 'switch-disabled', layout: 'stack')
+
+## Description
+
+@docs('preview', name: 'switch-description', layout: 'stack')
 
 ## Switch or checkbox?
 
@@ -68,10 +75,11 @@ should hold still for the same readers.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `label` | — | the text beside the switch |
 | `description` | — | a second line under the label |
-| `value` | — | the submitted value |
 | `tone` | `brand` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
+| `value` | — | the submitted value |
 | `id` | the resolved name | the element id |
 
 `checked`, `disabled` and `wire:model` pass through to the `<input>`.

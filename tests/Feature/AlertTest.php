@@ -788,3 +788,48 @@ it('leaves an alert with no actions the column it always had', function () {
         ->toContain('<div class="flex min-w-0 flex-1 flex-col">')
         ->not->toContain('gap-3 @lg:flex-row');
 });
+
+it('moves the inset and the type it sets the message in together', function (string $size, string $inset, string $type) {
+    // An alert that grew its padding and left its sentence at 14px would read as
+    // a small alert with a wide margin.
+    $html = Blade::render("<x-shape::alert tone=\"info\" heading=\"Heads up\" size=\"{$size}\">Your export is queued.</x-shape::alert>");
+
+    expect($html)
+        ->toContain($inset)
+        ->toContain("data-shape-heading data-shape-size=\"{$type}\"")
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', '[:where(&amp;)]:gap-2 [:where(&amp;)]:p-2.5', 'xs'],
+    ['sm', '[:where(&amp;)]:gap-2.5 [:where(&amp;)]:p-3', 'sm'],
+    ['base', '[:where(&amp;)]:gap-3 [:where(&amp;)]:p-4', 'sm'],
+    ['lg', '[:where(&amp;)]:gap-4 [:where(&amp;)]:p-5', 'base'],
+    ['xl', '[:where(&amp;)]:gap-5 [:where(&amp;)]:p-6', 'lg'],
+]);
+
+it('shares a type step between the two most common alerts on a page', function () {
+    // `sm` and `base` differ in the room around the message and not in the
+    // message, which is the button's arrangement and for the button's reason.
+    $small = Blade::render('<x-shape::alert size="sm">Your trial ends on Friday.</x-shape::alert>');
+    $base = Blade::render('<x-shape::alert>Your trial ends on Friday.</x-shape::alert>');
+
+    expect($small)->toContain('[:where(&amp;)]:text-sm [:where(&amp;)]:leading-6')
+        ->and($base)->toContain('[:where(&amp;)]:text-sm [:where(&amp;)]:leading-6');
+});
+
+it('keeps the glyph two pixels down the first line at every step', function () {
+    // Half the difference between the line and the mark is two pixels wherever
+    // the pair lands, which is why the offset is not in the match.
+    foreach (['xs', 'base', 'xl'] as $size) {
+        expect(Blade::render("<x-shape::alert tone=\"danger\" size=\"{$size}\">Card declined.</x-shape::alert>"))
+            ->toContain('mt-0.5');
+    }
+});
+
+it('resolves the glyph and the dismiss control from the step, and lets a name beat it', function () {
+    expect(Blade::render('<x-shape::alert tone="danger" size="xs" dismissible>Card declined.</x-shape::alert>'))
+        ->toContain('size-6')
+        ->toContain('-mr-1 -mt-1');
+
+    expect(Blade::render('<x-shape::alert tone="danger" size="xl" icon-size="xs">Card declined.</x-shape::alert>'))
+        ->toContain('[:where(&amp;)]:size-4');
+});

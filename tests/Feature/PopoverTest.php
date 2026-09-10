@@ -31,3 +31,17 @@ it('takes no role unless it is given one', function () {
     expect(Blade::render('<x-shape::popover name="p">Body</x-shape::popover>'))
         ->not->toContain('role=');
 });
+
+it('pads itself from the library\'s scale rather than a pair of moods', function (string $padding, string $expected) {
+    // `tight` and nothing else was the old pair, and a panel that wanted a step
+    // between them had no word for it. Five steps, the same five every other
+    // component answers to, and the menu takes `sm` like anything else would.
+    expect(Blade::render("<x-shape::popover name=\"p\" padding=\"{$padding}\">Body</x-shape::popover>"))
+        ->toContain($expected);
+})->with([
+    ['xs', '[:where(&amp;)]:p-1'],
+    ['sm', '[:where(&amp;)]:p-1.5'],
+    ['base', '[:where(&amp;)]:p-3'],
+    ['lg', '[:where(&amp;)]:p-4'],
+    ['xl', '[:where(&amp;)]:p-5'],
+]);

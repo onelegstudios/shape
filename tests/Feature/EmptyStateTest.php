@@ -65,3 +65,28 @@ it('gives its own defaults zero specificity so caller classes win', function () 
         ->toContain('[:where(&amp;)]:py-12')
         ->toContain('py-4');
 });
+
+it('grows the room, and the mark and the type with it', function (string $size, string $inset, string $heading, string $glyph) {
+    // An empty state is mostly room, so that is mostly what the prop moves — but
+    // a 24px glyph over 20 pixels of padding reads as a mark that outgrew its
+    // box, so the mark and the words go with it.
+    $html = Blade::render("<x-shape::empty icon=\"shape-info\" heading=\"No invoices yet\" size=\"{$size}\" />");
+
+    expect($html)
+        ->toContain($inset)
+        ->toContain("data-shape-heading data-shape-size=\"{$heading}\"")
+        ->toContain("[:where(&amp;)]:size-{$glyph}")
+        ->toContain('data-shape-empty');
+})->with([
+    ['xs', '[:where(&amp;)]:gap-1 [:where(&amp;)]:px-4 [:where(&amp;)]:py-6', 'sm', '5'],
+    ['sm', '[:where(&amp;)]:gap-1.5 [:where(&amp;)]:px-5 [:where(&amp;)]:py-8', 'base', '6'],
+    ['base', '[:where(&amp;)]:gap-2 [:where(&amp;)]:px-6 [:where(&amp;)]:py-12', 'lg', '6'],
+    ['lg', '[:where(&amp;)]:gap-3 [:where(&amp;)]:px-8 [:where(&amp;)]:py-16', 'xl', '8'],
+    ['xl', '[:where(&amp;)]:gap-4 [:where(&amp;)]:px-10 [:where(&amp;)]:py-20', 'xl', '10'],
+]);
+
+it('lets a named icon size beat the one the step resolved', function () {
+    expect(Blade::render('<x-shape::empty icon="shape-info" icon-size="xs" size="xl" />'))
+        ->toContain('[:where(&amp;)]:size-4')
+        ->not->toContain('[:where(&amp;)]:size-10');
+});

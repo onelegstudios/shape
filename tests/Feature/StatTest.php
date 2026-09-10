@@ -83,3 +83,32 @@ it('passes attributes straight through', function () {
     expect(Blade::render('<x-shape::stat value="1,204" wire:key="sent" />'))
         ->toContain('wire:key="sent"');
 });
+
+it('moves the number further than the word under it', function (string $size, string $number, string $word) {
+    // Four type steps against two, because that is the relationship a stat is
+    // made of: a label that grew as fast as its number would flatten the block
+    // into two lines of large text with a gap in them.
+    $html = Blade::render("<x-shape::stat label=\"Invoices sent\" value=\"1,204\" delta=\"12%\" trend=\"up\" description=\"Since March\" size=\"{$size}\" />");
+
+    expect($html)
+        ->toContain("{$number} font-semibold")
+        ->toContain("{$word} font-medium text-[color:var(--shape-fg-muted)]")
+        ->toContain("{$word} text-[color:var(--shape-fg-muted)]")
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', 'text-lg', 'text-xs'],
+    ['sm', 'text-xl', 'text-xs'],
+    ['base', 'text-2xl', 'text-sm'],
+    ['lg', 'text-3xl', 'text-base'],
+    ['xl', 'text-4xl', 'text-lg'],
+]);
+
+it('composes with emphasis rather than fighting it', function () {
+    // `size` picks the pair of steps; `emphasis` decides which of the two the
+    // number gets. Levelled, both sit at the third step the size names, and what
+    // separates them is weight and colour.
+    expect(Blade::render('<x-shape::stat label="Invoices sent" value="1,204" size="lg" emphasis="label" />'))
+        ->toContain('text-lg font-semibold text-[color:var(--shape-fg)]')
+        ->toContain('text-lg font-medium tabular-nums text-[color:var(--shape-fg-muted)]')
+        ->not->toContain('text-3xl');
+});

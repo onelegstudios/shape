@@ -8,6 +8,22 @@ depends on whether a tab has an `href`.
 `for` on a tab matches `name` on a panel. Exactly one of each carries
 `selected`.
 
+## Sizes
+
+`size` is the strip's, not the tab's. Tabs in one strip are one control, so the
+word is said once where the strip is rather than repeated on every tab and got
+wrong on the fourth:
+
+@docs('preview', name: 'tabs-sizes', layout: 'stack')
+
+It reaches the tabs as descendant utilities rather than as a prop handed down.
+Everything a tab draws itself with is written at zero specificity, so a rule from
+the strip outranks it — which also means a class of your own on a tab lands at
+the same weight as the strip's and is decided by Tailwind's ordering rather than
+by which of the two is more specific. Reach for the strip.
+
+`base` emits nothing at all and leaves the tab's own defaults standing.
+
 ## Icons
 
 @docs('preview', name: 'tabs-icons', layout: 'stack')
@@ -65,6 +81,14 @@ class: the script toggles it, so a panel carrying its own `display` utility
 would outrank it and never hide. That is the one thing to know before styling a
 panel.
 
+## What the suite does not cover
+
+The keyboard behaviour above is not verified by the test suite. There is no
+JavaScript test infrastructure in this package, so what the tests can check is
+that menus and tabs still share one walker and that the behaviour is registered
+— not that <kbd>→</kbd> moves. Arrow keys, roving focus, the panel swap and
+activation-follows-focus are checked by hand in the workbench.
+
 ## Theming
 
 A tab is muted at rest and paints `--shape-tone-tint` under `--shape-tone-ink`
@@ -115,25 +139,18 @@ use when the two should not look alike.
 
 | Component | Prop | Default | Values |
 | --- | --- | --- | --- |
-| `tabs` | `as` | — | `nav` for a strip of links |
+| `tabs` | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` — sizes every tab in the strip |
 | | `label` | — | the accessible name of the strip |
+| | `as` | — | `nav` for a strip of links |
 | | `orientation` | `horizontal` | `horizontal`, `vertical` |
-| `tabs.tab` | `for` | — | the panel's `name` |
+| `tabs.tab` | `icon` | — | any [icon](icon.md) name |
+| | `as` | resolved from `href` | `button`, `a`, `div` |
+| | `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
+| | `for` | — | the panel's `name` |
 | | `href` | — | makes it a link instead |
 | | `selected` | `false` | |
-| | `icon` | — | any [icon](icon.md) name |
-| | `icon-size` | `sm` | `xs`, `sm`, `base` |
-| | `as` | resolved from `href` | `button`, `a`, `div` |
 | `tabs.panel` | `name` | — | matched by a tab's `for` |
 | | `selected` | `false` | |
-
-## What the suite does not cover
-
-The keyboard behaviour above is not verified by the test suite. There is no
-JavaScript test infrastructure in this package, so what the tests can check is
-that menus and tabs still share one walker and that the behaviour is registered
-— not that <kbd>→</kbd> moves. Arrow keys, roving focus, the panel swap and
-activation-follows-focus are checked by hand in the workbench.
 
 ## Folding
 

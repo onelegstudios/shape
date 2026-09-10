@@ -5,6 +5,16 @@ rather than a slot.
 
 @docs('preview', name: 'badge')
 
+## Sizes
+
+Five heights — 16px, 20px, 24px, 28px and 32px. The first three are moved apart
+by the vertical padding rather than by the type size: `text-2xs` and `text-xs`
+share a 1rem line box, so a scale that changed only the type and the side
+padding would draw two badges the same height. The last two are carried by the
+type, where 8px of padding on a 20px and a 24px line box arrives at 28 and 32:
+
+@docs('preview', name: 'badge-sizes')
+
 ## Tones
 
 `tone` says what the badge means, and resolves a matching icon:
@@ -20,15 +30,6 @@ almost always annotating something rather than being the thing you look at:
 
 Both read the same tone variables the [button](button.md) reads, so a badge and
 a button given the same tone agree without either knowing about the other.
-
-## Sizes
-
-Four heights — 16px, 20px, 24px and 28px — moved apart by the vertical padding
-rather than by the type size. `text-2xs` and `text-xs` share a 1rem line box, so
-a scale that changed only the type and the side padding would draw two badges
-the same height:
-
-@docs('preview', name: 'badge-sizes')
 
 ## Icons
 
@@ -107,10 +108,137 @@ replaces is a mark that survives greyscale with one that does not:
 <x-shape::badge label="Paid" tone="success" dot />
 ```
 
+## Buttons and links
+
+`as="button"` makes the badge a control, and an `href` makes it a link without
+being asked:
+
+@docs('preview', name: 'badge-controls')
+
+Most badges are labels on a row. Some are the way into something — a filter chip
+that clears itself, a state that opens the record behind it — and those have to
+be pressable by a keyboard as well as by a pointer.
+
+`href` resolving to an `<a>` on its own is the same resolution the
+[avatar](avatar.md), the [tab](tabs.md) and the [menu item](dropdown.md) make.
+Middle-click, "open in new tab" and the status bar all work for a link and none
+of them work for a button pretending to be one. Pass `as` as well where you want
+a button that happens to carry an `href`; `as` wins.
+
+`as` also takes `div`, for a badge inside something already clickable — the same
+escape hatch the [button](button.md#links) has, for the same reason.
+
+### The control is the badge
+
+It swaps the tag and nothing else about the box. The same element carries the
+same classes, the same padding, the same `data-shape-badge` and the same
+attribute bag it always carried, so everything Shape doesn't claim as a prop
+lands on the thing being pressed:
+
+```blade
+<x-shape::badge :label="$filter->name" tone="brand" icon-trailing="shape-arrow-right" as="button" wire:click="clear" />
+```
+
+`type` is part of that bag, and passing it is how a chip inside a form submits
+it rather than doing nothing:
+
+```blade
+<x-shape::badge label="Apply" tone="brand" as="button" type="submit" />
+```
+
+A badge that asks for no type is a `type="button"`, the same default the
+[button](button.md) takes, so a chip that sits in a form and answers a
+`wire:click` never submits it by accident.
+
+The label is the accessible name, exactly as it is the text — there is nothing
+else in a badge to name it with. A control whose `label` is a glyph and an
+`:icon="false"` is a control announced as "button" and nothing else, so give it
+`aria-label` where the text isn't the name.
+
+### It repaints rather than dims
+
+Which is where it parts from the [avatar](avatar.md#it-dims-rather-than-repaints).
+An avatar's paint is what the avatar means; a badge's is the same chrome the
+button paints, out of the same variables. So the hover is the button's too — a
+louder version of the same paint, one step per `variant`, and `outline` takes
+the tint the ghost button takes because it has no fill to lift.
+
+The focus ring is the button's exactly: `--shape-ring`, two pixels, offset two.
+A control that focused differently from every other control in the library would
+be reporting a difference that is not there. `disabled` and `aria-disabled` both
+dim the badge and remove pointer events, for the reason the button carries both
+— an anchor cannot be disabled.
+
+A badge that is not a control gets none of it: no transition, no hover, no ring,
+no dimming. A `<span>` that lit up under the pointer would be promising a press
+that isn't there.
+
+## Dismissing
+
+`dismissible` adds a close button after the label, which turns the badge into a
+chip — a filter someone can take off, a tag they can remove:
+
+@docs('preview', name: 'badge-dismissible')
+
+The button carries `data-shape-dismiss`, the same hook the
+[alert](alert.md#dismissing) and the [toast](toast.md) carry, and the same
+delegated listener in `shape.js` removes the nearest of the three. There is one
+dismissal mechanism in the library and a badge does not add a second.
+
+Dismissal is not remembered, the same as the [alert](alert.md#dismissing): the
+element is removed from the page and the next render brings it back, so the
+filter a chip stood for has to be cleared where it is kept. The attribute bag is
+on the badge and the × is inside it, so a handler on the badge catches the click
+on its way up:
+
+```blade
+<x-shape::badge :label="$filter->name" dismissible wire:click="remove({{ $filter->id }})" />
+```
+
+That is a `wire:click` on a `<span>` rather than on a control, which is exactly
+what it looks like: the badge is not pressable, the × inside it is, and the
+handler is listening to a click it did not draw the button for. It is also the
+only place to put one, since nothing a call site passes reaches inside.
+
+It draws its own button rather than composing the [button](button.md). The
+registry ejects a component with everything it composes, so a badge that used
+one would pull the button into an application that asked for a badge; and the
+button's box is taller than a 16px `xs` badge, so the control would end up
+setting the height of the thing it sits in. The × takes no colour of its own
+either — it inherits whatever ink the `variant` resolved, so it stays readable
+on a tint, on a fill and on an outline without branching on any of them.
+
+The `label` goes into the button's accessible name — "Dismiss Overdue" rather
+than "Dismiss", because a filter bar of twenty chips all announced the same way
+names the control and not the chip it removes.
+
+### Not also a control
+
+`dismissible` cannot be combined with `as` or an `href`, and a badge given both
+throws:
+
+```blade
+{{-- Throws. --}}
+<x-shape::badge label="Overdue" href="/invoices" dismissible />
+```
+
+The × is a control, and it is inside the badge. A `<button>` inside a `<button>`
+is not invalid-but-tolerated markup — it is markup the parser rewrites, closing
+the outer control at the inner one, so a call site that wrote a nesting gets two
+siblings. An `<a>` does the same to any interactive content inside it.
+
+It raises rather than picking one, because both choices available are silent:
+dropping the control loses the navigation, dropping the × loses the dismissal,
+and neither leaves a trace at the call site. A chip that both navigates and
+dismisses is two controls, and two controls need a box around them — which is
+something a call site can write and not something this component can be, since
+[the control is the badge](#the-control-is-the-badge) and there is only ever one
+element here.
+
 ## Counts and lone icons
 
 `square` drops the side padding and makes the badge as tall as it is wide — the
-same four heights, asked for as a height because there is no padding left to
+same five heights, asked for as a height because there is no padding left to
 arrive at them through. It is the [button](button.md#icon-only-buttons)'s
 `square` and not the [avatar](avatar.md#squares)'s: a badge is square-cornered
 already, so the only thing left for the word to mean here is the proportions.
@@ -202,71 +330,6 @@ inside a badge, that element has to be one the component draws.
 It costs a badge that isn't capped nothing: a badge sized by its own content
 measures the same with the span as without.
 
-## Buttons and links
-
-`as="button"` makes the badge a control, and an `href` makes it a link without
-being asked:
-
-@docs('preview', name: 'badge-controls')
-
-Most badges are labels on a row. Some are the way into something — a filter chip
-that clears itself, a state that opens the record behind it — and those have to
-be pressable by a keyboard as well as by a pointer.
-
-`href` resolving to an `<a>` on its own is the same resolution the
-[avatar](avatar.md), the [tab](tabs.md) and the [menu item](dropdown.md) make.
-Middle-click, "open in new tab" and the status bar all work for a link and none
-of them work for a button pretending to be one. Pass `as` as well where you want
-a button that happens to carry an `href`; `as` wins.
-
-`as` also takes `div`, for a badge inside something already clickable — the same
-escape hatch the [button](button.md#links) has, for the same reason.
-
-### The control is the badge
-
-It swaps the tag and nothing else about the box. The same element carries the
-same classes, the same padding, the same `data-shape-badge` and the same
-attribute bag it always carried, so everything Shape doesn't claim as a prop
-lands on the thing being pressed:
-
-```blade
-<x-shape::badge :label="$filter->name" tone="brand" icon-trailing="shape-arrow-right" as="button" wire:click="clear" />
-```
-
-`type` is part of that bag, and passing it is how a chip inside a form submits
-it rather than doing nothing:
-
-```blade
-<x-shape::badge label="Apply" tone="brand" as="button" type="submit" />
-```
-
-A badge that asks for no type is a `type="button"`, the same default the
-[button](button.md) takes, so a chip that sits in a form and answers a
-`wire:click` never submits it by accident.
-
-The label is the accessible name, exactly as it is the text — there is nothing
-else in a badge to name it with. A control whose `label` is a glyph and an
-`:icon="false"` is a control announced as "button" and nothing else, so give it
-`aria-label` where the text isn't the name.
-
-### It repaints rather than dims
-
-Which is where it parts from the [avatar](avatar.md#it-dims-rather-than-repaints).
-An avatar's paint is what the avatar means; a badge's is the same chrome the
-button paints, out of the same variables. So the hover is the button's too — a
-louder version of the same paint, one step per `variant`, and `outline` takes
-the tint the ghost button takes because it has no fill to lift.
-
-The focus ring is the button's exactly: `--shape-ring`, two pixels, offset two.
-A control that focused differently from every other control in the library would
-be reporting a difference that is not there. `disabled` and `aria-disabled` both
-dim the badge and remove pointer events, for the reason the button carries both
-— an anchor cannot be disabled.
-
-A badge that is not a control gets none of it: no transition, no hover, no ring,
-no dimming. A `<span>` that lit up under the pointer would be promising a press
-that isn't there.
-
 ## Selecting
 
 `selected` says whether a chip is on. It is the other half of a filter bar:
@@ -325,68 +388,6 @@ nothing says out loud.
 It cannot be [dismissible](#dismissing) either, and for the reason a dismissible
 badge cannot be a control — a toggle and a dismiss button are two controls, and
 a badge is one element.
-
-## Dismissing
-
-`dismissible` adds a close button after the label, which turns the badge into a
-chip — a filter someone can take off, a tag they can remove:
-
-@docs('preview', name: 'badge-dismissible')
-
-The button carries `data-shape-dismiss`, the same hook the
-[alert](alert.md#dismissing) and the [toast](toast.md) carry, and the same
-delegated listener in `shape.js` removes the nearest of the three. There is one
-dismissal mechanism in the library and a badge does not add a second.
-
-Dismissal is not remembered, the same as the [alert](alert.md#dismissing): the
-element is removed from the page and the next render brings it back, so the
-filter a chip stood for has to be cleared where it is kept. The attribute bag is
-on the badge and the × is inside it, so a handler on the badge catches the click
-on its way up:
-
-```blade
-<x-shape::badge :label="$filter->name" dismissible wire:click="remove({{ $filter->id }})" />
-```
-
-That is a `wire:click` on a `<span>` rather than on a control, which is exactly
-what it looks like: the badge is not pressable, the × inside it is, and the
-handler is listening to a click it did not draw the button for. It is also the
-only place to put one, since nothing a call site passes reaches inside.
-
-It draws its own button rather than composing the [button](button.md). The
-registry ejects a component with everything it composes, so a badge that used
-one would pull the button into an application that asked for a badge; and the
-button's box is taller than a 16px `xs` badge, so the control would end up
-setting the height of the thing it sits in. The × takes no colour of its own
-either — it inherits whatever ink the `variant` resolved, so it stays readable
-on a tint, on a fill and on an outline without branching on any of them.
-
-The `label` goes into the button's accessible name — "Dismiss Overdue" rather
-than "Dismiss", because a filter bar of twenty chips all announced the same way
-names the control and not the chip it removes.
-
-### Not also a control
-
-`dismissible` cannot be combined with `as` or an `href`, and a badge given both
-throws:
-
-```blade
-{{-- Throws. --}}
-<x-shape::badge label="Overdue" href="/invoices" dismissible />
-```
-
-The × is a control, and it is inside the badge. A `<button>` inside a `<button>`
-is not invalid-but-tolerated markup — it is markup the parser rewrites, closing
-the outer control at the inner one, so a call site that wrote a nesting gets two
-siblings. An `<a>` does the same to any interactive content inside it.
-
-It raises rather than picking one, because both choices available are silent:
-dropping the control loses the navigation, dropping the × loses the dismissal,
-and neither leaves a trace at the call site. A chip that both navigates and
-dismisses is two controls, and two controls need a box around them — which is
-something a call site can write and not something this component can be, since
-[the control is the badge](#the-control-is-the-badge) and there is only ever one
-element here.
 
 ## Theming
 
@@ -448,20 +449,20 @@ colour is not one the system has, make it important:
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `label` | — | the text |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
-| `variant` | `subtle` | `subtle`, `solid`, `outline` |
-| `size` | `base` | `xs`, `sm`, `base`, `lg` |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` to empty the slot in front of the label |
-| `dot` | `false` | a small circle in that slot, in the variant's own ink, for a status the state tones do not cover |
-| `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
-| `icon-size` | `xs` | `xs`, `sm`, `base` |
-| `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |
-| `square` | `false` | drops the side padding and makes the badge as tall as it is wide, for a count or a lone icon; grows into a pill when the content is wider |
-| `dismissible` | `false` | adds a close button; cannot be combined with `as` or `href` |
-| `selected` | — | `true` or `false` makes the badge a toggle and paints the on state; needs `as` or an `href`, and cannot be combined with `dismissible` |
 | `as` | `span` | `button`, `a`, `div` — an `href` implies `a` |
+| `variant` | `subtle` | `subtle`, `solid`, `outline` |
+| `icon-size` | `xs` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `dismissible` | `false` | adds a close button; cannot be combined with `as` or `href` |
+| `square` | `false` | drops the side padding and makes the badge as tall as it is wide, for a count or a lone icon; grows into a pill when the content is wider |
 | `type` | `button` | any button type; only reaches an `as="button"` badge |
+| `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
+| `dot` | `false` | a small circle in that slot, in the variant's own ink, for a status the state tones do not cover |
+| `inset` | `false` | `true` to cancel the vertical padding with a negative margin, for a badge inline in text |
+| `selected` | — | `true` or `false` makes the badge a toggle and paints the on state; needs `as` or an `href`, and cannot be combined with `dismissible` |
 
 There is no slot: Blaze memoizes a component only when it has none and is called
 self-closing, and a badge — one per row, every row, every page — is the best

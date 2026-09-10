@@ -164,20 +164,29 @@ final class Component
     }
 
     /**
-     * The arms of the size match, with the largest size as the default.
+     * The arms of the size match, with the scale's default size as the default.
+     *
+     * The named arms come in the scale's own order and the `default` goes last,
+     * wherever in the scale the size it stands for sits. A `match` reads as a
+     * list with a fallthrough at the end of it, and `base` is the middle of
+     * `xs` to `xl` — writing the default in the middle would put two things in
+     * the reader's way at once.
      */
     private function classes(): string
     {
-        $sizes = $this->set->sizes();
         $default = $this->set->defaultSize();
 
         $arms = [];
 
-        foreach ($sizes as $size) {
-            $arms[] = $size === $default
-                ? "        default => '".$this->set->classFor($size)."',"
-                : "        '{$size}' => '".$this->set->classFor($size)."',";
+        foreach ($this->set->sizes() as $size) {
+            if ($size === $default) {
+                continue;
+            }
+
+            $arms[] = "        '{$size}' => '".$this->set->classFor($size)."',";
         }
+
+        $arms[] = "        default => '".$this->set->classFor($default)."',";
 
         return implode("\n", $arms);
     }
@@ -186,8 +195,8 @@ final class Component
      * The drawing arms, with the default cell's drawing as the fallthrough.
      *
      * Every cell that resolved to the same file shares an arm, which is why
-     * Heroicons — six cells over four drawings — writes three cases and a
-     * default rather than six of anything.
+     * Heroicons — ten cells over four drawings, since `lg` and `xl` borrow the
+     * 24px pair — writes three cases and a default rather than ten of anything.
      *
      * Written as raw PHP rather than `@if` so that the arms compile to a
      * `switch` verbatim. Blaze folds the whole thing away when both props are

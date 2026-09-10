@@ -21,10 +21,10 @@ it('picks its element from the level', function (int $level) {
 it('keeps document hierarchy and visual hierarchy independent', function () {
     // The point of the prop pair: a page's h1 is often not its largest text.
     $small = Blade::render('<x-shape::heading level="1" size="sm">Section</x-shape::heading>');
-    $large = Blade::render('<x-shape::heading level="6" size="2xl">Total</x-shape::heading>');
+    $large = Blade::render('<x-shape::heading level="6" size="xl">Total</x-shape::heading>');
 
     expect($small)->toContain('<h1')->toContain('[:where(&amp;)]:text-sm')
-        ->and($large)->toContain('<h6')->toContain('[:where(&amp;)]:text-2xl');
+        ->and($large)->toContain('<h6')->toContain('[:where(&amp;)]:text-xl');
 });
 
 it('binds leading and tracking to the size rather than letting them be set apart', function (string $size, string $text, string $tracking) {
@@ -32,11 +32,11 @@ it('binds leading and tracking to the size rather than letting them be set apart
 
     expect($html)->toContain($text)->toContain($tracking);
 })->with([
+    ['xs', '[:where(&amp;)]:text-xs', '[:where(&amp;)]:tracking-normal'],
     ['sm', '[:where(&amp;)]:text-sm', '[:where(&amp;)]:tracking-normal'],
     ['base', '[:where(&amp;)]:text-base', '[:where(&amp;)]:tracking-normal'],
     ['lg', '[:where(&amp;)]:text-lg', '[:where(&amp;)]:tracking-tight'],
     ['xl', '[:where(&amp;)]:text-xl', '[:where(&amp;)]:tracking-tight'],
-    ['2xl', '[:where(&amp;)]:text-2xl', '[:where(&amp;)]:tracking-tighter'],
 ]);
 
 it('reads its colour from the surface contract', function () {

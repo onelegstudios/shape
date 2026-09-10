@@ -4,6 +4,17 @@ A text input. Give it a `label` and it assembles the whole field around itself.
 
 @docs('preview', name: 'input', layout: 'stack')
 
+## Sizes
+
+@docs('preview', name: 'input-sizes', layout: 'stack')
+
+## Disabled
+
+@docs('preview', name: 'input-disabled', layout: 'stack')
+
+The label dims with the control, and the field does that in CSS rather than by
+plumbing a `disabled` prop through three components.
+
 ## Label and description
 
 `label` renders the field, the label and the error slot. `description` adds
@@ -13,10 +24,6 @@ supporting copy and wires it to `aria-describedby`:
 
 Without a `label` you get the bare control, for composing by hand — see
 [Field](field.md).
-
-## Sizes
-
-@docs('preview', name: 'input-sizes', layout: 'stack')
 
 ## Types
 
@@ -35,13 +42,6 @@ reader announces and what a sighted user sees cannot drift apart:
 The message underneath comes from the [error](field.md#error) component, which
 the shorthand renders for you and which reads Laravel's error bag. See
 [Forms](../forms.md#the-error-hole).
-
-## Disabled
-
-@docs('preview', name: 'input-disabled', layout: 'stack')
-
-The label dims with the control, and the field does that in CSS rather than by
-plumbing a `disabled` prop through three components.
 
 ## It never has to be told its name
 
@@ -111,11 +111,11 @@ select[data-shape-control] {
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `type` | `text` | any input type |
-| `size` | `base` | `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `label` | — | assembles the whole field when given |
 | `description` | — | supporting copy, wired to `aria-describedby` |
 | `id` | the resolved name | the element id |
+| `type` | `text` | any input type |
 
 Everything else — `placeholder`, `required`, `disabled`, `wire:model`,
 `aria-invalid` — passes through to the `<input>`.

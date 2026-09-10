@@ -5,6 +5,21 @@ this a callout.
 
 @docs('preview', name: 'alert', layout: 'stack')
 
+## Sizes
+
+`size` moves the inset the block is drawn with and the type the message is set
+in, together — an alert that grew its padding and left its sentence at 14px would
+read as a small alert with a wide margin:
+
+@docs('preview', name: 'alert-sizes', layout: 'stack')
+
+`sm` and `base` share a type step and differ in the room around them, which is
+the [button](button.md#sizes)'s arrangement and for the button's reason: the two
+most common alerts on a page should not set their text differently.
+
+The glyph and the dismiss control follow unless they are named, so a call site
+says the word once rather than three times.
+
 ## Tones
 
 `tone` says what the alert means, and resolves a matching icon. With no tone the
@@ -48,36 +63,52 @@ nowhere for it to go. White on the 700 fills starts at 4.9:1 for `success`, so
 any tint that reads as recessed lands under AA. Hierarchy comes from the
 heading's size and weight instead.
 
-## Toning the text
+## Icons
 
-`outline` and `ghost` paint no fill, so an alert in either sits directly on the
-page and its text reads both ways. `toned` is which way:
+Every state colour resolves a glyph of its own, so an alert stays readable in
+greyscale and to anyone who can't separate the hues. `icon` picks a different
+one, `:icon="false"` removes it, `icon-size` changes how big it is, and
+`icon-variant` changes which style it is drawn in:
 
-@docs('preview', name: 'alert-toned', layout: 'stack')
+`brand` and `accent` are the exceptions, and deliberately: both are emphasis
+rather than a state, so they draw nothing. An informational message wants
+[`info`](../theming.md#the-state-colours-are-not-yours-to-rebrand), which is blue
+whatever the brand becomes.
 
-Both default to the page's ink. Nothing about the message is lost with it — the
-glyph still says what the alert means, and on `outline` with a toned
-[`border`](#borders) so does the edge — and what is gained is a block of body copy
-that reads as body copy. A full paragraph of red is the loudest thing on a page
-for no reason.
+@docs('preview', name: 'alert-icons', layout: 'stack')
 
-A ghost alert takes the tone back under the pointer, because that is when it
-paints the tint it would have had as a `subtle` alert, and grey text on a coloured
-wash is the thing this library will not do. It is published as
-`data-shape-surface-hover`, for as long as the pointer is there — a `hover:text-`
-on the alert could not reach the heading and the body inside it, both of which
-paint their own foreground from the pair. The [dismiss](#dismissing) control
-follows the same attribute.
+An icon picks its own style from its size — [solid at `xs` and `sm`, outline at
+`base`](icon.md#size-and-style) — so an alert leaves `icon-variant` unset by
+default and takes whichever drawing the set prefers at the size it asked for.
+Name it where you want the other one: the stroked glyph at `sm` is reachable no
+other way, because until this prop the only lever on the style was a size that
+also changes how big the glyph is.
 
-`subtle` and `solid` ignore the prop. Both paint a background, and what is
-readable on one is not a call site's to choose — grey text on a pink wash and dark
-ink on a saturated fill are the two failures the
-[surface contract](../theming.md#the-surface-contract) exists to make impossible.
+### Where the glyph sits
 
-An untoned alert publishes no `data-shape-surface` at all, rather than publishing
-the page's own colours under a name. The difference shows when it is not on the
-page: an outline alert inside a `solid` card should read in the card's foreground,
-and inheriting is what does that.
+By default the glyph sits in a gutter: a column of its own, level with the first
+line and beside everything under it. That is what a heading, a paragraph and a
+row of buttons all want to be indented past, and it is the right shape for an
+alert that has something to say.
+
+It is the wrong shape for an alert that is one sentence long. A gutter under a
+single line is a column holding one thing, and in a form field's width the
+message wraps into a narrow channel beside a mark that has nothing left to mark.
+`icon-placement="inline"` sets the glyph at the head of the first line instead,
+so the sentence wraps under it:
+
+@docs('preview', name: 'alert-icon-placement', layout: 'stack')
+
+The glyph is floated rather than set inline, which is what lets the same markup
+serve an alert with a heading and one without: it is placed before both and
+lands beside whichever turns out to hold the first line. A heading takes it when
+there is one, as the third example shows, and the sentence takes it when there
+is not. Nothing about the message decides which.
+
+The glyph stays the same size in both, because `icon-size` is a separate
+question from where the glyph goes. At the default `sm` it is a 20px mark on a
+24px line, which sits comfortably; `icon-size="xs"` is the quieter one where the
+message is the point and the mark is only there to say which kind it is.
 
 ## Borders
 
@@ -111,107 +142,6 @@ pixel when it lands.
 Both colours are steps of `--shape-tone`, not a palette of their own, so a border
 follows a [retheme](../theming.md) with everything else. To make every toned edge
 in the library heavier or lighter at once, move `--shape-tone-border-strong`.
-
-## Elevation
-
-`shadow` lifts the alert off the page. It is the one prop here that says nothing
-about the tone, and like [`border`](#borders) it is off by default — an alert is
-part of the content it is about, and a block in the flow of that content has
-nothing to lift away from:
-
-@docs('preview', name: 'alert-shadow', layout: 'stack')
-
-There is one step and it is `shadow-sm`, the raised one that buttons, cards and
-inputs already take for sitting on the page. Shape defines no elevation scale of
-its own, so this is Tailwind's `--shadow-sm` and a
-[retheme](../elevation.md#overriding) of it carries the alert with everything
-else. It is applied at zero specificity, so a call site that wants another step
-of the scale asks for it directly:
-
-@docs('preview', name: 'alert-shadow-step', layout: 'stack')
-
-Reach for it where the alert has to read as laid *on* the page rather than set
-into it — floating over a dense table, or sitting beside a [card](card.md) that
-has a resting shadow of its own and would otherwise look like the only raised
-thing there. A `subtle` alert in the flow of a form does not need one.
-
-`ghost` shows it only under the pointer, with the fill and the
-[border](#borders), because a shadow is a cast from a surface and that variant
-has none until the hover paints one. Drawn at rest it would ring a transparent
-block with an edge nothing in it drew. Nothing has to be reserved for it the way
-the border is: a shadow paints outside the box and moves no text when it lands.
-
-The hover names the properties it transitions rather than taking
-`transition-colors`, so the cast fades in with the fill instead of appearing at
-once — `box-shadow` is not a colour, and Tailwind's shorthand does not carry it.
-
-## Bars
-
-`bar` draws one thick edge down a side of the alert, in the tone at full
-strength. It is the [toast](toast.md)'s edge, given a side to choose:
-
-@docs('preview', name: 'alert-bar', layout: 'stack')
-
-A toast carries its whole tone in that rule, because its fill stays white so the
-message reads over whatever it is floating above. An alert has four variants for
-saying the same thing, so here the rule is opt-in. Reach for it where the alert
-has to be findable down a long page without being filled — a `ghost` alert with a
-bar is the quietest way this component has of saying which tone a message is — or
-where the fill is already spoken for and the tone needs somewhere else to go.
-
-The colour is `--shape-tone` itself, not the step back that
-[`border`](#borders) takes. The two are drawing different things: a border bounds
-the block and lets the fill speak, so it sits a step down the ramp, where a bar
-*is* the speaking, and four pixels of a pale edge colour would say less than the
-one pixel it replaced. `solid` is the exception it has to be — the fill is already
-that colour — so there the bar takes the step *past* the fill, the same move the
-border makes on that variant and for the same reason.
-
-`left` is where a bare `bar` lands, because it is the toast's side and the one a
-page read left to right marks a block on. The other three are there for layouts
-that read better with the rule somewhere else — a `top` bar under a heading it
-belongs to, a `right` bar in a sidebar that already has a left edge of its own:
-
-@docs('preview', name: 'alert-bar-sides', layout: 'stack')
-
-Unlike the [border](#borders) and the [shadow](#elevation), `ghost` draws its bar
-at rest. What those two wait for is a surface to belong to: both ring the block,
-and a ring around something that paints nothing is an edge nothing drew. A rule
-down one side rings nothing — it is the mark in the margin a blockquote takes, and
-it reads on the bare page as well as it reads on a fill.
-
-A bar and a [`border`](#borders) compose: the border draws the other three sides
-and the bar thickens and recolours the one it runs along, which is the toast's own
-recipe.
-
-### Squaring the bar
-
-`bar-square` straightens the bar's ends. `rounded-shape` bends the last few
-pixels of a four-pixel rule around the block, which reads as a stripe wrapped
-round a corner rather than a cut down one side; squaring the two corners the bar
-runs between leaves the other two rounded:
-
-@docs('preview', name: 'alert-bar-square', layout: 'stack')
-
-It follows the bar, so `bar="top" bar-square` flattens the top two corners and
-`bar="right" bar-square` the right. Without a bar it does nothing, deliberately:
-unrounding a block that has no rule to straighten is a decision about the shape of
-the library rather than the end of one edge, and a call site that wants it says so
-directly:
-
-@docs('preview', name: 'alert-square', layout: 'stack')
-
-The name carries the prop it modifies, the way [`icon-size`](#icons) does, because
-it does nothing on its own. Bare `square` is the
-[button](button.md#icon-only-buttons)'s word for an equal-sided control, and one word meaning two things across the
-library is worse than a longer name.
-
-## Heading and body
-
-`heading` is a title above the body; the default slot is the body. Either can
-stand alone:
-
-@docs('preview', name: 'alert-heading', layout: 'stack')
 
 ## Actions
 
@@ -331,53 +261,6 @@ as there have been coloured banners. The two to think about are `ghost` and
 `subtle` on `solid`: both paint the neutral tint, which is a grey wash on a
 saturated fill. Give those a tone matching the alert's, or reach for `outline`.
 
-## Icons
-
-Every state colour resolves a glyph of its own, so an alert stays readable in
-greyscale and to anyone who can't separate the hues. `icon` picks a different
-one, `:icon="false"` removes it, `icon-size` changes how big it is, and
-`icon-variant` changes which style it is drawn in:
-
-`brand` and `accent` are the exceptions, and deliberately: both are emphasis
-rather than a state, so they draw nothing. An informational message wants
-[`info`](../theming.md#the-state-colours-are-not-yours-to-rebrand), which is blue
-whatever the brand becomes.
-
-@docs('preview', name: 'alert-icons', layout: 'stack')
-
-An icon picks its own style from its size — [solid at `xs` and `sm`, outline at
-`base`](icon.md#size-and-style) — so an alert leaves `icon-variant` unset by
-default and takes whichever drawing the set prefers at the size it asked for.
-Name it where you want the other one: the stroked glyph at `sm` is reachable no
-other way, because until this prop the only lever on the style was a size that
-also changes how big the glyph is.
-
-### Where the glyph sits
-
-By default the glyph sits in a gutter: a column of its own, level with the first
-line and beside everything under it. That is what a heading, a paragraph and a
-row of buttons all want to be indented past, and it is the right shape for an
-alert that has something to say.
-
-It is the wrong shape for an alert that is one sentence long. A gutter under a
-single line is a column holding one thing, and in a form field's width the
-message wraps into a narrow channel beside a mark that has nothing left to mark.
-`icon-placement="inline"` sets the glyph at the head of the first line instead,
-so the sentence wraps under it:
-
-@docs('preview', name: 'alert-icon-placement', layout: 'stack')
-
-The glyph is floated rather than set inline, which is what lets the same markup
-serve an alert with a heading and one without: it is placed before both and
-lands beside whichever turns out to hold the first line. A heading takes it when
-there is one, as the third example shows, and the sentence takes it when there
-is not. Nothing about the message decides which.
-
-The glyph stays the same size in both, because `icon-size` is a separate
-question from where the glyph goes. At the default `sm` it is a 20px mark on a
-24px line, which sits comfortably; `icon-size="xs"` is the quieter one where the
-message is the point and the mark is only there to say which kind it is.
-
 ## Dismissing
 
 `dismissible` adds a close button. `shape.js` removes the nearest alert when it
@@ -404,7 +287,8 @@ An [untoned](#toning-the-text) alert publishes no surface, so it misses the rule
 and the × goes on resolving its own neutral ink — which is the right answer on the
 page background, and grey beside a black heading rather than beside a coloured
 one. Inside something that does publish a surface, that ancestor still matches and
-the control follows it. So does `data-shape-surface-hover`, which is what carries
+the control follows it. So does
+[`data-shape-surface-hover`](#toning-the-text), which is what carries
 the × into the tint with the rest of a ghost alert instead of leaving it the one
 grey thing on a block that has just gone coloured.
 
@@ -427,6 +311,138 @@ the brand, so focusing the close button on a solid `brand` alert would draw
 brand-600 on brand-700 and there would be no ring to see; on `solid` the ring
 takes the surface's foreground too. On the tints it stays the brand ring, which
 is off-hue but never invisible.
+
+## Toning the text
+
+`outline` and `ghost` paint no fill, so an alert in either sits directly on the
+page and its text reads both ways. `toned` is which way:
+
+@docs('preview', name: 'alert-toned', layout: 'stack')
+
+Both default to the page's ink. Nothing about the message is lost with it — the
+glyph still says what the alert means, and on `outline` with a toned
+[`border`](#borders) so does the edge — and what is gained is a block of body copy
+that reads as body copy. A full paragraph of red is the loudest thing on a page
+for no reason.
+
+A ghost alert takes the tone back under the pointer, because that is when it
+paints the tint it would have had as a `subtle` alert, and grey text on a coloured
+wash is the thing this library will not do. It is published as
+`data-shape-surface-hover`, for as long as the pointer is there — a `hover:text-`
+on the alert could not reach the heading and the body inside it, both of which
+paint their own foreground from the pair. The [dismiss](#dismissing) control
+follows the same attribute.
+
+`subtle` and `solid` ignore the prop. Both paint a background, and what is
+readable on one is not a call site's to choose — grey text on a pink wash and dark
+ink on a saturated fill are the two failures the
+[surface contract](../theming.md#the-surface-contract) exists to make impossible.
+
+An untoned alert publishes no `data-shape-surface` at all, rather than publishing
+the page's own colours under a name. The difference shows when it is not on the
+page: an outline alert inside a `solid` card should read in the card's foreground,
+and inheriting is what does that.
+
+## Elevation
+
+`shadow` lifts the alert off the page. It is the one prop here that says nothing
+about the tone, and like [`border`](#borders) it is off by default — an alert is
+part of the content it is about, and a block in the flow of that content has
+nothing to lift away from:
+
+@docs('preview', name: 'alert-shadow', layout: 'stack')
+
+There is one step and it is `shadow-sm`, the raised one that buttons, cards and
+inputs already take for sitting on the page. Shape defines no elevation scale of
+its own, so this is Tailwind's `--shadow-sm` and a
+[retheme](../elevation.md#overriding) of it carries the alert with everything
+else. It is applied at zero specificity, so a call site that wants another step
+of the scale asks for it directly:
+
+@docs('preview', name: 'alert-shadow-step', layout: 'stack')
+
+Reach for it where the alert has to read as laid *on* the page rather than set
+into it — floating over a dense table, or sitting beside a [card](card.md) that
+has a resting shadow of its own and would otherwise look like the only raised
+thing there. A `subtle` alert in the flow of a form does not need one.
+
+`ghost` shows it only under the pointer, with the fill and the
+[border](#borders), because a shadow is a cast from a surface and that variant
+has none until the hover paints one. Drawn at rest it would ring a transparent
+block with an edge nothing in it drew. Nothing has to be reserved for it the way
+the border is: a shadow paints outside the box and moves no text when it lands.
+
+The hover names the properties it transitions rather than taking
+`transition-colors`, so the cast fades in with the fill instead of appearing at
+once — `box-shadow` is not a colour, and Tailwind's shorthand does not carry it.
+
+## Bars
+
+`bar` draws one thick edge down a side of the alert, in the tone at full
+strength. It is the [toast](toast.md)'s edge, given a side to choose:
+
+@docs('preview', name: 'alert-bar', layout: 'stack')
+
+A toast carries its whole tone in that rule, because its fill stays white so the
+message reads over whatever it is floating above. An alert has four variants for
+saying the same thing, so here the rule is opt-in. Reach for it where the alert
+has to be findable down a long page without being filled — a `ghost` alert with a
+bar is the quietest way this component has of saying which tone a message is — or
+where the fill is already spoken for and the tone needs somewhere else to go.
+
+The colour is `--shape-tone` itself, not the step back that
+[`border`](#borders) takes. The two are drawing different things: a border bounds
+the block and lets the fill speak, so it sits a step down the ramp, where a bar
+*is* the speaking, and four pixels of a pale edge colour would say less than the
+one pixel it replaced. `solid` is the exception it has to be — the fill is already
+that colour — so there the bar takes the step *past* the fill, the same move the
+border makes on that variant and for the same reason.
+
+`left` is where a bare `bar` lands, because it is the toast's side and the one a
+page read left to right marks a block on. The other three are there for layouts
+that read better with the rule somewhere else — a `top` bar under a heading it
+belongs to, a `right` bar in a sidebar that already has a left edge of its own:
+
+@docs('preview', name: 'alert-bar-sides', layout: 'stack')
+
+Unlike the [border](#borders) and the [shadow](#elevation), `ghost` draws its bar
+at rest. What those two wait for is a surface to belong to: both ring the block,
+and a ring around something that paints nothing is an edge nothing drew. A rule
+down one side rings nothing — it is the mark in the margin a blockquote takes, and
+it reads on the bare page as well as it reads on a fill.
+
+A bar and a [`border`](#borders) compose: the border draws the other three sides
+and the bar thickens and recolours the one it runs along, which is the toast's own
+recipe.
+
+### Squaring the bar
+
+`bar-square` straightens the bar's ends. `rounded-shape` bends the last few
+pixels of a four-pixel rule around the block, which reads as a stripe wrapped
+round a corner rather than a cut down one side; squaring the two corners the bar
+runs between leaves the other two rounded:
+
+@docs('preview', name: 'alert-bar-square', layout: 'stack')
+
+It follows the bar, so `bar="top" bar-square` flattens the top two corners and
+`bar="right" bar-square` the right. Without a bar it does nothing, deliberately:
+unrounding a block that has no rule to straighten is a decision about the shape of
+the library rather than the end of one edge, and a call site that wants it says so
+directly:
+
+@docs('preview', name: 'alert-square', layout: 'stack')
+
+The name carries the prop it modifies, the way [`icon-size`](#icons) does, because
+it does nothing on its own. Bare `square` is the
+[button](button.md#icon-only-buttons)'s word for an equal-sided control, and one word meaning two things across the
+library is worse than a longer name.
+
+## Heading and body
+
+`heading` is a title above the body; the default slot is the body. Either can
+stand alone:
+
+@docs('preview', name: 'alert-heading', layout: 'stack')
 
 ## Alert or toast
 
@@ -520,19 +536,20 @@ where a package rule outranks a class you passed.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
+| `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
 | `variant` | `subtle` | `subtle`, `outline`, `solid`, `ghost` |
-| `toned` | `false` | paints the text in the tone, on `outline` and `ghost`; ignored on `subtle` and `solid`, where the fill decides |
+| `heading` | — | a title above the body |
+| `icon-size` | resolved from `size` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `dismissible` | `false` | adds a close button |
 | `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
+| `icon-variant` | chosen by `icon-size` | `outline`, `solid` |
+| `toned` | `false` | paints the text in the tone, on `outline` and `ghost`; ignored on `subtle` and `solid`, where the fill decides |
 | `shadow` | `false` | lifts the alert with `shadow-sm`; on `ghost` shows it on hover only |
 | `bar` | — | draws one thick edge in the tone: `left`, `right`, `top`, `bottom`; bare `bar` is `left` |
 | `bar-square` | `false` | squares the two corners the `bar` runs between; nothing without a bar |
-| `heading` | — | a title above the body |
-| `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
-| `icon-size` | `sm` | `xs`, `sm`, `base` |
-| `icon-variant` | chosen by `icon-size` | `outline`, `solid` |
 | `icon-placement` | `gutter` | `inline` sets the glyph at the head of the first line and wraps the message under it |
-| `dismissible` | `false` | adds a close button |
 | `actions-placement` | `lg` | the width the `actions` row flips beside the message at: `sm`, `md`, `lg`, `xl`, `2xl` ([container sizes](#choosing-the-step), not breakpoints); `below` and `side` pin it instead |
 
 The default slot is the body. `actions` is a named slot for a row of

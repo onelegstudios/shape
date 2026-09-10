@@ -65,6 +65,18 @@ own Tailwind build scans the package's Blade.
 Every component is `<x-shape::name>`. Props take scale keys, never raw values:
 `size="lg"`, not `size="18px"`; `tone="danger"`, not `tone="#b91c1c"`.
 
+`size` is one scale across the whole library: `xs`, `sm`, `base`, `lg`, `xl`,
+with `base` the default and the middle of it. `padding` is the same five words
+where a component takes room rather than a size — the card adds `none` to them,
+for a card whose contents own the inset. What a word means is the component's:
+a `lg` button is 48px tall and a `lg` badge is 28px, and neither is a length you
+pass in.
+
+Every component takes it, and on the composed ones it belongs to the container
+rather than to the parts: the strip sizes its tabs, the table sizes its cells,
+the list sizes its rows. Say it once on the outer component. `base` is what those
+three rendered before the prop existed, so an unstated size changes nothing.
+
 `tone` is one of `neutral`, `brand`, `accent`, `info`, `success`, `warning`,
 `danger`. The last four are the states, and the alert, the badge and the toast
 each resolve a glyph from them so colour is never the only signal. `brand` and
@@ -80,38 +92,38 @@ which is blue whatever the brand becomes.
 | `button` | fold | `variant` (outline\|primary\|subtle\|ghost), `tone`, `size`, `icon`, `icon-trailing`, `icon-size`, `square`, `border` (draws the edge in the tone rather than the neutral grey; off by default, on `outline` it recolours the border it already has and on `ghost` it shows on hover only), `as` (a\|div\|button — an `href` implies `a`, so a link needs no `as`; `div` is for a button inside something already clickable) |
 | `button.group` | fold | `orientation` (horizontal\|vertical), `label` (the group's accessible name; omitted when not given) — joins the buttons in its slot into one control: inner corners squared off, borders overlapped into one seam, focus ring turned inward. `role` defaults to `group` and can be overridden |
 | `button.element` | fold | `as`, `type` — the element a button renders |
-| `icon.<name>` | fold + memo | `size` (xs\|sm\|base), `variant` (outline\|solid — chosen by `size` if unset). Shape's own are the `shape-*` slots |
+| `icon.<name>` | fold + memo | `size` (xs 16px\|sm 20px\|base 24px\|lg 32px\|xl 40px — `lg` and `xl` are the 24px drawing in a larger box, since no set draws above 24), `variant` (outline\|solid — chosen by `size` if unset, solid at `xs` and `sm`). Shape's own are the `shape-*` slots |
 | `icon` | — | `name` — resolves at runtime, so it cannot fold |
 | `heading` | fold | `level` (document hierarchy), `size` (visual hierarchy) |
 | `text` | fold | `size`, `variant` (base\|muted\|strong), `as` |
-| `card` / `card.header` / `card.footer` | fold | `padding`, `border` |
-| `separator` | fold + memo | `orientation`, `label` |
-| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `dot` (a small circle in front of the label, in the variant's own ink, for a status outside the four states; `icon` beats it and `:icon="false"` removes it), `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `square` (drops the side padding for a count or a lone icon, keeping the four heights; a minimum width, so one digit is a square and three are a pill), `dismissible` (adds a close button carrying `data-shape-dismiss`; cannot be combined with `as` or `href`, and throws if it is), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome), `type` (default `button`, reaches the `as="button"` arm, for a chip that submits a filter form), `selected` (`true`\|`false` makes it a toggle — `aria-pressed` on a button, `aria-current` on a link — and paints the on state with the tone's fill; needs `as` or an `href`, throws without one and throws with `dismissible`) |
-| `empty` | fold | `heading`, `description`, `icon` |
+| `card` / `card.header` / `card.footer` | fold | `padding` (the library's five, plus `none` for a card whose contents own the inset), `border` |
+| `separator` | fold + memo | `orientation`, `label`, `size` (the label's type and the gap; the rule itself only thickens at `lg` and `xl`, since a hairline has no smaller step) |
+| `badge` | fold + memo | `label`, `tone`, `variant`, `size`, `icon`, `dot` (a small circle in front of the label, in the variant's own ink, for a status outside the four states; `icon` beats it and `:icon="false"` removes it), `icon-trailing`, `icon-size`, `inset` (negative vertical margin cancelling the padding, for a badge inline in text), `square` (drops the side padding for a count or a lone icon, keeping the five heights; a minimum width, so one digit is a square and three are a pill), `dismissible` (adds a close button carrying `data-shape-dismiss`; cannot be combined with `as` or `href`, and throws if it is), `as` (button\|a\|div — an `href` implies `a`; adds the button's hover, ring and disabled chrome), `type` (default `button`, reaches the `as="button"` arm, for a chip that submits a filter form), `selected` (`true`\|`false` makes it a toggle — `aria-pressed` on a button, `aria-current` on a link — and paints the on state with the tone's fill; needs `as` or an `href`, throws without one and throws with `dismissible`) |
+| `empty` | fold | `heading`, `description`, `icon`, `icon-size` (follows `size`), `size` (mostly the room it takes; the table and the list hand theirs down to it) |
 | `field` | fold | `field-name`, `as` — wraps a control with its label, description and error |
 | `label` / `description` / `error` | fold | `for` / `for` / `name`, `bag` |
 | `input` | fold | `label`, `description`, `type`, `size`, `id` |
 | `textarea` | fold | `label`, `description`, `rows`, `size` |
 | `select` / `select.option` | fold | `label`, `placeholder`, `size` / `label`, `value` |
-| `checkbox` / `radio` / `switch` | fold | `label`, `description`, `value`, `tone` |
+| `checkbox` / `radio` / `switch` | fold | `label`, `description`, `value`, `tone`, `size` (box, glyph, gap and text together — the switch's track is two knobs plus four pixels at every step) |
 | `modal` | fold | `name` (required), `heading`, `description`, `size`, `dismissible` |
 | `drawer` | fold | `name` (required), `side`, `heading`, `description`, `size` |
 | `dropdown` / `dropdown.trigger` / `dropdown.item` | fold | `name`, `placement` / `for` / `icon`, `tone`, `as` |
-| `popover` / `popover.trigger` | fold | `name`, `placement`, `padding` / `for` |
-| `tooltip` | fold | `name`, `text`, `placement` |
+| `popover` / `popover.trigger` | fold | `name`, `placement`, `padding` (the library's five; the dropdown is this with `sm`) / `for` |
+| `tooltip` | fold | `name`, `text`, `placement`, `size` (type, inset and the measure it wraps at) |
 | `overlay.trigger` / `overlay.close` / `overlay.footer` | fold | `for` |
-| `alert` | fold | `tone`, `variant` (subtle\|outline\|solid\|ghost), `toned`, `border`, `shadow`, `bar` (left\|right\|top\|bottom), `bar-square`, `heading`, `icon`, `icon-size`, `icon-variant`, `icon-placement` (gutter\|inline), `dismissible`, `actions-placement` (sm\|md\|lg\|xl\|2xl\|below\|side — Tailwind container sizes, not viewport breakpoints; default `lg`); `actions` slot |
-| `toast` | fold | `tone`, `heading`, `description`, `dismissible` |
+| `alert` | fold | `tone`, `variant` (subtle\|outline\|solid\|ghost), `toned`, `border`, `shadow`, `bar` (left\|right\|top\|bottom), `bar-square`, `heading`, `icon`, `icon-size`, `icon-variant`, `icon-placement` (gutter\|inline), `dismissible`, `actions-placement` (sm\|md\|lg\|xl\|2xl\|below\|side — Tailwind container sizes, not viewport breakpoints; default `lg`), `size` (inset and message type together; the glyph and the dismiss control follow it unless named); `actions` slot |
+| `toast` | fold | `tone`, `heading`, `description`, `dismissible`, `size` (the alert's steps; the bar stays 4px). The toaster stamps its templates at `base` and has no `size` of its own — eject it to change that, since a per-request value would cost those templates their fold |
 | `toaster` | compile | `position` — put one in the layout |
 | `confirm` | fold | `name`, `heading`, `message`, `accept`, `cancel` — put one in the layout |
 | `progress` | fold | `value`, `max`, `indeterminate`, `size`, `tone`, `label` |
-| `table` (+ `head`, `body`, `row`, `heading`, `cell`) | fold | `empty*` on the table; `value`, `align` on the cell |
-| `list` / `list.item` | fold | `as`, `empty*` |
-| `pagination` | compile | `paginator`, `simple` |
-| `stat` | fold + memo | `value`, `label`, `description`, `delta`, `trend` |
+| `table` (+ `head`, `body`, `row`, `heading`, `cell`) | fold | `size` (density, on the table — not on the cell) and `empty*` on the table; `value`, `align` on the cell |
+| `list` / `list.item` | fold | `as`, `size` (row type and inset, on the list), `empty*` — `list.item` takes no props |
+| `pagination` | compile | `paginator`, `simple`, `size` (the whole row: height, minimum width, type and chevrons — the pager's own heights, one step tighter than the button's) |
+| `stat` | fold + memo | `value`, `label`, `description`, `delta`, `trend`, `size` (the number moves further across the scale than the word under it; composes with `emphasis`) |
 | `avatar` / `avatar.group` | fold + memo | `src`, `icon`, `icon-variant` (default `solid`), `initials`, `alt`, `size`, `tone`, `variant` (subtle\|solid\|outline), `border` (rings the circle in the tone's edge on any variant, so a picture can have one; `outline` has one already), `square`, `ground` (draws `icon` or `initials` under the picture rather than instead of it, for a picture that may be transparent), `as` (button\|a\|div — an `href` implies `a`), `badge` (bare for a dot, otherwise its text), `badge-tone`, `badge-position` (bottom-right\|bottom-left\|top-right\|top-left) |
 | `avatar.element` | fold | `as` — the element an avatar renders; defaults to a `<span>`, not a `<button>` |
-| `tabs` / `tabs.tab` / `tabs.panel` | fold | `as`, `orientation` / `for`, `selected`, `icon` / `name` |
+| `tabs` / `tabs.tab` / `tabs.panel` | fold | `as`, `orientation`, `size` (sizes every tab in the strip) / `for`, `selected`, `icon` / `name` |
 
 ### 4. Keep the call site foldable
 

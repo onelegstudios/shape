@@ -39,9 +39,14 @@ $classes = Shape::classes()
     ->add('block w-full')
     ->add('[:where(&)]:rounded-full')
 
+    // Five bars, 2px to 16px. `xs` is a hairline for the top of a panel, where
+    // the bar is a status the eye should catch and not a thing to read; `xl` is
+    // thick enough to carry a label inside it.
     ->add(match ($size) {
+        'xs' => '[:where(&)]:h-0.5',
         'sm' => '[:where(&)]:h-1',
         'lg' => '[:where(&)]:h-3',
+        'xl' => '[:where(&)]:h-4',
         default => '[:where(&)]:h-2',
     });
 @endphp

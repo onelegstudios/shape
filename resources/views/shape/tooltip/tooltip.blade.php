@@ -21,18 +21,36 @@
     A tooltip is never the only place information appears. It is unreachable on
     touch, and it disappears the moment attention moves — put anything a person
     must read in the interface itself.
+
+    `size` moves the type, the inset around it and the measure the text wraps at,
+    which is the one of the three that is easy to forget: a tooltip set at 16px
+    inside a 16rem box is four words a line, and a tooltip is read in one glance
+    or not at all.
 --}}
 
 @props([
     'name',
     'text',
     'placement' => 'top',
+    'size' => 'base',
 ])
 
 @php
 $classes = Shape::classes()
-    ->add('pointer-events-none w-max max-w-2xs')
-    ->add('[:where(&)]:rounded-shape [:where(&)]:px-2 [:where(&)]:py-1 [:where(&)]:text-xs [:where(&)]:font-medium')
+    ->add('pointer-events-none w-max')
+
+    // Type, inset and measure together. `w-max` above caps at the measure rather
+    // than filling it, so a short tooltip is short at every step and the width
+    // named here is only the point at which a long one wraps.
+    ->add(match ($size) {
+        'xs' => 'max-w-2xs [:where(&)]:px-1.5 [:where(&)]:py-0.5 [:where(&)]:text-2xs',
+        'sm' => 'max-w-2xs [:where(&)]:px-2 [:where(&)]:py-0.5 [:where(&)]:text-xs',
+        'lg' => 'max-w-xs [:where(&)]:px-2.5 [:where(&)]:py-1.5 [:where(&)]:text-sm',
+        'xl' => 'max-w-sm [:where(&)]:px-3 [:where(&)]:py-2 [:where(&)]:text-base',
+        default => 'max-w-2xs [:where(&)]:px-2 [:where(&)]:py-1 [:where(&)]:text-xs',
+    })
+
+    ->add('[:where(&)]:rounded-shape [:where(&)]:font-medium')
     ->add('[:where(&)]:bg-shape-900 [:where(&)]:text-shape-50')
     ->add('dark:[:where(&)]:bg-shape-100 dark:[:where(&)]:text-shape-900')
     ->add('[:where(&)]:shadow-md');
@@ -48,4 +66,5 @@ $classes = Shape::classes()
     data-shape-popover
     data-shape-tooltip
     data-shape-placement="{{ $placement }}"
+    data-shape-size="{{ $size }}"
 >{{ $text }}</div>

@@ -32,9 +32,17 @@ $classes = Shape::classes()
     // Padding and the gap between children move together. A roomier card wants
     // roomier gaps; letting them be set apart is how cards end up looking
     // accidentally cramped at one size and accidentally loose at another.
+    //
+    // The library's five steps, under the library's five words, with `none` on
+    // the end of them. `none` is not a sixth step down from `xs`: it says the
+    // card draws a surface and something inside it owns the inset — a table
+    // bled to the edges, a picture — which is a different answer rather than a
+    // smaller one, and it keeps the gap so the children still space themselves.
     ->add(match ($padding) {
+        'xs' => '[:where(&)]:gap-2 [:where(&)]:p-3',
         'sm' => '[:where(&)]:gap-3 [:where(&)]:p-4',
         'lg' => '[:where(&)]:gap-6 [:where(&)]:p-8',
+        'xl' => '[:where(&)]:gap-8 [:where(&)]:p-10',
         'none' => '[:where(&)]:gap-4',
         default => '[:where(&)]:gap-4 [:where(&)]:p-6',
     })

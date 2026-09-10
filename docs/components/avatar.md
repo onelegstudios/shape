@@ -4,6 +4,361 @@ A person, as a picture, as initials, or as a glyph standing in for both.
 
 @docs('preview', name: 'avatar')
 
+## Sizes
+
+@docs('preview', name: 'avatar-sizes')
+
+## Tones
+
+`tone` says what an avatar means, and is the same set every other component
+carries:
+
+@docs('preview', name: 'avatar-tones')
+
+A colour that means nothing — a tinted circle per person, so a list of
+colleagues is easier to scan — is not one of these. It is
+[a colour per person](#a-colour-per-person), under
+[Theming](#theming), and the difference between the two is the whole of that
+section.
+
+## Variants
+
+`variant` is how loud the circle is. `subtle` is the default, because an avatar
+is almost always identifying a row rather than being the thing you look at:
+
+@docs('preview', name: 'avatar-variants')
+
+The three arms are the [badge](badge.md)'s, and read the same tone variables, so
+an avatar and a badge given the same tone agree without either knowing about the
+other. There is no `ghost`: it is the arm that paints nothing until it is
+pointed at, and an avatar that paints nothing is two letters loose in a line of
+text.
+
+`outline` rings itself in the tone's own `--shape-tone-border-strong` rather
+than the neutral border the outline badge and button take. Those two are chrome,
+and their edge draws the control rather than what it means; with no fill under
+it, an avatar's ring is the whole of the paint.
+
+Every arm paints on the [image form](#pictures) as well. Under an opaque photograph the fill
+is not seen, under a transparent one it is the ground the face sits on, and in
+either case it is what fills the circle while the image is still arriving. The
+border rings the picture, which is [`border`](#borders) drawn by the variant
+rather than asked for.
+
+## Icons
+
+`icon` fills the circle with a glyph instead of letters, for the rows that have
+neither a face nor a name — an invitation nobody has accepted, an account that
+has been deleted, a service acting on its own:
+
+@docs('preview', name: 'avatar-icons')
+
+It takes an icon name, and there is no default: an avatar with nothing to show
+still shows nothing, as it always has. The glyph is a thing you name.
+
+`shape-user` above is the drawing this package ships so that these previews
+render for a reader who has generated nothing. It is [not a
+slot](icon.md#every-other-icon-is-yours) — nothing in Shape resolves it, and
+`shape:icon:replace` will not swap it for the set you are wearing. The person in
+your own avatars is one you generate, under the name your set gives it:
+
+```bash
+php artisan shape:icon user
+```
+
+```blade
+<x-shape::avatar icon="user" alt="Unassigned" />
+```
+
+The circle is squared as often as not here. A glyph in an avatar usually means
+the row is not a person, which is what [`square`](#squares) is for.
+
+### Which one wins
+
+Three props can fill the same circle, and they resolve in one order:
+[`src`](#pictures), then `icon`, then `initials`. A prop bound to null drops through to the next, so
+a call site holding all three writes the ladder out and gets whichever it has:
+
+```blade
+<x-shape::avatar :src="$user->avatar_url" :icon="$user->isBot ? 'cpu-chip' : null" :initials="$user->initials" />
+```
+
+The glyph sits above the initials rather than below them for a reason that is
+about [folding](#folding) rather than about meaning: asking whether initials are
+present would make `initials` a prop this component branches on, and it is
+`safe` today. One of the two has to take the branch, and the icon is the one a
+call site names deliberately.
+
+None of it is a runtime fallback, for the same reason [`src` is not](#pictures):
+the glyph a picture outranks is not in the document to be fallen back to.
+[`ground`](#ground) is the one prop that changes the order into a layering
+rather than a choice — it puts the glyph under the picture, where a failed load
+leaves it showing.
+
+### Size and style
+
+The glyph's size follows the circle's, so there is nothing to pass:
+
+| `size` | Circle | Glyph |
+| --- | --- | --- |
+| `xs` | 24px | 16px |
+| `sm` | 32px | 16px |
+| `base` | 40px | 20px |
+| `lg` | 48px | 24px |
+| `xl` | 56px | 32px |
+
+About half the circle, except at `xs` — 16px is the smallest drawing an icon set
+has, and squeezing it into 12px would throw away the work that made it a
+separate drawing. See [Size and style](icon.md#size-and-style).
+
+Every size draws the glyph `solid` by default, including `lg` and `xl`, where an
+icon left to itself would take the stroked drawing. Five avatars in a row should
+wear the same weight, and the filled drawing is the one that matches the initials it
+stands in for.
+
+`icon-variant` is the way out of that, named for what it modifies the way the
+[alert](alert.md#icons) names its own:
+
+@docs('preview', name: 'avatar-icon-variants')
+
+It is a prop rather than a decision written into the component because a style
+picks which of the set's drawings renders, and no class can reach that — every
+other default here is one a call site beats with a class of its own. A set that
+draws a single style, like Lucide, ignores the word rather than rendering it, so
+naming it costs nothing there.
+
+`lg` is the size it pays off at. Heroicons draws no outline below 24px, so a
+stroked glyph on the three smaller avatars is [the 24px drawing sized
+down](icon.md#size-and-style) and lands thinner than the one it replaced — which
+is the other half of why `solid` is the default.
+
+The glyph paints in `currentColor`, so it takes the variant's ink exactly as the
+initials do, and it is `aria-hidden` — `alt` is carried in the same
+screen-reader-only text the initials form uses.
+
+## Borders
+
+`border` rings the circle without going through the variant. It is off by
+default, because a face on a page is a face and an edge around it is something
+someone chose; turn it on where the circle has to hold its own — a photograph
+that is nearly the colour of the page behind it, a row of faces on a busy
+surface, an avatar sitting beside a [card](card.md) drawn with an edge of its
+own:
+
+@docs('preview', name: 'avatar-border')
+
+Before this prop, `outline` was the only way to ring an avatar, and taking it
+meant giving up the fill: the tint that is [the ground a transparent picture
+sits on](#ground), and what fills the circle while any picture is arriving. The
+two are separate questions now. The fill stays whatever the variant paints and
+the border is asked for on top of it, which is what makes a bordered photograph
+a thing this component can draw.
+
+`subtle` takes
+[`--shape-tone-border-strong`](../theming.md#tones) — the same edge
+`outline` draws, so the prop and the variant agree about what the tone's edge
+is, and swapping one for the other moves the fill rather than the ring. `solid`
+cannot take that step: a pale edge on a saturated fill reads as a highlight, so
+it takes the step *past* the fill instead, which is darker in light mode and
+brighter in dark for the same reason the tone's own hover is.
+
+`outline` is the arm the prop does nothing to, because the ring it would draw is
+the ring already there. That is the one place this parts from the
+[alert](alert.md#borders), whose outline arm draws the neutral chrome border and
+whose `border` tones it.
+
+It is not the ring a [group](#groups) draws, which is [the other edge on this
+page](#rings). The ring is outside the box in the page's own colours, and its job
+is to hold overlapping faces apart; the border is inside the box in the tone's,
+and its job is to say the circle has an edge. A bordered avatar in a group has
+both.
+
+It costs no layout either way. The box is a fixed width and a height and
+Tailwind's reset puts the border inside it, so a bordered avatar sits in a row
+exactly as an unbordered one does — and pays for the edge out of the picture
+rather than out of the row. Weight and colour are a class away: the edge is
+declared at `[:where(&)]:` like the rest of the paint, so `class="border-2"` or
+`class="border-white"` beats it.
+
+### Rings
+
+The edge on the other side of the box is a ring, and it is a class rather than a
+prop:
+
+```blade
+<x-shape::avatar :src="$user->avatar" class="ring-2 ring-[#0d1117]" />
+```
+
+@docs('preview', name: 'avatar-ring')
+
+A ring is a box-shadow, so it costs no layout either — and where a border spends
+two pixels of the picture, a ring costs the picture nothing: the circle stays the
+whole circle, and what grows is the space the avatar paints into. It is the same
+ring a [group](#groups) draws on each of its children, which is where this
+library spends it: two pixels of page between a face and whatever it was laid on,
+so the face reads as a face rather than as part of the thing behind it.
+
+It stays a class because the colour is the whole of the decision. A ring is worth
+drawing where the ground is *not* the page — a face on a hero photograph, on a
+brand band, on a surface this library did not paint — and what the ring has to be
+is the colour of that ground, which is the one colour a component cannot know. A
+prop would have carried a default that this call site throws away, and could not
+have carried the value in its place: Tailwind reads class names out of these
+files as text, so a prop holding a colour would compose a class name at render
+time and generate no CSS at all. It is [a colour per
+person](#a-colour-per-person) again, from a different direction.
+
+The classes reach the circle in every arrangement — the bare `<img>`, a
+[control](#the-control-is-the-circle), a picture over a [ground](#ground), a
+badged avatar whose bag stays on the face rather than moving to the wrapper —
+which is the same thing that makes `class="object-contain"` reach the picture.
+
+Say the dark mode, because nothing else will:
+`class="ring-2 ring-white dark:ring-shape-900"` is the pair the group draws, and
+a ring named for one mode is the page's own colour in the other.
+
+Inside a group the group wins, and wins twice over. It colours its children
+through a descendant selector, so a class on a child is outweighed; and the
+group's own classes are not written at `[:where(&)]:` the way the rest of this
+library's defaults are, so the same variant class on the group ties on
+specificity and then loses or wins on whichever rule Tailwind happened to emit
+last. `ring-shape-brand-700` loses to the group's `ring-white`; `ring-zinc-900`
+would beat it. That is not a rule worth relying on either way, so say so
+outright:
+
+```blade
+<x-shape::avatar.group class="[&_[data-shape-avatar]]:ring-[#0d1117]!">
+```
+
+A ring and a [`border`](#borders) compose, being a chosen edge outside and the
+tone's own inside. The focus ring on [a control](#buttons-and-links) is untouched
+by both: that one is an `outline` rather than a ring, so nothing here can move it.
+
+## Groups
+
+`avatar.group` overlaps its children in DOM order, and rings each one so the
+face underneath reads as a person rather than a smudge:
+
+@docs('preview', name: 'avatar-group')
+
+The last avatar paints on top, and that isn't configurable — choosing the other
+order is a z-index, and this library doesn't have one. Reverse the collection at
+the call site if the first face should be the front one.
+
+### More than fit
+
+There is no `max`, because the group has nothing to count. It renders a slot,
+and a slot has already been rendered by the time it arrives — there are no
+avatars left to leave out, only elements to hide, which is the same work done
+later and worse.
+
+The slice belongs where the collection is, and so does the remainder:
+
+@docs('preview', name: 'avatar-group-overflow')
+
+The remainder is an ordinary avatar. `+3` is initials the same way `AL` is, so
+it takes the same size, the same ring from the group and the same place in the
+paint order — last, on top, which is where a summary wants to be anyway.
+
+It is also a picture of a number, so it is hidden exactly as initials are and
+the sentence goes in `alt`. Without one the group announces three people and
+says nothing about the rest, which is the one thing the remainder was added to
+say.
+
+Keep it short. The circle is a fixed box that clips what it cannot fit, so
+`+128` is wider than a 24px avatar — a group that large wants `99+`, a bigger
+size, or a count in text beside it rather than in a circle of its own.
+
+## Buttons and links
+
+`as="button"` makes the circle a control, and an `href` makes it a link without
+being asked:
+
+@docs('preview', name: 'avatar-buttons')
+
+Most avatars are labels on a row. Some are the way into something — the account
+menu in a header, the face that opens a profile, the assignee that opens a
+picker — and those have to be pressable by a keyboard as well as by a pointer.
+
+`href` resolving to an `<a>` on its own is the same resolution the
+[tab](tabs.md) and the [menu item](dropdown.md) make. Middle-click, "open in new
+tab" and the status bar all work for a link and none of them work for a button
+pretending to be one. Pass `as` as well where you want a button that happens to
+carry an `href`; `as` wins.
+
+`as` also takes `div`, for an avatar inside something already clickable — the
+same escape hatch the [button](button.md#links) has, for the same reason.
+
+### The control is the circle
+
+It swaps the tag and nothing else. There is no button wrapped around the avatar:
+the same element carries the same classes, the same box, the same
+`data-shape-avatar` and the same attribute bag it always carried, so everything
+Shape doesn't claim as a prop lands on the thing being pressed.
+
+```blade
+<x-shape::avatar :initials="$user->initials" :alt="$user->name" as="button" popovertarget="account" />
+```
+
+```blade
+<x-shape::avatar :src="$user->avatar_url" :alt="$user->name" as="button" wire:click="$dispatch('open-profile')" />
+```
+
+A [group](#groups) rings it, a [badge](#badges) marks it and [`square`](#squares) squares it,
+all unchanged — they resolve onto whichever element the avatar turned out to be.
+
+The one thing that moves is the picture. An `<img>` takes no children and takes
+no press, so under `as` the photograph becomes a child of the control and the
+control takes the circle's classes. It is cropped exactly as before, but
+[letterboxing](#pictures) is now one selector further out:
+
+```blade
+<x-shape::avatar :src="$org->logo" alt="Acme" as="button" class="[&>img]:object-contain" />
+```
+
+### It dims rather than repaints
+
+A control does not change colour on hover, which is the one thing it does not
+borrow from the [button](button.md). The button's paint is chrome and its hover
+is a louder version of the same chrome. An avatar's paint is what the avatar
+means — and no `--shape-tone-hover` reaches a photograph. So it dims, which is
+the vocabulary `disabled` already uses here, and it reads the same on a face, on
+two letters and on a glyph.
+
+The focus ring is the button's exactly: `--shape-ring`, two pixels, offset two. A
+control that focused differently from every other control in the library would
+be reporting a difference that is not there.
+
+`disabled` and `aria-disabled` both dim the circle and remove pointer events,
+for the reason the button carries both — an anchor cannot be disabled.
+
+A badged control dims from the shell its [badge](#badges) is positioned in,
+rather than from the circle. The mark is a sibling of the circle, so a dim on the
+circle leaves a presence dot at full strength on a face that has faded — and
+dimming the mark to match is the answer that looks right and is not, because
+`opacity` on the mark makes the mark translucent and shows the circle's own edge
+through the dot meant to be covering it. On the shell the pair is rendered
+together and the result is faded, so the mark still covers what it sits on.
+
+Hover is found with `has-` rather than taken from the shell's own `:hover`, since
+the shell is not the thing that stops taking a pointer when the control is
+disabled. A disabled circle is never hovered, so a disabled avatar dims once.
+
+### A control has to be named
+
+An avatar beside a name already on the page [passes no
+`alt`](#the-initials-are-not-the-accessible-name) and announces nothing, which is
+right for a picture and wrong for a button: an unnamed one is announced as
+"button" and nothing else. Pass `alt` to anything that can be pressed, even where
+the name is on the row beside it.
+
+Inside a control, a photograph is named the way initials are — which is to say it
+is not. It carries `alt=""` and the name goes in the same screen-reader text the
+letters and the glyph use, because a photograph of a person is a picture of their
+name exactly as `AL` is, and a control carrying both would announce them twice.
+The bare `<img>` keeps its real `alt`, since there is no element around it to put
+the text in.
+
 ## Pictures
 
 `src` renders an `<img>`. Without one the component renders a `<span>` with
@@ -169,7 +524,7 @@ more than one component draws the same face. It is the same move one level
 further out.
 
 It is a facade method rather than a component of its own because a Gravatar is a
-URL and nothing else. The avatar already draws a person at four sizes, in a
+URL and nothing else. The avatar already draws a person at five sizes, in a
 group, under a badge, as a control — a `<x-shape::gravatar>` would have restated
 every one of those decisions in order to change where the bytes come from.
 
@@ -240,235 +595,6 @@ somebody already holds are reversible by lookup. That is a decision an
 application makes deliberately, which is the other reason the host lives in one
 method you can grep for rather than inside a component.
 
-## Icons
-
-`icon` fills the circle with a glyph instead of letters, for the rows that have
-neither a face nor a name — an invitation nobody has accepted, an account that
-has been deleted, a service acting on its own:
-
-@docs('preview', name: 'avatar-icons')
-
-It takes an icon name, and there is no default: an avatar with nothing to show
-still shows nothing, as it always has. The glyph is a thing you name.
-
-`shape-user` above is the drawing this package ships so that these previews
-render for a reader who has generated nothing. It is [not a
-slot](icon.md#every-other-icon-is-yours) — nothing in Shape resolves it, and
-`shape:icon:replace` will not swap it for the set you are wearing. The person in
-your own avatars is one you generate, under the name your set gives it:
-
-```bash
-php artisan shape:icon user
-```
-
-```blade
-<x-shape::avatar icon="user" alt="Unassigned" />
-```
-
-The circle is squared as often as not here. A glyph in an avatar usually means
-the row is not a person, which is what [`square`](#squares) is for.
-
-### Which one wins
-
-Three props can fill the same circle, and they resolve in one order: `src`,
-then `icon`, then `initials`. A prop bound to null drops through to the next, so
-a call site holding all three writes the ladder out and gets whichever it has:
-
-```blade
-<x-shape::avatar :src="$user->avatar_url" :icon="$user->isBot ? 'cpu-chip' : null" :initials="$user->initials" />
-```
-
-The glyph sits above the initials rather than below them for a reason that is
-about [folding](#folding) rather than about meaning: asking whether initials are
-present would make `initials` a prop this component branches on, and it is
-`safe` today. One of the two has to take the branch, and the icon is the one a
-call site names deliberately.
-
-None of it is a runtime fallback, for the same reason [`src` is not](#pictures):
-the glyph a picture outranks is not in the document to be fallen back to.
-[`ground`](#ground) is the one prop that changes the order into a layering
-rather than a choice — it puts the glyph under the picture, where a failed load
-leaves it showing.
-
-### Size and style
-
-The glyph's size follows the circle's, so there is nothing to pass:
-
-| `size` | Circle | Glyph |
-| --- | --- | --- |
-| `xs` | 24px | 16px |
-| `sm` | 32px | 16px |
-| `base` | 40px | 20px |
-| `lg` | 48px | 24px |
-
-About half the circle, except at `xs` — 16px is the smallest drawing an icon set
-has, and squeezing it into 12px would throw away the work that made it a
-separate drawing. See [Size and style](icon.md#size-and-style).
-
-Every size draws the glyph `solid` by default, including `lg`, where an icon left
-to itself would take the stroked drawing. Four avatars in a row should wear the
-same weight, and the filled drawing is the one that matches the initials it
-stands in for.
-
-`icon-variant` is the way out of that, named for what it modifies the way the
-[alert](alert.md#icons) names its own:
-
-@docs('preview', name: 'avatar-icon-variants')
-
-It is a prop rather than a decision written into the component because a style
-picks which of the set's drawings renders, and no class can reach that — every
-other default here is one a call site beats with a class of its own. A set that
-draws a single style, like Lucide, ignores the word rather than rendering it, so
-naming it costs nothing there.
-
-`lg` is the size it pays off at. Heroicons draws no outline below 24px, so a
-stroked glyph on the three smaller avatars is [the 24px drawing sized
-down](icon.md#size-and-style) and lands thinner than the one it replaced — which
-is the other half of why `solid` is the default.
-
-The glyph paints in `currentColor`, so it takes the variant's ink exactly as the
-initials do, and it is `aria-hidden` — `alt` is carried in the same
-screen-reader-only text the initials form uses.
-
-## Tones
-
-`tone` says what an avatar means, and is the same set every other component
-carries:
-
-@docs('preview', name: 'avatar-tones')
-
-A colour that means nothing — a tinted circle per person, so a list of
-colleagues is easier to scan — is not one of these. It is
-[a colour per person](#a-colour-per-person), under
-[Theming](#theming), and the difference between the two is the whole of that
-section.
-
-## Variants
-
-`variant` is how loud the circle is. `subtle` is the default, because an avatar
-is almost always identifying a row rather than being the thing you look at:
-
-@docs('preview', name: 'avatar-variants')
-
-The three arms are the [badge](badge.md)'s, and read the same tone variables, so
-an avatar and a badge given the same tone agree without either knowing about the
-other. There is no `ghost`: it is the arm that paints nothing until it is
-pointed at, and an avatar that paints nothing is two letters loose in a line of
-text.
-
-`outline` rings itself in the tone's own `--shape-tone-border-strong` rather
-than the neutral border the outline badge and button take. Those two are chrome,
-and their edge draws the control rather than what it means; with no fill under
-it, an avatar's ring is the whole of the paint.
-
-Every arm paints on the image form as well. Under an opaque photograph the fill
-is not seen, under a transparent one it is the ground the face sits on, and in
-either case it is what fills the circle while the image is still arriving. The
-border rings the picture, which is [`border`](#borders) drawn by the variant
-rather than asked for.
-
-## Borders
-
-`border` rings the circle without going through the variant. It is off by
-default, because a face on a page is a face and an edge around it is something
-someone chose; turn it on where the circle has to hold its own — a photograph
-that is nearly the colour of the page behind it, a row of faces on a busy
-surface, an avatar sitting beside a [card](card.md) drawn with an edge of its
-own:
-
-@docs('preview', name: 'avatar-border')
-
-Before this prop, `outline` was the only way to ring an avatar, and taking it
-meant giving up the fill: the tint that is [the ground a transparent picture
-sits on](#ground), and what fills the circle while any picture is arriving. The
-two are separate questions now. The fill stays whatever the variant paints and
-the border is asked for on top of it, which is what makes a bordered photograph
-a thing this component can draw.
-
-`subtle` takes
-[`--shape-tone-border-strong`](../theming.md#tones) — the same edge
-`outline` draws, so the prop and the variant agree about what the tone's edge
-is, and swapping one for the other moves the fill rather than the ring. `solid`
-cannot take that step: a pale edge on a saturated fill reads as a highlight, so
-it takes the step *past* the fill instead, which is darker in light mode and
-brighter in dark for the same reason the tone's own hover is.
-
-`outline` is the arm the prop does nothing to, because the ring it would draw is
-the ring already there. That is the one place this parts from the
-[alert](alert.md#borders), whose outline arm draws the neutral chrome border and
-whose `border` tones it.
-
-It is not the ring a [group](#groups) draws, which is [the other edge on this
-page](#rings). The ring is outside the box in the page's own colours, and its job
-is to hold overlapping faces apart; the border is inside the box in the tone's,
-and its job is to say the circle has an edge. A bordered avatar in a group has
-both.
-
-It costs no layout either way. The box is a fixed width and a height and
-Tailwind's reset puts the border inside it, so a bordered avatar sits in a row
-exactly as an unbordered one does — and pays for the edge out of the picture
-rather than out of the row. Weight and colour are a class away: the edge is
-declared at `[:where(&)]:` like the rest of the paint, so `class="border-2"` or
-`class="border-white"` beats it.
-
-### Rings
-
-The edge on the other side of the box is a ring, and it is a class rather than a
-prop:
-
-```blade
-<x-shape::avatar :src="$user->avatar" class="ring-2 ring-[#0d1117]" />
-```
-
-@docs('preview', name: 'avatar-ring')
-
-A ring is a box-shadow, so it costs no layout either — and where a border spends
-two pixels of the picture, a ring costs the picture nothing: the circle stays the
-whole circle, and what grows is the space the avatar paints into. It is the same
-ring a [group](#groups) draws on each of its children, which is where this
-library spends it: two pixels of page between a face and whatever it was laid on,
-so the face reads as a face rather than as part of the thing behind it.
-
-It stays a class because the colour is the whole of the decision. A ring is worth
-drawing where the ground is *not* the page — a face on a hero photograph, on a
-brand band, on a surface this library did not paint — and what the ring has to be
-is the colour of that ground, which is the one colour a component cannot know. A
-prop would have carried a default that this call site throws away, and could not
-have carried the value in its place: Tailwind reads class names out of these
-files as text, so a prop holding a colour would compose a class name at render
-time and generate no CSS at all. It is [a colour per
-person](#a-colour-per-person) again, from a different direction.
-
-The classes reach the circle in every arrangement — the bare `<img>`, a
-[control](#the-control-is-the-circle), a picture over a [ground](#ground), a
-badged avatar whose bag stays on the face rather than moving to the wrapper —
-which is the same thing that makes `class="object-contain"` reach the picture.
-
-Say the dark mode, because nothing else will:
-`class="ring-2 ring-white dark:ring-shape-900"` is the pair the group draws, and
-a ring named for one mode is the page's own colour in the other.
-
-Inside a group the group wins, and wins twice over. It colours its children
-through a descendant selector, so a class on a child is outweighed; and the
-group's own classes are not written at `[:where(&)]:` the way the rest of this
-library's defaults are, so the same variant class on the group ties on
-specificity and then loses or wins on whichever rule Tailwind happened to emit
-last. `ring-shape-brand-700` loses to the group's `ring-white`; `ring-zinc-900`
-would beat it. That is not a rule worth relying on either way, so say so
-outright:
-
-```blade
-<x-shape::avatar.group class="[&_[data-shape-avatar]]:ring-[#0d1117]!">
-```
-
-A ring and a [`border`](#borders) compose, being a chosen edge outside and the
-tone's own inside. The focus ring on [a control](#buttons-and-links) is untouched
-by both: that one is an `outline` rather than a ring, so nothing here can move it.
-
-## Sizes
-
-@docs('preview', name: 'avatar-sizes')
-
 ## Squares
 
 `square` swaps the circle for the library's own corner radius:
@@ -517,6 +643,7 @@ box, which is what being centred on an edge means.
 | `sm` | 32px | 8px | 16px |
 | `base` | 40px | 10px | 18px |
 | `lg` | 48px | 12px | 20px |
+| `xl` | 56px | 14px | 22px |
 
 The dot is about a quarter of the circle, and a count is that dot with room for
 a number in it: eight pixels more at every size, never narrower than it is tall,
@@ -621,7 +748,7 @@ it. The corner of the box is not the corner of the shape: the arc crosses the
 diagonal `1 - 1/√2` of the corner radius inside the box on both axes — 14.6% of
 the width on a circle, whose radius is half of it, and `--radius-shape` on a
 [squared](#squares) avatar, which is a length and so the same two pixels at all
-four sizes.
+five sizes.
 
 That is also why a count grows both ways from the corner instead of only
 inwards. Anchored by its own corner, a pill wide enough for three digits would
@@ -665,131 +792,6 @@ attached; both mean something only in a sentence, and the sentence is `alt`:
 Where the avatar sits beside a name already on the page, the status has to go
 somewhere a reader can reach it — a `<x-shape::badge>` in the row, or text of its
 own. An avatar that announces nothing announces nothing about its badge either.
-
-## Buttons and links
-
-`as="button"` makes the circle a control, and an `href` makes it a link without
-being asked:
-
-@docs('preview', name: 'avatar-buttons')
-
-Most avatars are labels on a row. Some are the way into something — the account
-menu in a header, the face that opens a profile, the assignee that opens a
-picker — and those have to be pressable by a keyboard as well as by a pointer.
-
-`href` resolving to an `<a>` on its own is the same resolution the
-[tab](tabs.md) and the [menu item](dropdown.md) make. Middle-click, "open in new
-tab" and the status bar all work for a link and none of them work for a button
-pretending to be one. Pass `as` as well where you want a button that happens to
-carry an `href`; `as` wins.
-
-`as` also takes `div`, for an avatar inside something already clickable — the
-same escape hatch the [button](button.md#links) has, for the same reason.
-
-### The control is the circle
-
-It swaps the tag and nothing else. There is no button wrapped around the avatar:
-the same element carries the same classes, the same box, the same
-`data-shape-avatar` and the same attribute bag it always carried, so everything
-Shape doesn't claim as a prop lands on the thing being pressed.
-
-```blade
-<x-shape::avatar :initials="$user->initials" :alt="$user->name" as="button" popovertarget="account" />
-```
-
-```blade
-<x-shape::avatar :src="$user->avatar_url" :alt="$user->name" as="button" wire:click="$dispatch('open-profile')" />
-```
-
-A [group](#groups) rings it, a [badge](#badges) marks it and `square` squares it,
-all unchanged — they resolve onto whichever element the avatar turned out to be.
-
-The one thing that moves is the picture. An `<img>` takes no children and takes
-no press, so under `as` the photograph becomes a child of the control and the
-control takes the circle's classes. It is cropped exactly as before, but
-[letterboxing](#pictures) is now one selector further out:
-
-```blade
-<x-shape::avatar :src="$org->logo" alt="Acme" as="button" class="[&>img]:object-contain" />
-```
-
-### It dims rather than repaints
-
-A control does not change colour on hover, which is the one thing it does not
-borrow from the [button](button.md). The button's paint is chrome and its hover
-is a louder version of the same chrome. An avatar's paint is what the avatar
-means — and no `--shape-tone-hover` reaches a photograph. So it dims, which is
-the vocabulary `disabled` already uses here, and it reads the same on a face, on
-two letters and on a glyph.
-
-The focus ring is the button's exactly: `--shape-ring`, two pixels, offset two. A
-control that focused differently from every other control in the library would
-be reporting a difference that is not there.
-
-`disabled` and `aria-disabled` both dim the circle and remove pointer events,
-for the reason the button carries both — an anchor cannot be disabled.
-
-A badged control dims from the shell its [badge](#badges) is positioned in,
-rather than from the circle. The mark is a sibling of the circle, so a dim on the
-circle leaves a presence dot at full strength on a face that has faded — and
-dimming the mark to match is the answer that looks right and is not, because
-`opacity` on the mark makes the mark translucent and shows the circle's own edge
-through the dot meant to be covering it. On the shell the pair is rendered
-together and the result is faded, so the mark still covers what it sits on.
-
-Hover is found with `has-` rather than taken from the shell's own `:hover`, since
-the shell is not the thing that stops taking a pointer when the control is
-disabled. A disabled circle is never hovered, so a disabled avatar dims once.
-
-### A control has to be named
-
-An avatar beside a name already on the page [passes no
-`alt`](#the-initials-are-not-the-accessible-name) and announces nothing, which is
-right for a picture and wrong for a button: an unnamed one is announced as
-"button" and nothing else. Pass `alt` to anything that can be pressed, even where
-the name is on the row beside it.
-
-Inside a control, a photograph is named the way initials are — which is to say it
-is not. It carries `alt=""` and the name goes in the same screen-reader text the
-letters and the glyph use, because a photograph of a person is a picture of their
-name exactly as `AL` is, and a control carrying both would announce them twice.
-The bare `<img>` keeps its real `alt`, since there is no element around it to put
-the text in.
-
-## Groups
-
-`avatar.group` overlaps its children in DOM order, and rings each one so the
-face underneath reads as a person rather than a smudge:
-
-@docs('preview', name: 'avatar-group')
-
-The last avatar paints on top, and that isn't configurable — choosing the other
-order is a z-index, and this library doesn't have one. Reverse the collection at
-the call site if the first face should be the front one.
-
-### More than fit
-
-There is no `max`, because the group has nothing to count. It renders a slot,
-and a slot has already been rendered by the time it arrives — there are no
-avatars left to leave out, only elements to hide, which is the same work done
-later and worse.
-
-The slice belongs where the collection is, and so does the remainder:
-
-@docs('preview', name: 'avatar-group-overflow')
-
-The remainder is an ordinary avatar. `+3` is initials the same way `AL` is, so
-it takes the same size, the same ring from the group and the same place in the
-paint order — last, on top, which is where a summary wants to be anyway.
-
-It is also a picture of a number, so it is hidden exactly as initials are and
-the sentence goes in `alt`. Without one the group announces three people and
-says nothing about the rest, which is the one thing the remainder was added to
-say.
-
-Keep it short. The circle is a fixed box that clips what it cannot fit, so
-`+128` is wider than a 24px avatar — a group that large wants `99+`, a bigger
-size, or a count in text beside it rather than in a circle of its own.
 
 ## Initials are stated, never derived
 
@@ -976,21 +978,21 @@ avatar that has to be substantially something else.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `src` | — | an image URL |
-| `as` | — | `button`, `a`, `div` — an `href` implies `a` |
-| `icon` | — | an icon name, shown when there is no image |
-| `icon-variant` | `solid` | `outline`, `solid` |
-| `initials` | — | shown when there is no image and no icon |
-| `alt` | — | the person's name |
-| `size` | `base` | `xs`, `sm`, `base`, `lg` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
+| `icon` | — | an icon name, shown when there is no image |
+| `as` | — | `button`, `a`, `div` — an `href` implies `a` |
 | `variant` | `subtle` | `subtle`, `solid`, `outline` |
 | `border` | `false` | rings the circle in the tone's own edge; `outline` has one already |
 | `square` | `false` | squares the circle to `--radius-shape` |
+| `icon-variant` | `solid` | `outline`, `solid` |
+| `alt` | — | the person's name |
 | `ground` | `false` | draws `icon` or `initials` under the picture rather than instead of it |
 | `badge` | `false` | `true` for a dot, or the mark's text |
 | `badge-tone` | `neutral` | the same tones as `tone`, or [one of your own](../theming.md#a-tone-of-your-own) |
 | `badge-position` | `bottom-right` | `bottom-right`, `bottom-left`, `top-right`, `top-left` |
+| `src` | — | an image URL |
+| `initials` | — | shown when there is no image and no icon |
 
 `avatar.group` takes no props.
 

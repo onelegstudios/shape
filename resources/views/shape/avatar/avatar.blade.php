@@ -1,7 +1,7 @@
 @blaze(fold: true, memo: true, safe: ['initials', 'alt', 'tone', 'badgeTone'])
 
 {{--
-    A person, at one of four sizes, as a picture, as their initials, or as a
+    A person, at one of five sizes, as a picture, as their initials, or as a
     glyph standing in for both.
 
     `variant` is how loud the circle is and `tone` is what it means, read from
@@ -152,15 +152,17 @@
     Its size is the circle's, resolved here rather than asked for. An avatar is
     a fixed box and the drawing inside it wants to be about half of it, which is
     one answer per size and no prop worth adding: 16px in the two small circles,
-    20px at `base`, 24px at `lg`. The smallest circle is the one that misses —
-    16px inside 24 is two thirds of it — and it misses because 16 is the
-    smallest drawing an icon set has. Squeezing that drawing into 12px with a
-    utility would throw away the optical work that made it a drawing of its own.
+    20px at `base`, 24px at `lg`, 32px at `xl`. The smallest circle is the one
+    that misses — 16px inside 24 is two thirds of it — and it misses because 16
+    is the smallest drawing an icon set has. Squeezing that drawing into 12px
+    with a utility would throw away the optical work that made it a drawing of
+    its own.
 
     `solid` at every size by default, against the icon's own rule that `base`
-    prefers the stroked drawing. That rule is about what reads at a size; this is
-    about four avatars agreeing, and a `lg` avatar wearing a stroked glyph above
-    three wearing filled ones would make `size` change more than the size. The
+    and up prefer the stroked drawing. That rule is about what reads at a size;
+    this is about five avatars agreeing, and a `lg` avatar wearing a stroked
+    glyph above three wearing filled ones would make `size` change more than the
+    size. The
     filled drawing is also the one that matches what it stands in for — initials
     are ink at `font-medium`, not an outline. A set that draws a single style
     ignores the word rather than rendering it, so naming it costs nothing there.
@@ -218,7 +220,7 @@
     of the corner radius inside the box on both axes — 14.6% of the width for a
     circle, whose radius is half of it, and `--radius-shape` for a squared
     avatar, which is a length rather than a fraction and so the same two pixels
-    at all four sizes. Half the mark is then pulled back over that point.
+    at all five sizes. Half the mark is then pulled back over that point.
 
     A count grows both ways from there rather than only inwards, which is the
     whole reason the anchor is the mark's centre and not its corner. Inscribed
@@ -233,8 +235,9 @@
     round thing on it.
 
     Its size is the circle's, resolved here the way the glyph's is. The dot is
-    6px, 8px, 10px and 12px, about a quarter of the circle at every size, and the
-    pill is that dot with room for a number in it — eight pixels more, each time.
+    6px, 8px, 10px, 12px and 14px, about a quarter of the circle at every size,
+    and the pill is that dot with room for a number in it — eight pixels more,
+    each time.
     Padding is half a step at the two small circles and grows with them, because
     what makes a count unreadable on a 24px avatar is the box around the digits
     rather than the digits.
@@ -444,6 +447,7 @@ $shellClasses = Shape::classes()
 $iconSize = match ($size) {
     'xs', 'sm' => 'xs',
     'lg' => 'base',
+    'xl' => 'lg',
     default => 'sm',
 };
 
@@ -459,10 +463,14 @@ $classes = Shape::classes()
     // would drop the picture out of the circle it is meant to be filling.
     ->add($src && $ground ? 'relative' : null)
 
+    // Five circles, eight pixels apart: 24, 32, 40, 48, 56 — the button's and
+    // the input's heights, so a face sits on a toolbar line without either
+    // knowing about the other.
     ->add(match ($size) {
         'xs' => '[:where(&)]:size-6 [:where(&)]:text-2xs',
         'sm' => '[:where(&)]:size-8 [:where(&)]:text-xs',
         'lg' => '[:where(&)]:size-12 [:where(&)]:text-base',
+        'xl' => '[:where(&)]:size-14 [:where(&)]:text-lg',
         default => '[:where(&)]:size-10 [:where(&)]:text-sm',
     })
 
@@ -544,7 +552,7 @@ $badgeClasses = Shape::classes()
     // diagonal, which sits `1 - 1/√2` of the corner radius inside the box on
     // both axes. A circle's radius is half its width, so that is 14.6% of it; a
     // squared avatar's is `--radius-shape`, which is a length rather than a
-    // fraction and stays where it is at all four sizes.
+    // fraction and stays where it is at all five sizes.
     ->add($square
         ? match ($badgePosition) {
             'top-left' => 'top-[calc(var(--radius-shape)*0.293)] left-[calc(var(--radius-shape)*0.293)]',
@@ -568,12 +576,14 @@ $badgeClasses = Shape::classes()
             'xs' => 'size-1.5',
             'sm' => 'size-2',
             'lg' => 'size-3',
+            'xl' => 'size-3.5',
             default => 'size-2.5',
         }
         : match ($size) {
             'xs' => 'h-3.5 min-w-3.5 px-0.5 text-2xs font-medium tabular-nums',
             'sm' => 'h-4 min-w-4 px-0.5 text-2xs font-medium tabular-nums',
             'lg' => 'h-5 min-w-5 px-1.5 text-xs font-medium tabular-nums',
+            'xl' => 'h-5.5 min-w-5.5 px-1.5 text-xs font-medium tabular-nums',
             default => 'h-4.5 min-w-4.5 px-1 text-2xs font-medium tabular-nums',
         });
 @endphp

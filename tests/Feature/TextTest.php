@@ -40,12 +40,13 @@ it('applies the requested size', function (string $size, string $expected) {
     ['sm', '[:where(&amp;)]:text-sm'],
     ['base', '[:where(&amp;)]:text-base'],
     ['lg', '[:where(&amp;)]:text-lg'],
+    ['xl', '[:where(&amp;)]:text-xl'],
 ]);
 
 it('never lets the caller set line height apart from size', function () {
     // Every size arm ships its own leading, so there is no combination that
     // produces a size without one.
-    foreach (['xs', 'sm', 'base', 'lg'] as $size) {
+    foreach (['xs', 'sm', 'base', 'lg', 'xl'] as $size) {
         expect(Blade::render("<x-shape::text size=\"{$size}\">Copy</x-shape::text>"))
             ->toContain('[:where(&amp;)]:leading-');
     }

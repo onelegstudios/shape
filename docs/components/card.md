@@ -5,10 +5,18 @@ resting shadow, and draws no border unless you ask for one.
 
 @docs('preview', name: 'card', layout: 'stack')
 
+## Borders
+
+`border` adds a hairline, for a card sitting on a surface too close to its own
+to read against:
+
+@docs('preview', name: 'card-border', layout: 'stack')
+
 ## Padding
 
 Padding and the gap between children move together — `sm` is a tighter card
-*and* tighter stacking:
+*and* tighter stacking. Five steps, `xs` to `xl`, under the same words `size`
+takes everywhere else:
 
 @docs('preview', name: 'card-padding', layout: 'stack')
 
@@ -16,13 +24,6 @@ Padding and the gap between children move together — `sm` is a tighter card
 reach the edge:
 
 @docs('preview', name: 'card-padding-none', layout: 'stack')
-
-## Border
-
-`border` adds a hairline, for a card sitting on a surface too close to its own
-to read against:
-
-@docs('preview', name: 'card-border', layout: 'stack')
 
 ## Header and footer
 
@@ -84,8 +85,8 @@ reach one of them:
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `padding` | `base` | `none`, `sm`, `base`, `lg` |
 | `border` | `false` | adds a hairline border |
+| `padding` | `base` | `xs`, `sm`, `base`, `lg`, `xl`, `none` |
 
 `card.header` and `card.footer` take no props. The default slot is the card's
 contents.

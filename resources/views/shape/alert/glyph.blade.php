@@ -27,8 +27,8 @@
 
     `variant` defaults to null rather than to a style, so that an alert naming
     nothing leaves the choice with the icon — where the set's rule about which
-    drawing a size prefers is baked in, solid at `xs` and `sm` and outline at
-    `base`. A default named here would override that rule for every alert in
+    drawing a size prefers is baked in, solid at `xs` and `sm` and outline from
+    `base` up. A default named here would override that rule for every alert in
     order to serve the few that want the other drawing.
 
     Nothing is declared safe. Both of the icon's props pick a drawing rather than

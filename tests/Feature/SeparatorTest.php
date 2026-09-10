@@ -51,3 +51,33 @@ it('gives its own defaults zero specificity so caller classes win', function () 
         ->toContain('[:where(&amp;)]:bg-shape-200')
         ->toContain('bg-shape-400');
 });
+
+it('sets the label\'s type and the gap it sits in from one word', function (string $size, string $gap, string $type) {
+    expect(Blade::render("<x-shape::separator label=\"Archived\" size=\"{$size}\" />"))
+        ->toContain("[:where(&amp;)]:{$gap}")
+        ->toContain("{$type} font-medium")
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', 'gap-2', 'text-2xs'],
+    ['sm', 'gap-2.5', 'text-xs'],
+    ['base', 'gap-3', 'text-xs'],
+    ['lg', 'gap-4', 'text-sm'],
+    ['xl', 'gap-5', 'text-base'],
+]);
+
+it('bottoms the rule out at a hairline and thickens only the top two steps', function (string $size, string $across, string $down) {
+    // A hairline is one device pixel and there is nothing under it, so the three
+    // small steps all draw one. Worth knowing before reaching for `size="xs"` on
+    // a bare rule and watching nothing happen.
+    expect(Blade::render("<x-shape::separator size=\"{$size}\" />"))
+        ->toContain("{$across} w-full");
+
+    expect(Blade::render("<x-shape::separator orientation=\"vertical\" size=\"{$size}\" />"))
+        ->toContain("{$down} self-stretch");
+})->with([
+    ['xs', 'h-px', 'w-px'],
+    ['sm', 'h-px', 'w-px'],
+    ['base', 'h-px', 'w-px'],
+    ['lg', 'h-0.5', 'w-0.5'],
+    ['xl', 'h-1', 'w-1'],
+]);

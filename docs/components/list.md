@@ -11,14 +11,17 @@ almost always holds an avatar, two lines of text and a trailing button, and a
 `value` prop would buy nothing while costing the composition that is the reason
 to reach for a list at all.
 
-## Other list elements
+## Sizes
 
-`as` takes any list element — `ol` for a ranked list:
+`size` is the list's rather than the item's, the way the [table](table.md#sizes)'s
+density is the table's — and it is what keeps `list.item` a component with no
+props at all:
 
-@docs('preview', name: 'list-ordered', layout: 'stack')
+@docs('preview', name: 'list-sizes', layout: 'stack')
 
-`as` is only ever interpolated into the tag name, so a list whose element is
-decided at runtime still folds.
+The type and the room each row keeps move together, and the gap inside a row
+moves with them: a row that got taller and left its columns where they were would
+read as stretched rather than as roomier. The empty state takes the same word.
 
 ## The empty state
 
@@ -30,6 +33,15 @@ It sits beside the `<ul>` rather than inside it, because an `<li>` holding an
 empty state would be an item like any other and would hide itself. Pass
 `:empty="false"` to turn it off, and see
 [Table](table.md#the-empty-state) for the reasoning at length.
+
+## Other list elements
+
+`as` takes any list element — `ol` for a ranked list:
+
+@docs('preview', name: 'list-ordered', layout: 'stack')
+
+`as` is only ever interpolated into the tag name, so a list whose element is
+decided at runtime still folds.
 
 ## Separation is a rule on the list, not a border on each item
 
@@ -87,6 +99,7 @@ reaches it.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` — sizes every row |
 | `as` | `ul` | any list element — `ol` for a ranked list |
 | `empty` | `true` | render the built-in empty state |
 | `empty-icon` | — | any [icon](icon.md) name |

@@ -50,10 +50,13 @@ $classes = Shape::classes()
     ->add('[:where(&)]:bg-white dark:[:where(&)]:bg-shape-900')
     ->add('[:where(&)]:text-[color:var(--shape-fg)]')
 
-    // Room for the arrow this component draws itself.
+    // The input's five heights, with the left padding its side padding and the
+    // right one that plus room for the arrow this component draws itself.
     ->add(match ($size) {
+        'xs' => '[:where(&)]:h-6 [:where(&)]:pl-2 [:where(&)]:pr-6 [:where(&)]:text-xs',
         'sm' => '[:where(&)]:h-8 [:where(&)]:pl-2.5 [:where(&)]:pr-8 [:where(&)]:text-sm',
         'lg' => '[:where(&)]:h-12 [:where(&)]:pl-4 [:where(&)]:pr-11 [:where(&)]:text-base',
+        'xl' => '[:where(&)]:h-14 [:where(&)]:pl-5 [:where(&)]:pr-13 [:where(&)]:text-lg',
         default => '[:where(&)]:h-10 [:where(&)]:pl-3 [:where(&)]:pr-10 [:where(&)]:text-sm',
     })
 
@@ -67,8 +70,19 @@ $classes = Shape::classes()
 $wrapper = 'relative block w-full has-disabled:opacity-50';
 
 $arrow = match ($size) {
+    'xs' => 'pointer-events-none absolute inset-y-0 right-1.5 flex items-center text-[color:var(--shape-fg-muted)]',
+    'sm' => 'pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-[color:var(--shape-fg-muted)]',
     'lg' => 'pointer-events-none absolute inset-y-0 right-4 flex items-center text-[color:var(--shape-fg-muted)]',
+    'xl' => 'pointer-events-none absolute inset-y-0 right-5 flex items-center text-[color:var(--shape-fg-muted)]',
     default => 'pointer-events-none absolute inset-y-0 right-3 flex items-center text-[color:var(--shape-fg-muted)]',
+};
+
+// The glyph grows with the control, one step behind it, so the arrow stays the
+// same fraction of the box it sits in at every size.
+$arrowSize = match ($size) {
+    'xs' => 'xs',
+    'lg', 'xl' => 'base',
+    default => 'sm',
 };
 @endphp
 
@@ -87,7 +101,7 @@ $arrow = match ($size) {
                 @endif
                 {{ $slot }}
             </select>
-            <span class="{{ $arrow }}"><x-shape::icon.shape-expand size="sm" /></span>
+            <span class="{{ $arrow }}"><x-shape::icon.shape-expand :size="$arrowSize" /></span>
         </span>
 
         <x-shape::error />
@@ -100,6 +114,6 @@ $arrow = match ($size) {
             @endif
             {{ $slot }}
         </select>
-        <span class="{{ $arrow }}"><x-shape::icon.shape-expand size="sm" /></span>
+        <span class="{{ $arrow }}"><x-shape::icon.shape-expand :size="$arrowSize" /></span>
     </span>
 @endif
