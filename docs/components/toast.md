@@ -172,13 +172,13 @@ it wants both.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
-| `heading` | — | the line in bold |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `description` | — | a second line under it |
+| `tone` | `neutral` | `info`, `success`, `warning`, `danger`, `brand`, `accent` |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
+| `heading` | — | the line in bold |
 | `icon-size` | resolved from `size` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `dismissible` | `true` | `false` removes the close button |
-| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 
 ## Folding
 

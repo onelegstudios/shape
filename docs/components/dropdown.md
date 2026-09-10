@@ -20,6 +20,17 @@ when the viewport runs out, and clamps to stay in view:
 placement on every scroll and resize while the menu is open. There is no anchor
 name in the markup and nothing to keep in sync.
 
+## Keyboard
+
+`aria-haspopup="menu"` is a promise that arrow keys will work, and `shape.js`
+keeps it: <kbd>↓</kbd> and <kbd>↑</kbd> move between items, <kbd>Home</kbd> and
+<kbd>End</kbd> jump to the ends, and opening the menu focuses the first item.
+Items keep their natural tab order underneath that, so a browser that never runs
+the script still leaves every item reachable.
+
+Choosing an item closes the menu — an action that leaves its own menu standing
+looks like it didn't fire. Opt out per item with `data-shape-keep-open`.
+
 ## Items
 
 `dropdown.item` takes an `icon` and a `tone`, and passes everything else
@@ -31,17 +42,6 @@ everything else renders a `<button>`:
 Compose freely: a [separator](separator.md) between groups, an `@foreach`, your
 own markup. An `:items` array would need a convention for labels, icons,
 destructive styling and `wire:click`, all of which children already have.
-
-## Keyboard
-
-`aria-haspopup="menu"` is a promise that arrow keys will work, and `shape.js`
-keeps it: <kbd>↓</kbd> and <kbd>↑</kbd> move between items, <kbd>Home</kbd> and
-<kbd>End</kbd> jump to the ends, and opening the menu focuses the first item.
-Items keep their natural tab order underneath that, so a browser that never runs
-the script still leaves every item reachable.
-
-Choosing an item closes the menu — an action that leaves its own menu standing
-looks like it didn't fire. Opt out per item with `data-shape-keep-open`.
 
 ## Theming
 
@@ -90,10 +90,10 @@ rule can reach the menus without touching the popovers that are not menus:
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `icon` | — | any [icon](icon.md) name |
-| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
+| `icon` | — | any [icon](icon.md) name |
 | `as` | resolved from `href` | `button`, `a`, `div` |
+| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
 
 `dropdown.trigger` takes `for` and passes everything else to a
 [button](button.md).

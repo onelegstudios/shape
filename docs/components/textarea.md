@@ -5,17 +5,17 @@ and name resolution all work the same way.
 
 @docs('preview', name: 'textarea', layout: 'stack')
 
-## Rows
-
-`rows` is the height floor, in lines:
-
-@docs('preview', name: 'textarea-rows', layout: 'stack')
-
 ## Sizes
 
 `size` changes the type and the padding, not the height:
 
 @docs('preview', name: 'textarea-sizes', layout: 'stack')
+
+## Rows
+
+`rows` is the height floor, in lines:
+
+@docs('preview', name: 'textarea-rows', layout: 'stack')
 
 ## It resizes vertically only
 
@@ -56,10 +56,10 @@ textarea and not this one.
 | Prop | Default | Values |
 | --- | --- | --- |
 | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
-| `rows` | `3` | the height floor |
 | `label` | — | assembles the whole field when given |
 | `description` | — | supporting copy, wired to `aria-describedby` |
 | `id` | the resolved name | the element id |
+| `rows` | `3` | the height floor |
 
 The default slot is the content. Everything else passes through to the
 `<textarea>`.

@@ -10,10 +10,6 @@ repeats it: each one here gets `name="billing"` and an id of `billing-{value}`.
 A group only has an accessible name if it is a real `<fieldset>` with a
 `<legend>`.
 
-## Descriptions
-
-@docs('preview', name: 'radio-description', layout: 'stack')
-
 ## Sizes
 
 The [checkbox](checkbox.md#sizes)'s steps, box for box — the two are the same
@@ -24,6 +20,10 @@ control to anyone filling in the form they are in:
 ## Tones
 
 @docs('preview', name: 'radio-tones')
+
+## Description
+
+@docs('preview', name: 'radio-description', layout: 'stack')
 
 ## Theming
 
@@ -53,11 +53,11 @@ different file rather than a stack of corrections to this one.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `label` | — | the text beside the dot |
 | `description` | — | a second line under the label |
-| `value` | — | the submitted value |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
-| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `value` | — | the submitted value |
 | `id` | `{name}-{value}` | the element id |
 
 `checked`, `disabled` and `wire:model` pass through to the `<input>`.

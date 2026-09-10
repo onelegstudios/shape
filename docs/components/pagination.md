@@ -148,12 +148,12 @@ already written — two variables instead of seven, because a pager uses two.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `label` | `Pagination` | the navigation landmark's accessible name |
 | `paginator` | *required* | a paginator instance |
-| `simple` | `false` | previous and next only, no numbers |
 | `previous-label` | `Previous` | |
 | `next-label` | `Next` | |
-| `label` | `Pagination` | the navigation landmark's accessible name |
-| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `simple` | `false` | previous and next only, no numbers |
 
 ## Folding
 

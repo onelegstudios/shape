@@ -4,6 +4,17 @@ A native `<select>`, restyled. Options are children.
 
 @docs('preview', name: 'select', layout: 'stack')
 
+## Sizes
+
+@docs('preview', name: 'select-sizes', layout: 'stack')
+
+## Disabled
+
+@docs('preview', name: 'select-disabled', layout: 'stack')
+
+The arrow dims with the control through `has-disabled:`, so the two never
+disagree about whether the thing is interactive.
+
 ## Placeholder
 
 `placeholder` renders prompt text as an unchoosable first option — `disabled
@@ -16,17 +27,6 @@ selected instead:
 It is also the select's empty state. A `<select>` may contain only `option`,
 `optgroup` and script-supporting elements, so an [empty state](empty.md) written
 inside one is discarded by the HTML parser before it reaches the page.
-
-## Sizes
-
-@docs('preview', name: 'select-sizes', layout: 'stack')
-
-## Disabled
-
-@docs('preview', name: 'select-disabled', layout: 'stack')
-
-The arrow dims with the control through `has-disabled:`, so the two never
-disagree about whether the thing is interactive.
 
 ## Options
 
@@ -81,11 +81,11 @@ the mobile picker and the type-ahead for free — see
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `placeholder` | — | prompt text, as an unchoosable first option |
 | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `label` | — | assembles the whole field when given |
 | `description` | — | supporting copy, wired to `aria-describedby` |
 | `id` | the resolved name | the element id |
+| `placeholder` | — | prompt text, as an unchoosable first option |
 
 `select.option` takes `label` and `value`. The default slot is the options.
 

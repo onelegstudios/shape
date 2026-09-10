@@ -24,6 +24,23 @@ standing.
 The empty state takes the same word, so a tight table does not sit above a full
 screen of white space.
 
+## The empty state
+
+You don't ask for it and you don't switch it on. It is rendered every time and
+removed by a `:has()` rule the moment the table has a row in it:
+
+@docs('preview', name: 'table-empty', layout: 'stack')
+
+Asking Blade whether the table has rows would mean inspecting a slot, which is a
+runtime question, and the table would stop folding for it.
+
+Two consequences worth knowing. It sits *beside* the table rather than inside —
+a `<div>` written into a `<tbody>` is thrown back out by the HTML parser. And it
+counts `table.row` elements inside a `<tbody>`, so a row written by hand as
+`<tr>` will not be counted.
+
+Pass `:empty="false"` to turn it off.
+
 ## Alignment
 
 `align="end"` also sets tabular figures — a right-aligned column is a number
@@ -45,23 +62,6 @@ per-row value. The slot is there for a cell holding a component:
     <x-shape::badge :label="$invoice->status" tone="success" />
 </x-shape::table.cell>
 ```
-
-## The empty state
-
-You don't ask for it and you don't switch it on. It is rendered every time and
-removed by a `:has()` rule the moment the table has a row in it:
-
-@docs('preview', name: 'table-empty', layout: 'stack')
-
-Asking Blade whether the table has rows would mean inspecting a slot, which is a
-runtime question, and the table would stop folding for it.
-
-Two consequences worth knowing. It sits *beside* the table rather than inside —
-a `<div>` written into a `<tbody>` is thrown back out by the HTML parser. And it
-counts `table.row` elements inside a `<tbody>`, so a row written by hand as
-`<tr>` will not be counted.
-
-Pass `:empty="false"` to turn it off.
 
 ## Sticky headers need a height bound
 

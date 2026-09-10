@@ -60,8 +60,8 @@ to prefer for a rule that should also catch headings this library did not draw.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `level` | `2` | `1`–`6` |
 | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `level` | `2` | `1`–`6` |
 
 The default slot is the heading text.
 

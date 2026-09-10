@@ -5,18 +5,19 @@ close button.
 
 @docs('preview', name: 'drawer')
 
+## Sizes
+
+`size` is measured across the viewport — or down it, for
+[`side="bottom"`](#sides):
+
+@docs('preview', name: 'drawer-sizes')
+
 ## Sides
 
 `side` sets a data attribute and `shape.css` pins the dialog to that edge and
 slides it in from the direction it is pinned to. Nothing measures anything:
 
 @docs('preview', name: 'drawer-sides')
-
-## Sizes
-
-`size` is measured across the viewport — or down it, for `side="bottom"`:
-
-@docs('preview', name: 'drawer-sizes')
 
 ## It shares the modal's trigger, close and footer
 
@@ -96,12 +97,12 @@ behind that query — see [Motion](#motion).
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `description` | — | a line under the heading |
 | `name` | *required* | the dialog's id |
 | `heading` | — | title row, and the dialog's accessible name |
-| `description` | — | a line under the heading |
-| `side` | `right` | `right`, `left`, `bottom` |
-| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `dismissible` | `true` | `false` removes the close button and holds Escape off |
+| `side` | `right` | `right`, `left`, `bottom` |
 
 The default slot is the body.
 

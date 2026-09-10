@@ -96,15 +96,15 @@ radio never dims its group.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `field-name` | — | the field name every child reads |
 | `as` | `div` | `div`, `fieldset` |
+| `field-name` | — | the field name every child reads |
 
 ### Label
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `for` | the field's name | the id of the control it names |
 | `as` | `label` | `label`, `legend` |
+| `for` | the field's name | the id of the control it names |
 
 ### Description
 

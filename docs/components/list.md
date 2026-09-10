@@ -23,15 +23,6 @@ The type and the room each row keeps move together, and the gap inside a row
 moves with them: a row that got taller and left its columns where they were would
 read as stretched rather than as roomier. The empty state takes the same word.
 
-## Other list elements
-
-`as` takes any list element — `ol` for a ranked list:
-
-@docs('preview', name: 'list-ordered', layout: 'stack')
-
-`as` is only ever interpolated into the tag name, so a list whose element is
-decided at runtime still folds.
-
 ## The empty state
 
 Rendered every time and removed by a `:has()` rule as soon as one item exists:
@@ -42,6 +33,15 @@ It sits beside the `<ul>` rather than inside it, because an `<li>` holding an
 empty state would be an item like any other and would hide itself. Pass
 `:empty="false"` to turn it off, and see
 [Table](table.md#the-empty-state) for the reasoning at length.
+
+## Other list elements
+
+`as` takes any list element — `ol` for a ranked list:
+
+@docs('preview', name: 'list-ordered', layout: 'stack')
+
+`as` is only ever interpolated into the tag name, so a list whose element is
+decided at runtime still folds.
 
 ## Separation is a rule on the list, not a border on each item
 
@@ -99,8 +99,8 @@ reaches it.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `as` | `ul` | any list element — `ol` for a ranked list |
 | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` — sizes every row |
+| `as` | `ul` | any list element — `ol` for a ranked list |
 | `empty` | `true` | render the built-in empty state |
 | `empty-icon` | — | any [icon](icon.md) name |
 | `empty-heading` | `Nothing here yet` | |

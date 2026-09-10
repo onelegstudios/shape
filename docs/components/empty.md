@@ -82,10 +82,10 @@ those instances — which is also the only way to reach *all* of them at once:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
-| `icon` | — | any [icon](icon.md) name |
-| `icon-size` | resolved from `size` | `xs`, `sm`, `base`, `lg`, `xl` |
-| `heading` | — | the headline |
 | `description` | — | one line of supporting copy |
+| `icon` | — | any [icon](icon.md) name |
+| `heading` | — | the headline |
+| `icon-size` | resolved from `size` | `xs`, `sm`, `base`, `lg`, `xl` |
 
 The default slot is the action row. It is always rendered and collapsed with the
 CSS `empty:hidden` variant when nothing was passed, which answers "does this

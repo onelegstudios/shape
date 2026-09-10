@@ -63,8 +63,8 @@ your application has already chosen.
 | Prop | Default | Values |
 | --- | --- | --- |
 | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
-| `variant` | `base` | `base`, `muted`, `strong` |
 | `as` | `p` | any tag name |
+| `variant` | `base` | `base`, `muted`, `strong` |
 
 The default slot is the text.
 

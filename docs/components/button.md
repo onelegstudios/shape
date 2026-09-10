@@ -5,12 +5,21 @@ and the two are independent — which is what lets a destructive action be quiet
 
 @docs('preview', name: 'button')
 
-## Variants
+## Sizes
 
-`variant` places an action in the page's hierarchy. Most pages have one true
-primary action, so reach for `primary` once.
+@docs('preview', name: 'button-sizes')
 
-@docs('preview', name: 'button-variants')
+Five heights, eight pixels apart: 24, 32, 40, 48, 56. Padding and the gap
+between a label and its icons move with them, so a larger button is roomier
+rather than merely taller.
+
+`sm` and `base` share a type size and differ in height and padding — the two
+most common buttons on a page set their labels the same way. `xs`, `lg` and `xl`
+each step the text as well.
+
+The heights are the [input](input.md)'s and the [select](select.md)'s to the
+pixel, and the [avatar](avatar.md)'s circles, so a control, a face and a button
+sit on one toolbar line without any of them knowing about the others.
 
 ## Tones
 
@@ -23,6 +32,41 @@ Because hierarchy and meaning are separate props, a destructive action does not
 have to shout:
 
 @docs('preview', name: 'button-quiet-danger')
+
+## Variants
+
+`variant` places an action in the page's hierarchy. Most pages have one true
+primary action, so reach for `primary` once.
+
+@docs('preview', name: 'button-variants')
+
+## Icons
+
+`icon` renders before the label, `icon-trailing` after, and both take any
+[icon](icon.md) name. Use one or both.
+
+@docs('preview', name: 'button-icons')
+
+The names there are `shape-*` because those are the drawings this package ships,
+and a preview has to render for a reader who has generated nothing. In an
+application they would be names of your own: `php artisan shape:icon plus
+arrow-right`, then `icon="plus"`. See [Icon](icon.md).
+
+`icon-size` picks how big the drawing is: `xs` is 16px, `sm` — the default — is
+20px, `base` is 24px, `lg` is 32px and `xl` is 40px. The style is left to the
+icon, which draws the small sizes solid because a stroke does not read at 16px.
+It does not follow `size`: a large button usually wants the same 20px glyph a
+base one does, and the call sites that want otherwise say so.
+
+@docs('preview', name: 'button-icon-sizes')
+
+## Disabled
+
+`disabled` is a plain attribute — Shape claims no prop for it — and dims the
+button while removing pointer events. An anchor cannot be disabled, so use
+`aria-disabled` there and Shape styles it the same way:
+
+@docs('preview', name: 'button-disabled')
 
 ## Borders
 
@@ -57,81 +101,6 @@ Both colours are steps of `--shape-tone`, not a palette of their own, so a
 border follows a [retheme](../theming.md) with everything else. To make every
 toned edge in the library heavier or lighter at once, move
 `--shape-tone-border-strong`.
-
-## Sizes
-
-@docs('preview', name: 'button-sizes')
-
-Five heights, eight pixels apart: 24, 32, 40, 48, 56. Padding and the gap
-between a label and its icons move with them, so a larger button is roomier
-rather than merely taller.
-
-`sm` and `base` share a type size and differ in height and padding — the two
-most common buttons on a page set their labels the same way. `xs`, `lg` and `xl`
-each step the text as well.
-
-The heights are the [input](input.md)'s and the [select](select.md)'s to the
-pixel, and the [avatar](avatar.md)'s circles, so a control, a face and a button
-sit on one toolbar line without any of them knowing about the others.
-
-## Icons
-
-`icon` renders before the label, `icon-trailing` after, and both take any
-[icon](icon.md) name. Use one or both.
-
-@docs('preview', name: 'button-icons')
-
-The names there are `shape-*` because those are the drawings this package ships,
-and a preview has to render for a reader who has generated nothing. In an
-application they would be names of your own: `php artisan shape:icon plus
-arrow-right`, then `icon="plus"`. See [Icon](icon.md).
-
-`icon-size` picks how big the drawing is: `xs` is 16px, `sm` — the default — is
-20px, `base` is 24px, `lg` is 32px and `xl` is 40px. The style is left to the
-icon, which draws the small sizes solid because a stroke does not read at 16px.
-It does not follow `size`: a large button usually wants the same 20px glyph a
-base one does, and the call sites that want otherwise say so.
-
-@docs('preview', name: 'button-icon-sizes')
-
-## Icon-only buttons
-
-`square` drops the horizontal padding and makes the button as tall as it is
-wide, at every size. There is no label to read, so pass an `aria-label`:
-
-@docs('preview', name: 'button-square')
-
-Pair one with a [tooltip](tooltip.md) when the glyph alone is not obvious.
-
-## Links
-
-An `href` renders an anchor with the same styling, without being asked:
-
-@docs('preview', name: 'button-link')
-
-This is the same resolution the [badge](badge.md), the [avatar](avatar.md), the
-[tab](tabs.md) and the [menu item](dropdown.md) make. Middle-click, "open in new
-tab" and the status bar all work for a link and none of them work for a button
-pretending to be one — and an `href` on a `<button>` is that mistake with
-nothing to show for it, since the attribute is simply ignored.
-
-`href` goes through the attribute bag rather than a prop, so `:href="$url"`
-costs nothing and still folds: the element is decided by the attribute being
-there, not by what it says.
-
-`as="a"` is still accepted and still folds — it is just no longer what stands
-between a call site and a working link. `as` earns its keep elsewhere: `div`,
-for a button that sits inside something already clickable, and beating an
-inferred anchor on the rare call site that carries an `href` and means something
-else by it.
-
-## Disabled
-
-`disabled` is a plain attribute — Shape claims no prop for it — and dims the
-button while removing pointer events. An anchor cannot be disabled, so use
-`aria-disabled` there and Shape styles it the same way:
-
-@docs('preview', name: 'button-disabled')
 
 ## Groups
 
@@ -197,6 +166,37 @@ it is not the default.
 A row of buttons that are merely near each other is not a group. Two buttons at
 the foot of a form are one `<div class="flex gap-2">`, and this component would
 join them into a control they aren't.
+
+## Links
+
+An `href` renders an anchor with the same styling, without being asked:
+
+@docs('preview', name: 'button-link')
+
+This is the same resolution the [badge](badge.md), the [avatar](avatar.md), the
+[tab](tabs.md) and the [menu item](dropdown.md) make. Middle-click, "open in new
+tab" and the status bar all work for a link and none of them work for a button
+pretending to be one — and an `href` on a `<button>` is that mistake with
+nothing to show for it, since the attribute is simply ignored.
+
+`href` goes through the attribute bag rather than a prop, so `:href="$url"`
+costs nothing and still folds: the element is decided by the attribute being
+there, not by what it says.
+
+`as="a"` is still accepted and still folds — it is just no longer what stands
+between a call site and a working link. `as` earns its keep elsewhere: `div`,
+for a button that sits inside something already clickable, and beating an
+inferred anchor on the rare call site that carries an `href` and means something
+else by it.
+
+## Icon-only buttons
+
+`square` drops the horizontal padding and makes the button as tall as it is
+wide, at every size. There is no label to read, so pass an `aria-label`:
+
+@docs('preview', name: 'button-square')
+
+Pair one with a [tooltip](tooltip.md) when the glyph alone is not obvious.
 
 ## Livewire and Alpine
 
@@ -299,16 +299,16 @@ Past that, [`shape:eject`](../tooling.md#shapeeject) hands you the file.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `variant` | `outline` | `primary`, `outline`, `subtle`, `ghost` |
-| `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
 | `icon` | — | any [icon](icon.md) name, rendered before the label |
-| `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
-| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
-| `square` | `false` | drops the horizontal padding, for icon-only buttons |
-| `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
 | `as` | resolved from `href` | `button`, `a`, `div` — an `href` implies `a`, and `button` otherwise |
+| `variant` | `outline` | `primary`, `outline`, `subtle`, `ghost` |
+| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `border` | `false` | draws the edge in the tone; on `outline` recolours the border it already has, on `ghost` shows it on hover only |
+| `square` | `false` | drops the horizontal padding, for icon-only buttons |
 | `type` | `button` | any button type |
+| `icon-trailing` | — | any [icon](icon.md) name, rendered after the label |
 
 The default slot is the label. Every other attribute — `href`, `disabled`,
 `wire:*`, `class` — passes through to the rendered element.
@@ -317,8 +317,8 @@ The default slot is the label. Every other attribute — `href`, `disabled`,
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `orientation` | `horizontal` | `horizontal`, `vertical` |
 | `label` | — | the group's accessible name; omitted entirely when not given |
+| `orientation` | `horizontal` | `horizontal`, `vertical` |
 
 Its default slot is the buttons. `role` defaults to `group` and can be
 overridden, and every other attribute lands on the wrapping `<div>`.

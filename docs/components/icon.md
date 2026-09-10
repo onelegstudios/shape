@@ -63,6 +63,15 @@ Sizes and styles are whatever the icon set declares — see
 still takes `size`, and ignores `variant` rather than rendering it onto the
 `<svg>`.
 
+## Accessibility
+
+Icons render `aria-hidden="true"`, on the assumption that they sit beside a
+label. When an icon carries meaning on its own, expose it and give it a name:
+
+```blade
+<x-shape::icon.shape-success aria-hidden="false" role="img" aria-label="Paid" />
+```
+
 ## Resolving by name
 
 When the name is not known until runtime, `<x-shape::icon>` takes it as a prop:
@@ -73,15 +82,6 @@ When the name is not known until runtime, `<x-shape::icon>` takes it as a prop:
 
 This form resolves the component at runtime and cannot fold or memoize. Inside a
 loop or a table, use the direct form.
-
-## Accessibility
-
-Icons render `aria-hidden="true"`, on the assumption that they sit beside a
-label. When an icon carries meaning on its own, expose it and give it a name:
-
-```blade
-<x-shape::icon.shape-success aria-hidden="false" role="img" aria-label="Paid" />
-```
 
 ## What Shape draws for you
 

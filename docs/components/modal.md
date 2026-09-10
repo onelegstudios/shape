@@ -125,10 +125,10 @@ behind the same query.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `description` | — | a line under the heading, referenced by `aria-describedby` |
 | `name` | *required* | the dialog's id; what a trigger points `for` at |
 | `heading` | — | renders the title row and names the dialog |
-| `description` | — | a line under the heading, referenced by `aria-describedby` |
-| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `dismissible` | `true` | `false` removes the close button and holds Escape off |
 
 `overlay.trigger` takes `for` and `command` (`show-modal` by default) and passes

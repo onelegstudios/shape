@@ -4,15 +4,9 @@ A rule between two things. Reach for it after spacing, not instead of it.
 
 @docs('preview', name: 'separator', layout: 'stack')
 
-## With a label
-
-The label sits in a gap in the rule, in muted type taken from the surface:
-
-@docs('preview', name: 'separator-label', layout: 'stack')
-
 ## Sizes
 
-`size` moves the label's type and the gap it sits in, and — at the top two steps
+`size` moves the [label](#with-a-label)'s type and the gap it sits in, and — at the top two steps
 — the weight of the rule itself:
 
 @docs('preview', name: 'separator-sizes', layout: 'stack')
@@ -33,6 +27,12 @@ A vertical separator stretches to its row, so it needs a flex parent:
 A bare rule is decorative and hidden from assistive technology — the spacing and
 the headings around it already convey the break. A labelled one is exposed as a
 real `separator` with its label as the accessible name.
+
+## With a label
+
+The label sits in a gap in the rule, in muted type taken from the surface:
+
+@docs('preview', name: 'separator-label', layout: 'stack')
 
 ## Theming
 
@@ -72,9 +72,9 @@ on the root:
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `orientation` | `horizontal` | `horizontal`, `vertical` |
-| `label` | — | text to sit in the rule |
 | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `label` | — | text to sit in the rule |
+| `orientation` | `horizontal` | `horizontal`, `vertical` |
 
 `label` is horizontal only.
 

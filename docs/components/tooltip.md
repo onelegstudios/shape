@@ -78,10 +78,10 @@ makes the flip unlikely.
 
 | Prop | Default | Values |
 | --- | --- | --- |
-| `name` | *required* | the tooltip's id |
-| `text` | *required* | what it says |
-| `placement` | `top` | any placement the [popover](popover.md) takes |
 | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `name` | *required* | the tooltip's id |
+| `placement` | `top` | any placement the [popover](popover.md) takes |
+| `text` | *required* | what it says |
 
 The default slot is the control the tooltip describes.
 
