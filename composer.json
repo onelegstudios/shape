@@ -77,8 +77,15 @@
     "build": [
       "@php vendor/bin/testbench workbench:build --ansi"
     ],
+    "assets": [
+      "npm install",
+      "npm run preview",
+      "npm run preview:seed",
+      "npm run docs"
+    ],
     "serve": [
       "Composer\\Config::disableProcessTimeout",
+      "@assets",
       "@build",
       "@php vendor/bin/testbench serve --ansi"
     ],
