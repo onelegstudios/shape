@@ -304,7 +304,7 @@ the same relationship, generated instead of looked up. The state colours are
 **not** derived, for the reason above, and neither is the accent, for the one
 just above that.
 
-`npm run preview && composer serve` serves the gallery both ways: `/` is
+`composer serve` serves the gallery both ways: `/` is
 `shape.css` alone, `/seed` adds this file.
 
 ### Why the contrast guarantee survives a hue change

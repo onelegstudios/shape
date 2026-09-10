@@ -294,7 +294,6 @@ describes.
 ## Previewing components and reading the docs
 
 ```bash
-npm install && npm run preview && npm run docs
 composer serve
 ```
 
@@ -307,8 +306,9 @@ and prints that same file underneath as the example. One file for the picture an
 for the code, and a test asserts every one of them still compiles — so a prop
 that gets renamed cannot leave a page describing the old one.
 
-`npm run preview` and `npm run docs` compile the two Tailwind stylesheets those
-pages use. The package itself ships no CSS.
+Before it starts the server, `composer serve` runs `composer assets`, which
+installs the npm dependencies and compiles the Tailwind stylesheets those pages
+use. The package itself ships no CSS.
 
 ## Changelog
 

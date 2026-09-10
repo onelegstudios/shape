@@ -17,7 +17,8 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 - Static analysis: `composer analyse`
 - Pest tests: `composer test:unit`
 - Workbench build: `composer build`
-- Workbench server: `composer serve`
+- Workbench stylesheets: `composer assets`
+- Workbench server: `composer serve` (runs `assets` and `build` first)
 
 ## Local Skills
 
