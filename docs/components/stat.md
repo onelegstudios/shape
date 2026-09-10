@@ -5,6 +5,18 @@ de-emphasized beside it.
 
 @docs('preview', name: 'stat')
 
+## Sizes
+
+The number moves further across the scale than the word under it does — four
+type steps against two — because that is the relationship a stat is made of. A
+label that grew as fast as its number would flatten the block into two lines of
+large text:
+
+@docs('preview', name: 'stat-sizes', layout: 'stack')
+
+It composes with `emphasis` rather than fighting it: `size` picks the pair of
+steps, `emphasis` decides which of the two the number gets.
+
 ## Trend
 
 `trend` draws a direction and tints it. State `delta` alongside it — a trend
@@ -87,6 +99,7 @@ column was set in them.
 | `delta` | — | the change, as text |
 | `trend` | — | `up`, `down`, `flat` |
 | `tone` | from `trend` | `neutral`, `brand`, `accent`, `info`, `success`, `warning`, `danger` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `description` | — | a line under the value |
 | `emphasis` | `value` | `value`, `label` |
 

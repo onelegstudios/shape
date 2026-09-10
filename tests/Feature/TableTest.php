@@ -133,3 +133,34 @@ it('passes attributes straight through', function () {
         ->and(Blade::render('<x-shape::table.heading label="Amount" colspan="2" />'))
         ->toContain('colspan="2"');
 });
+
+it('sets its density from the wrapper and leaves the cells alone', function (string $size, string $rules) {
+    // Density belongs to the table: a table whose rows were set at four
+    // densities is not a table anyone is trying to build. It reaches the cells
+    // as descendant utilities, so nothing extra is rendered per row — which
+    // matters in the component here that renders most often.
+    $html = Blade::render("<x-shape::table size=\"{$size}\"><x-shape::table.body><x-shape::table.row><x-shape::table.cell value=\"1\" /></x-shape::table.row></x-shape::table.body></x-shape::table>");
+
+    expect($html)
+        ->toContain($rules)
+        ->toContain("data-shape-size=\"{$size}\"")
+        ->toContain('[:where(&amp;)]:px-3 [:where(&amp;)]:py-3');
+})->with([
+    ['xs', '[&amp;_th]:px-2 [&amp;_th]:py-1 [&amp;_td]:px-2 [&amp;_td]:py-1.5'],
+    ['sm', '[&amp;_th]:px-2.5 [&amp;_th]:py-1.5 [&amp;_td]:px-2.5 [&amp;_td]:py-2'],
+    ['lg', '[&amp;_th]:px-4 [&amp;_th]:py-3 [&amp;_th]:text-xs [&amp;_td]:px-4 [&amp;_td]:py-4'],
+    ['xl', '[&amp;_th]:px-5 [&amp;_th]:py-4 [&amp;_th]:text-sm [&amp;_td]:px-5 [&amp;_td]:py-5'],
+]);
+
+it('renders the markup it always did at the default step', function () {
+    expect(Blade::render('<x-shape::table><x-shape::table.body /></x-shape::table>'))
+        ->not->toContain('[&amp;_td]:')
+        ->not->toContain('[&amp;&gt;table]:');
+});
+
+it('hands its size to the empty state it renders', function () {
+    // So that a tight table does not sit above a full screen of white space.
+    expect(Blade::render('<x-shape::table size="xs"><x-shape::table.body /></x-shape::table>'))
+        ->toContain('[:where(&amp;)]:gap-1 [:where(&amp;)]:px-4 [:where(&amp;)]:py-6')
+        ->toContain('data-shape-empty');
+});

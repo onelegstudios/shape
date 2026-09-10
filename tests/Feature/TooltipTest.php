@@ -41,3 +41,17 @@ it('sits above its trigger by default', function () {
     expect(Blade::render('<x-shape::tooltip name="t" text="Tip">x</x-shape::tooltip>'))
         ->toContain('data-shape-placement="top"');
 });
+
+it('moves the type, the inset and the measure together', function (string $size, string $classes) {
+    // The measure is the one easy to forget: a tooltip set larger inside the
+    // same 16rem box is a paragraph, and a tooltip is read in one glance.
+    expect(Blade::render("<x-shape::tooltip name=\"tip\" text=\"Delete this project\" size=\"{$size}\"><button>x</button></x-shape::tooltip>"))
+        ->toContain($classes)
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', 'max-w-2xs [:where(&amp;)]:px-1.5 [:where(&amp;)]:py-0.5 [:where(&amp;)]:text-2xs'],
+    ['sm', 'max-w-2xs [:where(&amp;)]:px-2 [:where(&amp;)]:py-0.5 [:where(&amp;)]:text-xs'],
+    ['base', 'max-w-2xs [:where(&amp;)]:px-2 [:where(&amp;)]:py-1 [:where(&amp;)]:text-xs'],
+    ['lg', 'max-w-xs [:where(&amp;)]:px-2.5 [:where(&amp;)]:py-1.5 [:where(&amp;)]:text-sm'],
+    ['xl', 'max-w-sm [:where(&amp;)]:px-3 [:where(&amp;)]:py-2 [:where(&amp;)]:text-base'],
+]);

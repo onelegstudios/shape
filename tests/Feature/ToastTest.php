@@ -78,3 +78,37 @@ it('is positioned from a key', function () {
     expect(Blade::render('<x-shape::toaster position="top-center" />'))
         ->toContain('data-shape-position="top-center"');
 });
+
+it('takes the alert\'s steps, inset for inset', function (string $size, string $inset, string $type) {
+    $html = Blade::render("<x-shape::toast tone=\"success\" heading=\"Invoice sent\" size=\"{$size}\" />");
+
+    expect($html)
+        ->toContain($inset)
+        ->toContain("data-shape-heading data-shape-size=\"{$type}\"")
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', '[:where(&amp;)]:gap-2 [:where(&amp;)]:p-2.5', 'xs'],
+    ['sm', '[:where(&amp;)]:gap-2.5 [:where(&amp;)]:p-3', 'sm'],
+    ['base', '[:where(&amp;)]:gap-3 [:where(&amp;)]:p-4', 'sm'],
+    ['lg', '[:where(&amp;)]:gap-4 [:where(&amp;)]:p-5', 'base'],
+    ['xl', '[:where(&amp;)]:gap-5 [:where(&amp;)]:p-6', 'lg'],
+]);
+
+it('holds the bar at four pixels however small the toast gets', function () {
+    // Four pixels is a mark rather than a measurement, and a tone stripe that
+    // thinned at `xs` would be hardest to see exactly where the toast is
+    // smallest.
+    foreach (['xs', 'base', 'xl'] as $size) {
+        expect(Blade::render("<x-shape::toast tone=\"danger\" size=\"{$size}\" />"))
+            ->toContain('[:where(&amp;)]:border-l-4 [:where(&amp;)]:border-l-[var(--shape-tone)]');
+    }
+});
+
+it('stamps every template the toaster holds at the default step', function () {
+    // There is no `size` on the toaster: a value it resolved per request would
+    // cost those templates their fold, and the fold is the one thing they have
+    // to keep doing.
+    expect(Blade::render('<x-shape::toaster />'))
+        ->toContain('[:where(&amp;)]:gap-3 [:where(&amp;)]:p-4')
+        ->not->toContain('[:where(&amp;)]:p-6');
+});

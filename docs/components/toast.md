@@ -17,6 +17,24 @@ Shape::toast()->success('Invoice sent')->send();
 You do not write `<x-shape::toast>` yourself. The toaster renders one per tone
 into a `<template>`, and `shape.js` clones the one the payload asked for.
 
+## Sizes
+
+`size` is the [alert](alert.md#sizes)'s, step for step — the two are the same
+block saying the same thing in two places:
+
+@docs('preview', name: 'toast-sizes', layout: 'stack')
+
+The bar down the side does not move with it. Four pixels is a mark rather than a
+measurement, and a tone stripe that thinned at `xs` would be hardest to see
+exactly where the toast is smallest.
+
+There is no `size` on the toaster, which is the honest limit of this prop: a
+toaster stamps its seven templates at `base`, and a value it resolved per request
+would cost those templates their fold — the one thing they have to keep doing,
+since they are what every live toast is cloned from. A page that wants another
+size [ejects](../tooling.md#shapeeject) the toaster and writes the word into the seven call
+sites, where it is a literal and folds like anything else.
+
 ## Tones
 
 `tone` says what the toast means, and resolves the glyph:
@@ -158,8 +176,9 @@ it wants both.
 | `heading` | — | the line in bold |
 | `description` | — | a second line under it |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
-| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `icon-size` | resolved from `size` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `dismissible` | `true` | `false` removes the close button |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 
 ## Folding
 

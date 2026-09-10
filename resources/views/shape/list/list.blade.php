@@ -19,10 +19,17 @@
 
     Separation is `divide-y` on the list rather than a border on each item. Both
     draw the same line; only one of them draws it in the right number of places.
+
+    `size` is the list's rather than the item's, the way the table's density is
+    the table's: the rows of one list are one thing, and stating the word once
+    keeps `list.item` a component with no props at all. It reaches the items as
+    descendant utilities, which outrank the zero-specificity insets an item draws
+    itself with — so nothing is handed down and nothing extra is rendered per row.
 --}}
 
 @props([
     'as' => 'ul',
+    'size' => 'base',
     'empty' => true,
     'emptyIcon' => null,
     'emptyHeading' => 'Nothing here yet',
@@ -32,15 +39,29 @@
 @php
 $classes = Shape::classes()
     ->add('[:where(&)]:divide-y [:where(&)]:divide-shape-200 dark:[:where(&)]:divide-shape-800')
-    ->add('[:where(&)]:text-sm [:where(&)]:text-[color:var(--shape-fg)]');
+    ->add('[:where(&)]:text-[color:var(--shape-fg)]')
+
+    // The type the rows are set in and the room each one keeps, in one arm. The
+    // gap is the distance between what an item holds — an avatar, two lines and
+    // a button — and it grows with the padding, because a row that got taller and
+    // kept its columns where they were would read as a stretched row rather than
+    // as a roomier one.
+    ->add(match ($size) {
+        'xs' => '[:where(&)]:text-xs [&>li]:gap-2 [&>li]:py-1.5',
+        'sm' => '[:where(&)]:text-sm [&>li]:gap-2.5 [&>li]:py-2',
+        'lg' => '[:where(&)]:text-base [&>li]:gap-4 [&>li]:py-4',
+        'xl' => '[:where(&)]:text-lg [&>li]:gap-5 [&>li]:py-5',
+        default => '[:where(&)]:text-sm',
+    });
 @endphp
 
-<div data-shape-list>
+<div data-shape-list data-shape-size="{{ $size }}">
     <{{ $as }} {{ $attributes->class($classes) }}>{{ $slot }}</{{ $as }}>
 
     @if ($empty)
         <div data-shape-list-empty>
             <x-shape::empty
+                :size="$size"
                 :icon="$emptyIcon"
                 :heading="$emptyHeading"
                 :description="$emptyDescription"

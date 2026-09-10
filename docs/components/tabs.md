@@ -12,6 +12,22 @@ depends on whether a tab has an `href`.
 
 @docs('preview', name: 'tabs-icons', layout: 'stack')
 
+## Sizes
+
+`size` is the strip's, not the tab's. Tabs in one strip are one control, so the
+word is said once where the strip is rather than repeated on every tab and got
+wrong on the fourth:
+
+@docs('preview', name: 'tabs-sizes', layout: 'stack')
+
+It reaches the tabs as descendant utilities rather than as a prop handed down.
+Everything a tab draws itself with is written at zero specificity, so a rule from
+the strip outranks it — which also means a class of your own on a tab lands at
+the same weight as the strip's and is decided by Tailwind's ordering rather than
+by which of the two is more specific. Reach for the strip.
+
+`base` emits nothing at all and leaves the tab's own defaults standing.
+
 ## Vertical
 
 `orientation="vertical"` stacks the strip and moves the arrow keys to
@@ -118,6 +134,7 @@ use when the two should not look alike.
 | `tabs` | `as` | — | `nav` for a strip of links |
 | | `label` | — | the accessible name of the strip |
 | | `orientation` | `horizontal` | `horizontal`, `vertical` |
+| | `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` — sizes every tab in the strip |
 | `tabs.tab` | `for` | — | the panel's `name` |
 | | `href` | — | makes it a link instead |
 | | `selected` | `false` | |

@@ -7,6 +7,23 @@ A `<table>` in a box that scrolls.
 `table.head` renders the `<thead>` **and** its `<tr>`, so headings go directly
 inside it. Rows go in `table.body`.
 
+## Sizes
+
+`size` is density, and it belongs to the table rather than to the cell: a table
+whose rows were set at four densities is not a table anyone is trying to build.
+
+@docs('preview', name: 'table-sizes', layout: 'stack')
+
+It reaches the cells as descendant utilities. Everything a cell and a heading
+draw themselves with is written at zero specificity, so a rule from the wrapper
+outranks it — no `!important`, no prop threaded through three components, and
+nothing extra rendered per row, which matters in the one component here that
+renders thousands of times. `base` emits nothing and leaves those defaults
+standing.
+
+The empty state takes the same word, so a tight table does not sit above a full
+screen of white space.
+
 ## Alignment
 
 `align="end"` also sets tabular figures — a right-aligned column is a number
@@ -140,6 +157,7 @@ has the reasoning and the class.
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` — the density of every cell in the table |
 | `empty` | `true` | render the built-in empty state |
 | `empty-icon` | — | any [icon](icon.md) name |
 | `empty-heading` | `Nothing here yet` | |

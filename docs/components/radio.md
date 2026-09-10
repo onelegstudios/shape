@@ -14,6 +14,13 @@ A group only has an accessible name if it is a real `<fieldset>` with a
 
 @docs('preview', name: 'radio-description', layout: 'stack')
 
+## Sizes
+
+The [checkbox](checkbox.md#sizes)'s steps, box for box — the two are the same
+control to anyone filling in the form they are in:
+
+@docs('preview', name: 'radio-sizes', layout: 'stack')
+
 ## Tones
 
 @docs('preview', name: 'radio-tones')
@@ -50,6 +57,7 @@ different file rather than a stack of corrections to this one.
 | `description` | — | a second line under the label |
 | `value` | — | the submitted value |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `id` | `{name}-{value}` | the element id |
 
 `checked`, `disabled` and `wire:model` pass through to the `<input>`.

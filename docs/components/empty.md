@@ -5,6 +5,21 @@ filter it all away.
 
 @docs('preview', name: 'empty', layout: 'stack')
 
+## Sizes
+
+An empty state is mostly room, so that is mostly what `size` moves — and the
+mark, the headline and the sentence go with it, because a 24px glyph over 20
+pixels of padding reads as a mark that outgrew its box:
+
+@docs('preview', name: 'empty-sizes', layout: 'stack')
+
+`icon-size` follows unless you name it. The two scales are not the same length:
+the glyph runs out at `xl` and so does the heading, while the padding could go on,
+so the top of this scale grows the room and holds the type.
+
+The [table](table.md#sizes) and the [list](list.md#sizes) hand theirs down to the
+empty state they render for you.
+
 ## Actions
 
 The default slot is for actions, laid out in a centred row under the copy. An
@@ -66,8 +81,9 @@ those instances — which is also the only way to reach *all* of them at once:
 
 | Prop | Default | Values |
 | --- | --- | --- |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `icon` | — | any [icon](icon.md) name |
-| `icon-size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `icon-size` | resolved from `size` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `heading` | — | the headline |
 | `description` | — | one line of supporting copy |
 

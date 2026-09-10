@@ -21,6 +21,11 @@
     strip whose selection comes from the current route therefore does not fold,
     which is a handful of components on a page and worth knowing rather than
     worth avoiding.
+
+    There is no `size` here. The strip carries it and reaches these through its
+    own class list, which is why every measurement below is written at zero
+    specificity — including the gap, which would otherwise be the one utility a
+    strip could not move.
 --}}
 
 @props([
@@ -33,7 +38,7 @@
 
 @php
 $classes = Shape::classes()
-    ->add('inline-flex items-center justify-center gap-2 whitespace-nowrap')
+    ->add('inline-flex items-center justify-center whitespace-nowrap [:where(&)]:gap-2')
     ->add('[:where(&)]:rounded-shape [:where(&)]:px-3 [:where(&)]:py-1.5 [:where(&)]:text-sm [:where(&)]:font-medium')
     ->add('text-[color:var(--shape-fg-muted)] hover:text-[color:var(--shape-fg)]')
     ->add('aria-selected:bg-[var(--shape-tone-tint)] aria-selected:text-[color:var(--shape-tone-ink)]')

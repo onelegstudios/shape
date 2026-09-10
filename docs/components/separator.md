@@ -10,6 +10,18 @@ The label sits in a gap in the rule, in muted type taken from the surface:
 
 @docs('preview', name: 'separator-label', layout: 'stack')
 
+## Sizes
+
+`size` moves the label's type and the gap it sits in, and — at the top two steps
+— the weight of the rule itself:
+
+@docs('preview', name: 'separator-sizes', layout: 'stack')
+
+The weight is the half of it with a floor. A hairline is one device pixel and
+there is nothing under it, so `xs`, `sm` and `base` all draw one and only `lg`
+and `xl` thicken. Worth knowing before reaching for `size="xs"` on a bare rule
+and watching nothing happen.
+
 ## Vertical
 
 A vertical separator stretches to its row, so it needs a flex parent:
@@ -62,6 +74,7 @@ on the root:
 | --- | --- | --- |
 | `orientation` | `horizontal` | `horizontal`, `vertical` |
 | `label` | — | text to sit in the rule |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 
 `label` is horizontal only.
 

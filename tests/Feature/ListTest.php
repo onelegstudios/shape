@@ -76,3 +76,29 @@ it('passes attributes straight through', function () {
         ->and(Blade::render('<x-shape::list.item wire:key="ada">Ada</x-shape::list.item>'))
         ->toContain('wire:key="ada"');
 });
+
+it('sizes its rows from the list rather than from each item', function (string $size, string $rules) {
+    // Which is what keeps `list.item` a component with no props at all.
+    $html = Blade::render("<x-shape::list size=\"{$size}\"><x-shape::list.item>Alex</x-shape::list.item></x-shape::list>");
+
+    expect($html)
+        ->toContain($rules)
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', '[:where(&amp;)]:text-xs [&amp;&gt;li]:gap-2 [&amp;&gt;li]:py-1.5'],
+    ['sm', '[:where(&amp;)]:text-sm [&amp;&gt;li]:gap-2.5 [&amp;&gt;li]:py-2'],
+    ['lg', '[:where(&amp;)]:text-base [&amp;&gt;li]:gap-4 [&amp;&gt;li]:py-4'],
+    ['xl', '[:where(&amp;)]:text-lg [&amp;&gt;li]:gap-5 [&amp;&gt;li]:py-5'],
+]);
+
+it('leaves the item its own insets at the default step', function () {
+    expect(Blade::render('<x-shape::list><x-shape::list.item>Alex</x-shape::list.item></x-shape::list>'))
+        ->toContain('[:where(&amp;)]:gap-3 [:where(&amp;)]:py-3')
+        ->not->toContain('[&amp;&gt;li]:');
+});
+
+it('hands its size to the empty state it renders', function () {
+    expect(Blade::render('<x-shape::list size="lg" />'))
+        ->toContain('[:where(&amp;)]:gap-3 [:where(&amp;)]:px-8 [:where(&amp;)]:py-16')
+        ->toContain('data-shape-empty');
+});

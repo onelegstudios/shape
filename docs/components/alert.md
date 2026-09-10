@@ -12,6 +12,21 @@ alert is neutral and draws no glyph:
 
 @docs('preview', name: 'alert-tones', layout: 'stack')
 
+## Sizes
+
+`size` moves the inset the block is drawn with and the type the message is set
+in, together — an alert that grew its padding and left its sentence at 14px would
+read as a small alert with a wide margin:
+
+@docs('preview', name: 'alert-sizes', layout: 'stack')
+
+`sm` and `base` share a type step and differ in the room around them, which is
+the [button](button.md#sizes)'s arrangement and for the button's reason: the two
+most common alerts on a page should not set their text differently.
+
+The glyph and the dismiss control follow unless they are named, so a call site
+says the word once rather than three times.
+
 ## Variants
 
 `variant` is how loud the alert is; `tone` is what it means. `subtle` is the
@@ -529,11 +544,12 @@ where a package rule outranks a class you passed.
 | `bar-square` | `false` | squares the two corners the `bar` runs between; nothing without a bar |
 | `heading` | — | a title above the body |
 | `icon` | resolved from `tone` | any [icon](icon.md) name, or `false` for none |
-| `icon-size` | `sm` | `xs`, `sm`, `base`, `lg`, `xl` |
+| `icon-size` | resolved from `size` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `icon-variant` | chosen by `icon-size` | `outline`, `solid` |
 | `icon-placement` | `gutter` | `inline` sets the glyph at the head of the first line and wraps the message under it |
 | `dismissible` | `false` | adds a close button |
 | `actions-placement` | `lg` | the width the `actions` row flips beside the message at: `sm`, `md`, `lg`, `xl`, `2xl` ([container sizes](#choosing-the-step), not breakpoints); `below` and `side` pin it instead |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 
 The default slot is the body. `actions` is a named slot for a row of
 buttons.

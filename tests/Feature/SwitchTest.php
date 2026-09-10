@@ -47,3 +47,21 @@ it('describes itself when it renders a description', function () {
         ->toContain('aria-describedby="notify-description"')
         ->toContain('id="notify-description"');
 });
+
+it('keeps the track, the knob and the travel one number', function (string $size, string $track, string $knob, string $travel) {
+    // The track is two knobs plus the four pixels of inset it keeps at every
+    // step, and the travel is one knob. Setting them apart is how a switch ends
+    // up with its knob stopping short of the end.
+    $html = Blade::render("<x-shape::switch name=\"notify\" label=\"Email me\" size=\"{$size}\" />");
+
+    expect($html)
+        ->toContain("appearance-none {$track} shrink-0")
+        ->toContain("left-0.5 {$knob} peer-checked:{$travel}")
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', 'h-3.5 w-6', 'size-2.5', 'translate-x-2.5'],
+    ['sm', 'h-4 w-7', 'size-3', 'translate-x-3'],
+    ['base', 'h-5 w-9', 'size-4', 'translate-x-4'],
+    ['lg', 'h-6 w-11', 'size-5', 'translate-x-5'],
+    ['xl', 'h-7 w-13', 'size-6', 'translate-x-6'],
+]);

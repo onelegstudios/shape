@@ -8,6 +8,13 @@ A checkbox inside its own label.
 
 @docs('preview', name: 'checkbox-description', layout: 'stack')
 
+## Sizes
+
+The box, the tick inside it and the text beside it move together, so a checkbox
+at any step is one control rather than a box that outgrew its label:
+
+@docs('preview', name: 'checkbox-sizes', layout: 'stack')
+
 ## Tones
 
 @docs('preview', name: 'checkbox-tones')
@@ -102,6 +109,7 @@ see [Overriding one](icon.md#overriding-one).
 | `description` | — | a second line under the label |
 | `value` | — | the submitted value; separates a group sharing one name |
 | `tone` | `neutral` | `neutral`, `brand`, `accent`, `danger`, `info`, `success`, `warning` |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` |
 | `id` | `{name}-{value}` | the element id |
 
 `checked`, `disabled`, `required` and `wire:model` pass through to the

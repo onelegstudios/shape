@@ -127,6 +127,17 @@
     The same `tone` is safe on the button, which only ever interpolates it.
     Whatever a component does with a value decides that.
 
+    `size` is the room the block is drawn with and the type the message is set
+    in, moving together — an alert that grew its padding and left its sentence at
+    14px would read as a small alert with a wide margin. `sm` and `base` share a
+    type step and differ in the inset, which is the button's arrangement and for
+    the button's reason: the two most common alerts on a page should not set
+    their text differently.
+
+    `icon-size` and the dismiss control follow it unless they are named, so the
+    glyph and the × are in proportion at every step without a call site having to
+    say so three times.
+
     `heading` is interpolated and nothing more, so an alert whose title comes from
     a variable still folds.
 
@@ -156,11 +167,12 @@
     'heading' => null,
     'icon' => null,
     'iconVariant' => null,
-    'iconSize' => 'sm',
+    'iconSize' => null,
     'iconPlacement' => 'gutter',
     'dismissible' => false,
     'actions' => null,
     'actionsPlacement' => 'lg',
+    'size' => 'base',
 ])
 
 @php
@@ -175,6 +187,42 @@ $bar = match ($bar) {
     'bottom' => 'bottom',
     default => null,
 };
+
+// Every step of the scale, resolved once: the inset the block is drawn with and
+// the gap between the glyph and the message, the gap between the message and the
+// row of buttons under it, the type the message is set in, and the glyph's own
+// step.
+//
+// The heading and the body take the same word, which is what keeps the glyph's
+// two pixels of offset true across the scale — half the difference between a
+// 20px line and a 16px glyph, and between a 24px line and a 20px one. The one
+// place it slips is `lg`, where a heading's line is 24px and a paragraph's 28,
+// so the glyph is centred on the sentence and sits two pixels below the cap line
+// of a heading. Two pixels is not a difference anyone can see; a match arm for
+// it would be.
+[$inset, $rowGap, $messageSize, $glyphSize] = match ($size) {
+    'xs' => ['[:where(&)]:gap-2 [:where(&)]:p-2.5', 'gap-2', 'xs', 'xs'],
+    'sm' => ['[:where(&)]:gap-2.5 [:where(&)]:p-3', 'gap-2', 'sm', 'sm'],
+    'lg' => ['[:where(&)]:gap-4 [:where(&)]:p-5', 'gap-3', 'base', 'base'],
+    'xl' => ['[:where(&)]:gap-5 [:where(&)]:p-6', 'gap-4', 'lg', 'base'],
+    default => ['[:where(&)]:gap-3 [:where(&)]:p-4', 'gap-3', 'sm', 'sm'],
+};
+
+// The control that closes it: its own step, the mark inside it, and the negative
+// margins that pull it back into the corner the padding above just made. The
+// three move together because the inset it is cancelling is the one in the arm
+// above — a dismiss control that kept its `-mt-1.5` inside `p-6` would drift
+// into the middle of the corner rather than sitting in it.
+[$dismissSize, $dismissGlyph, $dismissInset] = match ($size) {
+    'xs' => ['xs', 'xs', '-mr-1 -mt-1'],
+    'sm' => ['xs', 'xs', '-mr-1.5 -mt-1.5'],
+    'lg' => ['base', 'sm', '-mr-2 -mt-2'],
+    'xl' => ['lg', 'sm', '-mr-2.5 -mt-2.5'],
+    default => ['sm', 'xs', '-mr-1.5 -mt-1.5'],
+};
+
+// Named beats resolved, which is the alert's rule for the glyph and the toast's.
+$iconSize ??= $glyphSize;
 
 // The width the actions row flips at, resolved here for the same reason the
 // side above is: two arms below branch on it, and both want the same answer.
@@ -246,7 +294,8 @@ $actionsQuery = match ($actionsPlacement) {
 // an alert has none of.
 $classes = Shape::classes()
     ->add('flex items-start')
-    ->add('[:where(&)]:gap-3 [:where(&)]:rounded-shape [:where(&)]:p-4')
+    ->add('[:where(&)]:rounded-shape')
+    ->add($inset)
     ->add(match ($variant) {
         'solid' => '[:where(&)]:bg-[var(--shape-tone)]',
         'ghost' => 'transition-[color,background-color,border-color,box-shadow] duration-100 hover:bg-[var(--shape-tone-tint)]',
@@ -536,15 +585,16 @@ $messageClasses = $iconPlacement === 'inline'
 // be explained every time someone reads its output.
 $bodyClasses = match (true) {
     $actions === null => 'flex min-w-0 flex-1 flex-col',
-    $actionsQuery === null && $actionsPlacement === 'side' => 'flex min-w-0 flex-1 flex-row items-center justify-between gap-3',
-    $actionsQuery === null => 'flex min-w-0 flex-1 flex-col gap-3',
-    default => 'flex min-w-0 flex-1 flex-col gap-3 '.$actionsQuery,
+    $actionsQuery === null && $actionsPlacement === 'side' => 'flex min-w-0 flex-1 flex-row items-center justify-between '.$rowGap,
+    $actionsQuery === null => 'flex min-w-0 flex-1 flex-col '.$rowGap,
+    default => 'flex min-w-0 flex-1 flex-col '.$rowGap.' '.$actionsQuery,
 };
 @endphp
 
 <div
     {{ $attributes->class($classes) }}
     data-shape-alert
+    data-shape-size="{{ $size }}"
     data-shape-variant="{{ $variant }}"
     data-shape-tone="{{ $tone ?? 'neutral' }}"
     @if ($surface) data-shape-surface="{{ $surface }}" @endif
@@ -564,9 +614,10 @@ $bodyClasses = match (true) {
         and named on the same rule — `actions-placement` is the alert's other
         one, and neither is `placement`.
 
-        `icon-size` defaults to `sm`, so an alert's glyph is solid. Which
-        drawing that is belongs to the icon set and is the whole of what
-        `icon-variant` is for; the glyph says why on its own page.
+        `icon-size` follows the alert's `size` unless it is named, and at the
+        three smaller steps that is a solid drawing. Which drawing belongs to the
+        icon set and is the whole of what `icon-variant` is for; the glyph says
+        why on its own page.
     --}}
     @if ($iconPlacement === 'gutter')
         <x-shape::alert.glyph
@@ -605,10 +656,10 @@ $bodyClasses = match (true) {
             @endif
 
             @if ($heading)
-                <x-shape::heading :level="3" size="sm">{{ $heading }}</x-shape::heading>
+                <x-shape::heading :level="3" :size="$messageSize">{{ $heading }}</x-shape::heading>
             @endif
 
-            <x-shape::text size="sm" variant="muted" class="empty:hidden">{{ $slot }}</x-shape::text>
+            <x-shape::text :size="$messageSize" variant="muted" class="empty:hidden">{{ $slot }}</x-shape::text>
         </div>
 
         {{-- Rendered only where the slot was written, rather than always and
@@ -622,7 +673,7 @@ $bodyClasses = match (true) {
              gives. `flex-wrap` for when even that is not enough, the way the
              card's footer wraps for the same reason. --}}
         @if ($actions)
-            <div class="flex shrink-0 flex-wrap items-center gap-3" data-shape-alert-actions>{{ $actions }}</div>
+            <div class="flex shrink-0 flex-wrap items-center {{ $rowGap }}" data-shape-alert-actions>{{ $actions }}</div>
         @endif
     </div>
 
@@ -639,12 +690,12 @@ $bodyClasses = match (true) {
              attribute the listener already needed is the whole hook. --}}
         <x-shape::button
             square
-            size="sm"
+            :size="$dismissSize"
             variant="ghost"
             icon="shape-close"
-            icon-size="xs"
+            :icon-size="$dismissGlyph"
             aria-label="Dismiss"
-            class="-mr-1.5 -mt-1.5 shrink-0"
+            class="{{ $dismissInset }} shrink-0"
             data-shape-dismiss=""
         />
     @endif

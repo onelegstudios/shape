@@ -60,3 +60,18 @@ it('dims only its own label when disabled', function () {
     // labels of its siblings.
     expect($html)->toContain('[&amp;:has(&gt;[data-shape-control]:disabled)&gt;[data-shape-label]]:opacity-50');
 });
+
+it('takes the checkbox\'s boxes and puts a third of each in the middle', function (string $size, string $box, string $dot) {
+    $html = Blade::render("<x-shape::radio name=\"plan\" value=\"pro\" label=\"Pro\" size=\"{$size}\" />");
+
+    expect($html)
+        ->toContain("appearance-none {$box} shrink-0")
+        ->toContain("pointer-events-none {$dot} rounded-full")
+        ->toContain("data-shape-size=\"{$size}\"");
+})->with([
+    ['xs', 'size-3', 'size-1'],
+    ['sm', 'size-3.5', 'size-1.5'],
+    ['base', 'size-4', 'size-1.5'],
+    ['lg', 'size-5', 'size-2'],
+    ['xl', 'size-6', 'size-2.5'],
+]);

@@ -11,6 +11,18 @@ almost always holds an avatar, two lines of text and a trailing button, and a
 `value` prop would buy nothing while costing the composition that is the reason
 to reach for a list at all.
 
+## Sizes
+
+`size` is the list's rather than the item's, the way the [table](table.md#sizes)'s
+density is the table's — and it is what keeps `list.item` a component with no
+props at all:
+
+@docs('preview', name: 'list-sizes', layout: 'stack')
+
+The type and the room each row keeps move together, and the gap inside a row
+moves with them: a row that got taller and left its columns where they were would
+read as stretched rather than as roomier. The empty state takes the same word.
+
 ## Other list elements
 
 `as` takes any list element — `ol` for a ranked list:
@@ -88,6 +100,7 @@ reaches it.
 | Prop | Default | Values |
 | --- | --- | --- |
 | `as` | `ul` | any list element — `ol` for a ranked list |
+| `size` | `base` | `xs`, `sm`, `base`, `lg`, `xl` — sizes every row |
 | `empty` | `true` | render the built-in empty state |
 | `empty-icon` | — | any [icon](icon.md) name |
 | `empty-heading` | `Nothing here yet` | |
