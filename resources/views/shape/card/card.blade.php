@@ -5,7 +5,9 @@
 
     Separation comes from the surface shift and a resting elevation, so there is
     no border by default — `border` is opt-in for the cases where a card sits on
-    a surface too close to its own to read against.
+    a surface too close to its own to read against. The elevation itself is
+    `shadow`, opt-out for a card sitting inside a surface that already reads as
+    raised, where a second shadow would just be noise.
 
     A card is the parent of whatever it contains, so it owns the space between
     its children. Nothing inside a card sets its own outer margin; that is what
@@ -20,12 +22,14 @@
 @props([
     'padding' => 'base',
     'border' => false,
+    'shadow' => true,
 ])
 
 @php
 $classes = Shape::classes()
     ->add('flex flex-col')
-    ->add('[:where(&)]:rounded-shape-lg [:where(&)]:shadow-sm')
+    ->add('[:where(&)]:rounded-shape-lg')
+    ->add($shadow ? '[:where(&)]:shadow-sm' : '')
     ->add('[:where(&)]:bg-white dark:[:where(&)]:bg-shape-900')
     ->add('[:where(&)]:text-[color:var(--shape-fg)]')
 

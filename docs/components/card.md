@@ -12,6 +12,14 @@ to read against:
 
 @docs('preview', name: 'card-border', layout: 'stack')
 
+## Shadow
+
+`shadow` is on by default — the resting elevation is what separates a card from
+the page without a border. Turn it off for a card sitting inside a surface that
+already reads as raised, where a second shadow would just be noise:
+
+@docs('preview', name: 'card-shadow', layout: 'stack')
+
 ## Padding
 
 Padding and the gap between children move together — `sm` is a tighter card
@@ -112,6 +120,7 @@ reach one of them:
 | Prop | Default | Values |
 | --- | --- | --- |
 | `border` | `false` | adds a hairline border |
+| `shadow` | `true` | the resting elevation; set `false` to drop it |
 | `padding` | `base` | `xs`, `sm`, `base`, `lg`, `xl`, `none` |
 
 | `card.header` / `card.footer` prop | Default | Values |

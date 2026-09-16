@@ -22,6 +22,11 @@ it('opts into a border when asked', function () {
         ->toContain('[:where(&amp;)]:border-shape-200');
 });
 
+it('opts out of the shadow when asked', function () {
+    expect(Blade::render('<x-shape::card :shadow="false">Body</x-shape::card>'))
+        ->not->toContain('[:where(&amp;)]:shadow-sm');
+});
+
 it('uses the raised step of the elevation scale rather than one of its own', function () {
     expect(Blade::render('<x-shape::card>Body</x-shape::card>'))
         ->toContain('shadow-sm')
