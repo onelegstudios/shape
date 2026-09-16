@@ -32,6 +32,26 @@ Neither draws a rule — compose a [separator](separator.md) if you want one:
 
 @docs('preview', name: 'card-regions', layout: 'stack')
 
+### Bleeding to the edge
+
+A header or footer sits inside the card's padding, so a fill on one stops short
+of the edge. `bleed` takes it to the edge: the card's padding is cancelled on
+the sides and on the edge the region sits against, and put back inside it, so
+the content stays where it was and the corners follow the card's radius:
+
+@docs('preview', name: 'card-bleed', layout: 'stack')
+
+It works at every `padding`, because the card publishes its inset as
+`--shape-card-inset` and the region reads that rather than a size of its own.
+Two things follow. Bleed a header only when it is the card's first child and a
+footer only when it is the last — the margin pulls toward the edge whatever is
+there. And if you change a card's padding with a class, set the variable with
+it, or the bleed will cancel the old one:
+
+```blade
+<x-shape::card class="p-5 [--shape-card-inset:--spacing(5)]">
+```
+
 Both are components rather than named slots, because deciding whether a slot has
 content is a runtime question and asking it would take the card off the fold
 path.
@@ -74,6 +94,12 @@ your own are in [the surface contract](../theming.md#the-surface-contract).
 [data-shape-card] { border-radius: 0; box-shadow: none; }
 ```
 
+A bleeding header or footer carries `data-shape-bleed`:
+
+```css
+[data-shape-card-footer][data-shape-bleed] { background: var(--color-shape-50); }
+```
+
 `data-shape-padding` carries the arm the card was called with, so a rule can
 reach one of them:
 
@@ -88,8 +114,11 @@ reach one of them:
 | `border` | `false` | adds a hairline border |
 | `padding` | `base` | `xs`, `sm`, `base`, `lg`, `xl`, `none` |
 
-`card.header` and `card.footer` take no props. The default slot is the card's
-contents.
+| `card.header` / `card.footer` prop | Default | Values |
+| --- | --- | --- |
+| `bleed` | `false` | cancels the card's padding at the sides and the region's own edge |
+
+The default slot is each component's contents.
 
 Cards use `shadow-sm`, the "raised" step — see [Elevation](../elevation.md).
 

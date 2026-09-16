@@ -38,13 +38,17 @@ $classes = Shape::classes()
     // card draws a surface and something inside it owns the inset — a table
     // bled to the edges, a picture — which is a different answer rather than a
     // smaller one, and it keeps the gap so the children still space themselves.
+    //
+    // The inset is also published as `--shape-card-inset`, which is how a
+    // bleeding header or footer reaches the edge without knowing which arm the
+    // card was called with.
     ->add(match ($padding) {
-        'xs' => '[:where(&)]:gap-2 [:where(&)]:p-3',
-        'sm' => '[:where(&)]:gap-3 [:where(&)]:p-4',
-        'lg' => '[:where(&)]:gap-6 [:where(&)]:p-8',
-        'xl' => '[:where(&)]:gap-8 [:where(&)]:p-10',
-        'none' => '[:where(&)]:gap-4',
-        default => '[:where(&)]:gap-4 [:where(&)]:p-6',
+        'xs' => '[:where(&)]:gap-2 [:where(&)]:p-3 [:where(&)]:[--shape-card-inset:--spacing(3)]',
+        'sm' => '[:where(&)]:gap-3 [:where(&)]:p-4 [:where(&)]:[--shape-card-inset:--spacing(4)]',
+        'lg' => '[:where(&)]:gap-6 [:where(&)]:p-8 [:where(&)]:[--shape-card-inset:--spacing(8)]',
+        'xl' => '[:where(&)]:gap-8 [:where(&)]:p-10 [:where(&)]:[--shape-card-inset:--spacing(10)]',
+        'none' => '[:where(&)]:gap-4 [:where(&)]:[--shape-card-inset:0px]',
+        default => '[:where(&)]:gap-4 [:where(&)]:p-6 [:where(&)]:[--shape-card-inset:--spacing(6)]',
     })
 
     ->add($border ? '[:where(&)]:border [:where(&)]:border-shape-200 dark:[:where(&)]:border-shape-800' : '');

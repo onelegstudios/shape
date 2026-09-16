@@ -87,6 +87,44 @@ it('wraps footer actions rather than overflowing them', function () {
         ->toContain('flex flex-wrap items-center');
 });
 
+it('publishes its inset for a bleeding region to cancel', function (string $padding, string $inset) {
+    expect(Blade::render("<x-shape::card padding=\"{$padding}\">Body</x-shape::card>"))
+        ->toContain("[:where(&amp;)]:[--shape-card-inset:{$inset}]");
+})->with([
+    ['xs', '--spacing(3)'],
+    ['sm', '--spacing(4)'],
+    ['base', '--spacing(6)'],
+    ['lg', '--spacing(8)'],
+    ['xl', '--spacing(10)'],
+    ['none', '0px'],
+]);
+
+it('keeps the header and footer inside the inset unless they bleed', function (string $part) {
+    expect(Blade::render("<x-shape::card.{$part}>Content</x-shape::card.{$part}>"))
+        ->not->toContain('--shape-card-inset')
+        ->not->toContain('data-shape-bleed');
+})->with(['header', 'footer']);
+
+it('bleeds a footer to the sides and bottom edge of the card', function () {
+    expect(Blade::render('<x-shape::card.footer bleed>Actions</x-shape::card.footer>'))
+        ->toContain('data-shape-bleed')
+        ->toContain('[:where(&amp;)]:-mx-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:-mb-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:p-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:rounded-b-[inherit]')
+        ->not->toContain('-mt-');
+});
+
+it('bleeds a header to the sides and top edge of the card', function () {
+    expect(Blade::render('<x-shape::card.header bleed>Title</x-shape::card.header>'))
+        ->toContain('data-shape-bleed')
+        ->toContain('[:where(&amp;)]:-mx-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:-mt-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:p-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:rounded-t-[inherit]')
+        ->not->toContain('-mb-');
+});
+
 it('gives its own defaults zero specificity so caller classes win', function () {
     expect(Blade::render('<x-shape::card class="p-0 shadow-none">Body</x-shape::card>'))
         ->toContain('[:where(&amp;)]:p-6')
