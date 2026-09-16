@@ -49,5 +49,12 @@ use, commercially or not, with no permission needed. Attribution is not required
 and is given here anyway, because a repository should be able to say where the
 files in it came from.
 
+## Pictures
+
+`fjord.svg` is the picture in the [card](../../../docs/components/card.md) media
+previews, served at `/pictures/fjord.svg`. It is drawn by hand for this
+repository rather than taken from anywhere, because the preview is about where a
+picture sits in a card and not about the picture.
+
 `workbench/` is `export-ignore` in `.gitattributes`, so these live in the
 repository and never reach an application's vendor directory.

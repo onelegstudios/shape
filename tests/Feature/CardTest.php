@@ -22,6 +22,11 @@ it('opts into a border when asked', function () {
         ->toContain('[:where(&amp;)]:border-shape-200');
 });
 
+it('opts out of the shadow when asked', function () {
+    expect(Blade::render('<x-shape::card :shadow="false">Body</x-shape::card>'))
+        ->not->toContain('[:where(&amp;)]:shadow-sm');
+});
+
 it('uses the raised step of the elevation scale rather than one of its own', function () {
     expect(Blade::render('<x-shape::card>Body</x-shape::card>'))
         ->toContain('shadow-sm')
@@ -87,9 +92,216 @@ it('wraps footer actions rather than overflowing them', function () {
         ->toContain('flex flex-wrap items-center');
 });
 
+it('publishes its inset for a bleeding region to cancel', function (string $padding, string $inset) {
+    expect(Blade::render("<x-shape::card padding=\"{$padding}\">Body</x-shape::card>"))
+        ->toContain("[:where(&amp;)]:[--shape-card-inset:{$inset}]");
+})->with([
+    ['xs', '--spacing(3)'],
+    ['sm', '--spacing(4)'],
+    ['base', '--spacing(6)'],
+    ['lg', '--spacing(8)'],
+    ['xl', '--spacing(10)'],
+    ['none', '0px'],
+]);
+
+it('keeps the header and footer inside the inset unless they bleed', function (string $part) {
+    expect(Blade::render("<x-shape::card.{$part}>Content</x-shape::card.{$part}>"))
+        ->not->toContain('--shape-card-inset')
+        ->not->toContain('data-shape-bleed');
+})->with(['header', 'footer']);
+
+it('bleeds a footer to the sides and bottom edge of the card', function () {
+    expect(Blade::render('<x-shape::card.footer bleed>Actions</x-shape::card.footer>'))
+        ->toContain('data-shape-bleed')
+        ->toContain('[:where(&amp;)]:-mx-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:-mb-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:p-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:rounded-b-[inherit]')
+        ->not->toContain('-mt-');
+});
+
+it('bleeds a header to the sides and top edge of the card', function () {
+    expect(Blade::render('<x-shape::card.header bleed>Title</x-shape::card.header>'))
+        ->toContain('data-shape-bleed')
+        ->toContain('[:where(&amp;)]:-mx-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:-mt-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:p-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:rounded-t-[inherit]')
+        ->not->toContain('-mb-');
+});
+
+it('bleeds media to the sides and to whichever edge it sits against', function () {
+    // Position is read by the selector rather than passed as a prop, so there
+    // is nothing to keep in step with the markup and nothing to ask at runtime.
+    $vertical = '[:where([data-shape-card][data-shape-orientation=vertical]&gt;&amp;';
+
+    expect(Blade::render('<x-shape::card.media><img src="/a.jpg" alt=""></x-shape::card.media>'))
+        ->toContain('data-shape-card-media')
+        ->toContain('<img src="/a.jpg" alt="">')
+        ->toContain("{$vertical})]:-mx-(--shape-card-inset)")
+        ->toContain("{$vertical}:first-child)]:-mt-(--shape-card-inset)")
+        ->toContain("{$vertical}:first-child)]:rounded-t-[inherit]")
+        ->toContain("{$vertical}:last-child)]:-mb-(--shape-card-inset)")
+        ->toContain("{$vertical}:last-child)]:rounded-b-[inherit]")
+        ->toContain('[:where(&amp;)]:overflow-hidden');
+});
+
+it('turns the media bleed a quarter in a horizontal card', function () {
+    $horizontal = '[:where([data-shape-card][data-shape-orientation=horizontal]&gt;&amp;';
+
+    expect(Blade::render('<x-shape::card.media><img src="/a.jpg" alt=""></x-shape::card.media>'))
+        ->toContain("{$horizontal})]:-my-(--shape-card-inset)")
+        ->toContain("{$horizontal}:first-child)]:-ms-(--shape-card-inset)")
+        ->toContain("{$horizontal}:first-child)]:rounded-s-[inherit]")
+        ->toContain("{$horizontal}:last-child)]:-me-(--shape-card-inset)")
+        ->toContain("{$horizontal}:last-child)]:rounded-e-[inherit]")
+        ->toContain("{$horizontal})]:w-1/3")
+        ->toContain("{$horizontal}&gt;*)]:absolute");
+});
+
+it('makes the media child a full-width block and leaves its height to the caller', function () {
+    expect(Blade::render('<x-shape::card.media class="h-40">Picture</x-shape::card.media>'))
+        ->toContain('[:where(&amp;&gt;*)]:block')
+        ->toContain('[:where(&amp;&gt;*)]:w-full')
+        ->toContain('h-40')
+        ->not->toContain('aspect-');
+});
+
 it('gives its own defaults zero specificity so caller classes win', function () {
     expect(Blade::render('<x-shape::card class="p-0 shadow-none">Body</x-shape::card>'))
         ->toContain('[:where(&amp;)]:p-6')
         ->toContain('p-0')
         ->toContain('shadow-none');
+});
+
+it('lays its children in a column unless asked for a row', function () {
+    expect(Blade::render('<x-shape::card>Body</x-shape::card>'))
+        ->toContain('flex flex-col')
+        ->toContain('data-shape-orientation="vertical"');
+
+    expect(Blade::render('<x-shape::card orientation="horizontal">Body</x-shape::card>'))
+        ->toContain('flex flex-row')
+        ->not->toContain('flex-col')
+        ->toContain('data-shape-orientation="horizontal"');
+});
+
+it('stacks a horizontal card\'s content in a body that takes the card\'s gap', function () {
+    expect(Blade::render('<x-shape::card.body>Content</x-shape::card.body>'))
+        ->toContain('data-shape-card-body')
+        ->toContain('flex flex-col min-w-0')
+        ->toContain('[:where(&amp;)]:gap-[inherit]')
+        ->toContain('[:where(&amp;)]:flex-1');
+});
+
+it('is a div and not a control by default', function () {
+    $html = Blade::render('<x-shape::card>Body</x-shape::card>');
+
+    expect($html)
+        ->toStartWith('<div')
+        ->not->toContain('cursor-pointer hover:after')
+        ->not->toContain('focus-visible:outline-2 focus-visible');
+});
+
+it('becomes a link when given an href', function () {
+    $html = Blade::render('<x-shape::card href="/invoices/1">Body</x-shape::card>');
+
+    expect($html)
+        ->toStartWith('<a')
+        ->toContain('href="/invoices/1"')
+        ->toContain('data-shape-card')
+        ->toContain('hover:after:opacity-[0.04]')
+        ->toContain('focus-visible:outline-[var(--shape-ring)]')
+        ->not->toContain('text-start');
+});
+
+it('becomes a full-width button when asked', function () {
+    $html = Blade::render('<x-shape::card as="button">Body</x-shape::card>');
+
+    expect($html)
+        ->toStartWith('<button type="button"')
+        ->toContain('hover:after:opacity-[0.04]')
+        ->toContain('[:where(&amp;)]:w-full')
+        ->toContain('[:where(&amp;)]:text-start');
+});
+
+it('lets as win over the anchor an href implies', function () {
+    expect(Blade::render('<x-shape::card as="div" href="#">Body</x-shape::card>'))
+        ->toStartWith('<div')
+        ->not->toContain('hover:after:opacity-[0.04] active');
+});
+
+it('passes a caller type through to a button card once', function () {
+    $html = Blade::render('<x-shape::card as="button" type="submit">Body</x-shape::card>');
+
+    expect($html)->toContain('type="submit"')
+        ->and(substr_count($html, 'type='))->toBe(1);
+});
+
+it('lays the tint under its content so any fill can take it', function () {
+    expect(Blade::render('<x-shape::card>Body</x-shape::card>'))
+        ->toContain('relative isolate')
+        ->toContain('after:-z-1')
+        ->toContain('after:bg-current')
+        ->toContain('after:opacity-0')
+        ->toContain('after:pointer-events-none');
+});
+
+it('stretches a card link over the card and keeps its other controls above it', function () {
+    $html = Blade::render(<<<'BLADE'
+    <x-shape::card>
+        <x-shape::card.header>
+            <x-shape::heading><x-shape::card.link href="/invoices/1">Acme</x-shape::card.link></x-shape::heading>
+            <x-shape::card.action>
+                <x-shape::button square icon="shape-close" aria-label="Dismiss" />
+            </x-shape::card.action>
+        </x-shape::card.header>
+    </x-shape::card>
+    BLADE);
+
+    expect($html)
+        ->toStartWith('<div')
+        ->toContain('href="/invoices/1" data-shape-card-link')
+        ->toContain('data-shape-card-link')
+        ->toContain('after:absolute after:inset-0')
+        ->toContain('focus-visible:outline-none')
+        ->toContain('has-[[data-shape-card-link]]:hover:after:opacity-[0.04]')
+        ->toContain('has-[[data-shape-card-link]:focus-visible]:outline-2')
+        ->toContain('[:where(&amp;:has([data-shape-card-link])_:is(a,button,input,select,textarea,summary,label,[tabindex]):not([data-shape-card-link]))]:z-1');
+});
+
+it('puts a header action in a second column beside the title', function () {
+    $html = Blade::render(<<<'BLADE'
+    <x-shape::card.header>
+        <x-shape::heading>Acme</x-shape::heading>
+        <x-shape::card.action>Menu</x-shape::card.action>
+    </x-shape::card.header>
+    BLADE);
+
+    expect($html)
+        ->toContain('data-shape-card-action')
+        ->toContain('[:where(&amp;:has(&gt;[data-shape-card-action]))]:grid-cols-[minmax(0,1fr)_auto]')
+        ->toContain('[:where(&amp;&gt;:not([data-shape-card-action]))]:col-start-1')
+        ->toContain('col-start-2 row-span-2 row-start-1 self-start justify-self-end');
+});
+
+it('keeps a header without an action to a single column', function () {
+    // The second column is asked of the markup, so the header itself only
+    // declares a grid and never a fixed template.
+    expect(Blade::render('<x-shape::card.header>Title</x-shape::card.header>'))
+        ->toContain('grid ')
+        ->not->toContain('grid-cols-2');
+});
+
+it('draws a separator that bleeds along whichever axis the card runs', function () {
+    $html = Blade::render('<x-shape::card.separator />');
+
+    expect($html)
+        ->toContain('data-shape-card-separator')
+        ->toContain('role="separator"')
+        ->toContain('aria-hidden="true"')
+        ->toContain('[:where(:not([data-shape-card][data-shape-orientation=horizontal])&gt;&amp;)]:h-px')
+        ->toContain('[:where([data-shape-card][data-shape-orientation=vertical]&gt;&amp;)]:-mx-(--shape-card-inset)')
+        ->toContain('[:where([data-shape-card][data-shape-orientation=horizontal]&gt;&amp;)]:w-px')
+        ->toContain('[:where([data-shape-card][data-shape-orientation=horizontal]&gt;&amp;)]:-my-(--shape-card-inset)')
+        ->toContain('[:where(&amp;)]:bg-shape-200');
 });

@@ -94,6 +94,18 @@ Route::get('/avatars/{name}.webp', function (string $name) {
     return response()->file($file, ['Content-Type' => 'image/webp']);
 })->name('shape.docs.avatar');
 
+// The pictures the card previews put in `card.media`.
+//
+// Drawn SVG rather than photographs: the preview is about where a picture sits
+// in a card, not what is in it. Like the portraits, a name with no file 404s.
+Route::get('/pictures/{name}.svg', function (string $name) {
+    $file = \Orchestra\Testbench\package_path('workbench/resources/images/'.basename($name).'.svg');
+
+    abort_unless(is_file($file), 404);
+
+    return response()->file($file, ['Content-Type' => 'image/svg+xml']);
+})->name('shape.docs.picture');
+
 // The overlays in the docs previews are meant to open.
 //
 // A modal, a drawer, a dropdown, a popover and a tooltip are all components whose
