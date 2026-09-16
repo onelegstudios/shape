@@ -60,7 +60,26 @@ it, or the bleed will cancel the old one:
 <x-shape::card class="p-5 [--shape-card-inset:--spacing(5)]">
 ```
 
-Both are components rather than named slots, because deciding whether a slot has
+## Media
+
+`card.media` takes a picture to the card's edge. Put an `<img>` — or a
+`<picture>`, a `<video>`, an embed — inside it; the child becomes a full-width
+block, and its height and fit are yours to set with classes on it:
+
+@docs('preview', name: 'card-media', layout: 'stack')
+
+There is no prop for where it goes. The media always reaches the sides, and it
+reaches the top when it is the card's first child and the bottom when it is the
+last, with the corners on that edge following the card's radius. It reads the
+same `--shape-card-inset` a bleeding header does, so it works at every
+`padding` and follows a padding you set with a class as long as you set the
+variable with it.
+
+It is made for the top and the bottom. Between two other children it bleeds to
+the sides only, which works, but a picture in the middle of a card usually wants
+to be two cards.
+
+Header, footer and media are all components rather than named slots, because deciding whether a slot has
 content is a runtime question and asking it would take the card off the fold
 path.
 
@@ -108,6 +127,12 @@ A bleeding header or footer carries `data-shape-bleed`:
 [data-shape-card-footer][data-shape-bleed] { background: var(--color-shape-50); }
 ```
 
+Media carries `data-shape-card-media`:
+
+```css
+[data-shape-card-media] img { filter: grayscale(1); }
+```
+
 `data-shape-padding` carries the arm the card was called with, so a rule can
 reach one of them:
 
@@ -127,11 +152,14 @@ reach one of them:
 | --- | --- | --- |
 | `bleed` | `false` | cancels the card's padding at the sides and the region's own edge |
 
+`card.media` takes no props; where it sits in the card decides which edges it
+reaches.
+
 The default slot is each component's contents.
 
 Cards use `shadow-sm`, the "raised" step — see [Elevation](../elevation.md).
 
 ## Folding
 
-Tier A — `@blaze(fold: true)` on all three files. See
+Tier A — `@blaze(fold: true)` on all four files. See
 [Folding](../folding.md).

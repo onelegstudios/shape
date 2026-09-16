@@ -130,6 +130,28 @@ it('bleeds a header to the sides and top edge of the card', function () {
         ->not->toContain('-mb-');
 });
 
+it('bleeds media to the sides and to whichever edge it sits against', function () {
+    // Position is read by the selector rather than passed as a prop, so there
+    // is nothing to keep in step with the markup and nothing to ask at runtime.
+    expect(Blade::render('<x-shape::card.media><img src="/a.jpg" alt=""></x-shape::card.media>'))
+        ->toContain('data-shape-card-media')
+        ->toContain('<img src="/a.jpg" alt="">')
+        ->toContain('[:where(&amp;)]:-mx-(--shape-card-inset)')
+        ->toContain('[:where(&amp;:first-child)]:-mt-(--shape-card-inset)')
+        ->toContain('[:where(&amp;:first-child)]:rounded-t-[inherit]')
+        ->toContain('[:where(&amp;:last-child)]:-mb-(--shape-card-inset)')
+        ->toContain('[:where(&amp;:last-child)]:rounded-b-[inherit]')
+        ->toContain('[:where(&amp;)]:overflow-hidden');
+});
+
+it('makes the media child a full-width block and leaves its height to the caller', function () {
+    expect(Blade::render('<x-shape::card.media class="h-40">Picture</x-shape::card.media>'))
+        ->toContain('[:where(&amp;&gt;*)]:block')
+        ->toContain('[:where(&amp;&gt;*)]:w-full')
+        ->toContain('h-40')
+        ->not->toContain('aspect-');
+});
+
 it('gives its own defaults zero specificity so caller classes win', function () {
     expect(Blade::render('<x-shape::card class="p-0 shadow-none">Body</x-shape::card>'))
         ->toContain('[:where(&amp;)]:p-6')

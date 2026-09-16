@@ -41,3 +41,11 @@ it('serves each portrait the avatar previews ask for', function (string $name) {
 it('does not invent a face for a name with no photograph', function () {
     $this->get('/avatars/nobody.webp')->assertNotFound();
 });
+
+it('serves the picture the card media preview asks for', function () {
+    $this->get('/pictures/fjord.svg')
+        ->assertOk()
+        ->assertHeader('Content-Type', 'image/svg+xml');
+
+    $this->get('/pictures/nowhere.svg')->assertNotFound();
+});

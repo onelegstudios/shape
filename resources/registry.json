@@ -52,7 +52,8 @@
         "files": [
             "card/card.blade.php",
             "card/footer.blade.php",
-            "card/header.blade.php"
+            "card/header.blade.php",
+            "card/media.blade.php"
         ],
         "requires": [],
         "docs": "components/card.md",
