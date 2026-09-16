@@ -50,10 +50,15 @@
     },
     "card": {
         "files": [
+            "card/action.blade.php",
+            "card/body.blade.php",
             "card/card.blade.php",
+            "card/element.blade.php",
             "card/footer.blade.php",
             "card/header.blade.php",
-            "card/media.blade.php"
+            "card/link.blade.php",
+            "card/media.blade.php",
+            "card/separator.blade.php"
         ],
         "requires": [],
         "docs": "components/card.md",

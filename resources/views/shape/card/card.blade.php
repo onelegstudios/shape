@@ -17,17 +17,43 @@
     whether a slot has content is a runtime question, and asking it would drop
     this component off the fold path for a convenience the call site can express
     perfectly well on its own.
+
+    A card is pressable in one of two ways. `href` (or `as`) makes the whole
+    card the control, which is right when it holds nothing else that can be
+    pressed — an `<a>` or a `<button>` with a control inside it is markup the
+    parser rewrites. A card that also holds buttons puts a `card.link` inside
+    it instead: the link stretches over the card, and every other control in
+    it is lifted above the stretch so it stays pressable.
+
+    Either way the card answers the pointer with a tint rather than a colour of
+    its own. The tint is a pseudo-element laid under the card's content, so it
+    shifts whatever background the caller gave the card, in either theme, and
+    never sets a property a caller class is also setting. That is why every
+    card is positioned and isolated: the tint and the stretched link both need
+    something to measure against, and the tint's negative layer needs a
+    stacking context to stay inside.
+
+    `orientation` lays the children in a row, for a picture beside the content
+    rather than above it. `card.media` and `card.separator` read it off the
+    card's attribute rather than taking a prop of their own.
 --}}
 
 @props([
     'padding' => 'base',
     'border' => false,
     'shadow' => true,
+    'orientation' => 'vertical',
+    'as' => null,
 ])
 
 @php
+// An `href` asks for the anchor without naming it, as it does on the button,
+// the badge and the menu item; `as` wins where a call site means otherwise.
+$control = $as ?? ($attributes->has('href') ? 'a' : null);
+
 $classes = Shape::classes()
-    ->add('flex flex-col')
+    ->add($orientation === 'horizontal' ? 'flex flex-row' : 'flex flex-col')
+    ->add('relative isolate')
     ->add('[:where(&)]:rounded-shape-lg')
     ->add($shadow ? '[:where(&)]:shadow-sm' : '')
     ->add('[:where(&)]:bg-white dark:[:where(&)]:bg-shape-900')
@@ -55,9 +81,39 @@ $classes = Shape::classes()
         default => '[:where(&)]:gap-4 [:where(&)]:p-6 [:where(&)]:[--shape-card-inset:--spacing(6)]',
     })
 
-    ->add($border ? '[:where(&)]:border [:where(&)]:border-shape-200 dark:[:where(&)]:border-shape-800' : '');
+    ->add($border ? '[:where(&)]:border [:where(&)]:border-shape-200 dark:[:where(&)]:border-shape-800' : '')
+
+    // The tint, at rest. `bg-current` makes it darken a light card and lighten
+    // a dark one without a `dark:` arm.
+    ->add('after:pointer-events-none after:absolute after:inset-0 after:-z-1 after:rounded-[inherit] after:bg-current after:opacity-0 after:transition-opacity after:duration-100')
+
+    // The card as the control.
+    ->add(match ($control) {
+        'a', 'button' => 'cursor-pointer hover:after:opacity-[0.04] active:after:opacity-[0.07] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--shape-ring)]',
+        default => '',
+    })
+
+    // A `<button>` shrinks to its content and centres its text; a card does
+    // neither.
+    ->add($control === 'button' ? '[:where(&)]:w-full [:where(&)]:text-start' : '')
+
+    // The card around a stretched `card.link`. Asked of the markup by `:has()`
+    // rather than of a slot, so it stays on the fold path. The ring is drawn
+    // here because the link's own box is only as big as its text.
+    ->add('has-[[data-shape-card-link]]:cursor-pointer has-[[data-shape-card-link]]:hover:after:opacity-[0.04] has-[[data-shape-card-link]:active]:after:opacity-[0.07]')
+    ->add('has-[[data-shape-card-link]:focus-visible]:outline-2 has-[[data-shape-card-link]:focus-visible]:outline-offset-2 has-[[data-shape-card-link]:focus-visible]:outline-[var(--shape-ring)]')
+
+    // Every other control in that card sits above the stretch.
+    ->add('[:where(&:has([data-shape-card-link])_:is(a,button,input,select,textarea,summary,label,[tabindex]):not([data-shape-card-link]))]:relative')
+    ->add('[:where(&:has([data-shape-card-link])_:is(a,button,input,select,textarea,summary,label,[tabindex]):not([data-shape-card-link]))]:z-1');
 @endphp
 
-<div {{ $attributes->class($classes) }} data-shape-card data-shape-padding="{{ $padding }}">
+<x-shape::card.element
+    :as="$control"
+    {{ $attributes->class($classes) }}
+    data-shape-card=""
+    data-shape-padding="{{ $padding }}"
+    data-shape-orientation="{{ $orientation }}"
+>
     {{ $slot }}
-</div>
+</x-shape::card.element>

@@ -33,12 +33,42 @@ reach the edge:
 
 @docs('preview', name: 'card-padding-none', layout: 'stack')
 
+## Links and buttons
+
+`href` makes the whole card a link, and `as="button"` makes it a button. The
+card answers the pointer with a faint tint laid under its content, and draws the
+focus ring when a keyboard reaches it:
+
+@docs('preview', name: 'card-link', layout: 'stack')
+
+A card that is a link or a button cannot hold another control — an `<a>` or a
+`<button>` with a button inside it is markup the browser rewrites. For a card
+that has buttons of its own, see [the stretched link](#a-link-with-controls-beside-it).
+
 ## Header and footer
 
 `card.header` stacks its children tightly; `card.footer` lays them out in a row.
 Neither draws a rule — compose a [separator](separator.md) if you want one:
 
 @docs('preview', name: 'card-regions', layout: 'stack')
+
+### An action beside the title
+
+`card.action` goes inside `card.header` and sits to the right of the title,
+across the heading and its line of copy, held to the top edge — the place for a
+menu, a close button or a toggle:
+
+@docs('preview', name: 'card-action', layout: 'stack')
+
+### A link with controls beside it
+
+`card.link` is for a card that should open on a click and also holds controls.
+Put it where the link's text belongs, usually inside the heading. It stretches
+over the whole card, the card takes over the tint and the focus ring, and every
+other control in the card is lifted above the stretch so it still does its own
+job:
+
+@docs('preview', name: 'card-stretched-link', layout: 'stack')
 
 ### Bleeding to the edge
 
@@ -79,7 +109,32 @@ It is made for the top and the bottom. Between two other children it bleeds to
 the sides only, which works, but a picture in the middle of a card usually wants
 to be two cards.
 
-Header, footer and media are all components rather than named slots, because deciding whether a slot has
+## Horizontal cards
+
+`orientation="horizontal"` lays the card's children in a row, for a picture
+beside the content. Wrap the content in `card.body`, a column that spaces its
+children with the card's own gap. Media reaches the top and the bottom, and the
+start or the end depending on where it sits. It takes a third of the card's
+width until a class on it says otherwise, and the picture fills the height the
+content sets, so give the image `object-cover`:
+
+@docs('preview', name: 'card-horizontal', layout: 'stack')
+
+A horizontal card stays horizontal at every width. For a card that stacks on a
+phone, render a vertical one there. A bleeding header or footer is for vertical
+cards: inside a `card.body` it would reach past the body into the picture.
+
+## Separators
+
+`<x-shape::separator />` stops at the card's padding like any other child.
+`card.separator` reaches the edges: across a vertical card it is a horizontal
+rule taken to both sides, and between two children of a horizontal card it is a
+vertical rule taken to the top and the bottom. Inside a `card.body` it is a
+plain horizontal rule:
+
+@docs('preview', name: 'card-separator', layout: 'stack')
+
+Header, footer, action, body, media and separator are all components rather than named slots, because deciding whether a slot has
 content is a runtime question and asking it would take the card off the fold
 path.
 
@@ -121,20 +176,20 @@ your own are in [the surface contract](../theming.md#the-surface-contract).
 [data-shape-card] { border-radius: 0; box-shadow: none; }
 ```
 
-A bleeding header or footer carries `data-shape-bleed`:
+Everything inside a card carries its own attribute —
+`data-shape-card-header`, `-footer`, `-action`, `-body`, `-media`, `-link` and
+`-separator` — and a bleeding header or footer also carries `data-shape-bleed`:
 
 ```css
 [data-shape-card-footer][data-shape-bleed] { background: var(--color-shape-50); }
 ```
 
-Media carries `data-shape-card-media`:
-
 ```css
 [data-shape-card-media] img { filter: grayscale(1); }
 ```
 
-`data-shape-padding` carries the arm the card was called with, so a rule can
-reach one of them:
+`data-shape-padding` and `data-shape-orientation` carry the arms the card was
+called with, so a rule can reach one of them:
 
 ```css
 [data-shape-card][data-shape-padding='lg'] { padding: 2.5rem; }
@@ -147,13 +202,17 @@ reach one of them:
 | `border` | `false` | adds a hairline border |
 | `shadow` | `true` | the resting elevation; set `false` to drop it |
 | `padding` | `base` | `xs`, `sm`, `base`, `lg`, `xl`, `none` |
+| `orientation` | `vertical` | `vertical`, `horizontal` |
+| `href` | — | renders the card as a link |
+| `as` | — | `a`, `button`, `div`; wins over the element `href` implies |
 
 | `card.header` / `card.footer` prop | Default | Values |
 | --- | --- | --- |
 | `bleed` | `false` | cancels the card's padding at the sides and the region's own edge |
 
-`card.media` takes no props; where it sits in the card decides which edges it
-reaches.
+`card.media` takes no props; where it sits in the card, and the card's
+`orientation`, decide which edges it reaches. `card.action`, `card.body` and
+`card.separator` take none either. `card.link` takes the attributes of an `<a>`.
 
 The default slot is each component's contents.
 
@@ -161,5 +220,6 @@ Cards use `shadow-sm`, the "raised" step — see [Elevation](../elevation.md).
 
 ## Folding
 
-Tier A — `@blaze(fold: true)` on all four files. See
+Tier A — `@blaze(fold: true)` on every file, with `card.separator` also
+memoized, as the separator is. See
 [Folding](../folding.md).
